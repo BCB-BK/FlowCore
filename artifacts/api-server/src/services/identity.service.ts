@@ -183,6 +183,23 @@ async function recomputeDescendantCodes(
   }
 }
 
+async function isDescendant(
+  tx: NodePgDatabase<Record<string, unknown>>,
+  ancestorId: string,
+  candidateId: string,
+): Promise<boolean> {
+  const result = await tx.execute(
+    sql`WITH RECURSIVE ancestors AS (
+      SELECT parent_node_id FROM content_nodes WHERE id = ${candidateId}
+      UNION ALL
+      SELECT cn.parent_node_id FROM content_nodes cn
+      JOIN ancestors a ON cn.id = a.parent_node_id
+    )
+    SELECT 1 FROM ancestors WHERE parent_node_id = ${ancestorId} LIMIT 1`,
+  );
+  return (result.rows?.length ?? 0) > 0;
+}
+
 export async function moveNode(
   nodeId: string,
   newParentNodeId: string | null,
@@ -199,6 +216,16 @@ export async function moveNode(
 
     if (!node) {
       throw new Error(`Node ${nodeId} not found`);
+    }
+
+    if (newParentNodeId) {
+      if (newParentNodeId === nodeId) {
+        throw new Error("Cannot move a node under itself");
+      }
+      const isDesc = await isDescendant(tx, nodeId, newParentNodeId);
+      if (isDesc) {
+        throw new Error("Cannot move a node under one of its own descendants");
+      }
     }
 
     const oldDisplayCode = node.displayCode;
