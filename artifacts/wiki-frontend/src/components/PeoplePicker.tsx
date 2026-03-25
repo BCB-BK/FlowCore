@@ -1,12 +1,14 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   useSearchPeople,
   getSearchPeopleQueryKey,
+  useSearchGroups,
+  getSearchGroupsQueryKey,
 } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { User, X, Search } from "lucide-react";
+import { User, Users, X, Search } from "lucide-react";
 
 interface PeoplePickerProps {
   label: string;
@@ -15,6 +17,15 @@ interface PeoplePickerProps {
   displayValue?: string;
   onChange: (id: string | undefined, displayName: string | undefined) => void;
   required?: boolean;
+  includeGroups?: boolean;
+}
+
+interface SearchResult {
+  id: string;
+  displayName: string;
+  email?: string;
+  jobTitle?: string;
+  kind: "person" | "group";
 }
 
 export function PeoplePicker({
@@ -24,6 +35,7 @@ export function PeoplePicker({
   displayValue,
   onChange,
   required,
+  includeGroups = false,
 }: PeoplePickerProps) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -40,13 +52,47 @@ export function PeoplePicker({
     }, 300);
   }, []);
 
+  const searchEnabled = debouncedQuery.length >= 2;
+
   const searchParams = { q: debouncedQuery };
-  const { data: results } = useSearchPeople(searchParams, {
+  const { data: peopleResults } = useSearchPeople(searchParams, {
     query: {
       queryKey: getSearchPeopleQueryKey(searchParams),
-      enabled: debouncedQuery.length >= 2,
+      enabled: searchEnabled,
     },
   });
+
+  const { data: groupResults } = useSearchGroups(searchParams, {
+    query: {
+      queryKey: getSearchGroupsQueryKey(searchParams),
+      enabled: searchEnabled && includeGroups,
+    },
+  });
+
+  const results: SearchResult[] = useMemo(() => {
+    const items: SearchResult[] = [];
+    if (peopleResults) {
+      for (const p of peopleResults) {
+        items.push({
+          id: p.id,
+          displayName: p.displayName,
+          email: p.email ?? undefined,
+          jobTitle: p.jobTitle ?? undefined,
+          kind: "person",
+        });
+      }
+    }
+    if (groupResults && includeGroups) {
+      for (const g of groupResults) {
+        items.push({
+          id: g.id,
+          displayName: g.displayName,
+          kind: "group",
+        });
+      }
+    }
+    return items;
+  }, [peopleResults, groupResults, includeGroups]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -61,8 +107,8 @@ export function PeoplePicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (person: { id: string; displayName: string }) => {
-    onChange(person.id, person.displayName);
+  const handleSelect = (item: SearchResult) => {
+    onChange(item.id, item.displayName);
     setQuery("");
     setDebouncedQuery("");
     setIsOpen(false);
@@ -101,7 +147,11 @@ export function PeoplePicker({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-8"
-            placeholder="Person suchen..."
+            placeholder={
+              includeGroups
+                ? "Person oder Gruppe suchen..."
+                : "Person suchen..."
+            }
             value={query}
             onChange={(e) => {
               handleQueryChange(e.target.value);
@@ -110,21 +160,32 @@ export function PeoplePicker({
             onFocus={() => setIsOpen(true)}
           />
 
-          {isOpen && results && results.length > 0 && (
+          {isOpen && results.length > 0 && (
             <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md max-h-48 overflow-y-auto">
-              {results.map((person) => (
+              {results.map((item) => (
                 <button
-                  key={person.id}
+                  key={`${item.kind}-${item.id}`}
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left"
-                  onClick={() => handleSelect(person)}
+                  onClick={() => handleSelect(item)}
                 >
-                  <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                  {item.kind === "group" ? (
+                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                  ) : (
+                    <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                  )}
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{person.displayName}</p>
+                    <p className="font-medium truncate">
+                      {item.displayName}
+                      {item.kind === "group" && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (Gruppe)
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {person.email}
-                      {person.jobTitle && ` · ${person.jobTitle}`}
+                      {item.email}
+                      {item.jobTitle && ` · ${item.jobTitle}`}
                     </p>
                   </div>
                 </button>
@@ -132,16 +193,13 @@ export function PeoplePicker({
             </div>
           )}
 
-          {isOpen &&
-            debouncedQuery.length >= 2 &&
-            results &&
-            results.length === 0 && (
-              <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-3">
-                <p className="text-sm text-muted-foreground text-center">
-                  Keine Ergebnisse
-                </p>
-              </div>
-            )}
+          {isOpen && searchEnabled && results.length === 0 && (
+            <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-3">
+              <p className="text-sm text-muted-foreground text-center">
+                Keine Ergebnisse
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

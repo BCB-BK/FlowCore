@@ -5,6 +5,7 @@ import {
   useGetNodeChildren,
   useGetNodeAncestors,
   useListNodes,
+  useListNodeRevisions,
   useCreateNode as useCreateNodeMutation,
   useDeleteNode as useDeleteNodeMutation,
   useUpdateNode as useUpdateNodeMutation,
@@ -13,6 +14,7 @@ import {
   getGetNodeChildrenQueryKey,
   getGetNodeAncestorsQueryKey,
   getListNodesQueryKey,
+  getListNodeRevisionsQueryKey,
 } from "@workspace/api-client-react";
 
 export function useRootNodes() {
@@ -45,6 +47,15 @@ export function useNodeAncestors(nodeId: string | undefined) {
   return useGetNodeAncestors(nodeId ?? "", {
     query: {
       queryKey: getGetNodeAncestorsQueryKey(nodeId ?? ""),
+      enabled: !!nodeId,
+    },
+  });
+}
+
+export function useNodeRevisions(nodeId: string | undefined) {
+  return useListNodeRevisions(nodeId ?? "", {
+    query: {
+      queryKey: getListNodeRevisionsQueryKey(nodeId ?? ""),
       enabled: !!nodeId,
     },
   });

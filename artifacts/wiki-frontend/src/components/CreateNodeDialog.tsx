@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
+import { PeoplePicker } from "@/components/PeoplePicker";
 import {
   PAGE_TYPE_REGISTRY,
   getAllowedChildTypes,
@@ -43,6 +44,8 @@ export function CreateNodeDialog({
   const [templateType, setTemplateType] = useState<
     CreateNodeInput["templateType"]
   >("core_process_overview");
+  const [ownerId, setOwnerId] = useState<string | undefined>();
+  const [ownerName, setOwnerName] = useState<string | undefined>();
   const createNode = useCreateNode();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -101,6 +104,8 @@ export function CreateNodeDialog({
   const resetAndClose = () => {
     setStep(0);
     setTitle("");
+    setOwnerId(undefined);
+    setOwnerName(undefined);
     onOpenChange(false);
   };
 
@@ -250,6 +255,25 @@ export function CreateNodeDialog({
                 autoFocus
               />
             </div>
+
+            <Separator />
+
+            <PeoplePicker
+              label="Prozesseigner / Verantwortlicher"
+              description="Verantwortliche Person für diesen Inhalt"
+              value={ownerId}
+              displayValue={ownerName}
+              onChange={(id, name) => {
+                setOwnerId(id);
+                setOwnerName(name);
+              }}
+              required={
+                selectedDef?.metadataFields.some(
+                  (f) => f.key === "owner" && f.required,
+                ) ?? false
+              }
+              includeGroups
+            />
           </div>
         )}
 
@@ -300,6 +324,14 @@ export function CreateNodeDialog({
                     {parentNodeId ? "Wird zugeordnet" : "Stammebene"}
                   </p>
                 </div>
+                {ownerName && (
+                  <div>
+                    <span className="text-muted-foreground">
+                      Verantwortlicher
+                    </span>
+                    <p className="mt-0.5 font-medium">{ownerName}</p>
+                  </div>
+                )}
               </div>
 
               {selectedDef && selectedDef.sections.length > 0 && (

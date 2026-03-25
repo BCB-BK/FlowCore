@@ -2,6 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import {
   useNode,
   useNodeChildren,
+  useNodeRevisions,
   useDeleteNode,
   useUpdateNode,
 } from "@/hooks/use-nodes";
@@ -68,6 +69,7 @@ export function NodeDetail() {
   const nodeId = params?.id;
   const { data: node, isLoading } = useNode(nodeId);
   const { data: children } = useNodeChildren(nodeId);
+  const { data: revisions } = useNodeRevisions(nodeId);
   const deleteNode = useDeleteNode();
   const updateNode = useUpdateNode();
   const [, navigate] = useLocation();
@@ -106,8 +108,12 @@ export function NodeDetail() {
   }
 
   const pageDef = getPageType(node.templateType);
-  const structuredFields: Record<string, unknown> = {};
-  const metadata: Record<string, unknown> = {};
+  const latestRevision =
+    revisions && revisions.length > 0 ? revisions[0] : null;
+  const structuredFields: Record<string, unknown> =
+    (latestRevision?.structuredFields as Record<string, unknown>) ?? {};
+  const metadata: Record<string, unknown> =
+    (latestRevision?.content as Record<string, unknown>) ?? {};
 
   const handleDelete = async () => {
     try {
