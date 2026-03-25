@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
+    "no-hardcode-check": "tsx ./src/no-hardcode-check.ts",
+    "docs:check": "tsx ./src/docs-check.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

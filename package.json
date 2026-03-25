@@ -6,7 +6,13 @@
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "lint": "prettier --check \"artifacts/**/*.{ts,tsx}\" \"lib/**/*.{ts,tsx}\" \"scripts/**/*.ts\"",
+    "lint:fix": "prettier --write \"artifacts/**/*.{ts,tsx}\" \"lib/**/*.{ts,tsx}\" \"scripts/**/*.ts\"",
+    "test": "echo \"No unit tests configured yet\" && exit 0",
+    "e2e": "echo \"Run Playwright E2E tests via: pnpm --filter @workspace/e2e run test\" && exit 0",
+    "no-hardcode-check": "pnpm --filter @workspace/scripts run no-hardcode-check",
+    "docs:check": "pnpm --filter @workspace/scripts run docs:check"
   },
   "private": true,
   "devDependencies": {

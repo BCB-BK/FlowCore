@@ -3,12 +3,15 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { correlationId } from "./middlewares/correlation-id";
 
 const app: Express = express();
 
+app.use(correlationId);
 app.use(
   pinoHttp({
     logger,
+    genReqId: (req) => (req.headers["x-correlation-id"] as string) ?? req.id,
     serializers: {
       req(req) {
         return {
