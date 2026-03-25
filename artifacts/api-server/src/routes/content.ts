@@ -6,6 +6,7 @@ import {
   contentRelationsTable,
   contentAliasesTable,
   contentTemplatesTable,
+  auditEventsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, isNull } from "drizzle-orm";
 import { createContentNode, moveNode } from "../services/identity.service";
@@ -22,203 +23,368 @@ import {
   getNodeChildren,
   getNodeTree,
 } from "../services/graph.service";
+import { requireAuth } from "../middlewares/require-auth";
+import { requirePermission } from "../middlewares/require-permission";
 
 const router: IRouter = Router();
 
-router.get("/nodes", async (_req, res) => {
-  const nodes = await db
-    .select()
-    .from(contentNodesTable)
-    .where(eq(contentNodesTable.isDeleted, false))
-    .orderBy(contentNodesTable.sortOrder);
-  res.json(nodes);
-});
+router.get(
+  "/nodes",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    const nodes = await db
+      .select()
+      .from(contentNodesTable)
+      .where(eq(contentNodesTable.isDeleted, false))
+      .orderBy(contentNodesTable.sortOrder);
+    res.json(nodes);
+  },
+);
 
-router.get("/nodes/roots", async (_req, res) => {
-  const roots = await db
-    .select()
-    .from(contentNodesTable)
-    .where(
-      and(
-        isNull(contentNodesTable.parentNodeId),
-        eq(contentNodesTable.isDeleted, false),
-      ),
-    )
-    .orderBy(contentNodesTable.sortOrder);
-  res.json(roots);
-});
+router.get(
+  "/nodes/roots",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    const roots = await db
+      .select()
+      .from(contentNodesTable)
+      .where(
+        and(
+          isNull(contentNodesTable.parentNodeId),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      )
+      .orderBy(contentNodesTable.sortOrder);
+    res.json(roots);
+  },
+);
 
-router.get("/nodes/:id", async (req, res) => {
-  const [node] = await db
-    .select()
-    .from(contentNodesTable)
-    .where(eq(contentNodesTable.id, req.params.id));
-
-  if (!node) {
-    res.status(404).json({ error: "Node not found" });
-    return;
-  }
-  res.json(node);
-});
-
-router.post("/nodes", async (req, res) => {
-  try {
-    const nodeId = await createContentNode(req.body);
+router.get(
+  "/nodes/:id",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
     const [node] = await db
       .select()
       .from(contentNodesTable)
-      .where(eq(contentNodesTable.id, nodeId));
-    res.status(201).json(node);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(400).json({ error: message });
-  }
-});
+      .where(eq(contentNodesTable.id, id));
 
-router.post("/nodes/:id/move", async (req, res) => {
-  try {
-    await moveNode(
-      req.params.id,
-      req.body.newParentNodeId ?? null,
-      req.body.actorId,
-    );
-    const [node] = await db
-      .select()
-      .from(contentNodesTable)
-      .where(eq(contentNodesTable.id, req.params.id));
+    if (!node) {
+      res.status(404).json({ error: "Node not found" });
+      return;
+    }
     res.json(node);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(400).json({ error: message });
-  }
-});
+  },
+);
 
-router.delete("/nodes/:id", async (req, res) => {
-  await db
-    .update(contentNodesTable)
-    .set({ isDeleted: true, deletedAt: new Date(), status: "deleted" })
-    .where(eq(contentNodesTable.id, req.params.id));
-  res.status(204).send();
-});
+router.post(
+  "/nodes",
+  requireAuth,
+  requirePermission("create_page"),
+  async (req, res) => {
+    try {
+      const nodeId = await createContentNode(req.body);
+      const [node] = await db
+        .select()
+        .from(contentNodesTable)
+        .where(eq(contentNodesTable.id, nodeId));
 
-router.get("/nodes/:id/children", async (req, res) => {
-  const children = await getNodeChildren(req.params.id);
-  res.json(children);
-});
+      await db.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "node_created",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: nodeId,
+        details: { title: req.body.title, templateType: req.body.templateType },
+      });
 
-router.get("/nodes/:id/tree", async (req, res) => {
-  const tree = await getNodeTree(req.params.id);
-  res.json(tree);
-});
+      res.status(201).json(node);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
+    }
+  },
+);
 
-router.get("/nodes/:id/aliases", async (req, res) => {
-  const aliases = await db
-    .select()
-    .from(contentAliasesTable)
-    .where(eq(contentAliasesTable.nodeId, req.params.id))
-    .orderBy(desc(contentAliasesTable.changedAt));
-  res.json(aliases);
-});
+router.post(
+  "/nodes/:id/move",
+  requireAuth,
+  requirePermission("edit_structure", (req) => req.params.id),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      await moveNode(
+        id,
+        req.body.newParentNodeId ?? null,
+        req.user!.principalId,
+      );
+      const [node] = await db
+        .select()
+        .from(contentNodesTable)
+        .where(eq(contentNodesTable.id, id));
 
-router.post("/nodes/:id/revisions", async (req, res) => {
-  try {
-    const revisionId = await createRevision({
-      nodeId: req.params.id,
-      ...req.body,
+      await db.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "node_moved",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: id,
+        details: { newParentNodeId: req.body.newParentNodeId },
+      });
+
+      res.json(node);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
+    }
+  },
+);
+
+router.delete(
+  "/nodes/:id",
+  requireAuth,
+  requirePermission("archive_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    await db
+      .update(contentNodesTable)
+      .set({ isDeleted: true, deletedAt: new Date(), status: "deleted" })
+      .where(eq(contentNodesTable.id, id));
+
+    await db.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "node_deleted",
+      actorId: req.user!.principalId,
+      resourceType: "content_node",
+      resourceId: id,
     });
-    const [revision] = await db
+
+    res.status(204).send();
+  },
+);
+
+router.get(
+  "/nodes/:id/children",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const children = await getNodeChildren(id);
+    res.json(children);
+  },
+);
+
+router.get(
+  "/nodes/:id/tree",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const tree = await getNodeTree(id);
+    res.json(tree);
+  },
+);
+
+router.get(
+  "/nodes/:id/aliases",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const aliases = await db
       .select()
-      .from(contentRevisionsTable)
-      .where(eq(contentRevisionsTable.id, revisionId));
-    res.status(201).json(revision);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(400).json({ error: message });
-  }
-});
+      .from(contentAliasesTable)
+      .where(eq(contentAliasesTable.nodeId, id))
+      .orderBy(desc(contentAliasesTable.changedAt));
+    res.json(aliases);
+  },
+);
 
-router.get("/nodes/:id/revisions", async (req, res) => {
-  const revisions = await getVersionTree(req.params.id);
-  res.json(revisions);
-});
+router.post(
+  "/nodes/:id/revisions",
+  requireAuth,
+  requirePermission("edit_content", (req) => req.params.id),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      const revisionId = await createRevision({
+        nodeId: id,
+        ...req.body,
+        authorId: req.user!.principalId,
+      });
+      const [revision] = await db
+        .select()
+        .from(contentRevisionsTable)
+        .where(eq(contentRevisionsTable.id, revisionId));
 
-router.post("/revisions/:id/publish", async (req, res) => {
-  try {
-    await publishRevision(
-      req.params.id,
-      req.body.versionLabel,
-      req.body.actorId,
-    );
-    const [revision] = await db
+      await db.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "revision_created",
+        actorId: req.user!.principalId,
+        resourceType: "content_revision",
+        resourceId: revisionId,
+      });
+
+      res.status(201).json(revision);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
+    }
+  },
+);
+
+router.get(
+  "/nodes/:id/revisions",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const revisions = await getVersionTree(id);
+    res.json(revisions);
+  },
+);
+
+router.post(
+  "/revisions/:id/publish",
+  requireAuth,
+  requirePermission("approve_page"),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      await publishRevision(id, req.body.versionLabel, req.user!.principalId);
+      const [revision] = await db
+        .select()
+        .from(contentRevisionsTable)
+        .where(eq(contentRevisionsTable.id, id));
+
+      await db.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "revision_published",
+        actorId: req.user!.principalId,
+        resourceType: "content_revision",
+        resourceId: id,
+        details: { versionLabel: req.body.versionLabel },
+      });
+
+      res.json(revision);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
+    }
+  },
+);
+
+router.post(
+  "/revisions/:id/restore",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      const newRevisionId = await restoreRevision(id, req.user!.principalId);
+      const [revision] = await db
+        .select()
+        .from(contentRevisionsTable)
+        .where(eq(contentRevisionsTable.id, newRevisionId));
+      res.status(201).json(revision);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
+    }
+  },
+);
+
+router.post(
+  "/relations",
+  requireAuth,
+  requirePermission("manage_relations"),
+  async (req, res) => {
+    try {
+      const relationId = await createRelation(req.body);
+      const [relation] = await db
+        .select()
+        .from(contentRelationsTable)
+        .where(eq(contentRelationsTable.id, relationId));
+
+      await db.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "relation_created",
+        actorId: req.user!.principalId,
+        resourceType: "content_relation",
+        resourceId: relationId,
+      });
+
+      res.status(201).json(relation);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
+    }
+  },
+);
+
+router.get(
+  "/nodes/:id/relations",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const relations = await getNodeRelations(id);
+    res.json(relations);
+  },
+);
+
+router.delete(
+  "/relations/:id",
+  requireAuth,
+  requirePermission("manage_relations"),
+  async (req, res) => {
+    const id = req.params.id as string;
+    await removeRelation(id);
+
+    await db.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "relation_deleted",
+      actorId: req.user!.principalId,
+      resourceType: "content_relation",
+      resourceId: id,
+    });
+
+    res.status(204).send();
+  },
+);
+
+router.get(
+  "/templates",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    const templates = await db
       .select()
-      .from(contentRevisionsTable)
-      .where(eq(contentRevisionsTable.id, req.params.id));
-    res.json(revision);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(400).json({ error: message });
-  }
-});
+      .from(contentTemplatesTable)
+      .where(eq(contentTemplatesTable.isActive, true));
+    res.json(templates);
+  },
+);
 
-router.post("/revisions/:id/restore", async (req, res) => {
-  try {
-    const newRevisionId = await restoreRevision(
-      req.params.id,
-      req.body.authorId,
-    );
-    const [revision] = await db
+router.get(
+  "/templates/:id",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const [template] = await db
       .select()
-      .from(contentRevisionsTable)
-      .where(eq(contentRevisionsTable.id, newRevisionId));
-    res.status(201).json(revision);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(400).json({ error: message });
-  }
-});
-
-router.post("/relations", async (req, res) => {
-  try {
-    const relationId = await createRelation(req.body);
-    const [relation] = await db
-      .select()
-      .from(contentRelationsTable)
-      .where(eq(contentRelationsTable.id, relationId));
-    res.status(201).json(relation);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(400).json({ error: message });
-  }
-});
-
-router.get("/nodes/:id/relations", async (req, res) => {
-  const relations = await getNodeRelations(req.params.id);
-  res.json(relations);
-});
-
-router.delete("/relations/:id", async (req, res) => {
-  await removeRelation(req.params.id);
-  res.status(204).send();
-});
-
-router.get("/templates", async (_req, res) => {
-  const templates = await db
-    .select()
-    .from(contentTemplatesTable)
-    .where(eq(contentTemplatesTable.isActive, true));
-  res.json(templates);
-});
-
-router.get("/templates/:id", async (req, res) => {
-  const [template] = await db
-    .select()
-    .from(contentTemplatesTable)
-    .where(eq(contentTemplatesTable.id, req.params.id));
-  if (!template) {
-    res.status(404).json({ error: "Template not found" });
-    return;
-  }
-  res.json(template);
-});
+      .from(contentTemplatesTable)
+      .where(eq(contentTemplatesTable.id, id));
+    if (!template) {
+      res.status(404).json({ error: "Template not found" });
+      return;
+    }
+    res.json(template);
+  },
+);
 
 export default router;

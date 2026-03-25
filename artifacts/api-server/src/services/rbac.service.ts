@@ -1,0 +1,261 @@
+import { db } from "@workspace/db";
+import {
+  roleAssignmentsTable,
+  pagePermissionsTable,
+  contentNodesTable,
+  nodeOwnershipTable,
+} from "@workspace/db/schema";
+import { eq, and, or, sql } from "drizzle-orm";
+import { logger } from "../lib/logger";
+
+export type WikiRole =
+  | "system_admin"
+  | "process_manager"
+  | "editor"
+  | "reviewer"
+  | "approver"
+  | "viewer"
+  | "compliance_manager";
+
+export type WikiPermission =
+  | "read_page"
+  | "create_page"
+  | "edit_content"
+  | "edit_structure"
+  | "manage_relations"
+  | "submit_for_review"
+  | "review_page"
+  | "approve_page"
+  | "archive_page"
+  | "manage_permissions"
+  | "manage_templates"
+  | "manage_settings"
+  | "view_audit_log";
+
+const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
+  system_admin: [
+    "read_page",
+    "create_page",
+    "edit_content",
+    "edit_structure",
+    "manage_relations",
+    "submit_for_review",
+    "review_page",
+    "approve_page",
+    "archive_page",
+    "manage_permissions",
+    "manage_templates",
+    "manage_settings",
+    "view_audit_log",
+  ],
+  process_manager: [
+    "read_page",
+    "create_page",
+    "edit_content",
+    "edit_structure",
+    "manage_relations",
+    "submit_for_review",
+    "archive_page",
+    "manage_permissions",
+    "view_audit_log",
+  ],
+  editor: [
+    "read_page",
+    "create_page",
+    "edit_content",
+    "manage_relations",
+    "submit_for_review",
+  ],
+  reviewer: ["read_page", "review_page", "view_audit_log"],
+  approver: ["read_page", "review_page", "approve_page", "view_audit_log"],
+  compliance_manager: [
+    "read_page",
+    "review_page",
+    "view_audit_log",
+    "manage_templates",
+  ],
+  viewer: ["read_page"],
+};
+
+export function getPermissionsForRole(role: WikiRole): WikiPermission[] {
+  return ROLE_PERMISSIONS[role] ?? [];
+}
+
+export function getRolePermissionMatrix(): Record<WikiRole, WikiPermission[]> {
+  return { ...ROLE_PERMISSIONS };
+}
+
+export async function getEffectivePermissions(
+  principalId: string,
+  nodeId?: string,
+): Promise<Set<WikiPermission>> {
+  const permissions = new Set<WikiPermission>();
+
+  const roles = await db
+    .select({ role: roleAssignmentsTable.role })
+    .from(roleAssignmentsTable)
+    .where(
+      and(
+        eq(roleAssignmentsTable.principalId, principalId),
+        eq(roleAssignmentsTable.isActive, true),
+      ),
+    );
+
+  for (const { role } of roles) {
+    const rolePerms = ROLE_PERMISSIONS[role as WikiRole];
+    if (rolePerms) {
+      for (const p of rolePerms) {
+        permissions.add(p);
+      }
+    }
+  }
+
+  if (nodeId) {
+    const pagePerms = await resolvePagePermissions(principalId, nodeId);
+    for (const p of pagePerms) {
+      permissions.add(p);
+    }
+  }
+
+  return permissions;
+}
+
+export async function hasPermission(
+  principalId: string,
+  permission: WikiPermission,
+  nodeId?: string,
+): Promise<boolean> {
+  const perms = await getEffectivePermissions(principalId, nodeId);
+  return perms.has(permission);
+}
+
+async function resolvePagePermissions(
+  principalId: string,
+  nodeId: string,
+): Promise<WikiPermission[]> {
+  const directPerms = await db
+    .select({ permission: pagePermissionsTable.permission })
+    .from(pagePermissionsTable)
+    .where(
+      and(
+        eq(pagePermissionsTable.nodeId, nodeId),
+        eq(pagePermissionsTable.principalId, principalId),
+      ),
+    );
+
+  if (directPerms.length > 0) {
+    return directPerms.map((p) => p.permission as WikiPermission);
+  }
+
+  const [node] = await db
+    .select({ parentNodeId: contentNodesTable.parentNodeId })
+    .from(contentNodesTable)
+    .where(eq(contentNodesTable.id, nodeId));
+
+  if (node?.parentNodeId) {
+    return resolvePagePermissions(principalId, node.parentNodeId);
+  }
+
+  return [];
+}
+
+export async function grantPagePermission(input: {
+  nodeId: string;
+  principalId: string;
+  permission: WikiPermission;
+  grantedBy?: string;
+}) {
+  const [existing] = await db
+    .select({ id: pagePermissionsTable.id })
+    .from(pagePermissionsTable)
+    .where(
+      and(
+        eq(pagePermissionsTable.nodeId, input.nodeId),
+        eq(pagePermissionsTable.principalId, input.principalId),
+        eq(pagePermissionsTable.permission, input.permission as "read_page"),
+      ),
+    );
+
+  if (existing) return existing.id;
+
+  const [perm] = await db
+    .insert(pagePermissionsTable)
+    .values({
+      nodeId: input.nodeId,
+      principalId: input.principalId,
+      permission: input.permission as "read_page",
+      grantedBy: input.grantedBy,
+    })
+    .returning({ id: pagePermissionsTable.id });
+
+  logger.info(
+    {
+      nodeId: input.nodeId,
+      principalId: input.principalId,
+      permission: input.permission,
+    },
+    "Page permission granted",
+  );
+  return perm.id;
+}
+
+export async function revokePagePermission(permissionId: string) {
+  await db
+    .delete(pagePermissionsTable)
+    .where(eq(pagePermissionsTable.id, permissionId));
+}
+
+export async function getPagePermissions(nodeId: string) {
+  return db
+    .select()
+    .from(pagePermissionsTable)
+    .where(eq(pagePermissionsTable.nodeId, nodeId));
+}
+
+export async function setNodeOwnership(input: {
+  nodeId: string;
+  ownerId: string;
+  deputyId?: string;
+  reviewerId?: string;
+  approverId?: string;
+}) {
+  const [existing] = await db
+    .select({ id: nodeOwnershipTable.id })
+    .from(nodeOwnershipTable)
+    .where(eq(nodeOwnershipTable.nodeId, input.nodeId));
+
+  if (existing) {
+    await db
+      .update(nodeOwnershipTable)
+      .set({
+        ownerId: input.ownerId,
+        deputyId: input.deputyId,
+        reviewerId: input.reviewerId,
+        approverId: input.approverId,
+        updatedAt: new Date(),
+      })
+      .where(eq(nodeOwnershipTable.id, existing.id));
+    return existing.id;
+  }
+
+  const [ownership] = await db
+    .insert(nodeOwnershipTable)
+    .values({
+      nodeId: input.nodeId,
+      ownerId: input.ownerId,
+      deputyId: input.deputyId,
+      reviewerId: input.reviewerId,
+      approverId: input.approverId,
+    })
+    .returning({ id: nodeOwnershipTable.id });
+
+  return ownership.id;
+}
+
+export async function getNodeOwnership(nodeId: string) {
+  const [ownership] = await db
+    .select()
+    .from(nodeOwnershipTable)
+    .where(eq(nodeOwnershipTable.nodeId, nodeId));
+  return ownership ?? null;
+}

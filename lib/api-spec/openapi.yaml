@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication and session operations
+  - name: principals
+    description: Principal (user/group) management
+  - name: rbac
+    description: Role-based access control
   - name: content
     description: Content node operations
   - name: revisions
@@ -38,6 +44,353 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    get:
+      operationId: authLogin
+      tags: [auth]
+      summary: Initiate SSO login
+      description: Redirects to Microsoft Entra ID login page. In dev mode, returns dev user list.
+      responses:
+        "302":
+          description: Redirect to Entra ID
+        "200":
+          description: Dev mode login info
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /auth/callback:
+    get:
+      operationId: authCallback
+      tags: [auth]
+      summary: SSO callback
+      description: Handles the Entra ID OAuth redirect, exchanges code for token, upserts principal, establishes session.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth authorization code
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Authentication failed
+
+  /auth/me:
+    get:
+      operationId: authMe
+      tags: [auth]
+      summary: Get current user
+      description: Returns the currently authenticated user info.
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+
+  /auth/logout:
+    post:
+      operationId: authLogout
+      tags: [auth]
+      summary: Logout
+      description: Destroys the session and logs out.
+      responses:
+        "200":
+          description: Logged out
+
+  /auth/dev-users:
+    get:
+      operationId: listDevUsers
+      tags: [auth]
+      summary: List dev users (dev mode only)
+      responses:
+        "200":
+          description: Dev user list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DevUser"
+        "404":
+          description: Not available in production
+
+  /principals:
+    get:
+      operationId: listPrincipals
+      tags: [principals]
+      summary: List or search principals
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search query
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of principals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Principal"
+
+  /principals/{principalId}:
+    get:
+      operationId: getPrincipal
+      tags: [principals]
+      summary: Get a principal by ID
+      parameters:
+        - $ref: "#/components/parameters/PrincipalId"
+      responses:
+        "200":
+          description: Principal with roles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrincipalWithRoles"
+        "404":
+          description: Not found
+
+  /principals/{principalId}/permissions:
+    get:
+      operationId: getPrincipalPermissions
+      tags: [rbac]
+      summary: Get effective permissions for a principal
+      parameters:
+        - $ref: "#/components/parameters/PrincipalId"
+        - name: nodeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Optional node ID for page-level permissions
+      responses:
+        "200":
+          description: Effective permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EffectivePermissions"
+
+  /principals/{principalId}/roles:
+    post:
+      operationId: assignRole
+      tags: [rbac]
+      summary: Assign a role to a principal
+      parameters:
+        - $ref: "#/components/parameters/PrincipalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignRoleInput"
+      responses:
+        "201":
+          description: Role assigned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignmentId:
+                    type: string
+                    format: uuid
+
+  /principals/{principalId}/roles/{assignmentId}:
+    delete:
+      operationId: revokeRole
+      tags: [rbac]
+      summary: Revoke a role assignment
+      parameters:
+        - $ref: "#/components/parameters/PrincipalId"
+        - name: assignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Role revoked
+
+  /rbac/matrix:
+    get:
+      operationId: getRolePermissionMatrix
+      tags: [rbac]
+      summary: Get the role-permission matrix
+      responses:
+        "200":
+          description: Role-permission matrix
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+
+  /graph/people:
+    get:
+      operationId: searchPeople
+      tags: [principals]
+      summary: Search people via Microsoft Graph
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: People results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GraphPerson"
+
+  /graph/groups:
+    get:
+      operationId: searchGroups
+      tags: [principals]
+      summary: Search groups via Microsoft Graph
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GraphGroup"
+
+  /content/nodes/{nodeId}/permissions:
+    get:
+      operationId: getPagePermissions
+      tags: [rbac]
+      summary: Get page-level permissions for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Page permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PagePermission"
+    post:
+      operationId: grantPagePermission
+      tags: [rbac]
+      summary: Grant a page-level permission
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantPagePermissionInput"
+      responses:
+        "201":
+          description: Permission granted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+
+  /content/nodes/{nodeId}/permissions/{permId}:
+    delete:
+      operationId: revokePagePermission
+      tags: [rbac]
+      summary: Revoke a page-level permission
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+        - name: permId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Permission revoked
+
+  /content/nodes/{nodeId}/ownership:
+    get:
+      operationId: getNodeOwnership
+      tags: [rbac]
+      summary: Get ownership info for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Node ownership
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NodeOwnership"
+    put:
+      operationId: setNodeOwnership
+      tags: [rbac]
+      summary: Set ownership for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetNodeOwnershipInput"
+      responses:
+        "200":
+          description: Ownership updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
 
   /content/nodes:
     get:
@@ -385,6 +738,13 @@ components:
         format: uuid
     TemplateId:
       name: templateId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PrincipalId:
+      name: principalId
       in: path
       required: true
       schema:
@@ -764,3 +1124,294 @@ components:
         - isActive
         - createdAt
         - updatedAt
+
+    AuthResult:
+      type: object
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+      required:
+        - principalId
+        - displayName
+
+    AuthUser:
+      type: object
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+      required:
+        - principalId
+        - displayName
+
+    DevUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+      required:
+        - id
+        - displayName
+        - email
+        - role
+
+    Principal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        principalType:
+          type: string
+          enum: [user, group, service_account]
+        displayName:
+          type: string
+        email:
+          type: string
+          nullable: true
+        upn:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [active, inactive, blocked]
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - externalId
+        - principalType
+        - displayName
+        - status
+        - createdAt
+        - updatedAt
+
+    PrincipalWithRoles:
+      allOf:
+        - $ref: "#/components/schemas/Principal"
+        - type: object
+          properties:
+            roles:
+              type: array
+              items:
+                $ref: "#/components/schemas/RoleAssignment"
+
+    RoleAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        principalId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum:
+            - system_admin
+            - process_manager
+            - editor
+            - reviewer
+            - approver
+            - compliance_manager
+            - viewer
+        scope:
+          type: string
+          nullable: true
+        grantedBy:
+          type: string
+          format: uuid
+        grantedAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - principalId
+        - role
+        - grantedAt
+
+    EffectivePermissions:
+      type: object
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
+        - principalId
+        - permissions
+
+    AssignRoleInput:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+            - system_admin
+            - process_manager
+            - editor
+            - reviewer
+            - approver
+            - compliance_manager
+            - viewer
+        scope:
+          type: string
+          nullable: true
+      required:
+        - role
+
+    PagePermission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        principalId:
+          type: string
+          format: uuid
+        permission:
+          type: string
+        grantedBy:
+          type: string
+          format: uuid
+        grantedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nodeId
+        - principalId
+        - permission
+        - grantedAt
+
+    GrantPagePermissionInput:
+      type: object
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        permission:
+          type: string
+      required:
+        - principalId
+        - permission
+
+    NodeOwnership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        deputyId:
+          type: string
+          format: uuid
+          nullable: true
+        reviewerId:
+          type: string
+          format: uuid
+          nullable: true
+        approverId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - nodeId
+
+    SetNodeOwnershipInput:
+      type: object
+      properties:
+        ownerId:
+          type: string
+          format: uuid
+        deputyId:
+          type: string
+          format: uuid
+          nullable: true
+        reviewerId:
+          type: string
+          format: uuid
+          nullable: true
+        approverId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - ownerId
+
+    GraphPerson:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        jobTitle:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+        - email
+
+    GraphGroup:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+          nullable: true
+        memberCount:
+          type: integer
+      required:
+        - id
+        - displayName

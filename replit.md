@@ -78,26 +78,34 @@ cd e2e && npx playwright test
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 
-Express 5 API server with structured logging, config validation, content management, and audit events.
+Express 5 API server with structured logging, config validation, content management, auth/RBAC, and audit events.
 
-- Entry: `src/index.ts` — uses validated config (Zod)
+- Entry: `src/index.ts` — uses validated config (Zod), seeds dev principals on startup
 - App: `src/app.ts` — correlation ID middleware, pinoHttp, CORS, routes at `/api`
-- Config: `src/lib/config.ts` — Zod schema for PORT, NODE_ENV, DATABASE_URL, LOG_LEVEL
+- Config: `src/lib/config.ts` — Zod schema for PORT, NODE_ENV, DATABASE_URL, LOG_LEVEL, AUTH_DEV_MODE, Entra ID config
 - Logger: `src/lib/logger.ts` — pino with redaction
 - Audit: `src/lib/audit.ts` — persistent audit event logging
 - Middlewares: `src/middlewares/correlation-id.ts` — request correlation IDs
+- Middlewares: `src/middlewares/require-auth.ts` — authentication gate (dev mode + Entra SSO)
+- Middlewares: `src/middlewares/require-permission.ts` — RBAC permission gate
 - Routes: `src/routes/health.ts` — `GET /api/healthz` with DB connectivity check
-- Routes: `src/routes/content.ts` — Content CRUD, revisions, relations, templates (17 endpoints)
+- Routes: `src/routes/auth.ts` — login, callback, me, logout, dev-users (5 endpoints)
+- Routes: `src/routes/principals.ts` — principal CRUD, role mgmt, page perms, ownership (12 endpoints)
+- Routes: `src/routes/content.ts` — Content CRUD, revisions, relations, templates (17 endpoints, all auth-guarded)
 - Services: `src/services/identity.service.ts` — Dual ID system (immutable_id + display_code)
 - Services: `src/services/revision.service.ts` — Revision/version lifecycle
 - Services: `src/services/graph.service.ts` — Graph relations with cycle detection
+- Services: `src/services/auth.service.ts` — Microsoft Entra ID OIDC + dev mode with 5 dev users
+- Services: `src/services/graph-client.service.ts` — Microsoft Graph API wrapper with caching + dev mock
+- Services: `src/services/principal.service.ts` — Principal upsert, search, role assignment
+- Services: `src/services/rbac.service.ts` — 7-role→13-permission matrix, page-level permissions, ownership
 
 ### `lib/db` (`@workspace/db`)
 
 Database layer using Drizzle ORM with PostgreSQL.
 
 - `src/index.ts` — Pool + Drizzle instance
-- `src/schema/enums.ts` — PostgreSQL enums (node_status, change_type, relation_type, etc.)
+- `src/schema/enums.ts` — PostgreSQL enums (node_status, change_type, relation_type, principal_type, wiki_role, wiki_permission, etc.)
 - `src/schema/content-templates.ts` — 10 page type definitions
 - `src/schema/content-nodes.ts` — Stable content objects with dual IDs
 - `src/schema/content-revisions.ts` — Immutable content snapshots + lifecycle events
@@ -106,6 +114,7 @@ Database layer using Drizzle ORM with PostgreSQL.
 - `src/schema/content-tags.ts` — Tags + junction table
 - `src/schema/media-assets.ts` — File attachments
 - `src/schema/audit-events.ts` — Audit trail
+- `src/schema/principals.ts` — Principals, role assignments, page permissions, node ownership
 - `src/seed.ts` — Example seed data
 - Push: `pnpm --filter @workspace/db run push`
 - Seed: `npx -p tsx tsx lib/db/src/seed.ts`

@@ -17,6 +17,279 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * Redirects to Microsoft Entra ID login page. In dev mode, returns dev user list.
+ * @summary Initiate SSO login
+ */
+export const AuthLoginResponse = zod.object({}).passthrough();
+
+/**
+ * Handles the Entra ID OAuth redirect, exchanges code for token, upserts principal, establishes session.
+ * @summary SSO callback
+ */
+export const AuthCallbackQueryParams = zod.object({
+  code: zod.coerce.string().describe("OAuth authorization code"),
+});
+
+export const AuthCallbackResponse = zod.object({
+  principalId: zod.string().uuid(),
+  displayName: zod.string(),
+});
+
+/**
+ * Returns the currently authenticated user info.
+ * @summary Get current user
+ */
+export const AuthMeResponse = zod.object({
+  principalId: zod.string().uuid(),
+  externalId: zod.string().optional(),
+  displayName: zod.string(),
+  email: zod.string().optional(),
+});
+
+/**
+ * @summary List dev users (dev mode only)
+ */
+export const ListDevUsersResponseItem = zod.object({
+  id: zod.string().uuid(),
+  displayName: zod.string(),
+  email: zod.string(),
+  role: zod.string(),
+});
+export const ListDevUsersResponse = zod.array(ListDevUsersResponseItem);
+
+/**
+ * @summary List or search principals
+ */
+export const listPrincipalsQueryLimitDefault = 50;
+export const listPrincipalsQueryOffsetDefault = 0;
+
+export const ListPrincipalsQueryParams = zod.object({
+  q: zod.coerce.string().optional().describe("Search query"),
+  limit: zod.coerce.number().default(listPrincipalsQueryLimitDefault),
+  offset: zod.coerce.number().default(listPrincipalsQueryOffsetDefault),
+});
+
+export const ListPrincipalsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  externalId: zod.string(),
+  principalType: zod.enum(["user", "group", "service_account"]),
+  displayName: zod.string(),
+  email: zod.string().nullish(),
+  upn: zod.string().nullish(),
+  status: zod.enum(["active", "inactive", "blocked"]),
+  lastLoginAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListPrincipalsResponse = zod.array(ListPrincipalsResponseItem);
+
+/**
+ * @summary Get a principal by ID
+ */
+export const GetPrincipalParams = zod.object({
+  principalId: zod.coerce.string().uuid(),
+});
+
+export const GetPrincipalResponse = zod
+  .object({
+    id: zod.string().uuid(),
+    externalId: zod.string(),
+    principalType: zod.enum(["user", "group", "service_account"]),
+    displayName: zod.string(),
+    email: zod.string().nullish(),
+    upn: zod.string().nullish(),
+    status: zod.enum(["active", "inactive", "blocked"]),
+    lastLoginAt: zod.date().nullish(),
+    createdAt: zod.date(),
+    updatedAt: zod.date(),
+  })
+  .and(
+    zod.object({
+      roles: zod
+        .array(
+          zod.object({
+            id: zod.string().uuid(),
+            principalId: zod.string().uuid(),
+            role: zod.enum([
+              "system_admin",
+              "process_manager",
+              "editor",
+              "reviewer",
+              "approver",
+              "compliance_manager",
+              "viewer",
+            ]),
+            scope: zod.string().nullish(),
+            grantedBy: zod.string().uuid().optional(),
+            grantedAt: zod.date(),
+            revokedAt: zod.date().nullish(),
+          }),
+        )
+        .optional(),
+    }),
+  );
+
+/**
+ * @summary Get effective permissions for a principal
+ */
+export const GetPrincipalPermissionsParams = zod.object({
+  principalId: zod.coerce.string().uuid(),
+});
+
+export const GetPrincipalPermissionsQueryParams = zod.object({
+  nodeId: zod.coerce
+    .string()
+    .uuid()
+    .optional()
+    .describe("Optional node ID for page-level permissions"),
+});
+
+export const GetPrincipalPermissionsResponse = zod.object({
+  principalId: zod.string().uuid(),
+  permissions: zod.array(zod.string()),
+});
+
+/**
+ * @summary Assign a role to a principal
+ */
+export const AssignRoleParams = zod.object({
+  principalId: zod.coerce.string().uuid(),
+});
+
+export const AssignRoleBody = zod.object({
+  role: zod.enum([
+    "system_admin",
+    "process_manager",
+    "editor",
+    "reviewer",
+    "approver",
+    "compliance_manager",
+    "viewer",
+  ]),
+  scope: zod.string().nullish(),
+});
+
+/**
+ * @summary Revoke a role assignment
+ */
+export const RevokeRoleParams = zod.object({
+  principalId: zod.coerce.string().uuid(),
+  assignmentId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Get the role-permission matrix
+ */
+export const GetRolePermissionMatrixResponse = zod.record(
+  zod.string(),
+  zod.array(zod.string()),
+);
+
+/**
+ * @summary Search people via Microsoft Graph
+ */
+export const SearchPeopleQueryParams = zod.object({
+  q: zod.coerce.string(),
+});
+
+export const SearchPeopleResponseItem = zod.object({
+  id: zod.string(),
+  displayName: zod.string(),
+  email: zod.string(),
+  jobTitle: zod.string().nullish(),
+  department: zod.string().nullish(),
+});
+export const SearchPeopleResponse = zod.array(SearchPeopleResponseItem);
+
+/**
+ * @summary Search groups via Microsoft Graph
+ */
+export const SearchGroupsQueryParams = zod.object({
+  q: zod.coerce.string(),
+});
+
+export const SearchGroupsResponseItem = zod.object({
+  id: zod.string(),
+  displayName: zod.string(),
+  description: zod.string().nullish(),
+  memberCount: zod.number().optional(),
+});
+export const SearchGroupsResponse = zod.array(SearchGroupsResponseItem);
+
+/**
+ * @summary Get page-level permissions for a node
+ */
+export const GetPagePermissionsParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetPagePermissionsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  principalId: zod.string().uuid(),
+  permission: zod.string(),
+  grantedBy: zod.string().uuid().optional(),
+  grantedAt: zod.date(),
+});
+export const GetPagePermissionsResponse = zod.array(
+  GetPagePermissionsResponseItem,
+);
+
+/**
+ * @summary Grant a page-level permission
+ */
+export const GrantPagePermissionParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GrantPagePermissionBody = zod.object({
+  principalId: zod.string().uuid(),
+  permission: zod.string(),
+});
+
+/**
+ * @summary Revoke a page-level permission
+ */
+export const RevokePagePermissionParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+  permId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Get ownership info for a node
+ */
+export const GetNodeOwnershipParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeOwnershipResponse = zod.object({
+  id: zod.string().uuid().optional(),
+  nodeId: zod.string().uuid(),
+  ownerId: zod.string().uuid().optional(),
+  deputyId: zod.string().uuid().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  approverId: zod.string().uuid().nullish(),
+});
+
+/**
+ * @summary Set ownership for a node
+ */
+export const SetNodeOwnershipParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const SetNodeOwnershipBody = zod.object({
+  ownerId: zod.string().uuid(),
+  deputyId: zod.string().uuid().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  approverId: zod.string().uuid().nullish(),
+});
+
+export const SetNodeOwnershipResponse = zod.object({
+  id: zod.string().uuid().optional(),
+});
+
+/**
  * @summary List all content nodes
  */
 export const ListNodesResponseItem = zod.object({

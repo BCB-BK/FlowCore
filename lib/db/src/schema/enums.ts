@@ -55,6 +55,44 @@ export const approvalDecisionEnum = pgEnum("approval_decision", [
   "returned_for_changes",
 ]);
 
+export const principalTypeEnum = pgEnum("principal_type", [
+  "user",
+  "group",
+  "service_principal",
+]);
+
+export const principalStatusEnum = pgEnum("principal_status", [
+  "active",
+  "inactive",
+  "blocked",
+]);
+
+export const wikiRoleEnum = pgEnum("wiki_role", [
+  "system_admin",
+  "process_manager",
+  "editor",
+  "reviewer",
+  "approver",
+  "viewer",
+  "compliance_manager",
+]);
+
+export const wikiPermissionEnum = pgEnum("wiki_permission", [
+  "read_page",
+  "create_page",
+  "edit_content",
+  "edit_structure",
+  "manage_relations",
+  "submit_for_review",
+  "review_page",
+  "approve_page",
+  "archive_page",
+  "manage_permissions",
+  "manage_templates",
+  "manage_settings",
+  "view_audit_log",
+]);
+
 export const revisionEventTypeEnum = pgEnum("revision_event_type", [
   "created",
   "submitted_for_review",

@@ -9,6 +9,9 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
+    extraHTTPHeaders: {
+      "X-Dev-Principal-Id": "00000000-0000-0000-0000-000000000001",
+    },
   },
   outputDir: "./test-results",
   reporter: [["list"], ["html", { outputFolder: "./playwright-report" }]],

@@ -259,3 +259,195 @@ export interface ContentTemplate {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface AuthResult {
+  principalId: string;
+  displayName: string;
+}
+
+export interface AuthUser {
+  principalId: string;
+  externalId?: string;
+  displayName: string;
+  email?: string;
+}
+
+export interface DevUser {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+}
+
+export type PrincipalPrincipalType =
+  (typeof PrincipalPrincipalType)[keyof typeof PrincipalPrincipalType];
+
+export const PrincipalPrincipalType = {
+  user: "user",
+  group: "group",
+  service_account: "service_account",
+} as const;
+
+export type PrincipalStatus =
+  (typeof PrincipalStatus)[keyof typeof PrincipalStatus];
+
+export const PrincipalStatus = {
+  active: "active",
+  inactive: "inactive",
+  blocked: "blocked",
+} as const;
+
+export interface Principal {
+  id: string;
+  externalId: string;
+  principalType: PrincipalPrincipalType;
+  displayName: string;
+  email?: string | null;
+  upn?: string | null;
+  status: PrincipalStatus;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type RoleAssignmentRole =
+  (typeof RoleAssignmentRole)[keyof typeof RoleAssignmentRole];
+
+export const RoleAssignmentRole = {
+  system_admin: "system_admin",
+  process_manager: "process_manager",
+  editor: "editor",
+  reviewer: "reviewer",
+  approver: "approver",
+  compliance_manager: "compliance_manager",
+  viewer: "viewer",
+} as const;
+
+export interface RoleAssignment {
+  id: string;
+  principalId: string;
+  role: RoleAssignmentRole;
+  scope?: string | null;
+  grantedBy?: string;
+  grantedAt: string;
+  revokedAt?: string | null;
+}
+
+export type PrincipalWithRoles = Principal & {
+  roles?: RoleAssignment[];
+};
+
+export interface EffectivePermissions {
+  principalId: string;
+  permissions: string[];
+}
+
+export type AssignRoleInputRole =
+  (typeof AssignRoleInputRole)[keyof typeof AssignRoleInputRole];
+
+export const AssignRoleInputRole = {
+  system_admin: "system_admin",
+  process_manager: "process_manager",
+  editor: "editor",
+  reviewer: "reviewer",
+  approver: "approver",
+  compliance_manager: "compliance_manager",
+  viewer: "viewer",
+} as const;
+
+export interface AssignRoleInput {
+  role: AssignRoleInputRole;
+  scope?: string | null;
+}
+
+export interface PagePermission {
+  id: string;
+  nodeId: string;
+  principalId: string;
+  permission: string;
+  grantedBy?: string;
+  grantedAt: string;
+}
+
+export interface GrantPagePermissionInput {
+  principalId: string;
+  permission: string;
+}
+
+export interface NodeOwnership {
+  id?: string;
+  nodeId: string;
+  ownerId?: string;
+  deputyId?: string | null;
+  reviewerId?: string | null;
+  approverId?: string | null;
+}
+
+export interface SetNodeOwnershipInput {
+  ownerId: string;
+  deputyId?: string | null;
+  reviewerId?: string | null;
+  approverId?: string | null;
+}
+
+export interface GraphPerson {
+  id: string;
+  displayName: string;
+  email: string;
+  jobTitle?: string | null;
+  department?: string | null;
+}
+
+export interface GraphGroup {
+  id: string;
+  displayName: string;
+  description?: string | null;
+  memberCount?: number;
+}
+
+export type AuthLogin200 = { [key: string]: unknown };
+
+export type AuthCallbackParams = {
+  /**
+   * OAuth authorization code
+   */
+  code: string;
+};
+
+export type ListPrincipalsParams = {
+  /**
+   * Search query
+   */
+  q?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type GetPrincipalPermissionsParams = {
+  /**
+   * Optional node ID for page-level permissions
+   */
+  nodeId?: string;
+};
+
+export type AssignRole201 = {
+  assignmentId?: string;
+};
+
+export type GetRolePermissionMatrix200 = { [key: string]: string[] };
+
+export type SearchPeopleParams = {
+  q: string;
+};
+
+export type SearchGroupsParams = {
+  q: string;
+};
+
+export type GrantPagePermission201 = {
+  id?: string;
+};
+
+export type SetNodeOwnership200 = {
+  id?: string;
+};

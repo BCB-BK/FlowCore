@@ -17,6 +17,12 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AssignRole201,
+  AssignRoleInput,
+  AuthCallbackParams,
+  AuthLogin200,
+  AuthResult,
+  AuthUser,
   ContentAlias,
   ContentNode,
   ContentRelation,
@@ -25,11 +31,28 @@ import type {
   CreateNodeInput,
   CreateRelationInput,
   CreateRevisionInput,
+  DevUser,
+  EffectivePermissions,
   ErrorResponse,
+  GetPrincipalPermissionsParams,
+  GetRolePermissionMatrix200,
+  GrantPagePermission201,
+  GrantPagePermissionInput,
+  GraphGroup,
+  GraphPerson,
   HealthStatus,
+  ListPrincipalsParams,
   MoveNodeInput,
+  NodeOwnership,
+  PagePermission,
+  Principal,
+  PrincipalWithRoles,
   PublishRevisionInput,
   RestoreRevisionInput,
+  SearchGroupsParams,
+  SearchPeopleParams,
+  SetNodeOwnership200,
+  SetNodeOwnershipInput,
   TreeNode,
 } from "./api.schemas";
 
@@ -117,6 +140,1569 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Redirects to Microsoft Entra ID login page. In dev mode, returns dev user list.
+ * @summary Initiate SSO login
+ */
+export const getAuthLoginUrl = () => {
+  return `/api/auth/login`;
+};
+
+export const authLogin = async (
+  options?: RequestInit,
+): Promise<AuthLogin200> => {
+  return customFetch<AuthLogin200>(getAuthLoginUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAuthLoginQueryKey = () => {
+  return [`/api/auth/login`] as const;
+};
+
+export const getAuthLoginQueryOptions = <
+  TData = Awaited<ReturnType<typeof authLogin>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof authLogin>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAuthLoginQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof authLogin>>> = ({
+    signal,
+  }) => authLogin({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof authLogin>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AuthLoginQueryResult = NonNullable<
+  Awaited<ReturnType<typeof authLogin>>
+>;
+export type AuthLoginQueryError = ErrorType<void>;
+
+/**
+ * @summary Initiate SSO login
+ */
+
+export function useAuthLogin<
+  TData = Awaited<ReturnType<typeof authLogin>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof authLogin>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAuthLoginQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Handles the Entra ID OAuth redirect, exchanges code for token, upserts principal, establishes session.
+ * @summary SSO callback
+ */
+export const getAuthCallbackUrl = (params: AuthCallbackParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/auth/callback?${stringifiedParams}`
+    : `/api/auth/callback`;
+};
+
+export const authCallback = async (
+  params: AuthCallbackParams,
+  options?: RequestInit,
+): Promise<AuthResult> => {
+  return customFetch<AuthResult>(getAuthCallbackUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAuthCallbackQueryKey = (params?: AuthCallbackParams) => {
+  return [`/api/auth/callback`, ...(params ? [params] : [])] as const;
+};
+
+export const getAuthCallbackQueryOptions = <
+  TData = Awaited<ReturnType<typeof authCallback>>,
+  TError = ErrorType<void>,
+>(
+  params: AuthCallbackParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof authCallback>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAuthCallbackQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof authCallback>>> = ({
+    signal,
+  }) => authCallback(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof authCallback>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AuthCallbackQueryResult = NonNullable<
+  Awaited<ReturnType<typeof authCallback>>
+>;
+export type AuthCallbackQueryError = ErrorType<void>;
+
+/**
+ * @summary SSO callback
+ */
+
+export function useAuthCallback<
+  TData = Awaited<ReturnType<typeof authCallback>>,
+  TError = ErrorType<void>,
+>(
+  params: AuthCallbackParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof authCallback>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAuthCallbackQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns the currently authenticated user info.
+ * @summary Get current user
+ */
+export const getAuthMeUrl = () => {
+  return `/api/auth/me`;
+};
+
+export const authMe = async (options?: RequestInit): Promise<AuthUser> => {
+  return customFetch<AuthUser>(getAuthMeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAuthMeQueryKey = () => {
+  return [`/api/auth/me`] as const;
+};
+
+export const getAuthMeQueryOptions = <
+  TData = Awaited<ReturnType<typeof authMe>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof authMe>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAuthMeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof authMe>>> = ({
+    signal,
+  }) => authMe({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof authMe>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AuthMeQueryResult = NonNullable<Awaited<ReturnType<typeof authMe>>>;
+export type AuthMeQueryError = ErrorType<void>;
+
+/**
+ * @summary Get current user
+ */
+
+export function useAuthMe<
+  TData = Awaited<ReturnType<typeof authMe>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof authMe>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAuthMeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Destroys the session and logs out.
+ * @summary Logout
+ */
+export const getAuthLogoutUrl = () => {
+  return `/api/auth/logout`;
+};
+
+export const authLogout = async (options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getAuthLogoutUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAuthLogoutMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof authLogout>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof authLogout>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["authLogout"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof authLogout>>,
+    void
+  > = () => {
+    return authLogout(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AuthLogoutMutationResult = NonNullable<
+  Awaited<ReturnType<typeof authLogout>>
+>;
+
+export type AuthLogoutMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Logout
+ */
+export const useAuthLogout = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof authLogout>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof authLogout>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getAuthLogoutMutationOptions(options));
+};
+
+/**
+ * @summary List dev users (dev mode only)
+ */
+export const getListDevUsersUrl = () => {
+  return `/api/auth/dev-users`;
+};
+
+export const listDevUsers = async (
+  options?: RequestInit,
+): Promise<DevUser[]> => {
+  return customFetch<DevUser[]>(getListDevUsersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListDevUsersQueryKey = () => {
+  return [`/api/auth/dev-users`] as const;
+};
+
+export const getListDevUsersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listDevUsers>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listDevUsers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListDevUsersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listDevUsers>>> = ({
+    signal,
+  }) => listDevUsers({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listDevUsers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListDevUsersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listDevUsers>>
+>;
+export type ListDevUsersQueryError = ErrorType<void>;
+
+/**
+ * @summary List dev users (dev mode only)
+ */
+
+export function useListDevUsers<
+  TData = Awaited<ReturnType<typeof listDevUsers>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listDevUsers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListDevUsersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List or search principals
+ */
+export const getListPrincipalsUrl = (params?: ListPrincipalsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/principals?${stringifiedParams}`
+    : `/api/principals`;
+};
+
+export const listPrincipals = async (
+  params?: ListPrincipalsParams,
+  options?: RequestInit,
+): Promise<Principal[]> => {
+  return customFetch<Principal[]>(getListPrincipalsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListPrincipalsQueryKey = (params?: ListPrincipalsParams) => {
+  return [`/api/principals`, ...(params ? [params] : [])] as const;
+};
+
+export const getListPrincipalsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPrincipals>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListPrincipalsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listPrincipals>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListPrincipalsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPrincipals>>> = ({
+    signal,
+  }) => listPrincipals(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPrincipals>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListPrincipalsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPrincipals>>
+>;
+export type ListPrincipalsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List or search principals
+ */
+
+export function useListPrincipals<
+  TData = Awaited<ReturnType<typeof listPrincipals>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListPrincipalsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listPrincipals>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListPrincipalsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a principal by ID
+ */
+export const getGetPrincipalUrl = (principalId: string) => {
+  return `/api/principals/${principalId}`;
+};
+
+export const getPrincipal = async (
+  principalId: string,
+  options?: RequestInit,
+): Promise<PrincipalWithRoles> => {
+  return customFetch<PrincipalWithRoles>(getGetPrincipalUrl(principalId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPrincipalQueryKey = (principalId: string) => {
+  return [`/api/principals/${principalId}`] as const;
+};
+
+export const getGetPrincipalQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPrincipal>>,
+  TError = ErrorType<void>,
+>(
+  principalId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrincipal>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPrincipalQueryKey(principalId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPrincipal>>> = ({
+    signal,
+  }) => getPrincipal(principalId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!principalId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPrincipal>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPrincipalQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPrincipal>>
+>;
+export type GetPrincipalQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a principal by ID
+ */
+
+export function useGetPrincipal<
+  TData = Awaited<ReturnType<typeof getPrincipal>>,
+  TError = ErrorType<void>,
+>(
+  principalId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrincipal>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPrincipalQueryOptions(principalId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get effective permissions for a principal
+ */
+export const getGetPrincipalPermissionsUrl = (
+  principalId: string,
+  params?: GetPrincipalPermissionsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/principals/${principalId}/permissions?${stringifiedParams}`
+    : `/api/principals/${principalId}/permissions`;
+};
+
+export const getPrincipalPermissions = async (
+  principalId: string,
+  params?: GetPrincipalPermissionsParams,
+  options?: RequestInit,
+): Promise<EffectivePermissions> => {
+  return customFetch<EffectivePermissions>(
+    getGetPrincipalPermissionsUrl(principalId, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetPrincipalPermissionsQueryKey = (
+  principalId: string,
+  params?: GetPrincipalPermissionsParams,
+) => {
+  return [
+    `/api/principals/${principalId}/permissions`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetPrincipalPermissionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPrincipalPermissions>>,
+  TError = ErrorType<unknown>,
+>(
+  principalId: string,
+  params?: GetPrincipalPermissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrincipalPermissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetPrincipalPermissionsQueryKey(principalId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPrincipalPermissions>>
+  > = ({ signal }) =>
+    getPrincipalPermissions(principalId, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!principalId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPrincipalPermissions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPrincipalPermissionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPrincipalPermissions>>
+>;
+export type GetPrincipalPermissionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get effective permissions for a principal
+ */
+
+export function useGetPrincipalPermissions<
+  TData = Awaited<ReturnType<typeof getPrincipalPermissions>>,
+  TError = ErrorType<unknown>,
+>(
+  principalId: string,
+  params?: GetPrincipalPermissionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrincipalPermissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPrincipalPermissionsQueryOptions(
+    principalId,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Assign a role to a principal
+ */
+export const getAssignRoleUrl = (principalId: string) => {
+  return `/api/principals/${principalId}/roles`;
+};
+
+export const assignRole = async (
+  principalId: string,
+  assignRoleInput: AssignRoleInput,
+  options?: RequestInit,
+): Promise<AssignRole201> => {
+  return customFetch<AssignRole201>(getAssignRoleUrl(principalId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(assignRoleInput),
+  });
+};
+
+export const getAssignRoleMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof assignRole>>,
+    TError,
+    { principalId: string; data: BodyType<AssignRoleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof assignRole>>,
+  TError,
+  { principalId: string; data: BodyType<AssignRoleInput> },
+  TContext
+> => {
+  const mutationKey = ["assignRole"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof assignRole>>,
+    { principalId: string; data: BodyType<AssignRoleInput> }
+  > = (props) => {
+    const { principalId, data } = props ?? {};
+
+    return assignRole(principalId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AssignRoleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof assignRole>>
+>;
+export type AssignRoleMutationBody = BodyType<AssignRoleInput>;
+export type AssignRoleMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Assign a role to a principal
+ */
+export const useAssignRole = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof assignRole>>,
+    TError,
+    { principalId: string; data: BodyType<AssignRoleInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof assignRole>>,
+  TError,
+  { principalId: string; data: BodyType<AssignRoleInput> },
+  TContext
+> => {
+  return useMutation(getAssignRoleMutationOptions(options));
+};
+
+/**
+ * @summary Revoke a role assignment
+ */
+export const getRevokeRoleUrl = (principalId: string, assignmentId: string) => {
+  return `/api/principals/${principalId}/roles/${assignmentId}`;
+};
+
+export const revokeRole = async (
+  principalId: string,
+  assignmentId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRevokeRoleUrl(principalId, assignmentId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRevokeRoleMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokeRole>>,
+    TError,
+    { principalId: string; assignmentId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof revokeRole>>,
+  TError,
+  { principalId: string; assignmentId: string },
+  TContext
+> => {
+  const mutationKey = ["revokeRole"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof revokeRole>>,
+    { principalId: string; assignmentId: string }
+  > = (props) => {
+    const { principalId, assignmentId } = props ?? {};
+
+    return revokeRole(principalId, assignmentId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RevokeRoleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof revokeRole>>
+>;
+
+export type RevokeRoleMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Revoke a role assignment
+ */
+export const useRevokeRole = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokeRole>>,
+    TError,
+    { principalId: string; assignmentId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof revokeRole>>,
+  TError,
+  { principalId: string; assignmentId: string },
+  TContext
+> => {
+  return useMutation(getRevokeRoleMutationOptions(options));
+};
+
+/**
+ * @summary Get the role-permission matrix
+ */
+export const getGetRolePermissionMatrixUrl = () => {
+  return `/api/rbac/matrix`;
+};
+
+export const getRolePermissionMatrix = async (
+  options?: RequestInit,
+): Promise<GetRolePermissionMatrix200> => {
+  return customFetch<GetRolePermissionMatrix200>(
+    getGetRolePermissionMatrixUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetRolePermissionMatrixQueryKey = () => {
+  return [`/api/rbac/matrix`] as const;
+};
+
+export const getGetRolePermissionMatrixQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRolePermissionMatrix>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRolePermissionMatrix>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRolePermissionMatrixQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRolePermissionMatrix>>
+  > = ({ signal }) => getRolePermissionMatrix({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRolePermissionMatrix>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRolePermissionMatrixQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRolePermissionMatrix>>
+>;
+export type GetRolePermissionMatrixQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the role-permission matrix
+ */
+
+export function useGetRolePermissionMatrix<
+  TData = Awaited<ReturnType<typeof getRolePermissionMatrix>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRolePermissionMatrix>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRolePermissionMatrixQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Search people via Microsoft Graph
+ */
+export const getSearchPeopleUrl = (params: SearchPeopleParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/graph/people?${stringifiedParams}`
+    : `/api/graph/people`;
+};
+
+export const searchPeople = async (
+  params: SearchPeopleParams,
+  options?: RequestInit,
+): Promise<GraphPerson[]> => {
+  return customFetch<GraphPerson[]>(getSearchPeopleUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getSearchPeopleQueryKey = (params?: SearchPeopleParams) => {
+  return [`/api/graph/people`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchPeopleQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchPeople>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchPeopleParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchPeople>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchPeopleQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchPeople>>> = ({
+    signal,
+  }) => searchPeople(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchPeople>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type SearchPeopleQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchPeople>>
+>;
+export type SearchPeopleQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Search people via Microsoft Graph
+ */
+
+export function useSearchPeople<
+  TData = Awaited<ReturnType<typeof searchPeople>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchPeopleParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchPeople>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getSearchPeopleQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Search groups via Microsoft Graph
+ */
+export const getSearchGroupsUrl = (params: SearchGroupsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/graph/groups?${stringifiedParams}`
+    : `/api/graph/groups`;
+};
+
+export const searchGroups = async (
+  params: SearchGroupsParams,
+  options?: RequestInit,
+): Promise<GraphGroup[]> => {
+  return customFetch<GraphGroup[]>(getSearchGroupsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getSearchGroupsQueryKey = (params?: SearchGroupsParams) => {
+  return [`/api/graph/groups`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchGroupsQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchGroups>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchGroupsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchGroups>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchGroupsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchGroups>>> = ({
+    signal,
+  }) => searchGroups(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchGroups>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type SearchGroupsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchGroups>>
+>;
+export type SearchGroupsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Search groups via Microsoft Graph
+ */
+
+export function useSearchGroups<
+  TData = Awaited<ReturnType<typeof searchGroups>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchGroupsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchGroups>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getSearchGroupsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get page-level permissions for a node
+ */
+export const getGetPagePermissionsUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/permissions`;
+};
+
+export const getPagePermissions = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<PagePermission[]> => {
+  return customFetch<PagePermission[]>(getGetPagePermissionsUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPagePermissionsQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/permissions`] as const;
+};
+
+export const getGetPagePermissionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPagePermissions>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPagePermissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPagePermissionsQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPagePermissions>>
+  > = ({ signal }) => getPagePermissions(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPagePermissions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPagePermissionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPagePermissions>>
+>;
+export type GetPagePermissionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get page-level permissions for a node
+ */
+
+export function useGetPagePermissions<
+  TData = Awaited<ReturnType<typeof getPagePermissions>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPagePermissions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPagePermissionsQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Grant a page-level permission
+ */
+export const getGrantPagePermissionUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/permissions`;
+};
+
+export const grantPagePermission = async (
+  nodeId: string,
+  grantPagePermissionInput: GrantPagePermissionInput,
+  options?: RequestInit,
+): Promise<GrantPagePermission201> => {
+  return customFetch<GrantPagePermission201>(
+    getGrantPagePermissionUrl(nodeId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(grantPagePermissionInput),
+    },
+  );
+};
+
+export const getGrantPagePermissionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof grantPagePermission>>,
+    TError,
+    { nodeId: string; data: BodyType<GrantPagePermissionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof grantPagePermission>>,
+  TError,
+  { nodeId: string; data: BodyType<GrantPagePermissionInput> },
+  TContext
+> => {
+  const mutationKey = ["grantPagePermission"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof grantPagePermission>>,
+    { nodeId: string; data: BodyType<GrantPagePermissionInput> }
+  > = (props) => {
+    const { nodeId, data } = props ?? {};
+
+    return grantPagePermission(nodeId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GrantPagePermissionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof grantPagePermission>>
+>;
+export type GrantPagePermissionMutationBody =
+  BodyType<GrantPagePermissionInput>;
+export type GrantPagePermissionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Grant a page-level permission
+ */
+export const useGrantPagePermission = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof grantPagePermission>>,
+    TError,
+    { nodeId: string; data: BodyType<GrantPagePermissionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof grantPagePermission>>,
+  TError,
+  { nodeId: string; data: BodyType<GrantPagePermissionInput> },
+  TContext
+> => {
+  return useMutation(getGrantPagePermissionMutationOptions(options));
+};
+
+/**
+ * @summary Revoke a page-level permission
+ */
+export const getRevokePagePermissionUrl = (nodeId: string, permId: string) => {
+  return `/api/content/nodes/${nodeId}/permissions/${permId}`;
+};
+
+export const revokePagePermission = async (
+  nodeId: string,
+  permId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRevokePagePermissionUrl(nodeId, permId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRevokePagePermissionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokePagePermission>>,
+    TError,
+    { nodeId: string; permId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof revokePagePermission>>,
+  TError,
+  { nodeId: string; permId: string },
+  TContext
+> => {
+  const mutationKey = ["revokePagePermission"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof revokePagePermission>>,
+    { nodeId: string; permId: string }
+  > = (props) => {
+    const { nodeId, permId } = props ?? {};
+
+    return revokePagePermission(nodeId, permId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RevokePagePermissionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof revokePagePermission>>
+>;
+
+export type RevokePagePermissionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Revoke a page-level permission
+ */
+export const useRevokePagePermission = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof revokePagePermission>>,
+    TError,
+    { nodeId: string; permId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof revokePagePermission>>,
+  TError,
+  { nodeId: string; permId: string },
+  TContext
+> => {
+  return useMutation(getRevokePagePermissionMutationOptions(options));
+};
+
+/**
+ * @summary Get ownership info for a node
+ */
+export const getGetNodeOwnershipUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/ownership`;
+};
+
+export const getNodeOwnership = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<NodeOwnership> => {
+  return customFetch<NodeOwnership>(getGetNodeOwnershipUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetNodeOwnershipQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/ownership`] as const;
+};
+
+export const getGetNodeOwnershipQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeOwnership>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeOwnership>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetNodeOwnershipQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getNodeOwnership>>
+  > = ({ signal }) => getNodeOwnership(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeOwnership>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeOwnershipQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeOwnership>>
+>;
+export type GetNodeOwnershipQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get ownership info for a node
+ */
+
+export function useGetNodeOwnership<
+  TData = Awaited<ReturnType<typeof getNodeOwnership>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeOwnership>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNodeOwnershipQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Set ownership for a node
+ */
+export const getSetNodeOwnershipUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/ownership`;
+};
+
+export const setNodeOwnership = async (
+  nodeId: string,
+  setNodeOwnershipInput: SetNodeOwnershipInput,
+  options?: RequestInit,
+): Promise<SetNodeOwnership200> => {
+  return customFetch<SetNodeOwnership200>(getSetNodeOwnershipUrl(nodeId), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(setNodeOwnershipInput),
+  });
+};
+
+export const getSetNodeOwnershipMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setNodeOwnership>>,
+    TError,
+    { nodeId: string; data: BodyType<SetNodeOwnershipInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setNodeOwnership>>,
+  TError,
+  { nodeId: string; data: BodyType<SetNodeOwnershipInput> },
+  TContext
+> => {
+  const mutationKey = ["setNodeOwnership"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setNodeOwnership>>,
+    { nodeId: string; data: BodyType<SetNodeOwnershipInput> }
+  > = (props) => {
+    const { nodeId, data } = props ?? {};
+
+    return setNodeOwnership(nodeId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetNodeOwnershipMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setNodeOwnership>>
+>;
+export type SetNodeOwnershipMutationBody = BodyType<SetNodeOwnershipInput>;
+export type SetNodeOwnershipMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Set ownership for a node
+ */
+export const useSetNodeOwnership = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setNodeOwnership>>,
+    TError,
+    { nodeId: string; data: BodyType<SetNodeOwnershipInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setNodeOwnership>>,
+  TError,
+  { nodeId: string; data: BodyType<SetNodeOwnershipInput> },
+  TContext
+> => {
+  return useMutation(getSetNodeOwnershipMutationOptions(options));
+};
 
 /**
  * @summary List all content nodes
