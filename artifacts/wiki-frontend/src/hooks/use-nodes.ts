@@ -20,14 +20,21 @@ export function useRootNodes() {
 }
 
 export function useNodeChildren(nodeId: string | undefined) {
-  /* eslint-disable @typescript-eslint/no-explicit-any --
-     Orval generated hooks require queryKey in their options type
-     but populate it internally; `enabled` is runtime-safe. */
-  return useGetNodeChildren(nodeId!, { query: { enabled: !!nodeId } as any });
+  return useGetNodeChildren(nodeId ?? "", {
+    query: {
+      queryKey: getGetNodeChildrenQueryKey(nodeId ?? ""),
+      enabled: !!nodeId,
+    },
+  });
 }
 
 export function useNode(nodeId: string | undefined) {
-  return useGetNode(nodeId!, { query: { enabled: !!nodeId } as any });
+  return useGetNode(nodeId ?? "", {
+    query: {
+      queryKey: getGetNodeQueryKey(nodeId ?? ""),
+      enabled: !!nodeId,
+    },
+  });
 }
 
 export function useAllNodes() {
@@ -35,10 +42,12 @@ export function useAllNodes() {
 }
 
 export function useNodeAncestors(nodeId: string | undefined) {
-  return useGetNodeAncestors(nodeId!, {
-    query: { enabled: !!nodeId } as any,
+  return useGetNodeAncestors(nodeId ?? "", {
+    query: {
+      queryKey: getGetNodeAncestorsQueryKey(nodeId ?? ""),
+      enabled: !!nodeId,
+    },
   });
-  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
 export function useCreateNode() {
