@@ -8,7 +8,8 @@ All configuration is validated at startup using Zod schemas. The application fai
 
 | Category      | Prefix/Key       | Required | Description                          |
 |---------------|------------------|----------|--------------------------------------|
-| App           | `PORT`, `NODE_ENV` | Yes    | Server port and environment mode     |
+| App           | `PORT`           | Yes      | Server port                          |
+| App           | `NODE_ENV`       | No       | Environment mode (defaults to "development" for local dev; must be set explicitly in production) |
 | Database      | `DATABASE_URL`   | Yes      | PostgreSQL connection string         |
 | Auth (future) | `AZURE_*`        | No       | Microsoft Entra ID SSO credentials   |
 | Graph (future)| `GRAPH_*`        | No       | Microsoft Graph API configuration    |
