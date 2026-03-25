@@ -30,7 +30,8 @@ workspace/
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
+│   ├── db/                 # Drizzle ORM schema + DB connection
+│   └── shared/             # Shared types & provider abstractions
 ├── scripts/                # Utility scripts (@workspace/scripts)
 │   └── src/                # no-hardcode-check, docs-check, etc.
 ├── e2e/                    # Playwright E2E tests

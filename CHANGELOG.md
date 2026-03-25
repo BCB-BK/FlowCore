@@ -7,6 +7,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Nachschärfung Cluster 1-3: Comprehensive refinement
+  - ADR-005: Eigenentwicklung auf Replit (architecture premise)
+  - ADR-006: Campus-first / Multi-Org / Multi-Brand architecture
+  - ADR-007: Provider Abstraction Strategy (6 provider categories)
+  - Benchmark Feature Register (docs/03-BENCHMARK-FEATURE-REGISTER.md)
+  - Provider TypeScript interfaces: IAuthProvider, IStorageProvider, ISearchProvider, IAIProvider, IConnectorProvider, INotificationProvider (lib/shared/src/providers/)
+  - 14 new database tables: organization_units, brands, locations, business_functions, source_systems, storage_providers, source_references, content_node_context, page_watchers, page_comments, page_verifications, favorites, notifications, media_asset_usages
+  - 5 new enums: notification_channel, notification_status, media_classification, comment_status, verification_status
+  - Extended media_assets: classification, caption, source_url, source_library, source_path, video_metadata, transcript_ref, storage_provider_id
+  - RBAC scope-aware role resolution (role_assignments.scope now evaluated against node hierarchy)
+  - Expiration-aware role filtering (expired role assignments excluded)
+  - Updated data model documentation with enterprise and collaboration entities
+
 - Cluster 4: React+Vite frontend with navigation, Knowledge Hub shell
   - React 19 + Vite + TailwindCSS 4 + shadcn/ui frontend artifact (`wiki-frontend`)
   - App shell with collapsible sidebar, header with search bar, user info

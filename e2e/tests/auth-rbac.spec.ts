@@ -136,7 +136,7 @@ test.describe("RBAC - Role Assignment", () => {
   test("POST /principals/:id/roles assigns a role", async ({ request }) => {
     const res = await request.post(`${API}/principals/${VIEWER_ID}/roles`, {
       headers: authHeaders(ADMIN_ID),
-      data: { role: "editor", scope: "test-scope" },
+      data: { role: "editor", scope: "global" },
     });
     expect(res.status()).toBe(201);
     const body = await res.json();

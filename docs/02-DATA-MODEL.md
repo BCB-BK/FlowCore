@@ -12,19 +12,77 @@ The data model implements a process-based knowledge management system with:
 ## Entity Relationship
 
 ```
+organization_units ──┐
+brands ──────────────┤ Enterprise Context
+locations ───────────┤
+business_functions ──┘
+
 content_templates (10 types)
        │
        ▼
 content_nodes ──────────────► content_aliases (display_code history)
+  │  │  │  │
+  │  │  │  └──► content_node_tags ◄──── content_tags
   │  │  │
-  │  │  └──► content_node_tags ◄──── content_tags
+  │  │  └──► content_revisions ──► content_revision_events
   │  │
-  │  └──► content_revisions ──► content_revision_events
+  │  └──► content_relations (graph edges, source ↔ target)
+  │  │
+  │  └──► media_assets ──► media_asset_usages
+  │  │
+  │  └──► source_references ──► source_systems
   │
-  └──► content_relations (graph edges, source ↔ target)
-  │
-  └──► media_assets
+  └──► page_watchers ──┐
+  └──► page_comments ──┤ Collaboration
+  └──► page_verifications
+  └──► favorites
+  └──► notifications
+
+storage_providers (configurable backends for media_assets)
 ```
+
+## Enterprise / Multi-Org Entities
+
+### organization_units
+Organizational units within the campus (departments, divisions). Self-referencing hierarchy via `parent_id`.
+
+### brands
+Schools / brands under the campus umbrella. Each with name, slug, logo, primary color.
+
+### locations
+Physical locations (buildings, campus sections, rooms).
+
+### business_functions
+Cross-cutting functions (Quality Management, IT, HR, Finance).
+
+### source_systems
+External systems connected to the wiki (SharePoint, ERP, HR systems). Connection config stored as JSONB.
+
+### storage_providers
+Configurable media storage backends (local filesystem, Azure Blob, SharePoint). One marked as default.
+
+### source_references
+Links content nodes to records in external source systems. Tracks sync status.
+
+## Collaboration & Social Entities
+
+### page_watchers
+Per-principal watch subscriptions on content nodes. Optional `watch_children` for recursive notifications.
+
+### page_comments
+Threaded comments on content nodes. Supports inline annotations via `anchor_selector`. Status: active / resolved / deleted.
+
+### page_verifications
+Periodic content verification records. Tracks who verified, when next verification is due.
+
+### favorites
+User bookmarks / favorites for quick access to content nodes. Sorted by `sort_order`.
+
+### notifications
+In-app, email, or Teams notifications. Linked to recipient, optional actor and node. Status: unread / read / dismissed.
+
+### media_asset_usages
+Tracks which content nodes reference which media assets. Enables cross-page usage reporting.
 
 ## Core Entities
 
@@ -81,7 +139,13 @@ Relation types: `related_to`, `uses_template`, `depends_on`, `implements_policy`
 Tagging system with slugs and colors.
 
 ### media_assets
-File attachments linked to content nodes.
+File attachments linked to content nodes. Extended fields:
+- `classification` (enum): document, image, video, audio, spreadsheet, presentation, template, form, archive, other
+- `caption` / `alt_text`: Accessibility and descriptive metadata
+- `source_url` / `source_library` / `source_path`: External source tracking
+- `video_metadata` (JSONB): Duration, resolution, codec, etc.
+- `transcript_ref`: Reference to transcript file or URL
+- `storage_provider_id`: Which storage provider hosts this asset
 
 ## Dual ID System
 

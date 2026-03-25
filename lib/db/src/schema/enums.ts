@@ -103,3 +103,41 @@ export const revisionEventTypeEnum = pgEnum("revision_event_type", [
   "restored",
   "superseded",
 ]);
+
+export const notificationChannelEnum = pgEnum("notification_channel", [
+  "in_app",
+  "email",
+  "teams",
+]);
+
+export const notificationStatusEnum = pgEnum("notification_status", [
+  "unread",
+  "read",
+  "dismissed",
+]);
+
+export const mediaClassificationEnum = pgEnum("media_classification", [
+  "document",
+  "image",
+  "video",
+  "audio",
+  "spreadsheet",
+  "presentation",
+  "template",
+  "form",
+  "archive",
+  "other",
+]);
+
+export const commentStatusEnum = pgEnum("comment_status", [
+  "active",
+  "resolved",
+  "deleted",
+]);
+
+export const verificationStatusEnum = pgEnum("verification_status", [
+  "pending",
+  "verified",
+  "expired",
+  "overdue",
+]);

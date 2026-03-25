@@ -92,16 +92,30 @@ export async function getEffectivePermissions(
   const permissions = new Set<WikiPermission>();
 
   const roles = await db
-    .select({ role: roleAssignmentsTable.role })
+    .select({
+      role: roleAssignmentsTable.role,
+      scope: roleAssignmentsTable.scope,
+    })
     .from(roleAssignmentsTable)
     .where(
       and(
         eq(roleAssignmentsTable.principalId, principalId),
         eq(roleAssignmentsTable.isActive, true),
+        or(
+          sql`${roleAssignmentsTable.expiresAt} IS NULL`,
+          sql`${roleAssignmentsTable.expiresAt} > NOW()`,
+        ),
       ),
     );
 
-  for (const { role } of roles) {
+  const scopeConditions = nodeId
+    ? await resolveNodeScopes(nodeId)
+    : new Set<string>();
+  scopeConditions.add("global");
+
+  for (const { role, scope } of roles) {
+    if (!scopeConditions.has(scope)) continue;
+
     const rolePerms = ROLE_PERMISSIONS[role as WikiRole];
     if (rolePerms) {
       for (const p of rolePerms) {
@@ -118,6 +132,40 @@ export async function getEffectivePermissions(
   }
 
   return permissions;
+}
+
+async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
+  const scopes = new Set<string>();
+  scopes.add(`node:${nodeId}`);
+
+  let currentId: string | null = nodeId;
+  const visited = new Set<string>();
+
+  while (currentId && !visited.has(currentId)) {
+    visited.add(currentId);
+    const [node] = await db
+      .select({
+        parentNodeId: contentNodesTable.parentNodeId,
+        displayCode: contentNodesTable.displayCode,
+      })
+      .from(contentNodesTable)
+      .where(eq(contentNodesTable.id, currentId));
+
+    if (!node) break;
+
+    if (node.displayCode) {
+      scopes.add(`code:${node.displayCode}`);
+    }
+
+    if (node.parentNodeId) {
+      scopes.add(`node:${node.parentNodeId}`);
+      currentId = node.parentNodeId;
+    } else {
+      currentId = null;
+    }
+  }
+
+  return scopes;
 }
 
 export async function hasPermission(
