@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: content
+    description: Content node operations
+  - name: revisions
+    description: Revision and version operations
+  - name: relations
+    description: Content relation/graph operations
+  - name: templates
+    description: Template operations
 paths:
   /healthz:
     get:
@@ -30,7 +38,363 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /content/nodes:
+    get:
+      operationId: listNodes
+      tags: [content]
+      summary: List all content nodes
+      responses:
+        "200":
+          description: List of content nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentNode"
+    post:
+      operationId: createNode
+      tags: [content]
+      summary: Create a content node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNodeInput"
+      responses:
+        "201":
+          description: Created node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentNode"
+
+  /content/nodes/roots:
+    get:
+      operationId: listRootNodes
+      tags: [content]
+      summary: List root content nodes
+      responses:
+        "200":
+          description: Root nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentNode"
+
+  /content/nodes/{nodeId}:
+    get:
+      operationId: getNode
+      tags: [content]
+      summary: Get a content node by ID
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Content node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentNode"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteNode
+      tags: [content]
+      summary: Soft-delete a content node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Deleted node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentNode"
+
+  /content/nodes/{nodeId}/children:
+    get:
+      operationId: getNodeChildren
+      tags: [content]
+      summary: Get children of a content node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Child nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentNode"
+
+  /content/nodes/{nodeId}/move:
+    post:
+      operationId: moveNode
+      tags: [content]
+      summary: Move a node to a new parent
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveNodeInput"
+      responses:
+        "200":
+          description: Moved node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentNode"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /content/nodes/{nodeId}/aliases:
+    get:
+      operationId: getNodeAliases
+      tags: [content]
+      summary: Get display code alias history
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Alias history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentAlias"
+
+  /content/nodes/{nodeId}/tree:
+    get:
+      operationId: getNodeTree
+      tags: [content]
+      summary: Get hierarchical subtree
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Tree data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TreeNode"
+
+  /content/nodes/{nodeId}/revisions:
+    get:
+      operationId: listNodeRevisions
+      tags: [revisions]
+      summary: Get revisions for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Revision list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentRevision"
+    post:
+      operationId: createRevision
+      tags: [revisions]
+      summary: Create a new revision
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRevisionInput"
+      responses:
+        "201":
+          description: Created revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevision"
+
+  /content/revisions/{revisionId}/publish:
+    post:
+      operationId: publishRevision
+      tags: [revisions]
+      summary: Publish a revision with a version label
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishRevisionInput"
+      responses:
+        "200":
+          description: Published revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevision"
+
+  /content/revisions/{revisionId}/restore:
+    post:
+      operationId: restoreRevision
+      tags: [revisions]
+      summary: Restore a previous revision as a new revision
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestoreRevisionInput"
+      responses:
+        "201":
+          description: New revision created from restored content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevision"
+
+  /content/nodes/{nodeId}/relations:
+    get:
+      operationId: getNodeRelations
+      tags: [relations]
+      summary: Get relations for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Relations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentRelation"
+
+  /content/relations:
+    post:
+      operationId: createRelation
+      tags: [relations]
+      summary: Create a relation between nodes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRelationInput"
+      responses:
+        "201":
+          description: Created relation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRelation"
+        "400":
+          description: Validation error (cycle, self-ref)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /content/relations/{relationId}:
+    delete:
+      operationId: deleteRelation
+      tags: [relations]
+      summary: Delete a relation
+      parameters:
+        - $ref: "#/components/parameters/RelationId"
+      responses:
+        "204":
+          description: Deleted
+
+  /content/templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      summary: List all content templates
+      responses:
+        "200":
+          description: Template list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentTemplate"
+
+  /content/templates/{templateId}:
+    get:
+      operationId: getTemplate
+      tags: [templates]
+      summary: Get a template by ID
+      parameters:
+        - $ref: "#/components/parameters/TemplateId"
+      responses:
+        "200":
+          description: Template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentTemplate"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  parameters:
+    NodeId:
+      name: nodeId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RevisionId:
+      name: revisionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RelationId:
+      name: relationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TemplateId:
+      name: templateId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
   schemas:
     HealthStatus:
       type: object
@@ -44,3 +408,363 @@ components:
       required:
         - status
         - database
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    ContentNode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        immutableId:
+          type: string
+        displayCode:
+          type: string
+        title:
+          type: string
+        templateType:
+          type: string
+          enum:
+            - core_process_overview
+            - area_overview
+            - process_page_text
+            - process_page_graphic
+            - procedure_instruction
+            - use_case
+            - policy
+            - role_profile
+            - dashboard
+            - system_documentation
+        templateId:
+          type: string
+          format: uuid
+          nullable: true
+        parentNodeId:
+          type: string
+          format: uuid
+          nullable: true
+        sortOrder:
+          type: integer
+        status:
+          type: string
+          enum: [draft, in_review, approved, published, archived, deleted]
+        currentRevisionId:
+          type: string
+          format: uuid
+          nullable: true
+        publishedRevisionId:
+          type: string
+          format: uuid
+          nullable: true
+        ownerId:
+          type: string
+          nullable: true
+        isDeleted:
+          type: boolean
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - immutableId
+        - displayCode
+        - title
+        - templateType
+        - sortOrder
+        - status
+        - isDeleted
+        - createdAt
+        - updatedAt
+
+    CreateNodeInput:
+      type: object
+      properties:
+        title:
+          type: string
+        templateType:
+          type: string
+          enum:
+            - core_process_overview
+            - area_overview
+            - process_page_text
+            - process_page_graphic
+            - procedure_instruction
+            - use_case
+            - policy
+            - role_profile
+            - dashboard
+            - system_documentation
+        templateId:
+          type: string
+          format: uuid
+        parentNodeId:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+        sortOrder:
+          type: integer
+      required:
+        - title
+        - templateType
+
+    MoveNodeInput:
+      type: object
+      properties:
+        newParentNodeId:
+          type: string
+          format: uuid
+          nullable: true
+        actorId:
+          type: string
+
+    ContentAlias:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        previousDisplayCode:
+          type: string
+        reason:
+          type: string
+        changedBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nodeId
+        - previousDisplayCode
+        - reason
+        - createdAt
+
+    TreeNode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        displayCode:
+          type: string
+        depth:
+          type: integer
+        parentNodeId:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+        - id
+        - title
+        - displayCode
+        - depth
+
+    ContentRevision:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        revisionNo:
+          type: integer
+        versionLabel:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [draft, in_review, approved, published, archived, deleted]
+        changeType:
+          type: string
+          enum: [editorial, minor, major, regulatory, structural]
+        changeSummary:
+          type: string
+          nullable: true
+        title:
+          type: string
+        content:
+          type: object
+          nullable: true
+        structuredFields:
+          type: object
+          nullable: true
+        basedOnRevisionId:
+          type: string
+          format: uuid
+          nullable: true
+        authorId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nodeId
+        - revisionNo
+        - status
+        - changeType
+        - title
+        - createdAt
+
+    CreateRevisionInput:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: object
+        structuredFields:
+          type: object
+        changeType:
+          type: string
+          enum: [editorial, minor, major, regulatory, structural]
+        changeSummary:
+          type: string
+        authorId:
+          type: string
+      required:
+        - title
+
+    PublishRevisionInput:
+      type: object
+      properties:
+        versionLabel:
+          type: string
+      required:
+        - versionLabel
+
+    RestoreRevisionInput:
+      type: object
+      properties:
+        authorId:
+          type: string
+
+    ContentRelation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceNodeId:
+          type: string
+          format: uuid
+        targetNodeId:
+          type: string
+          format: uuid
+        relationType:
+          type: string
+          enum:
+            - related_to
+            - uses_template
+            - depends_on
+            - implements_policy
+            - upstream_of
+            - downstream_of
+            - replaces
+            - references
+        metadata:
+          type: object
+          nullable: true
+        createdBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - sourceNodeId
+        - targetNodeId
+        - relationType
+        - createdAt
+
+    CreateRelationInput:
+      type: object
+      properties:
+        sourceNodeId:
+          type: string
+          format: uuid
+        targetNodeId:
+          type: string
+          format: uuid
+        relationType:
+          type: string
+          enum:
+            - related_to
+            - uses_template
+            - depends_on
+            - implements_policy
+            - upstream_of
+            - downstream_of
+            - replaces
+            - references
+        metadata:
+          type: object
+        createdBy:
+          type: string
+      required:
+        - sourceNodeId
+        - targetNodeId
+        - relationType
+
+    ContentTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        templateType:
+          type: string
+        description:
+          type: string
+          nullable: true
+        fieldSchema:
+          type: object
+        version:
+          type: integer
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - slug
+        - templateType
+        - fieldSchema
+        - version
+        - isActive
+        - createdAt
+        - updatedAt

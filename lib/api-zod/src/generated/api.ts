@@ -15,3 +15,522 @@ export const HealthCheckResponse = zod.object({
   status: zod.enum(["ok", "degraded"]),
   database: zod.enum(["connected", "disconnected"]),
 });
+
+/**
+ * @summary List all content nodes
+ */
+export const ListNodesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListNodesResponse = zod.array(ListNodesResponseItem);
+
+/**
+ * @summary Create a content node
+ */
+export const CreateNodeBody = zod.object({
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().optional(),
+  parentNodeId: zod.string().uuid().optional(),
+  ownerId: zod.string().optional(),
+  sortOrder: zod.number().optional(),
+});
+
+/**
+ * @summary List root content nodes
+ */
+export const ListRootNodesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListRootNodesResponse = zod.array(ListRootNodesResponseItem);
+
+/**
+ * @summary Get a content node by ID
+ */
+export const GetNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeResponse = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Soft-delete a content node
+ */
+export const DeleteNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const DeleteNodeResponse = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Get children of a content node
+ */
+export const GetNodeChildrenParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeChildrenResponseItem = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const GetNodeChildrenResponse = zod.array(GetNodeChildrenResponseItem);
+
+/**
+ * @summary Move a node to a new parent
+ */
+export const MoveNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const MoveNodeBody = zod.object({
+  newParentNodeId: zod.string().uuid().nullish(),
+  actorId: zod.string().optional(),
+});
+
+export const MoveNodeResponse = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Get display code alias history
+ */
+export const GetNodeAliasesParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeAliasesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  previousDisplayCode: zod.string(),
+  reason: zod.string(),
+  changedBy: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const GetNodeAliasesResponse = zod.array(GetNodeAliasesResponseItem);
+
+/**
+ * @summary Get hierarchical subtree
+ */
+export const GetNodeTreeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeTreeResponseItem = zod.object({
+  id: zod.string().uuid(),
+  title: zod.string(),
+  displayCode: zod.string(),
+  depth: zod.number(),
+  parentNodeId: zod.string().uuid().nullish(),
+});
+export const GetNodeTreeResponse = zod.array(GetNodeTreeResponseItem);
+
+/**
+ * @summary Get revisions for a node
+ */
+export const ListNodeRevisionsParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const ListNodeRevisionsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  revisionNo: zod.number(),
+  versionLabel: zod.string().nullish(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  changeType: zod.enum([
+    "editorial",
+    "minor",
+    "major",
+    "regulatory",
+    "structural",
+  ]),
+  changeSummary: zod.string().nullish(),
+  title: zod.string(),
+  content: zod.object({}).passthrough().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  basedOnRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const ListNodeRevisionsResponse = zod.array(
+  ListNodeRevisionsResponseItem,
+);
+
+/**
+ * @summary Create a new revision
+ */
+export const CreateRevisionParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const CreateRevisionBody = zod.object({
+  title: zod.string(),
+  content: zod.object({}).passthrough().optional(),
+  structuredFields: zod.object({}).passthrough().optional(),
+  changeType: zod
+    .enum(["editorial", "minor", "major", "regulatory", "structural"])
+    .optional(),
+  changeSummary: zod.string().optional(),
+  authorId: zod.string().optional(),
+});
+
+/**
+ * @summary Publish a revision with a version label
+ */
+export const PublishRevisionParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const PublishRevisionBody = zod.object({
+  versionLabel: zod.string(),
+});
+
+export const PublishRevisionResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  revisionNo: zod.number(),
+  versionLabel: zod.string().nullish(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  changeType: zod.enum([
+    "editorial",
+    "minor",
+    "major",
+    "regulatory",
+    "structural",
+  ]),
+  changeSummary: zod.string().nullish(),
+  title: zod.string(),
+  content: zod.object({}).passthrough().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  basedOnRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Restore a previous revision as a new revision
+ */
+export const RestoreRevisionParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const RestoreRevisionBody = zod.object({
+  authorId: zod.string().optional(),
+});
+
+/**
+ * @summary Get relations for a node
+ */
+export const GetNodeRelationsParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeRelationsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  sourceNodeId: zod.string().uuid(),
+  targetNodeId: zod.string().uuid(),
+  relationType: zod.enum([
+    "related_to",
+    "uses_template",
+    "depends_on",
+    "implements_policy",
+    "upstream_of",
+    "downstream_of",
+    "replaces",
+    "references",
+  ]),
+  metadata: zod.object({}).passthrough().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const GetNodeRelationsResponse = zod.array(GetNodeRelationsResponseItem);
+
+/**
+ * @summary Create a relation between nodes
+ */
+export const CreateRelationBody = zod.object({
+  sourceNodeId: zod.string().uuid(),
+  targetNodeId: zod.string().uuid(),
+  relationType: zod.enum([
+    "related_to",
+    "uses_template",
+    "depends_on",
+    "implements_policy",
+    "upstream_of",
+    "downstream_of",
+    "replaces",
+    "references",
+  ]),
+  metadata: zod.object({}).passthrough().optional(),
+  createdBy: zod.string().optional(),
+});
+
+/**
+ * @summary Delete a relation
+ */
+export const DeleteRelationParams = zod.object({
+  relationId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary List all content templates
+ */
+export const ListTemplatesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  templateType: zod.string(),
+  description: zod.string().nullish(),
+  fieldSchema: zod.object({}).passthrough(),
+  version: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListTemplatesResponse = zod.array(ListTemplatesResponseItem);
+
+/**
+ * @summary Get a template by ID
+ */
+export const GetTemplateParams = zod.object({
+  templateId: zod.coerce.string().uuid(),
+});
+
+export const GetTemplateResponse = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  templateType: zod.string(),
+  description: zod.string().nullish(),
+  fieldSchema: zod.object({}).passthrough(),
+  version: zod.number(),
+  isActive: zod.boolean(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});

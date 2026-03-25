@@ -25,3 +25,241 @@ export interface HealthStatus {
   status: HealthStatusStatus;
   database: HealthStatusDatabase;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type ContentNodeTemplateType =
+  (typeof ContentNodeTemplateType)[keyof typeof ContentNodeTemplateType];
+
+export const ContentNodeTemplateType = {
+  core_process_overview: "core_process_overview",
+  area_overview: "area_overview",
+  process_page_text: "process_page_text",
+  process_page_graphic: "process_page_graphic",
+  procedure_instruction: "procedure_instruction",
+  use_case: "use_case",
+  policy: "policy",
+  role_profile: "role_profile",
+  dashboard: "dashboard",
+  system_documentation: "system_documentation",
+} as const;
+
+export type ContentNodeStatus =
+  (typeof ContentNodeStatus)[keyof typeof ContentNodeStatus];
+
+export const ContentNodeStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  published: "published",
+  archived: "archived",
+  deleted: "deleted",
+} as const;
+
+export interface ContentNode {
+  id: string;
+  immutableId: string;
+  displayCode: string;
+  title: string;
+  templateType: ContentNodeTemplateType;
+  templateId?: string | null;
+  parentNodeId?: string | null;
+  sortOrder: number;
+  status: ContentNodeStatus;
+  currentRevisionId?: string | null;
+  publishedRevisionId?: string | null;
+  ownerId?: string | null;
+  isDeleted: boolean;
+  deletedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateNodeInputTemplateType =
+  (typeof CreateNodeInputTemplateType)[keyof typeof CreateNodeInputTemplateType];
+
+export const CreateNodeInputTemplateType = {
+  core_process_overview: "core_process_overview",
+  area_overview: "area_overview",
+  process_page_text: "process_page_text",
+  process_page_graphic: "process_page_graphic",
+  procedure_instruction: "procedure_instruction",
+  use_case: "use_case",
+  policy: "policy",
+  role_profile: "role_profile",
+  dashboard: "dashboard",
+  system_documentation: "system_documentation",
+} as const;
+
+export interface CreateNodeInput {
+  title: string;
+  templateType: CreateNodeInputTemplateType;
+  templateId?: string;
+  parentNodeId?: string;
+  ownerId?: string;
+  sortOrder?: number;
+}
+
+export interface MoveNodeInput {
+  newParentNodeId?: string | null;
+  actorId?: string;
+}
+
+export interface ContentAlias {
+  id: string;
+  nodeId: string;
+  previousDisplayCode: string;
+  reason: string;
+  changedBy?: string | null;
+  createdAt: string;
+}
+
+export interface TreeNode {
+  id: string;
+  title: string;
+  displayCode: string;
+  depth: number;
+  parentNodeId?: string | null;
+}
+
+export type ContentRevisionStatus =
+  (typeof ContentRevisionStatus)[keyof typeof ContentRevisionStatus];
+
+export const ContentRevisionStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  published: "published",
+  archived: "archived",
+  deleted: "deleted",
+} as const;
+
+export type ContentRevisionChangeType =
+  (typeof ContentRevisionChangeType)[keyof typeof ContentRevisionChangeType];
+
+export const ContentRevisionChangeType = {
+  editorial: "editorial",
+  minor: "minor",
+  major: "major",
+  regulatory: "regulatory",
+  structural: "structural",
+} as const;
+
+export type ContentRevisionContent = { [key: string]: unknown } | null;
+
+export type ContentRevisionStructuredFields = { [key: string]: unknown } | null;
+
+export interface ContentRevision {
+  id: string;
+  nodeId: string;
+  revisionNo: number;
+  versionLabel?: string | null;
+  status: ContentRevisionStatus;
+  changeType: ContentRevisionChangeType;
+  changeSummary?: string | null;
+  title: string;
+  content?: ContentRevisionContent;
+  structuredFields?: ContentRevisionStructuredFields;
+  basedOnRevisionId?: string | null;
+  authorId?: string | null;
+  createdAt: string;
+}
+
+export type CreateRevisionInputContent = { [key: string]: unknown };
+
+export type CreateRevisionInputStructuredFields = { [key: string]: unknown };
+
+export type CreateRevisionInputChangeType =
+  (typeof CreateRevisionInputChangeType)[keyof typeof CreateRevisionInputChangeType];
+
+export const CreateRevisionInputChangeType = {
+  editorial: "editorial",
+  minor: "minor",
+  major: "major",
+  regulatory: "regulatory",
+  structural: "structural",
+} as const;
+
+export interface CreateRevisionInput {
+  title: string;
+  content?: CreateRevisionInputContent;
+  structuredFields?: CreateRevisionInputStructuredFields;
+  changeType?: CreateRevisionInputChangeType;
+  changeSummary?: string;
+  authorId?: string;
+}
+
+export interface PublishRevisionInput {
+  versionLabel: string;
+}
+
+export interface RestoreRevisionInput {
+  authorId?: string;
+}
+
+export type ContentRelationRelationType =
+  (typeof ContentRelationRelationType)[keyof typeof ContentRelationRelationType];
+
+export const ContentRelationRelationType = {
+  related_to: "related_to",
+  uses_template: "uses_template",
+  depends_on: "depends_on",
+  implements_policy: "implements_policy",
+  upstream_of: "upstream_of",
+  downstream_of: "downstream_of",
+  replaces: "replaces",
+  references: "references",
+} as const;
+
+export type ContentRelationMetadata = { [key: string]: unknown } | null;
+
+export interface ContentRelation {
+  id: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  relationType: ContentRelationRelationType;
+  metadata?: ContentRelationMetadata;
+  createdBy?: string | null;
+  createdAt: string;
+}
+
+export type CreateRelationInputRelationType =
+  (typeof CreateRelationInputRelationType)[keyof typeof CreateRelationInputRelationType];
+
+export const CreateRelationInputRelationType = {
+  related_to: "related_to",
+  uses_template: "uses_template",
+  depends_on: "depends_on",
+  implements_policy: "implements_policy",
+  upstream_of: "upstream_of",
+  downstream_of: "downstream_of",
+  replaces: "replaces",
+  references: "references",
+} as const;
+
+export type CreateRelationInputMetadata = { [key: string]: unknown };
+
+export interface CreateRelationInput {
+  sourceNodeId: string;
+  targetNodeId: string;
+  relationType: CreateRelationInputRelationType;
+  metadata?: CreateRelationInputMetadata;
+  createdBy?: string;
+}
+
+export type ContentTemplateFieldSchema = { [key: string]: unknown };
+
+export interface ContentTemplate {
+  id: string;
+  name: string;
+  slug: string;
+  templateType: string;
+  description?: string | null;
+  fieldSchema: ContentTemplateFieldSchema;
+  version: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

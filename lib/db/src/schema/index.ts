@@ -6,4 +6,5 @@ export * from "./content-revisions";
 export * from "./content-aliases";
 export * from "./content-relations";
 export * from "./content-tags";
+export * from "./review-workflows";
 export * from "./media-assets";

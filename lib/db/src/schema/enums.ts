@@ -41,6 +41,20 @@ export const templateTypeEnum = pgEnum("template_type", [
   "system_documentation",
 ]);
 
+export const reviewStatusEnum = pgEnum("review_status", [
+  "pending",
+  "in_progress",
+  "approved",
+  "rejected",
+  "cancelled",
+]);
+
+export const approvalDecisionEnum = pgEnum("approval_decision", [
+  "approved",
+  "rejected",
+  "returned_for_changes",
+]);
+
 export const revisionEventTypeEnum = pgEnum("revision_event_type", [
   "created",
   "submitted_for_review",
