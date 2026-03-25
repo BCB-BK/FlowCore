@@ -4,7 +4,7 @@ import {
   contentAliasesTable,
   type InsertContentNode,
 } from "@workspace/db/schema";
-import { eq, and, isNull, sql } from "drizzle-orm";
+import { eq, and, isNull, sql, asc } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { logger } from "../lib/logger";
 import crypto from "node:crypto";
@@ -147,6 +147,10 @@ async function recomputeDescendantCodes(
         eq(contentNodesTable.parentNodeId, nodeId),
         eq(contentNodesTable.isDeleted, false),
       ),
+    )
+    .orderBy(
+      asc(contentNodesTable.sortOrder),
+      asc(contentNodesTable.createdAt),
     );
 
   const [parentNode] = await tx

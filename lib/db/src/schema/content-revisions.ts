@@ -5,36 +5,47 @@ import {
   timestamp,
   integer,
   jsonb,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { changeTypeEnum, nodeStatusEnum, revisionEventTypeEnum } from "./enums";
 import { contentNodesTable } from "./content-nodes";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const contentRevisionsTable = pgTable("content_revisions", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  nodeId: uuid("node_id")
-    .notNull()
-    .references(() => contentNodesTable.id),
-  revisionNo: integer("revision_no").notNull(),
-  versionLabel: text("version_label"),
-  status: nodeStatusEnum("status").notNull().default("draft"),
-  changeType: changeTypeEnum("change_type").notNull().default("editorial"),
-  changeSummary: text("change_summary"),
-  changedFields: jsonb("changed_fields").$type<string[]>(),
-  title: text("title").notNull(),
-  content: jsonb("content").$type<Record<string, unknown>>(),
-  structuredFields: jsonb("structured_fields").$type<Record<string, unknown>>(),
-  basedOnRevisionId: uuid("based_on_revision_id"),
-  authorId: text("author_id"),
-  reviewerId: text("reviewer_id"),
-  approverId: text("approver_id"),
-  validFrom: timestamp("valid_from", { withTimezone: true }),
-  nextReviewDate: timestamp("next_review_date", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const contentRevisionsTable = pgTable(
+  "content_revisions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    nodeId: uuid("node_id")
+      .notNull()
+      .references(() => contentNodesTable.id),
+    revisionNo: integer("revision_no").notNull(),
+    versionLabel: text("version_label"),
+    status: nodeStatusEnum("status").notNull().default("draft"),
+    changeType: changeTypeEnum("change_type").notNull().default("editorial"),
+    changeSummary: text("change_summary"),
+    changedFields: jsonb("changed_fields").$type<string[]>(),
+    title: text("title").notNull(),
+    content: jsonb("content").$type<Record<string, unknown>>(),
+    structuredFields:
+      jsonb("structured_fields").$type<Record<string, unknown>>(),
+    basedOnRevisionId: uuid("based_on_revision_id"),
+    authorId: text("author_id"),
+    reviewerId: text("reviewer_id"),
+    approverId: text("approver_id"),
+    validFrom: timestamp("valid_from", { withTimezone: true }),
+    nextReviewDate: timestamp("next_review_date", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("idx_content_revisions_node_revision").on(
+      table.nodeId,
+      table.revisionNo,
+    ),
+  ],
+);
 
 export const contentRevisionEventsTable = pgTable("content_revision_events", {
   id: uuid("id").defaultRandom().primaryKey(),
