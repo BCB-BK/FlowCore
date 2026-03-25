@@ -366,6 +366,8 @@ router.get(
   async (req, res) => {
     const id = req.params.id as string;
     const compareId = req.params.compareId as string;
+    const authorizedNodeId = (req as unknown as Record<string, string>)
+      ._resolvedNodeId;
 
     const [revA] = await db
       .select()
@@ -378,6 +380,13 @@ router.get(
 
     if (!revA || !revB) {
       res.status(404).json({ error: "One or both revisions not found" });
+      return;
+    }
+
+    if (revB.nodeId !== authorizedNodeId) {
+      res.status(403).json({
+        error: "Compare revision belongs to a different node",
+      });
       return;
     }
 

@@ -38,6 +38,8 @@ interface DiffResult {
   metadataChanges: Record<string, { old: unknown; new: unknown }>;
   structuredFieldChanges: Record<string, { old: unknown; new: unknown }>;
   contentChanged: boolean;
+  contentA?: Record<string, unknown> | null;
+  contentB?: Record<string, unknown> | null;
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -211,6 +213,28 @@ export function RevisionDiffView({
                     </>
                   )}
                 </div>
+                {diff.contentChanged && diff.contentA && diff.contentB && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded border bg-red-50/30 dark:bg-red-950/10 p-2">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        <Minus className="h-3 w-3 inline mr-1" />
+                        Rev. {diff.revisionA.revisionNo}
+                      </p>
+                      <pre className="text-xs whitespace-pre-wrap break-all max-h-[200px] overflow-auto">
+                        {JSON.stringify(diff.contentA, null, 2)}
+                      </pre>
+                    </div>
+                    <div className="rounded border bg-green-50/30 dark:bg-green-950/10 p-2">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        <Plus className="h-3 w-3 inline mr-1" />
+                        Rev. {diff.revisionB.revisionNo}
+                      </p>
+                      <pre className="text-xs whitespace-pre-wrap break-all max-h-[200px] overflow-auto">
+                        {JSON.stringify(diff.contentB, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {Object.keys(diff.metadataChanges).length === 0 &&

@@ -51,12 +51,7 @@ import {
   Calendar,
   Pencil,
 } from "lucide-react";
-import {
-  PAGE_TYPE_LABELS,
-  STATUS_LABELS,
-  STATUS_COLORS,
-  getPageType,
-} from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import { customFetch } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
@@ -570,12 +565,14 @@ export function NodeDetail() {
                             child.templateType}
                         </p>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${STATUS_COLORS[child.status] || ""}`}
-                      >
-                        {STATUS_LABELS[child.status] || child.status}
-                      </Badge>
+                      <StatusBadge
+                        status={
+                          child.status as Parameters<
+                            typeof StatusBadge
+                          >[0]["status"]
+                        }
+                        compact
+                      />
                     </CardContent>
                   </Card>
                 );

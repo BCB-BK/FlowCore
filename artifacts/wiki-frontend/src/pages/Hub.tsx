@@ -13,7 +13,8 @@ import {
   FileText,
   BarChart3,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
+import { PAGE_TYPE_LABELS } from "@/lib/types";
+import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { useState } from "react";
 
@@ -107,12 +108,14 @@ export function Hub() {
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <FolderOpen className="h-5 w-5" />
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={STATUS_COLORS[node.status] || ""}
-                    >
-                      {STATUS_LABELS[node.status] || node.status}
-                    </Badge>
+                    <StatusBadge
+                      status={
+                        node.status as Parameters<
+                          typeof StatusBadge
+                        >[0]["status"]
+                      }
+                      compact
+                    />
                   </div>
                   <CardTitle className="text-base mt-2">{node.title}</CardTitle>
                 </CardHeader>

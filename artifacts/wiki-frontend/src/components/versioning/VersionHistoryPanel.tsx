@@ -185,6 +185,20 @@ export function VersionHistoryPanel({ nodeId }: VersionHistoryPanelProps) {
                         </p>
                       )}
 
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-1">
+                        {rev.authorId && (
+                          <span>Autor: {rev.authorId.substring(0, 8)}…</span>
+                        )}
+                        {rev.reviewerId && (
+                          <span>Prüfer: {rev.reviewerId.substring(0, 8)}…</span>
+                        )}
+                        {rev.approverId && (
+                          <span>
+                            Genehmiger: {rev.approverId.substring(0, 8)}…
+                          </span>
+                        )}
+                      </div>
+
                       {rev.basedOnRevisionId && (
                         <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1">
                           <RotateCcw className="h-3 w-3" />

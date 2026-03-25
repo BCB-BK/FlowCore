@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, FileText } from "lucide-react";
 import { useLocation } from "wouter";
-import { PAGE_TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
+import { PAGE_TYPE_LABELS } from "@/lib/types";
+import { StatusBadge } from "@/components/versioning/StatusBadge";
 
 export function SearchPage() {
   const [query, setQuery] = useState("");
@@ -56,12 +57,12 @@ export function SearchPage() {
                     {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
                   </p>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${STATUS_COLORS[node.status] || ""}`}
-                >
-                  {STATUS_LABELS[node.status] || node.status}
-                </Badge>
+                <StatusBadge
+                  status={
+                    node.status as Parameters<typeof StatusBadge>[0]["status"]
+                  }
+                  compact
+                />
               </CardContent>
             </Card>
           ))}
