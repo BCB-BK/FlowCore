@@ -15,6 +15,8 @@ import {
 import { ChevronRight, FileText, FolderOpen } from "lucide-react";
 import type { ContentNode } from "@/lib/types";
 import { PAGE_TYPE_LABELS } from "@/lib/types";
+import { getStatusColor } from "@/components/versioning/StatusBadge";
+import type { NodeStatus } from "@/components/versioning/StatusBadge";
 
 interface TreeNodeProps {
   node: ContentNode;
@@ -28,6 +30,16 @@ const CONTAINER_TYPES = new Set([
 ]);
 
 const MAX_DEPTH = 4;
+
+function StatusDot({ status }: { status: string }) {
+  const colorClass = getStatusColor(status as NodeStatus);
+  return (
+    <span
+      className={`inline-block h-2 w-2 rounded-full shrink-0 ${colorClass.replace("text-", "bg-")}`}
+      title={status}
+    />
+  );
+}
 
 export function TreeNode({ node, level }: TreeNodeProps) {
   const [open, setOpen] = useState(false);
@@ -48,6 +60,7 @@ export function TreeNode({ node, level }: TreeNodeProps) {
         >
           <Icon className="h-4 w-4 shrink-0" />
           <span className="truncate">{node.title}</span>
+          <StatusDot status={node.status} />
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
@@ -80,6 +93,7 @@ export function TreeNode({ node, level }: TreeNodeProps) {
             />
             <Icon className="h-4 w-4 shrink-0" />
             <span className="truncate">{node.title}</span>
+            <StatusDot status={node.status} />
           </SidebarMenuButton>
         </CollapsibleTrigger>
 

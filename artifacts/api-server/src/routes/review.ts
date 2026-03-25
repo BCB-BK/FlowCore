@@ -7,6 +7,7 @@ import {
   contentRevisionEventsTable,
   pageWatchersTable,
   auditEventsTable,
+  contentNodesTable,
   contentRelationsTable,
   contentNodeTagsTable,
   contentTagsTable,
@@ -114,6 +115,12 @@ router.post(
         .set({ status: "in_review", reviewerId: reviewerId || null })
         .where(eq(contentRevisionsTable.id, revisionId));
 
+      const nodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
+      await db
+        .update(contentNodesTable)
+        .set({ status: "in_review", updatedAt: new Date() })
+        .where(eq(contentNodesTable.id, nodeId));
+
       await db.insert(contentRevisionEventsTable).values({
         revisionId,
         eventType: "submitted_for_review",
@@ -206,6 +213,12 @@ router.post(
         .set(updateFields)
         .where(eq(contentRevisionsTable.id, revisionId));
 
+      const approveNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
+      await db
+        .update(contentNodesTable)
+        .set({ status: "approved", updatedAt: new Date() })
+        .where(eq(contentNodesTable.id, approveNodeId));
+
       await db.insert(contentRevisionEventsTable).values({
         revisionId,
         eventType: "review_approved",
@@ -296,6 +309,12 @@ router.post(
         .update(contentRevisionsTable)
         .set({ status: "draft" })
         .where(eq(contentRevisionsTable.id, revisionId));
+
+      const rejectNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
+      await db
+        .update(contentNodesTable)
+        .set({ status: "draft", updatedAt: new Date() })
+        .where(eq(contentNodesTable.id, rejectNodeId));
 
       await db.insert(contentRevisionEventsTable).values({
         revisionId,

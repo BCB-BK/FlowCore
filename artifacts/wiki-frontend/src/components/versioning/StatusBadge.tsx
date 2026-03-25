@@ -9,7 +9,7 @@ import {
   Clock,
 } from "lucide-react";
 
-type NodeStatus =
+export type NodeStatus =
   | "draft"
   | "in_review"
   | "approved"
