@@ -461,9 +461,6 @@ export const UpdateNodeBody = zod.object({
       "system_documentation",
     ])
     .optional(),
-  status: zod
-    .enum(["draft", "in_review", "approved", "published", "archived"])
-    .optional(),
 });
 
 export const UpdateNodeResponse = zod.object({

@@ -86,12 +86,11 @@ router.patch(
   requirePermission("edit_content", (req) => req.params.id),
   async (req, res) => {
     const id = req.params.id as string;
-    const { title, templateType, status } = req.body;
+    const { title, templateType } = req.body;
 
     const updates: Record<string, unknown> = {};
     if (title !== undefined) updates.title = title;
     if (templateType !== undefined) updates.templateType = templateType;
-    if (status !== undefined) updates.status = status;
 
     if (Object.keys(updates).length === 0) {
       res.status(400).json({ error: "No updatable fields provided" });

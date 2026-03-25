@@ -104,7 +104,7 @@ test.describe("Frontend UI – Browser interactions", () => {
     await page.goto("/");
     await page.locator("text=Neu anlegen").click();
     await expect(page.locator("text=Neue Seite anlegen")).toBeVisible();
-    await expect(page.locator("#create-title")).toBeVisible();
+    await expect(page.locator("#title")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(
       page.locator("text=Neue Seite anlegen"),

@@ -118,21 +118,9 @@ export const UpdateNodeInputTemplateType = {
   system_documentation: "system_documentation",
 } as const;
 
-export type UpdateNodeInputStatus =
-  (typeof UpdateNodeInputStatus)[keyof typeof UpdateNodeInputStatus];
-
-export const UpdateNodeInputStatus = {
-  draft: "draft",
-  in_review: "in_review",
-  approved: "approved",
-  published: "published",
-  archived: "archived",
-} as const;
-
 export interface UpdateNodeInput {
   title?: string;
   templateType?: UpdateNodeInputTemplateType;
-  status?: UpdateNodeInputStatus;
 }
 
 export interface MoveNodeInput {

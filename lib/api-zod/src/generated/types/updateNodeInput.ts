@@ -5,11 +5,9 @@
  * Enterprise Wiki API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { UpdateNodeInputStatus } from "./updateNodeInputStatus";
 import type { UpdateNodeInputTemplateType } from "./updateNodeInputTemplateType";
 
 export interface UpdateNodeInput {
   title?: string;
   templateType?: UpdateNodeInputTemplateType;
-  status?: UpdateNodeInputStatus;
 }

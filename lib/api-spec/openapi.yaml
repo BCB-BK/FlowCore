@@ -947,14 +947,6 @@ components:
             - role_profile
             - dashboard
             - system_documentation
-        status:
-          type: string
-          enum:
-            - draft
-            - in_review
-            - approved
-            - published
-            - archived
 
     MoveNodeInput:
       type: object
