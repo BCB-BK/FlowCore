@@ -101,14 +101,12 @@ router.post(
         })
         .returning();
 
-      if (reviewerId) {
-        await db.insert(approvalsTable).values({
-          workflowId: workflow.id,
-          revisionId,
-          stepNumber: 1,
-          reviewerId,
-        });
-      }
+      await db.insert(approvalsTable).values({
+        workflowId: workflow.id,
+        revisionId,
+        stepNumber: 1,
+        reviewerId: reviewerId || null,
+      });
 
       await db
         .update(contentRevisionsTable)
