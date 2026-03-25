@@ -21,10 +21,19 @@ export const Callout = Node.create<CalloutOptions>({
 
   addAttributes() {
     return {
+      blockId: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
+      },
       type: {
         default: "info",
-        parseHTML: (el) => el.getAttribute("data-callout-type") || "info",
-        renderHTML: (attrs) => ({ "data-callout-type": attrs.type }),
+        parseHTML: (el: HTMLElement) =>
+          el.getAttribute("data-callout-type") || "info",
+        renderHTML: (attrs: Record<string, unknown>) => ({
+          "data-callout-type": attrs.type,
+        }),
       },
     };
   },
@@ -33,7 +42,7 @@ export const Callout = Node.create<CalloutOptions>({
     return [{ tag: 'div[data-type="callout"]' }];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, { "data-type": "callout" }),
@@ -44,13 +53,35 @@ export const Callout = Node.create<CalloutOptions>({
   addCommands() {
     return {
       setCallout:
-        (attrs) =>
-        ({ commands }) =>
-          commands.setNode(this.name, attrs),
+        (attrs?: { type?: string }) =>
+        ({
+          commands,
+        }: {
+          commands: {
+            setNode: (name: string, attrs?: Record<string, unknown>) => boolean;
+          };
+        }) =>
+          commands.setNode(this.name, {
+            ...attrs,
+            blockId: crypto.randomUUID(),
+          }),
       toggleCallout:
-        (attrs) =>
-        ({ commands }) =>
-          commands.toggleNode(this.name, "paragraph", attrs),
+        (attrs?: { type?: string }) =>
+        ({
+          commands,
+        }: {
+          commands: {
+            toggleNode: (
+              name: string,
+              fallback: string,
+              attrs?: Record<string, unknown>,
+            ) => boolean;
+          };
+        }) =>
+          commands.toggleNode(this.name, "paragraph", {
+            ...attrs,
+            blockId: crypto.randomUUID(),
+          }),
     };
   },
 });

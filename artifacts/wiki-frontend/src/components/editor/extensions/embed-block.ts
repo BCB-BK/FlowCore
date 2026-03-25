@@ -1,31 +1,8 @@
 import { Node, mergeAttributes } from "@tiptap/react";
-
-const ALLOWED_EMBED_DOMAINS = [
-  "youtube.com",
-  "youtu.be",
-  "vimeo.com",
-  "microsoft.com",
-  "sharepoint.com",
-  "office.com",
-  "teams.microsoft.com",
-  "miro.com",
-  "figma.com",
-  "lucid.app",
-  "draw.io",
-  "diagrams.net",
-  "loom.com",
-  "sway.office.com",
-];
+import { EDITOR_CONFIG, isDomainAllowed } from "@/lib/editor-config";
 
 export function isAllowedEmbedUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ALLOWED_EMBED_DOMAINS.some(
-      (d) => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`),
-    );
-  } catch {
-    return false;
-  }
+  return isDomainAllowed(url, EDITOR_CONFIG.allowedEmbedDomains);
 }
 
 export interface EmbedBlockOptions {
@@ -48,6 +25,12 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
 
   addAttributes() {
     return {
+      blockId: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
+      },
       src: { default: null },
       caption: { default: "" },
       width: { default: "100%" },
@@ -59,7 +42,7 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
     return [{ tag: 'div[data-type="embed-block"]' }];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, { "data-type": "embed-block" }),
@@ -69,9 +52,18 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
   addCommands() {
     return {
       setEmbedBlock:
-        (attrs) =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name, attrs }),
+        (attrs: { src: string; caption?: string }) =>
+        ({
+          commands,
+        }: {
+          commands: {
+            insertContent: (content: Record<string, unknown>) => boolean;
+          };
+        }) =>
+          commands.insertContent({
+            type: this.name,
+            attrs: { ...attrs, blockId: crypto.randomUUID() },
+          }),
     };
   },
 });

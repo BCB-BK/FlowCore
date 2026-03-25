@@ -32,6 +32,8 @@ import {
 import { EditorToolbar } from "./EditorToolbar";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { MediaLibraryDialog } from "./MediaLibraryDialog";
+import { BlockActionMenu } from "./BlockActionMenu";
+import { EDITOR_CONFIG } from "@/lib/editor-config";
 
 import { Badge } from "@/components/ui/badge";
 import { Save, AlertTriangle } from "lucide-react";
@@ -44,9 +46,10 @@ interface BlockEditorProps {
   lastSavedAt?: Date | null;
   conflictWarning?: string | null;
   className?: string;
+  onTrackMediaUsage?: (assetId: string) => void;
 }
 
-const AUTOSAVE_INTERVAL = 30000;
+const AUTOSAVE_INTERVAL = EDITOR_CONFIG.autosaveIntervalMs;
 
 function getDraftKey(nodeId?: string): string {
   return `wiki-draft-${nodeId || "new"}`;
@@ -60,6 +63,7 @@ export function BlockEditor({
   lastSavedAt,
   conflictWarning,
   className,
+  onTrackMediaUsage,
 }: BlockEditorProps) {
   const [slashMenu, setSlashMenu] = useState<{
     isOpen: boolean;
@@ -310,8 +314,12 @@ export function BlockEditor({
           })
           .run();
       }
+
+      if (onTrackMediaUsage && asset.id) {
+        onTrackMediaUsage(asset.id);
+      }
     },
-    [editor],
+    [editor, onTrackMediaUsage],
   );
 
   if (!editor) return null;
@@ -350,7 +358,10 @@ export function BlockEditor({
 
       {editable && <EditorToolbar editor={editor} />}
 
-      <EditorContent editor={editor} />
+      <div className="relative">
+        {editable && <BlockActionMenu editor={editor} />}
+        <EditorContent editor={editor} />
+      </div>
 
       {editable && (
         <div className="flex items-center justify-between border-t p-2 text-xs text-muted-foreground">

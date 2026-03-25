@@ -58,6 +58,7 @@ import {
   getPageType,
 } from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
+import { customFetch } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
@@ -65,7 +66,7 @@ import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditor } from "@/components/editor";
 import type { JSONContent } from "@tiptap/react";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
@@ -171,9 +172,29 @@ export function NodeDetail() {
     return null;
   }, [structuredFields]);
 
+  const editBaseRevisionRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (latestRevision?.id) {
+      editBaseRevisionRef.current = latestRevision.id;
+    }
+  }, [latestRevision?.id]);
+
+  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+
   const handleEditorSave = useCallback(
     async (json: JSONContent) => {
       if (!node || !nodeId) return;
+
+      if (
+        editBaseRevisionRef.current &&
+        latestRevision?.id &&
+        editBaseRevisionRef.current !== latestRevision.id
+      ) {
+        setConflictWarning(
+          "Achtung: Ein anderer Benutzer hat diese Seite seit Beginn Ihrer Bearbeitung geändert. Ihre Änderungen werden als neue Revision gespeichert.",
+        );
+      }
+
       const updatedFields = {
         ...structuredFields,
         _editorContent: json,
@@ -188,10 +209,35 @@ export function NodeDetail() {
           changeSummary: "Inhalt bearbeitet",
         },
       });
+      editBaseRevisionRef.current = null;
+      setConflictWarning(null);
       setLastSavedAt(new Date());
       toast({ title: "Inhalt gespeichert" });
     },
-    [nodeId, node, structuredFields, editableMetadata, createRevision, toast],
+    [
+      nodeId,
+      node,
+      structuredFields,
+      editableMetadata,
+      createRevision,
+      toast,
+      latestRevision?.id,
+    ],
+  );
+
+  const handleTrackMediaUsage = useCallback(
+    (assetId: string) => {
+      if (!nodeId) return;
+      customFetch(`/api/media/assets/${assetId}/usages`, {
+        method: "POST",
+        body: JSON.stringify({
+          nodeId,
+          revisionId: latestRevision?.id || null,
+          usageContext: "editor_content",
+        }),
+      }).catch(() => {});
+    },
+    [nodeId, latestRevision?.id],
   );
 
   if (isLoading) {
@@ -412,6 +458,8 @@ export function NodeDetail() {
               editable={isEditing}
               nodeId={nodeId}
               lastSavedAt={lastSavedAt}
+              conflictWarning={conflictWarning}
+              onTrackMediaUsage={handleTrackMediaUsage}
             />
           </div>
         </TabsContent>

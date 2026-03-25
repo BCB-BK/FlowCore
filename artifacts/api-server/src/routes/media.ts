@@ -369,4 +369,47 @@ function getClassification(
   return "other";
 }
 
+const ALLOWED_EMBED_DOMAINS = [
+  "youtube.com",
+  "youtu.be",
+  "vimeo.com",
+  "microsoft.com",
+  "sharepoint.com",
+  "office.com",
+  "teams.microsoft.com",
+  "miro.com",
+  "figma.com",
+  "lucid.app",
+  "draw.io",
+  "diagrams.net",
+  "loom.com",
+  "sway.office.com",
+  "stream.microsoft.com",
+];
+
+function isAllowedEmbedDomain(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ALLOWED_EMBED_DOMAINS.some(
+      (d) => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`),
+    );
+  } catch {
+    return false;
+  }
+}
+
+router.post("/validate-embed", requireAuth, (req, res) => {
+  const { url } = req.body;
+  if (!url || typeof url !== "string") {
+    res.status(400).json({ allowed: false, reason: "URL is required" });
+    return;
+  }
+  const allowed = isAllowedEmbedDomain(url);
+  res.json({
+    allowed,
+    reason: allowed ? null : "Domain is not in the allowlist",
+    allowedDomains: ALLOWED_EMBED_DOMAINS,
+  });
+});
+
 export default router;

@@ -24,6 +24,12 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
 
   addAttributes() {
     return {
+      blockId: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
+      },
       diagramType: { default: "flowchart" },
       src: { default: null },
       caption: { default: "" },
@@ -37,7 +43,7 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
     return [{ tag: 'div[data-type="diagram-block"]' }];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, { "data-type": "diagram-block" }),
@@ -47,9 +53,18 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
   addCommands() {
     return {
       setDiagramBlock:
-        (attrs) =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name, attrs }),
+        (attrs: { diagramType?: string; src?: string; caption?: string }) =>
+        ({
+          commands,
+        }: {
+          commands: {
+            insertContent: (content: Record<string, unknown>) => boolean;
+          };
+        }) =>
+          commands.insertContent({
+            type: this.name,
+            attrs: { ...attrs, blockId: crypto.randomUUID() },
+          }),
     };
   },
 });

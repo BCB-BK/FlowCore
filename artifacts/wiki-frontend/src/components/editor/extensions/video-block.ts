@@ -1,24 +1,8 @@
 import { Node, mergeAttributes } from "@tiptap/react";
-
-const ALLOWED_VIDEO_SOURCES = [
-  "youtube.com",
-  "youtu.be",
-  "vimeo.com",
-  "microsoft.com",
-  "sharepoint.com",
-  "stream.microsoft.com",
-  "loom.com",
-];
+import { EDITOR_CONFIG, isDomainAllowed } from "@/lib/editor-config";
 
 export function isAllowedVideoSource(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ALLOWED_VIDEO_SOURCES.some(
-      (d) => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`),
-    );
-  } catch {
-    return false;
-  }
+  return isDomainAllowed(url, EDITOR_CONFIG.allowedVideoDomains);
 }
 
 export function getVideoEmbedUrl(url: string): string | null {
@@ -67,6 +51,12 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
 
   addAttributes() {
     return {
+      blockId: {
+        default: null,
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
+      },
       src: { default: null },
       caption: { default: "" },
       width: { default: "100%" },
@@ -79,7 +69,7 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
     return [{ tag: 'div[data-type="video-block"]' }];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, unknown> }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, { "data-type": "video-block" }),
@@ -89,9 +79,18 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
   addCommands() {
     return {
       setVideoBlock:
-        (attrs) =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name, attrs }),
+        (attrs: { src: string; caption?: string }) =>
+        ({
+          commands,
+        }: {
+          commands: {
+            insertContent: (content: Record<string, unknown>) => boolean;
+          };
+        }) =>
+          commands.insertContent({
+            type: this.name,
+            attrs: { ...attrs, blockId: crypto.randomUUID() },
+          }),
     };
   },
 });
