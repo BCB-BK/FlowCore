@@ -178,6 +178,41 @@ router.get(
 );
 
 router.get(
+  "/nodes/:id/ancestors",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const ancestors: (typeof contentNodesTable.$inferSelect)[] = [];
+    let currentId: string | null = id;
+
+    const [startNode] = await db
+      .select()
+      .from(contentNodesTable)
+      .where(eq(contentNodesTable.id, currentId));
+
+    if (!startNode) {
+      res.status(404).json({ error: "Node not found" });
+      return;
+    }
+
+    currentId = startNode.parentNodeId;
+
+    while (currentId) {
+      const [parent] = await db
+        .select()
+        .from(contentNodesTable)
+        .where(eq(contentNodesTable.id, currentId));
+      if (!parent) break;
+      ancestors.unshift(parent);
+      currentId = parent.parentNodeId;
+    }
+
+    res.json(ancestors);
+  },
+);
+
+router.get(
   "/nodes/:id/tree",
   requireAuth,
   requirePermission("read_page", (req) => req.params.id),

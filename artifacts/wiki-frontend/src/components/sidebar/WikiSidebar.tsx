@@ -1,0 +1,87 @@
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
+import { useRootNodes } from "@/hooks/use-nodes";
+import { TreeNode } from "./TreeNode";
+import { BookOpen, Home } from "lucide-react";
+import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { useLocation } from "wouter";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export function WikiSidebar() {
+  const { data: roots, isLoading } = useRootNodes();
+  const [location, navigate] = useLocation();
+
+  return (
+    <Sidebar>
+      <SidebarHeader className="border-b px-4 py-3">
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <BookOpen className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight">
+              Bildungscampus
+            </p>
+            <p className="text-xs text-muted-foreground">Knowledge Hub</p>
+          </div>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/"}
+                onClick={() => navigate("/")}
+              >
+                <Home className="h-4 w-4" />
+                <span>Startseite</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Wissensstruktur</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {isLoading ? (
+                <div className="space-y-2 px-2">
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-6 w-5/6" />
+                </div>
+              ) : roots && roots.length > 0 ? (
+                roots.map((node) => (
+                  <TreeNode key={node.id} node={node} level={0} />
+                ))
+              ) : (
+                <p className="px-3 py-2 text-xs text-muted-foreground">
+                  Noch keine Inhalte vorhanden
+                </p>
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t p-3">
+        <p className="text-xs text-muted-foreground text-center">
+          Enterprise Wiki v0.4
+        </p>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}

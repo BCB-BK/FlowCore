@@ -2,7 +2,7 @@
 
 ## Overview
 
-pnpm workspace monorepo for a process-based Enterprise Wiki system. Uses TypeScript, Express 5 API server, PostgreSQL with Drizzle ORM, and OpenAPI-first code generation.
+pnpm workspace monorepo for a process-based Enterprise Wiki system. Uses TypeScript, Express 5 API server, React+Vite frontend, PostgreSQL with Drizzle ORM, and OpenAPI-first code generation.
 
 ## Stack
 
@@ -24,6 +24,7 @@ pnpm workspace monorepo for a process-based Enterprise Wiki system. Uses TypeScr
 workspace/
 ├── artifacts/              # Deployable applications
 │   ├── api-server/         # Express 5 API server
+│   ├── wiki-frontend/      # React+Vite frontend (Knowledge Hub)
 │   └── mockup-sandbox/     # Vite dev server for UI prototyping
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
@@ -99,6 +100,19 @@ Express 5 API server with structured logging, config validation, content managem
 - Services: `src/services/graph-client.service.ts` — Microsoft Graph API wrapper with caching + dev mock
 - Services: `src/services/principal.service.ts` — Principal upsert, search, role assignment
 - Services: `src/services/rbac.service.ts` — 7-role→13-permission matrix, page-level permissions, ownership
+
+### `artifacts/wiki-frontend` (`@workspace/wiki-frontend`)
+
+React+Vite frontend for the Enterprise Wiki Knowledge Hub.
+
+- Framework: React 19 + Vite + TailwindCSS 4 + shadcn/ui
+- Routing: Wouter (lightweight client-side router)
+- Data fetching: React Query via `@workspace/api-client-react`
+- Auth: Dev-mode header injection (`X-Dev-Principal-Id`) via `lib/api.ts`
+- Pages: Hub (landing), NodeDetail (view/manage nodes), SearchPage (real-time search)
+- Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog, TreeNode
+- Entry: `src/main.tsx` → `src/App.tsx`
+- Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080
 
 ### `lib/db` (`@workspace/db`)
 

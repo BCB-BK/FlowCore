@@ -486,6 +486,26 @@ paths:
                 items:
                   $ref: "#/components/schemas/ContentNode"
 
+  /content/nodes/{nodeId}/ancestors:
+    get:
+      operationId: getNodeAncestors
+      tags: [content]
+      summary: Get ancestor chain of a content node
+      description: Returns the ancestor nodes from root to the direct parent, ordered root-first.
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Ancestor nodes (root-first order)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentNode"
+        "404":
+          description: Not found
+
   /content/nodes/{nodeId}/move:
     post:
       operationId: moveNode

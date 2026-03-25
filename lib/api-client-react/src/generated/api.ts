@@ -2181,6 +2181,95 @@ export function useGetNodeChildren<
 }
 
 /**
+ * Returns the ancestor nodes from root to the direct parent, ordered root-first.
+ * @summary Get ancestor chain of a content node
+ */
+export const getGetNodeAncestorsUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/ancestors`;
+};
+
+export const getNodeAncestors = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<ContentNode[]> => {
+  return customFetch<ContentNode[]>(getGetNodeAncestorsUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetNodeAncestorsQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/ancestors`] as const;
+};
+
+export const getGetNodeAncestorsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeAncestors>>,
+  TError = ErrorType<void>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeAncestors>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetNodeAncestorsQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getNodeAncestors>>
+  > = ({ signal }) => getNodeAncestors(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeAncestors>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeAncestorsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeAncestors>>
+>;
+export type GetNodeAncestorsQueryError = ErrorType<void>;
+
+/**
+ * @summary Get ancestor chain of a content node
+ */
+
+export function useGetNodeAncestors<
+  TData = Awaited<ReturnType<typeof getNodeAncestors>>,
+  TError = ErrorType<void>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeAncestors>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNodeAncestorsQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
  * @summary Move a node to a new parent
  */
 export const getMoveNodeUrl = (nodeId: string) => {

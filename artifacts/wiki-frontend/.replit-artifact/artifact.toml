@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Bildungscampus Wiki"
+version = "1.0.0"
+id = "artifacts/wiki-frontend"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21605
+
+[services.development]
+run = "pnpm --filter @workspace/wiki-frontend run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wiki-frontend", "run", "build" ]
+publicDir = "artifacts/wiki-frontend/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21605"
+BASE_PATH = "/"
