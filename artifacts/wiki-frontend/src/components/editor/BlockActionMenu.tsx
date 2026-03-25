@@ -72,91 +72,79 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showActions]);
 
+  function getBlockRange(state: typeof editor.state) {
+    const $pos = state.doc.resolve(state.selection.from);
+    const depth = $pos.depth > 0 ? 1 : 0;
+    if (depth === 0) return null;
+    const start = $pos.before(depth);
+    const end = $pos.after(depth);
+    const index = $pos.index(0);
+    const node = state.doc.child(index);
+    return { start, end, index, node };
+  }
+
   const moveBlockUp = useCallback(() => {
     const { state, dispatch } = editor.view;
-    const resolvedPos = state.doc.resolve(state.selection.from);
-    const blockIndex = resolvedPos.index(0);
-    if (blockIndex === 0) return;
+    const range = getBlockRange(state);
+    if (!range || range.index === 0) return;
 
-    const blockBefore = state.doc.child(blockIndex - 1);
-    const currentBlock = state.doc.child(blockIndex);
-    let blockBeforeStart = 0;
-    for (let i = 0; i < blockIndex - 1; i++) {
-      blockBeforeStart += state.doc.child(i).nodeSize;
-    }
-    blockBeforeStart += 1;
+    const $prev = state.doc.resolve(range.start - 1);
+    const prevStart = $prev.before($prev.depth);
 
     const tr = state.tr;
-    const currentStart = blockBeforeStart + blockBefore.nodeSize;
-    tr.delete(currentStart, currentStart + currentBlock.nodeSize);
-    tr.insert(blockBeforeStart, currentBlock);
+    const blockSlice = tr.doc.slice(range.start, range.end);
+    tr.delete(range.start, range.end);
+    tr.insert(prevStart, blockSlice.content);
     dispatch(tr);
     setShowActions(false);
   }, [editor]);
 
   const moveBlockDown = useCallback(() => {
     const { state, dispatch } = editor.view;
-    const resolvedPos = state.doc.resolve(state.selection.from);
-    const blockIndex = resolvedPos.index(0);
-    if (blockIndex >= state.doc.childCount - 1) return;
+    const range = getBlockRange(state);
+    if (!range || range.index >= state.doc.childCount - 1) return;
 
-    const currentBlock = state.doc.child(blockIndex);
-    const blockAfter = state.doc.child(blockIndex + 1);
-    let currentStart = 1;
-    for (let i = 0; i < blockIndex; i++) {
-      currentStart += state.doc.child(i).nodeSize;
-    }
+    const nextNode = state.doc.child(range.index + 1);
+    const insertPos = range.end + nextNode.nodeSize;
 
     const tr = state.tr;
-    const afterEnd = currentStart + currentBlock.nodeSize + blockAfter.nodeSize;
-    tr.delete(currentStart, afterEnd);
-    tr.insert(currentStart, blockAfter);
-    tr.insert(currentStart + blockAfter.nodeSize, currentBlock);
+    const blockSlice = tr.doc.slice(range.start, range.end);
+    tr.delete(range.start, range.end);
+    const adjustedPos = insertPos - (range.end - range.start);
+    tr.insert(adjustedPos, blockSlice.content);
     dispatch(tr);
     setShowActions(false);
   }, [editor]);
 
   const duplicateBlock = useCallback(() => {
     const { state, dispatch } = editor.view;
-    const resolvedPos = state.doc.resolve(state.selection.from);
-    const blockIndex = resolvedPos.index(0);
-    const currentBlock = state.doc.child(blockIndex);
+    const range = getBlockRange(state);
+    if (!range) return;
 
-    let blockEnd = 1;
-    for (let i = 0; i <= blockIndex; i++) {
-      blockEnd += state.doc.child(i).nodeSize;
-    }
-
-    const newNode = currentBlock.type.create(
+    const newNode = range.node.type.create(
       {
-        ...currentBlock.attrs,
+        ...range.node.attrs,
         blockId: crypto.randomUUID(),
       },
-      currentBlock.content,
-      currentBlock.marks,
+      range.node.content,
+      range.node.marks,
     );
 
     const tr = state.tr;
-    tr.insert(blockEnd, newNode);
+    tr.insert(range.end, newNode);
     dispatch(tr);
     setShowActions(false);
   }, [editor]);
 
   const deleteBlock = useCallback(() => {
     const { state, dispatch } = editor.view;
-    const resolvedPos = state.doc.resolve(state.selection.from);
-    const blockIndex = resolvedPos.index(0);
-    const currentBlock = state.doc.child(blockIndex);
-
-    let blockStart = 1;
-    for (let i = 0; i < blockIndex; i++) {
-      blockStart += state.doc.child(i).nodeSize;
-    }
+    const range = getBlockRange(state);
+    if (!range) return;
 
     const tr = state.tr;
-    tr.delete(blockStart, blockStart + currentBlock.nodeSize);
+    tr.delete(range.start, range.end);
     if (state.doc.childCount === 1) {
-      tr.insert(1, state.schema.nodes.paragraph.create());
+      tr.insert(0, state.schema.nodes.paragraph.create());
     }
     dispatch(tr);
     setShowActions(false);
@@ -169,18 +157,13 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
 
   const insertBlockBelow = useCallback(() => {
     const { state, dispatch } = editor.view;
-    const resolvedPos = state.doc.resolve(state.selection.from);
-    const blockIndex = resolvedPos.index(0);
-
-    let blockEnd = 1;
-    for (let i = 0; i <= blockIndex; i++) {
-      blockEnd += state.doc.child(i).nodeSize;
-    }
+    const range = getBlockRange(state);
+    if (!range) return;
 
     const tr = state.tr;
     const newParagraph = state.schema.nodes.paragraph.create();
-    tr.insert(blockEnd, newParagraph);
-    const sel = TextSelection.near(tr.doc.resolve(blockEnd + 1));
+    tr.insert(range.end, newParagraph);
+    const sel = TextSelection.near(tr.doc.resolve(range.end + 1));
     tr.setSelection(sel);
     dispatch(tr);
     editor.view.focus();

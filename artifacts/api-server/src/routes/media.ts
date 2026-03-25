@@ -309,7 +309,7 @@ router.get("/files/:key", requireAuth, async (req, res) => {
     const result = await provider.download(key);
     res.setHeader("Content-Type", result.mimeType);
     res.setHeader("Content-Length", result.sizeBytes);
-    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    res.setHeader("Cache-Control", "private, max-age=3600");
     (result.stream as NodeJS.ReadableStream).pipe(res);
   } catch {
     res.status(404).json({ error: "File not found" });
