@@ -1,5 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { useCreateNode, useCreateRevision } from "@/hooks/use-nodes";
+import {
+  useCreateNode,
+  useCreateRevision,
+  useRootNodes,
+} from "@/hooks/use-nodes";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -15,6 +19,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PeoplePicker } from "@/components/PeoplePicker";
 import {
@@ -46,8 +57,10 @@ export function CreateNodeDialog({
   >("core_process_overview");
   const [ownerId, setOwnerId] = useState<string | undefined>();
   const [ownerName, setOwnerName] = useState<string | undefined>();
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const createNode = useCreateNode();
   const createRevision = useCreateRevision();
+  const { data: rootNodes } = useRootNodes();
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
@@ -87,7 +100,7 @@ export function CreateNodeDialog({
         data: {
           title: title.trim(),
           templateType,
-          parentNodeId: parentNodeId || undefined,
+          parentNodeId: effectiveParentId || undefined,
           ownerId: ownerId || undefined,
         },
       });
@@ -95,7 +108,7 @@ export function CreateNodeDialog({
       const metadata: Record<string, unknown> = {};
       if (ownerId) {
         metadata.owner = ownerId;
-        metadata.ownerName = ownerName;
+        metadata.owner_display = ownerName;
       }
 
       await createRevision.mutateAsync({
@@ -120,11 +133,14 @@ export function CreateNodeDialog({
     }
   };
 
+  const effectiveParentId = parentNodeId ?? selectedParentId;
+
   const resetAndClose = () => {
     setStep(0);
     setTitle("");
     setOwnerId(undefined);
     setOwnerName(undefined);
+    setSelectedParentId(null);
     onOpenChange(false);
   };
 
@@ -255,6 +271,13 @@ export function CreateNodeDialog({
               </div>
             )}
 
+            {selectedDef?.helpText && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-200">
+                <p className="font-medium mb-1">Hinweis zur Erstellung</p>
+                <p className="text-xs">{selectedDef.helpText}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="title">Titel *</Label>
               <Input
@@ -293,6 +316,39 @@ export function CreateNodeDialog({
               }
               includeGroups
             />
+
+            {!parentNodeId && rootNodes && rootNodes.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <Label>Übergeordnete Seite (optional)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Wählen Sie eine übergeordnete Seite oder lassen Sie das Feld
+                    leer für eine Stammseite.
+                  </p>
+                  <Select
+                    value={selectedParentId ?? "__none__"}
+                    onValueChange={(v) =>
+                      setSelectedParentId(v === "__none__" ? null : v)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Stammebene (keine Elternseite)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">
+                        Stammebene (keine Elternseite)
+                      </SelectItem>
+                      {rootNodes.map((n) => (
+                        <SelectItem key={n.id} value={n.id}>
+                          {n.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -340,7 +396,10 @@ export function CreateNodeDialog({
                 <div>
                   <span className="text-muted-foreground">Elternseite</span>
                   <p className="mt-0.5 font-medium">
-                    {parentNodeId ? "Wird zugeordnet" : "Stammebene"}
+                    {effectiveParentId
+                      ? (rootNodes?.find((n) => n.id === effectiveParentId)
+                          ?.title ?? "Wird zugeordnet")
+                      : "Stammebene"}
                   </p>
                 </div>
                 {ownerName && (

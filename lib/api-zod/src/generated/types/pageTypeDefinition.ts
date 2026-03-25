@@ -21,4 +21,5 @@ export interface PageTypeDefinition {
   allowedChildTypes: string[];
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
+  helpText?: string;
 }

@@ -86,6 +86,9 @@ export function NodeDetail() {
   const [editableMetadata, setEditableMetadata] = useState<
     Record<string, unknown>
   >({});
+  const [metadataDisplayValues, setMetadataDisplayValues] = useState<
+    Record<string, string>
+  >({});
   const [metadataDirty, setMetadataDirty] = useState(false);
 
   const latestRevision =
@@ -95,14 +98,33 @@ export function NodeDetail() {
 
   useEffect(() => {
     setEditableMetadata(revisionContent);
+    const dv: Record<string, string> = {};
+    for (const [k, v] of Object.entries(revisionContent)) {
+      if (k.endsWith("_display") && typeof v === "string") {
+        dv[k.replace(/_display$/, "")] = v;
+      }
+    }
+    setMetadataDisplayValues(dv);
     setMetadataDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latestRevision?.id]);
 
-  const handleMetadataChange = useCallback((key: string, value: unknown) => {
-    setEditableMetadata((prev) => ({ ...prev, [key]: value }));
-    setMetadataDirty(true);
-  }, []);
+  const handleMetadataChange = useCallback(
+    (key: string, value: unknown, displayValue?: string) => {
+      setEditableMetadata((prev) => {
+        const next = { ...prev, [key]: value };
+        if (displayValue !== undefined) {
+          next[`${key}_display`] = displayValue;
+        }
+        return next;
+      });
+      if (displayValue !== undefined) {
+        setMetadataDisplayValues((prev) => ({ ...prev, [key]: displayValue }));
+      }
+      setMetadataDirty(true);
+    },
+    [],
+  );
 
   const handleMetadataSave = useCallback(async () => {
     if (!node || !nodeId) return;
@@ -342,6 +364,7 @@ export function NodeDetail() {
           <MetadataPanel
             templateType={node.templateType}
             metadata={metadata}
+            displayValues={metadataDisplayValues}
             onChange={handleMetadataChange}
           />
           {metadataDirty && (

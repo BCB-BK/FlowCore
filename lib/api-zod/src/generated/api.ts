@@ -889,6 +889,7 @@ export const ListPageTypesResponseItem = zod.object({
       required: zod.boolean(),
     }),
   ),
+  helpText: zod.string().optional(),
 });
 export const ListPageTypesResponse = zod.array(ListPageTypesResponseItem);
 
@@ -942,6 +943,7 @@ export const GetPageTypeResponse = zod.object({
       required: zod.boolean(),
     }),
   ),
+  helpText: zod.string().optional(),
 });
 
 /**

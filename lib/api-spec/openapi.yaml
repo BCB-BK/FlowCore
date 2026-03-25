@@ -1226,6 +1226,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PageTypeSection"
+        helpText:
+          type: string
       required:
         - type
         - label

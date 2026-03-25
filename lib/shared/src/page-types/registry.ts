@@ -46,6 +46,7 @@ export interface PageTypeDefinition {
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   category: "process" | "documentation" | "governance" | "system";
+  helpText?: string;
 }
 
 const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
@@ -166,6 +167,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Workflow",
     color: "hsl(145, 76%, 38%)",
     category: "process",
+    helpText:
+      "Erstellen Sie eine Kernprozess-Übersicht, um einen übergeordneten Geschäftsprozess zu dokumentieren. Füllen Sie die SIPOC-Tabelle aus, definieren Sie KPIs und verknüpfen Sie zugehörige Teilprozesse.",
     allowedChildTypes: [
       "process_page_text",
       "process_page_graphic",
@@ -208,6 +211,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Building2",
     color: "hsl(200, 70%, 45%)",
     category: "documentation",
+    helpText:
+      "Nutzen Sie die Bereichsübersicht, um Abteilungen oder Organisationseinheiten zu dokumentieren. Beschreiben Sie Aufgaben, Aufbauorganisation und verknüpfen Sie relevante Prozesse.",
     allowedChildTypes: [
       "core_process_overview",
       "process_page_text",
@@ -238,6 +243,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "FileText",
     color: "hsl(220, 60%, 50%)",
     category: "process",
+    helpText:
+      "Dokumentieren Sie einen Prozessablauf als Textbeschreibung mit Verfahrensschritten, Zuständigkeiten und zugehörigen Dokumenten.",
     allowedChildTypes: ["procedure_instruction", "use_case"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -270,6 +277,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "GitBranchPlus",
     color: "hsl(260, 50%, 55%)",
     category: "process",
+    helpText:
+      "Erstellen Sie eine grafische Prozessdarstellung mit Swimlane-Diagramm. Ideal für Prozesse, die visuell besser verständlich sind als in Textform.",
     allowedChildTypes: ["procedure_instruction", "use_case"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -297,6 +306,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "ListChecks",
     color: "hsl(30, 80%, 50%)",
     category: "process",
+    helpText:
+      "Erstellen Sie eine detaillierte Verfahrensanweisung mit Schritt-für-Schritt-Anleitungen, Verantwortlichkeiten und benötigten Ressourcen.",
     allowedChildTypes: [],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -339,6 +350,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Users",
     color: "hsl(180, 50%, 45%)",
     category: "documentation",
+    helpText:
+      "Beschreiben Sie einen konkreten Anwendungsfall mit Akteuren, Vor-/Nachbedingungen, Normalablauf und Alternativabläufen.",
     allowedChildTypes: [],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -365,6 +378,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Shield",
     color: "hsl(0, 60%, 50%)",
     category: "governance",
+    helpText:
+      "Erstellen Sie eine Richtlinie mit klarem Zweck, Geltungsbereich, Richtlinientext und Durchsetzungsmaßnahmen. Verknüpfen Sie bei Bedarf Verfahrensanweisungen.",
     allowedChildTypes: ["procedure_instruction"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -399,6 +414,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "UserCog",
     color: "hsl(320, 50%, 50%)",
     category: "governance",
+    helpText:
+      "Definieren Sie ein Rollenprofil mit Aufgabenbeschreibung, Verantwortlichkeiten, erforderlichen Qualifikationen und Befugnissen.",
     allowedChildTypes: [],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -437,6 +454,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "LayoutDashboard",
     color: "hsl(280, 50%, 55%)",
     category: "system",
+    helpText:
+      "Erstellen Sie ein Dashboard mit konfigurierbaren Widgets für KPI-Übersichten, Prozesskennzahlen und Statusanzeigen.",
     allowedChildTypes: [],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -471,6 +490,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Server",
     color: "hsl(200, 40%, 50%)",
     category: "system",
+    helpText:
+      "Dokumentieren Sie ein IT-System mit Schnittstellen, Datenobjekten, Zugriffsrechten und technischen Details.",
     allowedChildTypes: [],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
