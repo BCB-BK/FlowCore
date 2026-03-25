@@ -677,6 +677,214 @@ paths:
               schema:
                 $ref: "#/components/schemas/ContentRevision"
 
+  /content/revisions/{revisionId}/submit-for-review:
+    post:
+      operationId: submitForReview
+      tags: [revisions]
+      summary: Submit a revision for review
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reviewerId:
+                  type: string
+                  description: ID of the assigned reviewer
+                comment:
+                  type: string
+                  description: Optional comment
+      responses:
+        "201":
+          description: Review workflow created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewWorkflow"
+        "409":
+          description: Review already pending
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /content/revisions/{revisionId}/approve:
+    post:
+      operationId: approveRevision
+      tags: [revisions]
+      summary: Approve a revision
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                nextReviewDate:
+                  type: string
+                  format: date-time
+      responses:
+        "200":
+          description: Approved revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevision"
+
+  /content/revisions/{revisionId}/reject:
+    post:
+      operationId: rejectRevision
+      tags: [revisions]
+      summary: Reject or return a revision for changes
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                decision:
+                  type: string
+                  enum: [rejected, returned_for_changes]
+      responses:
+        "200":
+          description: Rejected/returned revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRevision"
+
+  /content/revisions/{revisionId}/workflow:
+    get:
+      operationId: getRevisionWorkflow
+      tags: [revisions]
+      summary: Get review workflow for a revision
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      responses:
+        "200":
+          description: Review workflow with approvals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewWorkflowDetail"
+
+  /content/revisions/{revisionId}/events:
+    get:
+      operationId: getRevisionEvents
+      tags: [revisions]
+      summary: Get revision event history
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+      responses:
+        "200":
+          description: List of revision events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevisionEvent"
+
+  /content/revisions/{revisionId}/diff/{compareRevisionId}:
+    get:
+      operationId: getRevisionDiff
+      tags: [revisions]
+      summary: Compare two revisions
+      parameters:
+        - $ref: "#/components/parameters/RevisionId"
+        - name: compareRevisionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Diff result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevisionDiff"
+        "404":
+          description: Revision not found
+
+  /content/nodes/{nodeId}/watchers:
+    get:
+      operationId: getNodeWatchers
+      tags: [content]
+      summary: Get watchers for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: List of watchers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PageWatcher"
+
+  /content/nodes/{nodeId}/watch:
+    get:
+      operationId: getWatchStatus
+      tags: [content]
+      summary: Check if current user is watching a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Watch status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  watching:
+                    type: boolean
+                  watcher:
+                    $ref: "#/components/schemas/PageWatcher"
+    post:
+      operationId: watchNode
+      tags: [content]
+      summary: Watch a node for changes
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                watchChildren:
+                  type: boolean
+                  default: false
+      responses:
+        "201":
+          description: Watcher created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageWatcher"
+    delete:
+      operationId: unwatchNode
+      tags: [content]
+      summary: Stop watching a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "204":
+          description: Unwatched
+
   /content/nodes/{nodeId}/relations:
     get:
       operationId: getNodeRelations
@@ -1321,6 +1529,205 @@ components:
       properties:
         authorId:
           type: string
+
+    ReviewWorkflow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        revisionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, in_progress, approved, rejected, cancelled]
+        requiredApprovals:
+          type: integer
+        currentStep:
+          type: integer
+        initiatedBy:
+          type: string
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - revisionId
+        - status
+        - createdAt
+
+    ReviewWorkflowDetail:
+      allOf:
+        - $ref: "#/components/schemas/ReviewWorkflow"
+        - type: object
+          properties:
+            approvals:
+              type: array
+              items:
+                $ref: "#/components/schemas/Approval"
+
+    Approval:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workflowId:
+          type: string
+          format: uuid
+        revisionId:
+          type: string
+          format: uuid
+        stepNumber:
+          type: integer
+        reviewerId:
+          type: string
+          nullable: true
+        decision:
+          type: string
+          enum: [approved, rejected, returned_for_changes]
+          nullable: true
+        comment:
+          type: string
+          nullable: true
+        decidedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - workflowId
+        - revisionId
+        - stepNumber
+        - createdAt
+
+    RevisionEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        revisionId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+          enum: [created, submitted_for_review, review_approved, review_rejected, published, archived, restored, superseded]
+        actorId:
+          type: string
+          nullable: true
+        comment:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - revisionId
+        - eventType
+        - createdAt
+
+    RevisionDiff:
+      type: object
+      properties:
+        revisionA:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            revisionNo:
+              type: integer
+            title:
+              type: string
+            status:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            authorId:
+              type: string
+              nullable: true
+        revisionB:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            revisionNo:
+              type: integer
+            title:
+              type: string
+            status:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            authorId:
+              type: string
+              nullable: true
+        metadataChanges:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              old: {}
+              new: {}
+        structuredFieldChanges:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              old: {}
+              new: {}
+        contentChanged:
+          type: boolean
+        contentA:
+          type: object
+          nullable: true
+        contentB:
+          type: object
+          nullable: true
+
+    PageWatcher:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        principalId:
+          type: string
+          format: uuid
+        watchChildren:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nodeId
+        - principalId
+        - watchChildren
+        - createdAt
 
     ContentRelation:
       type: object

@@ -220,6 +220,135 @@ export interface RestoreRevisionInput {
   authorId?: string;
 }
 
+export type ReviewWorkflowStatus =
+  (typeof ReviewWorkflowStatus)[keyof typeof ReviewWorkflowStatus];
+
+export const ReviewWorkflowStatus = {
+  pending: "pending",
+  in_progress: "in_progress",
+  approved: "approved",
+  rejected: "rejected",
+  cancelled: "cancelled",
+} as const;
+
+export interface ReviewWorkflow {
+  id: string;
+  revisionId: string;
+  status: ReviewWorkflowStatus;
+  requiredApprovals?: number;
+  currentStep?: number;
+  initiatedBy?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type ApprovalDecision =
+  | (typeof ApprovalDecision)[keyof typeof ApprovalDecision]
+  | null;
+
+export const ApprovalDecision = {
+  approved: "approved",
+  rejected: "rejected",
+  returned_for_changes: "returned_for_changes",
+} as const;
+
+export interface Approval {
+  id: string;
+  workflowId: string;
+  revisionId: string;
+  stepNumber: number;
+  reviewerId?: string | null;
+  decision?: ApprovalDecision;
+  comment?: string | null;
+  decidedAt?: string | null;
+  createdAt: string;
+}
+
+export type ReviewWorkflowDetail = ReviewWorkflow & {
+  approvals?: Approval[];
+};
+
+export type RevisionEventEventType =
+  (typeof RevisionEventEventType)[keyof typeof RevisionEventEventType];
+
+export const RevisionEventEventType = {
+  created: "created",
+  submitted_for_review: "submitted_for_review",
+  review_approved: "review_approved",
+  review_rejected: "review_rejected",
+  published: "published",
+  archived: "archived",
+  restored: "restored",
+  superseded: "superseded",
+} as const;
+
+export type RevisionEventMetadata = { [key: string]: unknown } | null;
+
+export interface RevisionEvent {
+  id: string;
+  revisionId: string;
+  eventType: RevisionEventEventType;
+  actorId?: string | null;
+  comment?: string | null;
+  metadata?: RevisionEventMetadata;
+  createdAt: string;
+}
+
+export type RevisionDiffRevisionA = {
+  id?: string;
+  revisionNo?: number;
+  title?: string;
+  status?: string;
+  createdAt?: string;
+  authorId?: string | null;
+};
+
+export type RevisionDiffRevisionB = {
+  id?: string;
+  revisionNo?: number;
+  title?: string;
+  status?: string;
+  createdAt?: string;
+  authorId?: string | null;
+};
+
+export type RevisionDiffMetadataChanges = {
+  [key: string]: {
+    old?: unknown;
+    new?: unknown;
+  };
+};
+
+export type RevisionDiffStructuredFieldChanges = {
+  [key: string]: {
+    old?: unknown;
+    new?: unknown;
+  };
+};
+
+export type RevisionDiffContentA = { [key: string]: unknown } | null;
+
+export type RevisionDiffContentB = { [key: string]: unknown } | null;
+
+export interface RevisionDiff {
+  revisionA?: RevisionDiffRevisionA;
+  revisionB?: RevisionDiffRevisionB;
+  metadataChanges?: RevisionDiffMetadataChanges;
+  structuredFieldChanges?: RevisionDiffStructuredFieldChanges;
+  contentChanged?: boolean;
+  contentA?: RevisionDiffContentA;
+  contentB?: RevisionDiffContentB;
+}
+
+export interface PageWatcher {
+  id: string;
+  nodeId: string;
+  principalId: string;
+  watchChildren: boolean;
+  createdAt: string;
+}
+
 export type ContentRelationRelationType =
   (typeof ContentRelationRelationType)[keyof typeof ContentRelationRelationType];
 
@@ -587,6 +716,40 @@ export type GrantPagePermission201 = {
 
 export type SetNodeOwnership200 = {
   id?: string;
+};
+
+export type SubmitForReviewBody = {
+  /** ID of the assigned reviewer */
+  reviewerId?: string;
+  /** Optional comment */
+  comment?: string;
+};
+
+export type ApproveRevisionBody = {
+  comment?: string;
+  nextReviewDate?: string;
+};
+
+export type RejectRevisionBodyDecision =
+  (typeof RejectRevisionBodyDecision)[keyof typeof RejectRevisionBodyDecision];
+
+export const RejectRevisionBodyDecision = {
+  rejected: "rejected",
+  returned_for_changes: "returned_for_changes",
+} as const;
+
+export type RejectRevisionBody = {
+  comment?: string;
+  decision?: RejectRevisionBodyDecision;
+};
+
+export type GetWatchStatus200 = {
+  watching?: boolean;
+  watcher?: PageWatcher;
+};
+
+export type WatchNodeBody = {
+  watchChildren?: boolean;
 };
 
 export type UploadMediaBody = {

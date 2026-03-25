@@ -95,6 +95,7 @@ Express 5 API server with structured logging, config validation, content managem
 - Routes: `src/routes/principals.ts` — principal CRUD, role mgmt, page perms, ownership (12 endpoints)
 - Routes: `src/routes/content.ts` — Content CRUD, revisions, relations, templates (17 endpoints, all auth-guarded)
 - Routes: `src/routes/media.ts` — Media upload, list, get, delete, file serving, usage tracking (7 endpoints)
+- Routes: `src/routes/review.ts` — Review workflow (submit/approve/reject), revision events, diff, watchers (10 endpoints, all auth+permission-guarded)
 - Services: `src/services/storage.service.ts` — LocalStorageProvider implementing IStorageProvider (local file uploads in `.uploads/`)
 - Services: `src/services/identity.service.ts` — Dual ID system (immutable_id + display_code)
 - Services: `src/services/revision.service.ts` — Revision/version lifecycle
@@ -112,12 +113,13 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Routing: Wouter (lightweight client-side router)
 - Data fetching: React Query via `@workspace/api-client-react`
 - Auth: Dev-mode header injection (`X-Dev-Principal-Id`) via `lib/api.ts`
-- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Unterseiten), SearchPage (real-time search)
+- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (real-time search)
 - Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog (multi-step), TreeNode, PeoplePicker, PageTypeIcon
 - Editor: BlockEditor (Tiptap-based rich text editor with 12+ block types, slash commands, edit/preview toggle, autosave to localStorage, draft recovery)
 - Editor Extensions: Callout, FileBlock, VideoBlock, EmbedBlock, DiagramBlock (custom Tiptap node views)
 - Editor UI: EditorToolbar (formatting), SlashCommandMenu (block insertion), MediaLibraryDialog (upload/browse)
 - Metadata: MetadataPanel, MetadataFieldRenderer, CompletenessIndicator
+- Versioning: StatusBadge, WatchButton, VersionHistoryPanel, ReviewWorkflowPanel, RevisionDiffView, RestoreDialog
 - Layouts: PageLayout (dispatcher), ProcessOverviewLayout, ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
 - Entry: `src/main.tsx` → `src/App.tsx`
 - Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080

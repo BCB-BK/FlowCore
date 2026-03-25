@@ -789,6 +789,284 @@ export const RestoreRevisionBody = zod.object({
 });
 
 /**
+ * @summary Submit a revision for review
+ */
+export const SubmitForReviewParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const SubmitForReviewBody = zod.object({
+  reviewerId: zod.string().optional().describe("ID of the assigned reviewer"),
+  comment: zod.string().optional().describe("Optional comment"),
+});
+
+/**
+ * @summary Approve a revision
+ */
+export const ApproveRevisionParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const ApproveRevisionBody = zod.object({
+  comment: zod.string().optional(),
+  nextReviewDate: zod.date().optional(),
+});
+
+export const ApproveRevisionResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  revisionNo: zod.number(),
+  versionLabel: zod.string().nullish(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  changeType: zod.enum([
+    "editorial",
+    "minor",
+    "major",
+    "regulatory",
+    "structural",
+  ]),
+  changeSummary: zod.string().nullish(),
+  title: zod.string(),
+  content: zod.object({}).passthrough().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  basedOnRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Reject or return a revision for changes
+ */
+export const RejectRevisionParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const RejectRevisionBody = zod.object({
+  comment: zod.string().optional(),
+  decision: zod.enum(["rejected", "returned_for_changes"]).optional(),
+});
+
+export const RejectRevisionResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  revisionNo: zod.number(),
+  versionLabel: zod.string().nullish(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  changeType: zod.enum([
+    "editorial",
+    "minor",
+    "major",
+    "regulatory",
+    "structural",
+  ]),
+  changeSummary: zod.string().nullish(),
+  title: zod.string(),
+  content: zod.object({}).passthrough().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  basedOnRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Get review workflow for a revision
+ */
+export const GetRevisionWorkflowParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const GetRevisionWorkflowResponse = zod
+  .object({
+    id: zod.string().uuid(),
+    revisionId: zod.string().uuid(),
+    status: zod.enum([
+      "pending",
+      "in_progress",
+      "approved",
+      "rejected",
+      "cancelled",
+    ]),
+    requiredApprovals: zod.number().optional(),
+    currentStep: zod.number().optional(),
+    initiatedBy: zod.string().nullish(),
+    completedAt: zod.date().nullish(),
+    createdAt: zod.date(),
+    updatedAt: zod.date().optional(),
+  })
+  .and(
+    zod.object({
+      approvals: zod
+        .array(
+          zod.object({
+            id: zod.string().uuid(),
+            workflowId: zod.string().uuid(),
+            revisionId: zod.string().uuid(),
+            stepNumber: zod.number(),
+            reviewerId: zod.string().nullish(),
+            decision: zod
+              .enum(["approved", "rejected", "returned_for_changes"])
+              .nullish(),
+            comment: zod.string().nullish(),
+            decidedAt: zod.date().nullish(),
+            createdAt: zod.date(),
+          }),
+        )
+        .optional(),
+    }),
+  );
+
+/**
+ * @summary Get revision event history
+ */
+export const GetRevisionEventsParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+});
+
+export const GetRevisionEventsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  revisionId: zod.string().uuid(),
+  eventType: zod.enum([
+    "created",
+    "submitted_for_review",
+    "review_approved",
+    "review_rejected",
+    "published",
+    "archived",
+    "restored",
+    "superseded",
+  ]),
+  actorId: zod.string().nullish(),
+  comment: zod.string().nullish(),
+  metadata: zod.object({}).passthrough().nullish(),
+  createdAt: zod.date(),
+});
+export const GetRevisionEventsResponse = zod.array(
+  GetRevisionEventsResponseItem,
+);
+
+/**
+ * @summary Compare two revisions
+ */
+export const GetRevisionDiffParams = zod.object({
+  revisionId: zod.coerce.string().uuid(),
+  compareRevisionId: zod.coerce.string().uuid(),
+});
+
+export const GetRevisionDiffResponse = zod.object({
+  revisionA: zod
+    .object({
+      id: zod.string().uuid().optional(),
+      revisionNo: zod.number().optional(),
+      title: zod.string().optional(),
+      status: zod.string().optional(),
+      createdAt: zod.date().optional(),
+      authorId: zod.string().nullish(),
+    })
+    .optional(),
+  revisionB: zod
+    .object({
+      id: zod.string().uuid().optional(),
+      revisionNo: zod.number().optional(),
+      title: zod.string().optional(),
+      status: zod.string().optional(),
+      createdAt: zod.date().optional(),
+      authorId: zod.string().nullish(),
+    })
+    .optional(),
+  metadataChanges: zod
+    .record(
+      zod.string(),
+      zod.object({
+        old: zod.unknown().optional(),
+        new: zod.unknown().optional(),
+      }),
+    )
+    .optional(),
+  structuredFieldChanges: zod
+    .record(
+      zod.string(),
+      zod.object({
+        old: zod.unknown().optional(),
+        new: zod.unknown().optional(),
+      }),
+    )
+    .optional(),
+  contentChanged: zod.boolean().optional(),
+  contentA: zod.object({}).passthrough().nullish(),
+  contentB: zod.object({}).passthrough().nullish(),
+});
+
+/**
+ * @summary Get watchers for a node
+ */
+export const GetNodeWatchersParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeWatchersResponseItem = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  principalId: zod.string().uuid(),
+  watchChildren: zod.boolean(),
+  createdAt: zod.date(),
+});
+export const GetNodeWatchersResponse = zod.array(GetNodeWatchersResponseItem);
+
+/**
+ * @summary Check if current user is watching a node
+ */
+export const GetWatchStatusParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetWatchStatusResponse = zod.object({
+  watching: zod.boolean().optional(),
+  watcher: zod
+    .object({
+      id: zod.string().uuid(),
+      nodeId: zod.string().uuid(),
+      principalId: zod.string().uuid(),
+      watchChildren: zod.boolean(),
+      createdAt: zod.date(),
+    })
+    .optional(),
+});
+
+/**
+ * @summary Watch a node for changes
+ */
+export const WatchNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const watchNodeBodyWatchChildrenDefault = false;
+
+export const WatchNodeBody = zod.object({
+  watchChildren: zod.boolean().default(watchNodeBodyWatchChildrenDefault),
+});
+
+/**
+ * @summary Stop watching a node
+ */
+export const UnwatchNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+/**
  * @summary Get relations for a node
  */
 export const GetNodeRelationsParams = zod.object({

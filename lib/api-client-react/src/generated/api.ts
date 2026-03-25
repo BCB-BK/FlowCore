@@ -17,6 +17,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ApproveRevisionBody,
   AssignRole201,
   AssignRoleInput,
   AuthCallbackParams,
@@ -36,6 +37,7 @@ import type {
   ErrorResponse,
   GetPrincipalPermissionsParams,
   GetRolePermissionMatrix200,
+  GetWatchStatus200,
   GrantPagePermission201,
   GrantPagePermissionInput,
   GraphGroup,
@@ -49,18 +51,26 @@ import type {
   NodeOwnership,
   PagePermission,
   PageTypeDefinition,
+  PageWatcher,
   Principal,
   PrincipalWithRoles,
   PublishRevisionInput,
+  RejectRevisionBody,
   RestoreRevisionInput,
+  ReviewWorkflow,
+  ReviewWorkflowDetail,
+  RevisionDiff,
+  RevisionEvent,
   SearchGroupsParams,
   SearchPeopleParams,
   SetNodeOwnership200,
   SetNodeOwnershipInput,
+  SubmitForReviewBody,
   TrackMediaUsageBody,
   TreeNode,
   UpdateNodeInput,
   UploadMediaBody,
+  WatchNodeBody,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -2971,6 +2981,904 @@ export const useRestoreRevision = <
   TContext
 > => {
   return useMutation(getRestoreRevisionMutationOptions(options));
+};
+
+/**
+ * @summary Submit a revision for review
+ */
+export const getSubmitForReviewUrl = (revisionId: string) => {
+  return `/api/content/revisions/${revisionId}/submit-for-review`;
+};
+
+export const submitForReview = async (
+  revisionId: string,
+  submitForReviewBody: SubmitForReviewBody,
+  options?: RequestInit,
+): Promise<ReviewWorkflow> => {
+  return customFetch<ReviewWorkflow>(getSubmitForReviewUrl(revisionId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(submitForReviewBody),
+  });
+};
+
+export const getSubmitForReviewMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitForReview>>,
+    TError,
+    { revisionId: string; data: BodyType<SubmitForReviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitForReview>>,
+  TError,
+  { revisionId: string; data: BodyType<SubmitForReviewBody> },
+  TContext
+> => {
+  const mutationKey = ["submitForReview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitForReview>>,
+    { revisionId: string; data: BodyType<SubmitForReviewBody> }
+  > = (props) => {
+    const { revisionId, data } = props ?? {};
+
+    return submitForReview(revisionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitForReviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitForReview>>
+>;
+export type SubmitForReviewMutationBody = BodyType<SubmitForReviewBody>;
+export type SubmitForReviewMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Submit a revision for review
+ */
+export const useSubmitForReview = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitForReview>>,
+    TError,
+    { revisionId: string; data: BodyType<SubmitForReviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitForReview>>,
+  TError,
+  { revisionId: string; data: BodyType<SubmitForReviewBody> },
+  TContext
+> => {
+  return useMutation(getSubmitForReviewMutationOptions(options));
+};
+
+/**
+ * @summary Approve a revision
+ */
+export const getApproveRevisionUrl = (revisionId: string) => {
+  return `/api/content/revisions/${revisionId}/approve`;
+};
+
+export const approveRevision = async (
+  revisionId: string,
+  approveRevisionBody: ApproveRevisionBody,
+  options?: RequestInit,
+): Promise<ContentRevision> => {
+  return customFetch<ContentRevision>(getApproveRevisionUrl(revisionId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(approveRevisionBody),
+  });
+};
+
+export const getApproveRevisionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof approveRevision>>,
+    TError,
+    { revisionId: string; data: BodyType<ApproveRevisionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof approveRevision>>,
+  TError,
+  { revisionId: string; data: BodyType<ApproveRevisionBody> },
+  TContext
+> => {
+  const mutationKey = ["approveRevision"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof approveRevision>>,
+    { revisionId: string; data: BodyType<ApproveRevisionBody> }
+  > = (props) => {
+    const { revisionId, data } = props ?? {};
+
+    return approveRevision(revisionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ApproveRevisionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof approveRevision>>
+>;
+export type ApproveRevisionMutationBody = BodyType<ApproveRevisionBody>;
+export type ApproveRevisionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Approve a revision
+ */
+export const useApproveRevision = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof approveRevision>>,
+    TError,
+    { revisionId: string; data: BodyType<ApproveRevisionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof approveRevision>>,
+  TError,
+  { revisionId: string; data: BodyType<ApproveRevisionBody> },
+  TContext
+> => {
+  return useMutation(getApproveRevisionMutationOptions(options));
+};
+
+/**
+ * @summary Reject or return a revision for changes
+ */
+export const getRejectRevisionUrl = (revisionId: string) => {
+  return `/api/content/revisions/${revisionId}/reject`;
+};
+
+export const rejectRevision = async (
+  revisionId: string,
+  rejectRevisionBody: RejectRevisionBody,
+  options?: RequestInit,
+): Promise<ContentRevision> => {
+  return customFetch<ContentRevision>(getRejectRevisionUrl(revisionId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(rejectRevisionBody),
+  });
+};
+
+export const getRejectRevisionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof rejectRevision>>,
+    TError,
+    { revisionId: string; data: BodyType<RejectRevisionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof rejectRevision>>,
+  TError,
+  { revisionId: string; data: BodyType<RejectRevisionBody> },
+  TContext
+> => {
+  const mutationKey = ["rejectRevision"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof rejectRevision>>,
+    { revisionId: string; data: BodyType<RejectRevisionBody> }
+  > = (props) => {
+    const { revisionId, data } = props ?? {};
+
+    return rejectRevision(revisionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RejectRevisionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof rejectRevision>>
+>;
+export type RejectRevisionMutationBody = BodyType<RejectRevisionBody>;
+export type RejectRevisionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Reject or return a revision for changes
+ */
+export const useRejectRevision = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof rejectRevision>>,
+    TError,
+    { revisionId: string; data: BodyType<RejectRevisionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof rejectRevision>>,
+  TError,
+  { revisionId: string; data: BodyType<RejectRevisionBody> },
+  TContext
+> => {
+  return useMutation(getRejectRevisionMutationOptions(options));
+};
+
+/**
+ * @summary Get review workflow for a revision
+ */
+export const getGetRevisionWorkflowUrl = (revisionId: string) => {
+  return `/api/content/revisions/${revisionId}/workflow`;
+};
+
+export const getRevisionWorkflow = async (
+  revisionId: string,
+  options?: RequestInit,
+): Promise<ReviewWorkflowDetail> => {
+  return customFetch<ReviewWorkflowDetail>(
+    getGetRevisionWorkflowUrl(revisionId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetRevisionWorkflowQueryKey = (revisionId: string) => {
+  return [`/api/content/revisions/${revisionId}/workflow`] as const;
+};
+
+export const getGetRevisionWorkflowQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRevisionWorkflow>>,
+  TError = ErrorType<unknown>,
+>(
+  revisionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getRevisionWorkflow>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRevisionWorkflowQueryKey(revisionId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRevisionWorkflow>>
+  > = ({ signal }) =>
+    getRevisionWorkflow(revisionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!revisionId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRevisionWorkflow>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRevisionWorkflowQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRevisionWorkflow>>
+>;
+export type GetRevisionWorkflowQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get review workflow for a revision
+ */
+
+export function useGetRevisionWorkflow<
+  TData = Awaited<ReturnType<typeof getRevisionWorkflow>>,
+  TError = ErrorType<unknown>,
+>(
+  revisionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getRevisionWorkflow>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRevisionWorkflowQueryOptions(revisionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get revision event history
+ */
+export const getGetRevisionEventsUrl = (revisionId: string) => {
+  return `/api/content/revisions/${revisionId}/events`;
+};
+
+export const getRevisionEvents = async (
+  revisionId: string,
+  options?: RequestInit,
+): Promise<RevisionEvent[]> => {
+  return customFetch<RevisionEvent[]>(getGetRevisionEventsUrl(revisionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetRevisionEventsQueryKey = (revisionId: string) => {
+  return [`/api/content/revisions/${revisionId}/events`] as const;
+};
+
+export const getGetRevisionEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRevisionEvents>>,
+  TError = ErrorType<unknown>,
+>(
+  revisionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getRevisionEvents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRevisionEventsQueryKey(revisionId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRevisionEvents>>
+  > = ({ signal }) =>
+    getRevisionEvents(revisionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!revisionId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRevisionEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRevisionEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRevisionEvents>>
+>;
+export type GetRevisionEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get revision event history
+ */
+
+export function useGetRevisionEvents<
+  TData = Awaited<ReturnType<typeof getRevisionEvents>>,
+  TError = ErrorType<unknown>,
+>(
+  revisionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getRevisionEvents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRevisionEventsQueryOptions(revisionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Compare two revisions
+ */
+export const getGetRevisionDiffUrl = (
+  revisionId: string,
+  compareRevisionId: string,
+) => {
+  return `/api/content/revisions/${revisionId}/diff/${compareRevisionId}`;
+};
+
+export const getRevisionDiff = async (
+  revisionId: string,
+  compareRevisionId: string,
+  options?: RequestInit,
+): Promise<RevisionDiff> => {
+  return customFetch<RevisionDiff>(
+    getGetRevisionDiffUrl(revisionId, compareRevisionId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetRevisionDiffQueryKey = (
+  revisionId: string,
+  compareRevisionId: string,
+) => {
+  return [
+    `/api/content/revisions/${revisionId}/diff/${compareRevisionId}`,
+  ] as const;
+};
+
+export const getGetRevisionDiffQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRevisionDiff>>,
+  TError = ErrorType<void>,
+>(
+  revisionId: string,
+  compareRevisionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getRevisionDiff>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetRevisionDiffQueryKey(revisionId, compareRevisionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRevisionDiff>>> = ({
+    signal,
+  }) =>
+    getRevisionDiff(revisionId, compareRevisionId, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(revisionId && compareRevisionId),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRevisionDiff>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRevisionDiffQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRevisionDiff>>
+>;
+export type GetRevisionDiffQueryError = ErrorType<void>;
+
+/**
+ * @summary Compare two revisions
+ */
+
+export function useGetRevisionDiff<
+  TData = Awaited<ReturnType<typeof getRevisionDiff>>,
+  TError = ErrorType<void>,
+>(
+  revisionId: string,
+  compareRevisionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getRevisionDiff>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRevisionDiffQueryOptions(
+    revisionId,
+    compareRevisionId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get watchers for a node
+ */
+export const getGetNodeWatchersUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/watchers`;
+};
+
+export const getNodeWatchers = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<PageWatcher[]> => {
+  return customFetch<PageWatcher[]>(getGetNodeWatchersUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetNodeWatchersQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/watchers`] as const;
+};
+
+export const getGetNodeWatchersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeWatchers>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeWatchers>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetNodeWatchersQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeWatchers>>> = ({
+    signal,
+  }) => getNodeWatchers(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeWatchers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeWatchersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeWatchers>>
+>;
+export type GetNodeWatchersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get watchers for a node
+ */
+
+export function useGetNodeWatchers<
+  TData = Awaited<ReturnType<typeof getNodeWatchers>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeWatchers>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNodeWatchersQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Check if current user is watching a node
+ */
+export const getGetWatchStatusUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/watch`;
+};
+
+export const getWatchStatus = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<GetWatchStatus200> => {
+  return customFetch<GetWatchStatus200>(getGetWatchStatusUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWatchStatusQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/watch`] as const;
+};
+
+export const getGetWatchStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWatchStatus>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWatchStatus>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetWatchStatusQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchStatus>>> = ({
+    signal,
+  }) => getWatchStatus(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWatchStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWatchStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWatchStatus>>
+>;
+export type GetWatchStatusQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Check if current user is watching a node
+ */
+
+export function useGetWatchStatus<
+  TData = Awaited<ReturnType<typeof getWatchStatus>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWatchStatus>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWatchStatusQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Watch a node for changes
+ */
+export const getWatchNodeUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/watch`;
+};
+
+export const watchNode = async (
+  nodeId: string,
+  watchNodeBody: WatchNodeBody,
+  options?: RequestInit,
+): Promise<PageWatcher> => {
+  return customFetch<PageWatcher>(getWatchNodeUrl(nodeId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(watchNodeBody),
+  });
+};
+
+export const getWatchNodeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof watchNode>>,
+    TError,
+    { nodeId: string; data: BodyType<WatchNodeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof watchNode>>,
+  TError,
+  { nodeId: string; data: BodyType<WatchNodeBody> },
+  TContext
+> => {
+  const mutationKey = ["watchNode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof watchNode>>,
+    { nodeId: string; data: BodyType<WatchNodeBody> }
+  > = (props) => {
+    const { nodeId, data } = props ?? {};
+
+    return watchNode(nodeId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type WatchNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof watchNode>>
+>;
+export type WatchNodeMutationBody = BodyType<WatchNodeBody>;
+export type WatchNodeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Watch a node for changes
+ */
+export const useWatchNode = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof watchNode>>,
+    TError,
+    { nodeId: string; data: BodyType<WatchNodeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof watchNode>>,
+  TError,
+  { nodeId: string; data: BodyType<WatchNodeBody> },
+  TContext
+> => {
+  return useMutation(getWatchNodeMutationOptions(options));
+};
+
+/**
+ * @summary Stop watching a node
+ */
+export const getUnwatchNodeUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/watch`;
+};
+
+export const unwatchNode = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getUnwatchNodeUrl(nodeId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getUnwatchNodeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unwatchNode>>,
+    TError,
+    { nodeId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unwatchNode>>,
+  TError,
+  { nodeId: string },
+  TContext
+> => {
+  const mutationKey = ["unwatchNode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unwatchNode>>,
+    { nodeId: string }
+  > = (props) => {
+    const { nodeId } = props ?? {};
+
+    return unwatchNode(nodeId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnwatchNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unwatchNode>>
+>;
+
+export type UnwatchNodeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Stop watching a node
+ */
+export const useUnwatchNode = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unwatchNode>>,
+    TError,
+    { nodeId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof unwatchNode>>,
+  TError,
+  { nodeId: string },
+  TContext
+> => {
+  return useMutation(getUnwatchNodeMutationOptions(options));
 };
 
 /**

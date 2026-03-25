@@ -65,6 +65,10 @@ import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditor } from "@/components/editor";
+import { StatusBadge } from "@/components/versioning/StatusBadge";
+import { WatchButton } from "@/components/versioning/WatchButton";
+import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel";
+import { ReviewWorkflowPanel } from "@/components/versioning/ReviewWorkflowPanel";
 import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -327,12 +331,23 @@ export function NodeDetail() {
                 <PageTypeIcon iconName={pageDef.icon} className="h-3.5 w-3.5" />
               </div>
             )}
-            <Badge
-              variant="outline"
-              className={STATUS_COLORS[node.status] || ""}
-            >
-              {STATUS_LABELS[node.status] || node.status}
-            </Badge>
+            <StatusBadge
+              status={
+                node.status as Parameters<typeof StatusBadge>[0]["status"]
+              }
+              nextReviewDate={
+                (node as unknown as Record<string, unknown>).nextReviewDate as
+                  | string
+                  | null
+                  | undefined
+              }
+              ownerId={
+                (node as unknown as Record<string, unknown>).ownerId as
+                  | string
+                  | null
+                  | undefined
+              }
+            />
             <Badge variant="secondary">
               {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
             </Badge>
@@ -348,6 +363,7 @@ export function NodeDetail() {
         </div>
 
         <div className="flex items-center gap-2">
+          {nodeId && <WatchButton nodeId={nodeId} />}
           <Button variant="outline" size="sm" onClick={openEditDialog}>
             <Pencil className="mr-1 h-4 w-4" />
             Bearbeiten
@@ -389,6 +405,7 @@ export function NodeDetail() {
         <TabsList>
           <TabsTrigger value="content">Inhalt</TabsTrigger>
           <TabsTrigger value="metadata">Metadaten</TabsTrigger>
+          <TabsTrigger value="versions">Versionen</TabsTrigger>
           <TabsTrigger value="children">
             Unterseiten
             {children && children.length > 0 && (
@@ -491,6 +508,17 @@ export function NodeDetail() {
               </Button>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="versions" className="mt-4 space-y-4">
+          {nodeId && latestRevision && (
+            <ReviewWorkflowPanel
+              nodeId={nodeId}
+              revisionId={latestRevision.id}
+              revisionStatus={latestRevision.status}
+            />
+          )}
+          {nodeId && <VersionHistoryPanel nodeId={nodeId} />}
         </TabsContent>
 
         <TabsContent value="children" className="mt-4">
