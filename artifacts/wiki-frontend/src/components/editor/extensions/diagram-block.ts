@@ -24,12 +24,6 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
 
   addAttributes() {
     return {
-      blockId: {
-        default: null,
-        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
-        renderHTML: (attrs: Record<string, unknown>) =>
-          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
-      },
       diagramType: { default: "flowchart" },
       src: { default: null },
       caption: { default: "" },
@@ -63,7 +57,7 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
         }) =>
           commands.insertContent({
             type: this.name,
-            attrs: { ...attrs, blockId: crypto.randomUUID() },
+            attrs,
           }),
     };
   },

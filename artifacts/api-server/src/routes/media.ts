@@ -156,7 +156,7 @@ router.post(
         .insert(mediaAssetsTable)
         .values({
           filename: storageKey,
-          originalFilename: file.originalname,
+          originalFilename: (req.body.title as string) || file.originalname,
           mimeType: file.mimetype,
           sizeBytes: result.sizeBytes,
           storageKey: result.storageKey,
@@ -164,6 +164,9 @@ router.post(
           caption: (req.body.caption as string) || null,
           classification,
           nodeId: (req.body.nodeId as string) || null,
+          sourceUrl: (req.body.sourceUrl as string) || null,
+          sourceLibrary: (req.body.copyright as string) || null,
+          sourcePath: (req.body.source as string) || null,
           uploadedBy: req.user!.principalId,
         })
         .returning();

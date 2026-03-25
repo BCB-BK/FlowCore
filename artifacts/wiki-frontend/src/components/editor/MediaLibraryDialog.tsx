@@ -51,8 +51,12 @@ export function MediaLibraryDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [title, setTitle] = useState("");
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
+  const [source, setSource] = useState("");
+  const [copyright, setCopyright] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const { toast } = useToast();
   const apiBase = import.meta.env.BASE_URL + "api";
 
@@ -86,8 +90,12 @@ export function MediaLibraryDialog({
       try {
         const formData = new FormData();
         formData.append("file", file);
+        if (title) formData.append("title", title);
         if (altText) formData.append("altText", altText);
         if (caption) formData.append("caption", caption);
+        if (source) formData.append("source", source);
+        if (sourceUrl) formData.append("sourceUrl", sourceUrl);
+        if (copyright) formData.append("copyright", copyright);
         if (nodeId) formData.append("nodeId", nodeId);
 
         const res = await fetch(`${apiBase}/media/upload`, {
@@ -108,7 +116,19 @@ export function MediaLibraryDialog({
         setIsUploading(false);
       }
     },
-    [apiBase, altText, caption, nodeId, onSelect, onOpenChange, toast],
+    [
+      apiBase,
+      title,
+      altText,
+      caption,
+      source,
+      sourceUrl,
+      copyright,
+      nodeId,
+      onSelect,
+      onOpenChange,
+      toast,
+    ],
   );
 
   const getIcon = (classification: string) => {
@@ -141,23 +161,62 @@ export function MediaLibraryDialog({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="space-y-4 mt-4">
-            <div className="space-y-2">
+          <TabsContent
+            value="upload"
+            className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-1"
+          >
+            <div className="space-y-1">
+              <Label htmlFor="media-title">Titel</Label>
+              <Input
+                id="media-title"
+                placeholder="Titel der Datei"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
               <Label htmlFor="alt-text">Alternativtext</Label>
               <Input
                 id="alt-text"
-                placeholder="Beschreibung des Bildes für Barrierefreiheit"
+                placeholder="Beschreibung für Barrierefreiheit"
                 value={altText}
                 onChange={(e) => setAltText(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="caption-text">Bildunterschrift</Label>
               <Input
                 id="caption-text"
                 placeholder="Optionale Bildunterschrift"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="media-source">Quelle</Label>
+              <Input
+                id="media-source"
+                placeholder="Ursprüngliche Quelle (z.B. Fotograf, Verlag)"
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="media-source-url">Quell-URL</Label>
+              <Input
+                id="media-source-url"
+                placeholder="https://..."
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="media-copyright">Urheberrecht / Lizenz</Label>
+              <Input
+                id="media-copyright"
+                placeholder="z.B. CC BY 4.0, © 2025 Bildungscampus"
+                value={copyright}
+                onChange={(e) => setCopyright(e.target.value)}
               />
             </div>
             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8">

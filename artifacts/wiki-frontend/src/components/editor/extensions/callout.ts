@@ -21,12 +21,6 @@ export const Callout = Node.create<CalloutOptions>({
 
   addAttributes() {
     return {
-      blockId: {
-        default: null,
-        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
-        renderHTML: (attrs: Record<string, unknown>) =>
-          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
-      },
       type: {
         default: "info",
         parseHTML: (el: HTMLElement) =>
@@ -61,10 +55,7 @@ export const Callout = Node.create<CalloutOptions>({
             setNode: (name: string, attrs?: Record<string, unknown>) => boolean;
           };
         }) =>
-          commands.setNode(this.name, {
-            ...attrs,
-            blockId: crypto.randomUUID(),
-          }),
+          commands.setNode(this.name, attrs),
       toggleCallout:
         (attrs?: { type?: string }) =>
         ({
@@ -78,10 +69,7 @@ export const Callout = Node.create<CalloutOptions>({
             ) => boolean;
           };
         }) =>
-          commands.toggleNode(this.name, "paragraph", {
-            ...attrs,
-            blockId: crypto.randomUUID(),
-          }),
+          commands.toggleNode(this.name, "paragraph", attrs),
     };
   },
 });

@@ -22,6 +22,8 @@ import { EmbedBlock } from "./extensions/embed-block";
 import { VideoBlock } from "./extensions/video-block";
 import { FileBlock } from "./extensions/file-block";
 import { DiagramBlock } from "./extensions/diagram-block";
+import { BlockId } from "./extensions/block-id";
+import { DragHandle } from "./extensions/drag-handle";
 import {
   CalloutNodeView,
   EmbedBlockNodeView,
@@ -137,6 +139,8 @@ export function BlockEditor({
           return ReactNodeViewRenderer(DiagramBlockNodeView);
         },
       }),
+      BlockId,
+      DragHandle,
     ],
     content: content || { type: "doc", content: [{ type: "paragraph" }] },
     editable,
@@ -358,7 +362,7 @@ export function BlockEditor({
 
       {editable && <EditorToolbar editor={editor} />}
 
-      <div className="relative">
+      <div className="relative pl-6">
         {editable && <BlockActionMenu editor={editor} />}
         <EditorContent editor={editor} />
       </div>

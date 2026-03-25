@@ -25,12 +25,6 @@ export const FileBlock = Node.create<FileBlockOptions>({
 
   addAttributes() {
     return {
-      blockId: {
-        default: null,
-        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
-        renderHTML: (attrs: Record<string, unknown>) =>
-          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
-      },
       src: { default: null },
       filename: { default: "" },
       filesize: { default: 0 },
@@ -68,7 +62,7 @@ export const FileBlock = Node.create<FileBlockOptions>({
         }) =>
           commands.insertContent({
             type: this.name,
-            attrs: { ...attrs, blockId: crypto.randomUUID() },
+            attrs,
           }),
     };
   },

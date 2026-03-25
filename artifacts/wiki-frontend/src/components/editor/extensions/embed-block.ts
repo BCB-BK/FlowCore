@@ -25,12 +25,6 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
 
   addAttributes() {
     return {
-      blockId: {
-        default: null,
-        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
-        renderHTML: (attrs: Record<string, unknown>) =>
-          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
-      },
       src: { default: null },
       caption: { default: "" },
       width: { default: "100%" },
@@ -62,7 +56,7 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
         }) =>
           commands.insertContent({
             type: this.name,
-            attrs: { ...attrs, blockId: crypto.randomUUID() },
+            attrs,
           }),
     };
   },

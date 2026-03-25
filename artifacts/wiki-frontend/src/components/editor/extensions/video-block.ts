@@ -51,12 +51,6 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
 
   addAttributes() {
     return {
-      blockId: {
-        default: null,
-        parseHTML: (el: HTMLElement) => el.getAttribute("data-block-id"),
-        renderHTML: (attrs: Record<string, unknown>) =>
-          attrs.blockId ? { "data-block-id": attrs.blockId } : {},
-      },
       src: { default: null },
       caption: { default: "" },
       width: { default: "100%" },
@@ -89,7 +83,7 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
         }) =>
           commands.insertContent({
             type: this.name,
-            attrs: { ...attrs, blockId: crypto.randomUUID() },
+            attrs,
           }),
     };
   },
