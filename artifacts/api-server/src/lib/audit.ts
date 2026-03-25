@@ -7,7 +7,17 @@ export const auditService = {
     try {
       await db.insert(auditEventsTable).values(event);
     } catch (err) {
-      logger.error({ err, event }, "Failed to persist audit event");
+      logger.error(
+        {
+          err,
+          eventType: event.eventType,
+          action: event.action,
+          resourceType: event.resourceType,
+          resourceId: event.resourceId,
+          correlationId: event.correlationId,
+        },
+        "Failed to persist audit event",
+      );
     }
   },
 };
