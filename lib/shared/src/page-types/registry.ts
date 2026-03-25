@@ -34,6 +34,13 @@ export interface PageTypeSection {
   required: boolean;
 }
 
+export interface TemplateVariant {
+  key: string;
+  label: string;
+  description: string;
+  prefilledSections?: string[];
+}
+
 export interface PageTypeDefinition {
   type: TemplateType;
   label: string;
@@ -47,6 +54,7 @@ export interface PageTypeDefinition {
   sections: PageTypeSection[];
   category: "process" | "documentation" | "governance" | "system";
   helpText?: string;
+  variants: TemplateVariant[];
 }
 
 const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
@@ -200,6 +208,21 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       { key: "compliance", label: "Normbezug & Compliance", required: false },
       { key: "children", label: "Untergeordnete Prozesse", required: false },
     ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description:
+          "Leere Kernprozess-Übersicht ohne vorausgefüllte Abschnitte",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description:
+          "Übersicht mit vorbereiteten Abschnitten für SIPOC, KPIs und Compliance",
+        prefilledSections: ["overview", "sipoc", "kpis", "compliance"],
+      },
+    ],
   },
 
   area_overview: {
@@ -231,6 +254,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       { key: "description", label: "Beschreibung", required: true },
       { key: "structure", label: "Aufbauorganisation", required: false },
       { key: "children", label: "Zugehörige Seiten", required: false },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Bereichsübersicht",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Mit Beschreibung und Aufbauorganisation",
+        prefilledSections: ["description", "structure"],
+      },
     ],
   },
 
@@ -266,6 +302,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: false,
       },
     ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere textbasierte Prozessseite",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Mit Ablauf und Schnittstellenabschnitt",
+        prefilledSections: ["procedure", "interfaces"],
+      },
+    ],
   },
 
   process_page_graphic: {
@@ -294,6 +343,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: true,
       },
       { key: "description", label: "Erläuterung", required: false },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere grafische Prozessseite",
+      },
+      {
+        key: "swimlane",
+        label: "Swimlane",
+        description: "Vorlage mit Swimlane-Diagramm und Erläuterung",
+        prefilledSections: ["diagram", "description"],
+      },
     ],
   },
 
@@ -338,6 +400,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
       { key: "documents", label: "Mitgeltende Unterlagen", required: false },
     ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Verfahrensanweisung",
+      },
+      {
+        key: "detailed",
+        label: "Detailliert",
+        description: "Alle Abschnitte vorstrukturiert",
+        prefilledSections: ["scope", "procedure", "documents"],
+      },
+    ],
   },
 
   use_case: {
@@ -364,6 +439,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Use Case",
         description: "Akteur, Haupt-/Alternativabläufe, Bedingungen",
         required: true,
+      },
+    ],
+    variants: [
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Use Case mit vorstrukturierten Abschnitten",
+        prefilledSections: ["main"],
       },
     ],
   },
@@ -400,6 +483,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       { key: "scope", label: "Geltungsbereich", required: true },
       { key: "policy_text", label: "Richtlinientext", required: true },
       { key: "enforcement", label: "Durchsetzung", required: false },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Richtlinie",
+      },
+      {
+        key: "full",
+        label: "Vollständig",
+        description: "Alle Pflichtabschnitte vorstrukturiert",
+        prefilledSections: ["purpose", "scope", "policy_text", "enforcement"],
+      },
     ],
   },
 
@@ -443,6 +539,24 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       { key: "qualifications", label: "Qualifikationen", required: false },
       { key: "authority", label: "Befugnisse", required: false },
     ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leeres Rollenprofil",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Vollständiges Profil mit allen Abschnitten",
+        prefilledSections: [
+          "role_definition",
+          "responsibilities",
+          "qualifications",
+          "authority",
+        ],
+      },
+    ],
   },
 
   dashboard: {
@@ -476,6 +590,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: false,
       },
       { key: "description", label: "Beschreibung", required: false },
+    ],
+    variants: [
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Standard-Dashboard mit Widgets und Beschreibung",
+        prefilledSections: ["widgets", "description"],
+      },
     ],
   },
 
@@ -519,6 +641,24 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       { key: "interfaces", label: "Schnittstellen", required: false },
       { key: "data_objects", label: "Datenobjekte", required: false },
       { key: "access_rights", label: "Zugriffsrechte", required: false },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Systemdokumentation",
+      },
+      {
+        key: "detailed",
+        label: "Detailliert",
+        description: "Alle Abschnitte vorstrukturiert",
+        prefilledSections: [
+          "system_info",
+          "interfaces",
+          "data_objects",
+          "access_rights",
+        ],
+      },
     ],
   },
 };

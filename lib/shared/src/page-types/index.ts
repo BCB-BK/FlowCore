@@ -15,4 +15,5 @@ export type {
   MetadataFieldDef,
   PageTypeSection,
   PageTypeDefinition,
+  TemplateVariant,
 } from "./registry";

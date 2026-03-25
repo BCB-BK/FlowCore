@@ -1228,6 +1228,10 @@ components:
             $ref: "#/components/schemas/PageTypeSection"
         helpText:
           type: string
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/TemplateVariant"
       required:
         - type
         - label
@@ -1240,6 +1244,7 @@ components:
         - allowedChildTypes
         - metadataFields
         - sections
+        - variants
 
     MetadataFieldDef:
       type: object
@@ -1287,6 +1292,24 @@ components:
         - key
         - label
         - required
+
+    TemplateVariant:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        prefilledSections:
+          type: array
+          items:
+            type: string
+      required:
+        - key
+        - label
+        - description
 
     ContentTemplate:
       type: object

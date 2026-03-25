@@ -55,6 +55,7 @@ export function CreateNodeDialog({
   const [templateType, setTemplateType] = useState<
     CreateNodeInput["templateType"]
   >("core_process_overview");
+  const [selectedVariant, setSelectedVariant] = useState<string>("blank");
   const [ownerId, setOwnerId] = useState<string | undefined>();
   const [ownerName, setOwnerName] = useState<string | undefined>();
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
@@ -76,6 +77,14 @@ export function CreateNodeDialog({
       setTemplateType(allowedTypes[0] as CreateNodeInput["templateType"]);
     }
   }, [allowedTypes]);
+
+  useEffect(() => {
+    const def = PAGE_TYPE_REGISTRY[templateType as TemplateType];
+    if (def?.variants?.length) {
+      const hasBlank = def.variants.some((v) => v.key === "blank");
+      setSelectedVariant(hasBlank ? "blank" : def.variants[0].key);
+    }
+  }, [templateType]);
 
   const groupedTypes = useMemo(() => {
     const groups: Record<string, TemplateType[]> = {};
@@ -110,15 +119,26 @@ export function CreateNodeDialog({
         metadata.owner = ownerId;
         metadata.owner_display = ownerName;
       }
+      metadata.templateVariant = selectedVariant;
+
+      const variantDef = selectedDef?.variants.find(
+        (v) => v.key === selectedVariant,
+      );
+      const structuredInit: Record<string, unknown> = {};
+      if (variantDef?.prefilledSections) {
+        for (const sKey of variantDef.prefilledSections) {
+          structuredInit[sKey] = "";
+        }
+      }
 
       await createRevision.mutateAsync({
         nodeId: node.id,
         data: {
           title: title.trim(),
           content: metadata,
-          structuredFields: {},
+          structuredFields: structuredInit,
           changeType: "editorial",
-          changeSummary: "Erstellt",
+          changeSummary: `Erstellt (Vorlage: ${variantDef?.label ?? selectedVariant})`,
         },
       });
 
@@ -138,6 +158,7 @@ export function CreateNodeDialog({
   const resetAndClose = () => {
     setStep(0);
     setTitle("");
+    setSelectedVariant("blank");
     setOwnerId(undefined);
     setOwnerName(undefined);
     setSelectedParentId(null);
@@ -180,7 +201,7 @@ export function CreateNodeDialog({
             {parentNodeId ? "Unterseite anlegen" : "Neue Seite anlegen"}
           </DialogTitle>
           <div className="flex items-center gap-2 mt-2">
-            {[0, 1, 2].map((s) => (
+            {[0, 1, 2, 3].map((s) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
@@ -249,7 +270,70 @@ export function CreateNodeDialog({
           </div>
         )}
 
-        {step === 1 && (
+        {step === 1 && selectedDef && (
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              Wählen Sie eine Vorlage für <strong>{selectedDef.labelDe}</strong>
+              .
+            </p>
+            <div className="grid gap-2">
+              {selectedDef.variants.map((variant) => {
+                const isActive = selectedVariant === variant.key;
+                return (
+                  <Card
+                    key={variant.key}
+                    className={`cursor-pointer transition-all ${
+                      isActive
+                        ? "border-primary ring-1 ring-primary"
+                        : "hover:border-muted-foreground/30"
+                    }`}
+                    onClick={() => setSelectedVariant(variant.key)}
+                  >
+                    <CardContent className="flex items-center gap-3 p-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm">{variant.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {variant.description}
+                        </p>
+                        {variant.prefilledSections &&
+                          variant.prefilledSections.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {variant.prefilledSections.map((sKey) => {
+                                const sec = selectedDef.sections.find(
+                                  (s) => s.key === sKey,
+                                );
+                                return (
+                                  <Badge
+                                    key={sKey}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {sec?.label ?? sKey}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          )}
+                      </div>
+                      {isActive && (
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {selectedDef.helpText && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-200">
+                <p className="font-medium mb-1">Hinweis zur Erstellung</p>
+                <p className="text-xs">{selectedDef.helpText}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 2 && (
           <div className="space-y-4 py-2">
             {selectedDef && (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -271,13 +355,6 @@ export function CreateNodeDialog({
               </div>
             )}
 
-            {selectedDef?.helpText && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-200">
-                <p className="font-medium mb-1">Hinweis zur Erstellung</p>
-                <p className="text-xs">{selectedDef.helpText}</p>
-              </div>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="title">Titel *</Label>
               <Input
@@ -292,7 +369,7 @@ export function CreateNodeDialog({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && title.trim()) setStep(2);
+                  if (e.key === "Enter" && title.trim()) setStep(3);
                 }}
                 autoFocus
               />
@@ -352,7 +429,7 @@ export function CreateNodeDialog({
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Überprüfen Sie die Angaben und erstellen Sie die Seite.
@@ -410,6 +487,14 @@ export function CreateNodeDialog({
                     <p className="mt-0.5 font-medium">{ownerName}</p>
                   </div>
                 )}
+                <div>
+                  <span className="text-muted-foreground">Vorlage</span>
+                  <p className="mt-0.5 font-medium">
+                    {selectedDef?.variants.find(
+                      (v) => v.key === selectedVariant,
+                    )?.label ?? selectedVariant}
+                  </p>
+                </div>
               </div>
 
               {selectedDef && selectedDef.sections.length > 0 && (
@@ -452,10 +537,10 @@ export function CreateNodeDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Abbrechen
           </Button>
-          {step < 2 ? (
+          {step < 3 ? (
             <Button
               onClick={() => setStep(step + 1)}
-              disabled={step === 1 && !title.trim()}
+              disabled={step === 2 && !title.trim()}
             >
               Weiter
               <ArrowRight className="ml-1 h-4 w-4" />
