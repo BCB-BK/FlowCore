@@ -113,13 +113,15 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Routing: Wouter (lightweight client-side router)
 - Data fetching: React Query via `@workspace/api-client-react`
 - Auth: Dev-mode header injection (`X-Dev-Principal-Id`) via `lib/api.ts`
-- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (real-time search)
+- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (server-side FTS with facets), GlossaryPage (A-Z term management), BrokenLinksPage (broken relations + orphaned nodes)
 - Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog (multi-step), TreeNode, PeoplePicker, PageTypeIcon
 - Editor: BlockEditor (Tiptap-based rich text editor with 12+ block types, slash commands, edit/preview toggle, autosave to localStorage, draft recovery)
 - Editor Extensions: Callout, FileBlock, VideoBlock, EmbedBlock, DiagramBlock (custom Tiptap node views)
 - Editor UI: EditorToolbar (formatting), SlashCommandMenu (block insertion), MediaLibraryDialog (upload/browse)
 - Metadata: MetadataPanel, MetadataFieldRenderer, CompletenessIndicator
 - Versioning: StatusBadge, WatchButton, VersionHistoryPanel, ReviewWorkflowPanel, RevisionDiffView, RestoreDialog
+- Tags: TagManager (inline tag assignment with create/assign/remove)
+- Content: RelatedContentSidebar (backlinks to current node)
 - Layouts: PageLayout (dispatcher), ProcessOverviewLayout, ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
 - Entry: `src/main.tsx` → `src/App.tsx`
 - Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080
@@ -129,7 +131,7 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 Shared types, provider abstractions, and page type registry.
 
 - `src/providers/` — Provider interfaces (IAuthProvider, IStorageProvider, etc.) and ProviderResult<T>
-- `src/page-types/registry.ts` — Comprehensive registry of all 10 page types with metadata fields, sections, icons, colors, categories, allowedChildTypes
+- `src/page-types/registry.ts` — Comprehensive registry of all 11 page types (incl. glossary) with metadata fields, sections, icons, colors, categories, allowedChildTypes
 - `src/page-types/index.ts` — Exports: PAGE_TYPE_REGISTRY, calculateCompleteness, getAllowedChildTypes, METADATA_GROUP_LABELS, types
 
 ### `lib/db` (`@workspace/db`)
@@ -144,6 +146,8 @@ Database layer using Drizzle ORM with PostgreSQL.
 - `src/schema/content-aliases.ts` — Display code history
 - `src/schema/content-relations.ts` — Typed graph edges
 - `src/schema/content-tags.ts` — Tags + junction table
+- `src/schema/glossary.ts` — Glossary terms with synonyms, abbreviation, nodeId link
+- `src/schema/search-analytics.ts` — Search query analytics tracking
 - `src/schema/media-assets.ts` — File attachments
 - `src/schema/audit-events.ts` — Audit trail
 - `src/schema/principals.ts` — Principals, role assignments, page permissions, node ownership

@@ -58,6 +58,8 @@ import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
+import { TagManager } from "@/components/tags/TagManager";
+import { RelatedContentSidebar } from "@/components/content/RelatedContentSidebar";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
@@ -446,6 +448,14 @@ export function NodeDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {nodeId && (
+            <div className="mb-4">
+              <TagManager nodeId={nodeId} />
+            </div>
+          )}
+
+          {nodeId && <RelatedContentSidebar nodeId={nodeId} />}
 
           <PageLayout
             templateType={node.templateType}

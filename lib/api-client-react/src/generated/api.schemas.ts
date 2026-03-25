@@ -671,6 +671,144 @@ export interface MediaAssetUsage {
   createdAt: string;
 }
 
+export interface SearchResultItem {
+  id: string;
+  title: string;
+  displayCode?: string | null;
+  templateType: string;
+  status: string;
+  ownerId?: string | null;
+  parentNodeId?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  rank?: number;
+  headline?: string;
+}
+
+export type SearchResultFacetsTemplateType = { [key: string]: number };
+
+export type SearchResultFacetsStatus = { [key: string]: number };
+
+export type SearchResultFacets = {
+  templateType?: SearchResultFacetsTemplateType;
+  status?: SearchResultFacetsStatus;
+};
+
+export interface SearchResult {
+  results: SearchResultItem[];
+  total: number;
+  limit: number;
+  offset: number;
+  facets: SearchResultFacets;
+}
+
+export type SearchSuggestionsNodesItem = {
+  id?: string;
+  title?: string;
+  displayCode?: string | null;
+  templateType?: string;
+};
+
+export type SearchSuggestionsAliasesItem = {
+  nodeId?: string;
+  previousDisplayCode?: string;
+};
+
+export interface SearchSuggestions {
+  nodes?: SearchSuggestionsNodesItem[];
+  aliases?: SearchSuggestionsAliasesItem[];
+}
+
+export type SearchAnalyticsPeriod = {
+  days?: number;
+  since?: string;
+};
+
+export type SearchAnalyticsPopularQueriesItem = {
+  query?: string;
+  count?: number;
+  avgResults?: number;
+};
+
+export type SearchAnalyticsZeroResultQueriesItem = {
+  query?: string;
+  count?: number;
+};
+
+export interface SearchAnalytics {
+  period?: SearchAnalyticsPeriod;
+  totalSearches?: number;
+  popularQueries?: SearchAnalyticsPopularQueriesItem[];
+  zeroResultQueries?: SearchAnalyticsZeroResultQueriesItem[];
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  color?: string | null;
+  createdAt?: string;
+  nodeCount?: number;
+}
+
+export interface CreateTag {
+  name: string;
+  color?: string | null;
+}
+
+export interface GlossaryTerm {
+  id: string;
+  term: string;
+  slug: string;
+  definition: string;
+  synonyms?: string[] | null;
+  abbreviation?: string | null;
+  nodeId?: string | null;
+  createdBy?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateGlossaryTerm {
+  term: string;
+  definition: string;
+  synonyms?: string[];
+  abbreviation?: string;
+  nodeId?: string;
+}
+
+export interface Backlink {
+  id: string;
+  sourceId: string;
+  relationType: string;
+  sourceTitle: string;
+  sourceDisplayCode?: string | null;
+  sourceTemplateType?: string;
+  sourceStatus?: string;
+}
+
+export type BrokenLinksReportBrokenRelationsItem = {
+  relationId?: string;
+  sourceNodeId?: string;
+  targetNodeId?: string;
+  relationType?: string;
+  sourceTitle?: string;
+  sourceDisplayCode?: string | null;
+};
+
+export type BrokenLinksReportOrphanedNodesItem = {
+  id?: string;
+  title?: string;
+  displayCode?: string | null;
+  templateType?: string;
+  parentNodeId?: string | null;
+};
+
+export interface BrokenLinksReport {
+  brokenRelations?: BrokenLinksReportBrokenRelationsItem[];
+  orphanedNodes?: BrokenLinksReportOrphanedNodesItem[];
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -786,4 +924,37 @@ export type TrackMediaUsageBody = {
   nodeId?: string;
   revisionId?: string;
   usageContext?: string;
+};
+
+export type SearchContentParams = {
+  q?: string;
+  templateType?: string;
+  status?: string;
+  tagId?: string;
+  ownerId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type GetSearchSuggestionsParams = {
+  q: string;
+};
+
+export type GetSearchAnalyticsParams = {
+  days?: number;
+};
+
+export type ListTagsParams = {
+  q?: string;
+};
+
+export type AssignTagToNodeBody = {
+  tagId: string;
+};
+
+export type ListGlossaryTermsParams = {
+  q?: string;
+  letter?: string;
 };

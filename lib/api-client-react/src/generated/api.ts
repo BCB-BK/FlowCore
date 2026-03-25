@@ -20,31 +20,41 @@ import type {
   ApproveRevisionBody,
   AssignRole201,
   AssignRoleInput,
+  AssignTagToNodeBody,
   AuthCallbackParams,
   AuthLogin200,
   AuthResult,
   AuthUser,
+  Backlink,
+  BrokenLinksReport,
   ContentAlias,
   ContentNode,
   ContentRelation,
   ContentRevision,
   ContentTemplate,
+  CreateGlossaryTerm,
   CreateNodeInput,
   CreateRelationInput,
   CreateRevisionInput,
+  CreateTag,
   DevUser,
   EffectivePermissions,
   ErrorResponse,
   GetPrincipalPermissionsParams,
   GetRolePermissionMatrix200,
+  GetSearchAnalyticsParams,
+  GetSearchSuggestionsParams,
   GetWatchStatus200,
+  GlossaryTerm,
   GrantPagePermission201,
   GrantPagePermissionInput,
   GraphGroup,
   GraphPerson,
   HealthStatus,
+  ListGlossaryTermsParams,
   ListMediaAssetsParams,
   ListPrincipalsParams,
+  ListTagsParams,
   MediaAsset,
   MediaAssetUsage,
   MoveNodeInput,
@@ -61,11 +71,16 @@ import type {
   ReviewWorkflowDetail,
   RevisionDiff,
   RevisionEvent,
+  SearchAnalytics,
+  SearchContentParams,
   SearchGroupsParams,
   SearchPeopleParams,
+  SearchResult,
+  SearchSuggestions,
   SetNodeOwnership200,
   SetNodeOwnershipInput,
   SubmitForReviewBody,
+  Tag,
   TrackMediaUsageBody,
   TreeNode,
   UpdateNodeInput,
@@ -5080,6 +5095,1510 @@ export function useGetMediaUsages<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetMediaUsagesQueryOptions(assetId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Full-text search across content nodes
+ */
+export const getSearchContentUrl = (params?: SearchContentParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/search?${stringifiedParams}`
+    : `/api/search`;
+};
+
+export const searchContent = async (
+  params?: SearchContentParams,
+  options?: RequestInit,
+): Promise<SearchResult> => {
+  return customFetch<SearchResult>(getSearchContentUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getSearchContentQueryKey = (params?: SearchContentParams) => {
+  return [`/api/search`, ...(params ? [params] : [])] as const;
+};
+
+export const getSearchContentQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchContent>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: SearchContentParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchContent>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchContentQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchContent>>> = ({
+    signal,
+  }) => searchContent(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchContent>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type SearchContentQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchContent>>
+>;
+export type SearchContentQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Full-text search across content nodes
+ */
+
+export function useSearchContent<
+  TData = Awaited<ReturnType<typeof searchContent>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: SearchContentParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof searchContent>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getSearchContentQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Autocomplete search suggestions
+ */
+export const getGetSearchSuggestionsUrl = (
+  params: GetSearchSuggestionsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/search/suggestions?${stringifiedParams}`
+    : `/api/search/suggestions`;
+};
+
+export const getSearchSuggestions = async (
+  params: GetSearchSuggestionsParams,
+  options?: RequestInit,
+): Promise<SearchSuggestions> => {
+  return customFetch<SearchSuggestions>(getGetSearchSuggestionsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSearchSuggestionsQueryKey = (
+  params?: GetSearchSuggestionsParams,
+) => {
+  return [`/api/search/suggestions`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSearchSuggestionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSearchSuggestions>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSearchSuggestionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSearchSuggestions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSearchSuggestionsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSearchSuggestions>>
+  > = ({ signal }) =>
+    getSearchSuggestions(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSearchSuggestions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSearchSuggestionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSearchSuggestions>>
+>;
+export type GetSearchSuggestionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Autocomplete search suggestions
+ */
+
+export function useGetSearchSuggestions<
+  TData = Awaited<ReturnType<typeof getSearchSuggestions>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetSearchSuggestionsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSearchSuggestions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSearchSuggestionsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Search analytics and popular queries
+ */
+export const getGetSearchAnalyticsUrl = (params?: GetSearchAnalyticsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/search/analytics?${stringifiedParams}`
+    : `/api/search/analytics`;
+};
+
+export const getSearchAnalytics = async (
+  params?: GetSearchAnalyticsParams,
+  options?: RequestInit,
+): Promise<SearchAnalytics> => {
+  return customFetch<SearchAnalytics>(getGetSearchAnalyticsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSearchAnalyticsQueryKey = (
+  params?: GetSearchAnalyticsParams,
+) => {
+  return [`/api/search/analytics`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSearchAnalyticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSearchAnalytics>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetSearchAnalyticsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSearchAnalytics>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSearchAnalyticsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSearchAnalytics>>
+  > = ({ signal }) => getSearchAnalytics(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSearchAnalytics>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSearchAnalyticsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSearchAnalytics>>
+>;
+export type GetSearchAnalyticsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Search analytics and popular queries
+ */
+
+export function useGetSearchAnalytics<
+  TData = Awaited<ReturnType<typeof getSearchAnalytics>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetSearchAnalyticsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSearchAnalytics>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSearchAnalyticsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all tags
+ */
+export const getListTagsUrl = (params?: ListTagsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/tags?${stringifiedParams}`
+    : `/api/tags`;
+};
+
+export const listTags = async (
+  params?: ListTagsParams,
+  options?: RequestInit,
+): Promise<Tag[]> => {
+  return customFetch<Tag[]>(getListTagsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListTagsQueryKey = (params?: ListTagsParams) => {
+  return [`/api/tags`, ...(params ? [params] : [])] as const;
+};
+
+export const getListTagsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTags>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListTagsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listTags>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListTagsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listTags>>> = ({
+    signal,
+  }) => listTags(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTags>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListTagsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTags>>
+>;
+export type ListTagsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all tags
+ */
+
+export function useListTags<
+  TData = Awaited<ReturnType<typeof listTags>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListTagsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listTags>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTagsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a tag
+ */
+export const getCreateTagUrl = () => {
+  return `/api/tags`;
+};
+
+export const createTag = async (
+  createTag: CreateTag,
+  options?: RequestInit,
+): Promise<Tag> => {
+  return customFetch<Tag>(getCreateTagUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createTag),
+  });
+};
+
+export const getCreateTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTag>>,
+    TError,
+    { data: BodyType<CreateTag> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTag>>,
+  TError,
+  { data: BodyType<CreateTag> },
+  TContext
+> => {
+  const mutationKey = ["createTag"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTag>>,
+    { data: BodyType<CreateTag> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createTag(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createTag>>
+>;
+export type CreateTagMutationBody = BodyType<CreateTag>;
+export type CreateTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a tag
+ */
+export const useCreateTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTag>>,
+    TError,
+    { data: BodyType<CreateTag> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createTag>>,
+  TError,
+  { data: BodyType<CreateTag> },
+  TContext
+> => {
+  return useMutation(getCreateTagMutationOptions(options));
+};
+
+/**
+ * @summary Update a tag
+ */
+export const getUpdateTagUrl = (id: string) => {
+  return `/api/tags/${id}`;
+};
+
+export const updateTag = async (
+  id: string,
+  createTag: CreateTag,
+  options?: RequestInit,
+): Promise<Tag> => {
+  return customFetch<Tag>(getUpdateTagUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createTag),
+  });
+};
+
+export const getUpdateTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTag>>,
+    TError,
+    { id: string; data: BodyType<CreateTag> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateTag>>,
+  TError,
+  { id: string; data: BodyType<CreateTag> },
+  TContext
+> => {
+  const mutationKey = ["updateTag"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTag>>,
+    { id: string; data: BodyType<CreateTag> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateTag(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTag>>
+>;
+export type UpdateTagMutationBody = BodyType<CreateTag>;
+export type UpdateTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a tag
+ */
+export const useUpdateTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTag>>,
+    TError,
+    { id: string; data: BodyType<CreateTag> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateTag>>,
+  TError,
+  { id: string; data: BodyType<CreateTag> },
+  TContext
+> => {
+  return useMutation(getUpdateTagMutationOptions(options));
+};
+
+/**
+ * @summary Delete a tag
+ */
+export const getDeleteTagUrl = (id: string) => {
+  return `/api/tags/${id}`;
+};
+
+export const deleteTag = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteTagUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteTagMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTag>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTag>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteTag"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTag>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteTag(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTagMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTag>>
+>;
+
+export type DeleteTagMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a tag
+ */
+export const useDeleteTag = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTag>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTag>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteTagMutationOptions(options));
+};
+
+/**
+ * @summary Get tags for a node
+ */
+export const getGetNodeTagsUrl = (nodeId: string) => {
+  return `/api/tags/nodes/${nodeId}`;
+};
+
+export const getNodeTags = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<Tag[]> => {
+  return customFetch<Tag[]>(getGetNodeTagsUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetNodeTagsQueryKey = (nodeId: string) => {
+  return [`/api/tags/nodes/${nodeId}`] as const;
+};
+
+export const getGetNodeTagsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeTags>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeTags>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetNodeTagsQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeTags>>> = ({
+    signal,
+  }) => getNodeTags(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeTags>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeTagsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeTags>>
+>;
+export type GetNodeTagsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get tags for a node
+ */
+
+export function useGetNodeTags<
+  TData = Awaited<ReturnType<typeof getNodeTags>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeTags>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNodeTagsQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Assign a tag to a node
+ */
+export const getAssignTagToNodeUrl = (nodeId: string) => {
+  return `/api/tags/nodes/${nodeId}`;
+};
+
+export const assignTagToNode = async (
+  nodeId: string,
+  assignTagToNodeBody: AssignTagToNodeBody,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getAssignTagToNodeUrl(nodeId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(assignTagToNodeBody),
+  });
+};
+
+export const getAssignTagToNodeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof assignTagToNode>>,
+    TError,
+    { nodeId: string; data: BodyType<AssignTagToNodeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof assignTagToNode>>,
+  TError,
+  { nodeId: string; data: BodyType<AssignTagToNodeBody> },
+  TContext
+> => {
+  const mutationKey = ["assignTagToNode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof assignTagToNode>>,
+    { nodeId: string; data: BodyType<AssignTagToNodeBody> }
+  > = (props) => {
+    const { nodeId, data } = props ?? {};
+
+    return assignTagToNode(nodeId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AssignTagToNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof assignTagToNode>>
+>;
+export type AssignTagToNodeMutationBody = BodyType<AssignTagToNodeBody>;
+export type AssignTagToNodeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Assign a tag to a node
+ */
+export const useAssignTagToNode = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof assignTagToNode>>,
+    TError,
+    { nodeId: string; data: BodyType<AssignTagToNodeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof assignTagToNode>>,
+  TError,
+  { nodeId: string; data: BodyType<AssignTagToNodeBody> },
+  TContext
+> => {
+  return useMutation(getAssignTagToNodeMutationOptions(options));
+};
+
+/**
+ * @summary Remove a tag from a node
+ */
+export const getRemoveTagFromNodeUrl = (nodeId: string, tagId: string) => {
+  return `/api/tags/nodes/${nodeId}/${tagId}`;
+};
+
+export const removeTagFromNode = async (
+  nodeId: string,
+  tagId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveTagFromNodeUrl(nodeId, tagId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveTagFromNodeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeTagFromNode>>,
+    TError,
+    { nodeId: string; tagId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeTagFromNode>>,
+  TError,
+  { nodeId: string; tagId: string },
+  TContext
+> => {
+  const mutationKey = ["removeTagFromNode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeTagFromNode>>,
+    { nodeId: string; tagId: string }
+  > = (props) => {
+    const { nodeId, tagId } = props ?? {};
+
+    return removeTagFromNode(nodeId, tagId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveTagFromNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeTagFromNode>>
+>;
+
+export type RemoveTagFromNodeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Remove a tag from a node
+ */
+export const useRemoveTagFromNode = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeTagFromNode>>,
+    TError,
+    { nodeId: string; tagId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeTagFromNode>>,
+  TError,
+  { nodeId: string; tagId: string },
+  TContext
+> => {
+  return useMutation(getRemoveTagFromNodeMutationOptions(options));
+};
+
+/**
+ * @summary List glossary terms
+ */
+export const getListGlossaryTermsUrl = (params?: ListGlossaryTermsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/glossary?${stringifiedParams}`
+    : `/api/glossary`;
+};
+
+export const listGlossaryTerms = async (
+  params?: ListGlossaryTermsParams,
+  options?: RequestInit,
+): Promise<GlossaryTerm[]> => {
+  return customFetch<GlossaryTerm[]>(getListGlossaryTermsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListGlossaryTermsQueryKey = (
+  params?: ListGlossaryTermsParams,
+) => {
+  return [`/api/glossary`, ...(params ? [params] : [])] as const;
+};
+
+export const getListGlossaryTermsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGlossaryTerms>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListGlossaryTermsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGlossaryTerms>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListGlossaryTermsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listGlossaryTerms>>
+  > = ({ signal }) => listGlossaryTerms(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listGlossaryTerms>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListGlossaryTermsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGlossaryTerms>>
+>;
+export type ListGlossaryTermsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List glossary terms
+ */
+
+export function useListGlossaryTerms<
+  TData = Awaited<ReturnType<typeof listGlossaryTerms>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListGlossaryTermsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGlossaryTerms>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListGlossaryTermsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a glossary term
+ */
+export const getCreateGlossaryTermUrl = () => {
+  return `/api/glossary`;
+};
+
+export const createGlossaryTerm = async (
+  createGlossaryTerm: CreateGlossaryTerm,
+  options?: RequestInit,
+): Promise<GlossaryTerm> => {
+  return customFetch<GlossaryTerm>(getCreateGlossaryTermUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createGlossaryTerm),
+  });
+};
+
+export const getCreateGlossaryTermMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createGlossaryTerm>>,
+    TError,
+    { data: BodyType<CreateGlossaryTerm> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createGlossaryTerm>>,
+  TError,
+  { data: BodyType<CreateGlossaryTerm> },
+  TContext
+> => {
+  const mutationKey = ["createGlossaryTerm"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createGlossaryTerm>>,
+    { data: BodyType<CreateGlossaryTerm> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createGlossaryTerm(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateGlossaryTermMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createGlossaryTerm>>
+>;
+export type CreateGlossaryTermMutationBody = BodyType<CreateGlossaryTerm>;
+export type CreateGlossaryTermMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a glossary term
+ */
+export const useCreateGlossaryTerm = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createGlossaryTerm>>,
+    TError,
+    { data: BodyType<CreateGlossaryTerm> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createGlossaryTerm>>,
+  TError,
+  { data: BodyType<CreateGlossaryTerm> },
+  TContext
+> => {
+  return useMutation(getCreateGlossaryTermMutationOptions(options));
+};
+
+/**
+ * @summary Get a glossary term
+ */
+export const getGetGlossaryTermUrl = (id: string) => {
+  return `/api/glossary/${id}`;
+};
+
+export const getGlossaryTerm = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GlossaryTerm> => {
+  return customFetch<GlossaryTerm>(getGetGlossaryTermUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGlossaryTermQueryKey = (id: string) => {
+  return [`/api/glossary/${id}`] as const;
+};
+
+export const getGetGlossaryTermQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGlossaryTerm>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGlossaryTerm>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGlossaryTermQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getGlossaryTerm>>> = ({
+    signal,
+  }) => getGlossaryTerm(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGlossaryTerm>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGlossaryTermQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGlossaryTerm>>
+>;
+export type GetGlossaryTermQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get a glossary term
+ */
+
+export function useGetGlossaryTerm<
+  TData = Awaited<ReturnType<typeof getGlossaryTerm>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGlossaryTerm>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGlossaryTermQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a glossary term
+ */
+export const getUpdateGlossaryTermUrl = (id: string) => {
+  return `/api/glossary/${id}`;
+};
+
+export const updateGlossaryTerm = async (
+  id: string,
+  createGlossaryTerm: CreateGlossaryTerm,
+  options?: RequestInit,
+): Promise<GlossaryTerm> => {
+  return customFetch<GlossaryTerm>(getUpdateGlossaryTermUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createGlossaryTerm),
+  });
+};
+
+export const getUpdateGlossaryTermMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateGlossaryTerm>>,
+    TError,
+    { id: string; data: BodyType<CreateGlossaryTerm> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateGlossaryTerm>>,
+  TError,
+  { id: string; data: BodyType<CreateGlossaryTerm> },
+  TContext
+> => {
+  const mutationKey = ["updateGlossaryTerm"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateGlossaryTerm>>,
+    { id: string; data: BodyType<CreateGlossaryTerm> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateGlossaryTerm(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateGlossaryTermMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateGlossaryTerm>>
+>;
+export type UpdateGlossaryTermMutationBody = BodyType<CreateGlossaryTerm>;
+export type UpdateGlossaryTermMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a glossary term
+ */
+export const useUpdateGlossaryTerm = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateGlossaryTerm>>,
+    TError,
+    { id: string; data: BodyType<CreateGlossaryTerm> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateGlossaryTerm>>,
+  TError,
+  { id: string; data: BodyType<CreateGlossaryTerm> },
+  TContext
+> => {
+  return useMutation(getUpdateGlossaryTermMutationOptions(options));
+};
+
+/**
+ * @summary Delete a glossary term
+ */
+export const getDeleteGlossaryTermUrl = (id: string) => {
+  return `/api/glossary/${id}`;
+};
+
+export const deleteGlossaryTerm = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGlossaryTermUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGlossaryTermMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGlossaryTerm>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGlossaryTerm>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteGlossaryTerm"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGlossaryTerm>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteGlossaryTerm(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGlossaryTermMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGlossaryTerm>>
+>;
+
+export type DeleteGlossaryTermMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a glossary term
+ */
+export const useDeleteGlossaryTerm = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGlossaryTerm>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGlossaryTerm>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteGlossaryTermMutationOptions(options));
+};
+
+/**
+ * @summary Get backlinks to a node
+ */
+export const getGetBacklinksUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/backlinks`;
+};
+
+export const getBacklinks = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<Backlink[]> => {
+  return customFetch<Backlink[]>(getGetBacklinksUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetBacklinksQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/backlinks`] as const;
+};
+
+export const getGetBacklinksQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getBacklinks>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetBacklinksQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBacklinks>>> = ({
+    signal,
+  }) => getBacklinks(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBacklinks>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetBacklinksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBacklinks>>
+>;
+export type GetBacklinksQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get backlinks to a node
+ */
+
+export function useGetBacklinks<
+  TData = Awaited<ReturnType<typeof getBacklinks>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getBacklinks>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetBacklinksQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get broken links and orphaned nodes
+ */
+export const getGetBrokenLinksUrl = () => {
+  return `/api/content/broken-links`;
+};
+
+export const getBrokenLinks = async (
+  options?: RequestInit,
+): Promise<BrokenLinksReport> => {
+  return customFetch<BrokenLinksReport>(getGetBrokenLinksUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetBrokenLinksQueryKey = () => {
+  return [`/api/content/broken-links`] as const;
+};
+
+export const getGetBrokenLinksQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBrokenLinks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getBrokenLinks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetBrokenLinksQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBrokenLinks>>> = ({
+    signal,
+  }) => getBrokenLinks({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBrokenLinks>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetBrokenLinksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBrokenLinks>>
+>;
+export type GetBrokenLinksQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get broken links and orphaned nodes
+ */
+
+export function useGetBrokenLinks<
+  TData = Awaited<ReturnType<typeof getBrokenLinks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getBrokenLinks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetBrokenLinksQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

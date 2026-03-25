@@ -26,6 +26,12 @@ tags:
     description: Template operations
   - name: media
     description: Media asset management
+  - name: search
+    description: Full-text search operations
+  - name: tags
+    description: Tag/taxonomy management
+  - name: glossary
+    description: Glossary term management
 paths:
   /healthz:
     get:
@@ -1205,6 +1211,379 @@ paths:
                 items:
                   $ref: "#/components/schemas/MediaAssetUsage"
 
+  /search:
+    get:
+      operationId: searchContent
+      tags: [search]
+      summary: Full-text search across content nodes
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: templateType
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: tagId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: ownerId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Search results with facets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResult"
+
+  /search/suggestions:
+    get:
+      operationId: getSearchSuggestions
+      tags: [search]
+      summary: Autocomplete search suggestions
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchSuggestions"
+
+  /search/analytics:
+    get:
+      operationId: getSearchAnalytics
+      tags: [search]
+      summary: Search analytics and popular queries
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchAnalytics"
+
+  /tags:
+    get:
+      operationId: listTags
+      tags: [tags]
+      summary: List all tags
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of tags with node counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      operationId: createTag
+      tags: [tags]
+      summary: Create a tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTag"
+      responses:
+        "201":
+          description: Created tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+
+  /tags/{id}:
+    patch:
+      operationId: updateTag
+      tags: [tags]
+      summary: Update a tag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTag"
+      responses:
+        "200":
+          description: Updated tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+    delete:
+      operationId: deleteTag
+      tags: [tags]
+      summary: Delete a tag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+  /tags/nodes/{nodeId}:
+    get:
+      operationId: getNodeTags
+      tags: [tags]
+      summary: Get tags for a node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Node tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      operationId: assignTagToNode
+      tags: [tags]
+      summary: Assign a tag to a node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagId:
+                  type: string
+                  format: uuid
+              required: [tagId]
+      responses:
+        "201":
+          description: Assigned
+
+  /tags/nodes/{nodeId}/{tagId}:
+    delete:
+      operationId: removeTagFromNode
+      tags: [tags]
+      summary: Remove a tag from a node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Removed
+
+  /glossary:
+    get:
+      operationId: listGlossaryTerms
+      tags: [glossary]
+      summary: List glossary terms
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: letter
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of terms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GlossaryTerm"
+    post:
+      operationId: createGlossaryTerm
+      tags: [glossary]
+      summary: Create a glossary term
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGlossaryTerm"
+      responses:
+        "201":
+          description: Created term
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlossaryTerm"
+
+  /glossary/{id}:
+    get:
+      operationId: getGlossaryTerm
+      tags: [glossary]
+      summary: Get a glossary term
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Glossary term
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlossaryTerm"
+    patch:
+      operationId: updateGlossaryTerm
+      tags: [glossary]
+      summary: Update a glossary term
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGlossaryTerm"
+      responses:
+        "200":
+          description: Updated term
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlossaryTerm"
+    delete:
+      operationId: deleteGlossaryTerm
+      tags: [glossary]
+      summary: Delete a glossary term
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+  /content/nodes/{nodeId}/backlinks:
+    get:
+      operationId: getBacklinks
+      tags: [content]
+      summary: Get backlinks to a node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Backlinks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Backlink"
+
+  /content/broken-links:
+    get:
+      operationId: getBrokenLinks
+      tags: [content]
+      summary: Get broken links and orphaned nodes
+      responses:
+        "200":
+          description: Broken links report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrokenLinksReport"
+
 components:
   parameters:
     NodeId:
@@ -2321,3 +2700,298 @@ components:
         - id
         - assetId
         - createdAt
+
+    SearchResultItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        displayCode:
+          type: string
+          nullable: true
+        templateType:
+          type: string
+        status:
+          type: string
+        ownerId:
+          type: string
+          nullable: true
+        parentNodeId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        rank:
+          type: number
+        headline:
+          type: string
+      required:
+        - id
+        - title
+        - templateType
+        - status
+
+    SearchResult:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResultItem"
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        facets:
+          type: object
+          properties:
+            templateType:
+              type: object
+              additionalProperties:
+                type: integer
+            status:
+              type: object
+              additionalProperties:
+                type: integer
+      required:
+        - results
+        - total
+        - limit
+        - offset
+        - facets
+
+    SearchSuggestions:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              title:
+                type: string
+              displayCode:
+                type: string
+                nullable: true
+              templateType:
+                type: string
+        aliases:
+          type: array
+          items:
+            type: object
+            properties:
+              nodeId:
+                type: string
+                format: uuid
+              previousDisplayCode:
+                type: string
+
+    SearchAnalytics:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            days:
+              type: integer
+            since:
+              type: string
+              format: date-time
+        totalSearches:
+          type: integer
+        popularQueries:
+          type: array
+          items:
+            type: object
+            properties:
+              query:
+                type: string
+              count:
+                type: integer
+              avgResults:
+                type: integer
+        zeroResultQueries:
+          type: array
+          items:
+            type: object
+            properties:
+              query:
+                type: string
+              count:
+                type: integer
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        color:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        nodeCount:
+          type: integer
+      required:
+        - id
+        - name
+        - slug
+
+    CreateTag:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+      required:
+        - name
+
+    GlossaryTerm:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        term:
+          type: string
+        slug:
+          type: string
+        definition:
+          type: string
+        synonyms:
+          type: array
+          items:
+            type: string
+          nullable: true
+        abbreviation:
+          type: string
+          nullable: true
+        nodeId:
+          type: string
+          format: uuid
+          nullable: true
+        createdBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - term
+        - slug
+        - definition
+
+    CreateGlossaryTerm:
+      type: object
+      properties:
+        term:
+          type: string
+        definition:
+          type: string
+        synonyms:
+          type: array
+          items:
+            type: string
+        abbreviation:
+          type: string
+        nodeId:
+          type: string
+          format: uuid
+      required:
+        - term
+        - definition
+
+    Backlink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceId:
+          type: string
+          format: uuid
+        relationType:
+          type: string
+        sourceTitle:
+          type: string
+        sourceDisplayCode:
+          type: string
+          nullable: true
+        sourceTemplateType:
+          type: string
+        sourceStatus:
+          type: string
+      required:
+        - id
+        - sourceId
+        - relationType
+        - sourceTitle
+
+    BrokenLinksReport:
+      type: object
+      properties:
+        brokenRelations:
+          type: array
+          items:
+            type: object
+            properties:
+              relationId:
+                type: string
+                format: uuid
+              sourceNodeId:
+                type: string
+                format: uuid
+              targetNodeId:
+                type: string
+                format: uuid
+              relationType:
+                type: string
+              sourceTitle:
+                type: string
+              sourceDisplayCode:
+                type: string
+                nullable: true
+        orphanedNodes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              title:
+                type: string
+              displayCode:
+                type: string
+                nullable: true
+              templateType:
+                type: string
+              parentNodeId:
+                type: string
+                format: uuid
+                nullable: true

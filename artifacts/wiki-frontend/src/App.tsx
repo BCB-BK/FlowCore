@@ -7,6 +7,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Hub } from "@/pages/Hub";
 import { NodeDetail } from "@/pages/NodeDetail";
 import { SearchPage } from "@/pages/SearchPage";
+import { GlossaryPage } from "@/pages/GlossaryPage";
+import { BrokenLinksPage } from "@/pages/BrokenLinksPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +18,8 @@ function Router() {
         <Route path="/" component={Hub} />
         <Route path="/node/:id" component={NodeDetail} />
         <Route path="/search" component={SearchPage} />
+        <Route path="/glossary" component={GlossaryPage} />
+        <Route path="/broken-links" component={BrokenLinksPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

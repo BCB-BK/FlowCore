@@ -1420,3 +1420,336 @@ export const GetMediaUsagesResponseItem = zod.object({
   createdAt: zod.date(),
 });
 export const GetMediaUsagesResponse = zod.array(GetMediaUsagesResponseItem);
+
+/**
+ * @summary Full-text search across content nodes
+ */
+export const searchContentQueryLimitDefault = 50;
+export const searchContentQueryOffsetDefault = 0;
+
+export const SearchContentQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+  templateType: zod.coerce.string().optional(),
+  status: zod.coerce.string().optional(),
+  tagId: zod.coerce.string().uuid().optional(),
+  ownerId: zod.coerce.string().optional(),
+  dateFrom: zod.date().optional(),
+  dateTo: zod.date().optional(),
+  limit: zod.coerce.number().default(searchContentQueryLimitDefault),
+  offset: zod.coerce.number().default(searchContentQueryOffsetDefault),
+});
+
+export const SearchContentResponse = zod.object({
+  results: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      title: zod.string(),
+      displayCode: zod.string().nullish(),
+      templateType: zod.string(),
+      status: zod.string(),
+      ownerId: zod.string().nullish(),
+      parentNodeId: zod.string().uuid().nullish(),
+      createdAt: zod.date().optional(),
+      updatedAt: zod.date().optional(),
+      rank: zod.number().optional(),
+      headline: zod.string().optional(),
+    }),
+  ),
+  total: zod.number(),
+  limit: zod.number(),
+  offset: zod.number(),
+  facets: zod.object({
+    templateType: zod.record(zod.string(), zod.number()).optional(),
+    status: zod.record(zod.string(), zod.number()).optional(),
+  }),
+});
+
+/**
+ * @summary Autocomplete search suggestions
+ */
+export const GetSearchSuggestionsQueryParams = zod.object({
+  q: zod.coerce.string(),
+});
+
+export const GetSearchSuggestionsResponse = zod.object({
+  nodes: zod
+    .array(
+      zod.object({
+        id: zod.string().uuid().optional(),
+        title: zod.string().optional(),
+        displayCode: zod.string().nullish(),
+        templateType: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  aliases: zod
+    .array(
+      zod.object({
+        nodeId: zod.string().uuid().optional(),
+        previousDisplayCode: zod.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * @summary Search analytics and popular queries
+ */
+export const getSearchAnalyticsQueryDaysDefault = 30;
+
+export const GetSearchAnalyticsQueryParams = zod.object({
+  days: zod.coerce.number().default(getSearchAnalyticsQueryDaysDefault),
+});
+
+export const GetSearchAnalyticsResponse = zod.object({
+  period: zod
+    .object({
+      days: zod.number().optional(),
+      since: zod.date().optional(),
+    })
+    .optional(),
+  totalSearches: zod.number().optional(),
+  popularQueries: zod
+    .array(
+      zod.object({
+        query: zod.string().optional(),
+        count: zod.number().optional(),
+        avgResults: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  zeroResultQueries: zod
+    .array(
+      zod.object({
+        query: zod.string().optional(),
+        count: zod.number().optional(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * @summary List all tags
+ */
+export const ListTagsQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+});
+
+export const ListTagsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  color: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  nodeCount: zod.number().optional(),
+});
+export const ListTagsResponse = zod.array(ListTagsResponseItem);
+
+/**
+ * @summary Create a tag
+ */
+export const CreateTagBody = zod.object({
+  name: zod.string(),
+  color: zod.string().nullish(),
+});
+
+/**
+ * @summary Update a tag
+ */
+export const UpdateTagParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const UpdateTagBody = zod.object({
+  name: zod.string(),
+  color: zod.string().nullish(),
+});
+
+export const UpdateTagResponse = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  color: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  nodeCount: zod.number().optional(),
+});
+
+/**
+ * @summary Delete a tag
+ */
+export const DeleteTagParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Get tags for a node
+ */
+export const GetNodeTagsParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeTagsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  color: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  nodeCount: zod.number().optional(),
+});
+export const GetNodeTagsResponse = zod.array(GetNodeTagsResponseItem);
+
+/**
+ * @summary Assign a tag to a node
+ */
+export const AssignTagToNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const AssignTagToNodeBody = zod.object({
+  tagId: zod.string().uuid(),
+});
+
+/**
+ * @summary Remove a tag from a node
+ */
+export const RemoveTagFromNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+  tagId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary List glossary terms
+ */
+export const ListGlossaryTermsQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+  letter: zod.coerce.string().optional(),
+});
+
+export const ListGlossaryTermsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  term: zod.string(),
+  slug: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).nullish(),
+  abbreviation: zod.string().nullish(),
+  nodeId: zod.string().uuid().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+export const ListGlossaryTermsResponse = zod.array(
+  ListGlossaryTermsResponseItem,
+);
+
+/**
+ * @summary Create a glossary term
+ */
+export const CreateGlossaryTermBody = zod.object({
+  term: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).optional(),
+  abbreviation: zod.string().optional(),
+  nodeId: zod.string().uuid().optional(),
+});
+
+/**
+ * @summary Get a glossary term
+ */
+export const GetGlossaryTermParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const GetGlossaryTermResponse = zod.object({
+  id: zod.string().uuid(),
+  term: zod.string(),
+  slug: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).nullish(),
+  abbreviation: zod.string().nullish(),
+  nodeId: zod.string().uuid().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+
+/**
+ * @summary Update a glossary term
+ */
+export const UpdateGlossaryTermParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const UpdateGlossaryTermBody = zod.object({
+  term: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).optional(),
+  abbreviation: zod.string().optional(),
+  nodeId: zod.string().uuid().optional(),
+});
+
+export const UpdateGlossaryTermResponse = zod.object({
+  id: zod.string().uuid(),
+  term: zod.string(),
+  slug: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).nullish(),
+  abbreviation: zod.string().nullish(),
+  nodeId: zod.string().uuid().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+
+/**
+ * @summary Delete a glossary term
+ */
+export const DeleteGlossaryTermParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Get backlinks to a node
+ */
+export const GetBacklinksParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetBacklinksResponseItem = zod.object({
+  id: zod.string().uuid(),
+  sourceId: zod.string().uuid(),
+  relationType: zod.string(),
+  sourceTitle: zod.string(),
+  sourceDisplayCode: zod.string().nullish(),
+  sourceTemplateType: zod.string().optional(),
+  sourceStatus: zod.string().optional(),
+});
+export const GetBacklinksResponse = zod.array(GetBacklinksResponseItem);
+
+/**
+ * @summary Get broken links and orphaned nodes
+ */
+export const GetBrokenLinksResponse = zod.object({
+  brokenRelations: zod
+    .array(
+      zod.object({
+        relationId: zod.string().uuid().optional(),
+        sourceNodeId: zod.string().uuid().optional(),
+        targetNodeId: zod.string().uuid().optional(),
+        relationType: zod.string().optional(),
+        sourceTitle: zod.string().optional(),
+        sourceDisplayCode: zod.string().nullish(),
+      }),
+    )
+    .optional(),
+  orphanedNodes: zod
+    .array(
+      zod.object({
+        id: zod.string().uuid().optional(),
+        title: zod.string().optional(),
+        displayCode: zod.string().nullish(),
+        templateType: zod.string().optional(),
+        parentNodeId: zod.string().uuid().nullish(),
+      }),
+    )
+    .optional(),
+});

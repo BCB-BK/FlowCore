@@ -33,6 +33,7 @@ export const PAGE_TYPE_LABELS: Record<string, string> = {
   role_profile: "Rollen-/Stellenprofil",
   dashboard: "Dashboard",
   system_documentation: "Systemdokumentation",
+  glossary: "Glossar",
 };
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -62,6 +63,7 @@ export const PAGE_TYPE_ICON_MAP: Record<string, string> = {
   role_profile: "UserCog",
   dashboard: "LayoutDashboard",
   system_documentation: "Server",
+  glossary: "BookOpen",
 };
 
 export const CONFIDENTIALITY_LABELS: Record<string, string> = {

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useRootNodes } from "@/hooks/use-nodes";
 import { TreeNode } from "./TreeNode";
-import { Home } from "lucide-react";
+import { Home, BookOpen, Search, AlertTriangle } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,6 +47,33 @@ export function WikiSidebar() {
               >
                 <Home className="h-4 w-4" />
                 <span>Startseite</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/search"}
+                onClick={() => navigate("/search")}
+              >
+                <Search className="h-4 w-4" />
+                <span>Suche</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/glossary"}
+                onClick={() => navigate("/glossary")}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Glossar</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/broken-links"}
+                onClick={() => navigate("/broken-links")}
+              >
+                <AlertTriangle className="h-4 w-4" />
+                <span>Defekte Links</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

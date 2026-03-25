@@ -39,6 +39,7 @@ export const templateTypeEnum = pgEnum("template_type", [
   "role_profile",
   "dashboard",
   "system_documentation",
+  "glossary",
 ]);
 
 export const reviewStatusEnum = pgEnum("review_status", [

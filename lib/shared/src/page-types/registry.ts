@@ -8,7 +8,8 @@ export type TemplateType =
   | "policy"
   | "role_profile"
   | "dashboard"
-  | "system_documentation";
+  | "system_documentation"
+  | "glossary";
 
 export type MetadataGroupKey =
   | "identity"
@@ -597,6 +598,41 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Standard",
         description: "Standard-Dashboard mit Widgets und Beschreibung",
         prefilledSections: ["widgets", "description"],
+      },
+    ],
+  },
+
+  glossary: {
+    type: "glossary",
+    label: "Glossary",
+    labelDe: "Glossar",
+    description: "Glossary page with term definitions and synonyms",
+    descriptionDe:
+      "Glossarseite mit Begriffsdefinitionen, Synonymen und Abkürzungen",
+    icon: "BookOpen",
+    color: "hsl(280, 50%, 55%)",
+    category: "documentation",
+    helpText:
+      "Erstellen und verwalten Sie Glossareinträge mit Definitionen, Synonymen und Verknüpfungen zu relevanten Wiki-Seiten.",
+    allowedChildTypes: [],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+    ],
+    sections: [
+      {
+        key: "terms",
+        label: "Begriffe",
+        description: "Glossarbegriffe und Definitionen",
+        required: true,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Glossarseite",
       },
     ],
   },

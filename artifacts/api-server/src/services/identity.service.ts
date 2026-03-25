@@ -20,6 +20,7 @@ const TEMPLATE_PREFIX_MAP: Record<string, string> = {
   role_profile: "ROL",
   dashboard: "DSH",
   system_documentation: "SYS",
+  glossary: "GLO",
 };
 
 function generateImmutableId(): string {

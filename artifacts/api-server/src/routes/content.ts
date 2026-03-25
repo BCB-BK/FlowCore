@@ -8,7 +8,7 @@ import {
   contentTemplatesTable,
   auditEventsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, isNull } from "drizzle-orm";
+import { eq, and, desc, isNull, sql, ne } from "drizzle-orm";
 import { createContentNode, moveNode } from "../services/identity.service";
 import {
   createRevision,
@@ -126,6 +126,7 @@ router.patch(
       "role_profile",
       "dashboard",
       "system_documentation",
+      "glossary",
     ];
     if (
       templateType !== undefined &&
@@ -545,6 +546,86 @@ router.get(
       return;
     }
     res.json(template);
+  },
+);
+
+router.get(
+  "/nodes/:nodeId/backlinks",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.nodeId),
+  async (req, res) => {
+    const nodeId = req.params.nodeId as string;
+
+    const backlinks = await db
+      .select({
+        id: contentRelationsTable.id,
+        sourceId: contentRelationsTable.sourceNodeId,
+        relationType: contentRelationsTable.relationType,
+        sourceTitle: contentNodesTable.title,
+        sourceDisplayCode: contentNodesTable.displayCode,
+        sourceTemplateType: contentNodesTable.templateType,
+        sourceStatus: contentNodesTable.status,
+      })
+      .from(contentRelationsTable)
+      .innerJoin(
+        contentNodesTable,
+        eq(contentRelationsTable.sourceNodeId, contentNodesTable.id),
+      )
+      .where(
+        and(
+          eq(contentRelationsTable.targetNodeId, nodeId),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      );
+
+    res.json(backlinks);
+  },
+);
+
+router.get(
+  "/broken-links",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    const brokenRelations = await db
+      .select({
+        relationId: contentRelationsTable.id,
+        sourceNodeId: contentRelationsTable.sourceNodeId,
+        targetNodeId: contentRelationsTable.targetNodeId,
+        relationType: contentRelationsTable.relationType,
+        sourceTitle: contentNodesTable.title,
+        sourceDisplayCode: contentNodesTable.displayCode,
+      })
+      .from(contentRelationsTable)
+      .innerJoin(
+        contentNodesTable,
+        eq(contentRelationsTable.sourceNodeId, contentNodesTable.id),
+      )
+      .where(
+        sql`${contentRelationsTable.targetNodeId} NOT IN (
+          SELECT id FROM content_nodes WHERE is_deleted = false
+        )`,
+      );
+
+    const orphanedNodes = await db
+      .select({
+        id: contentNodesTable.id,
+        title: contentNodesTable.title,
+        displayCode: contentNodesTable.displayCode,
+        templateType: contentNodesTable.templateType,
+        parentNodeId: contentNodesTable.parentNodeId,
+      })
+      .from(contentNodesTable)
+      .where(
+        and(
+          eq(contentNodesTable.isDeleted, false),
+          sql`${contentNodesTable.parentNodeId} IS NOT NULL AND ${contentNodesTable.parentNodeId} NOT IN (
+            SELECT id FROM content_nodes WHERE is_deleted = false
+          )`,
+        ),
+      );
+
+    res.json({ brokenRelations, orphanedNodes });
   },
 );
 
