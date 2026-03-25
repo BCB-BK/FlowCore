@@ -48,10 +48,8 @@ export function requireAuth(
     return;
   }
 
-  const session = (req as unknown as Record<string, Record<string, unknown>>)
-    .session;
-  if (session?.user) {
-    req.user = session.user as AuthUser;
+  if (req.session?.user) {
+    req.user = req.session.user as AuthUser;
     next();
     return;
   }

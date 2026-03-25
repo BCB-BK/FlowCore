@@ -250,7 +250,24 @@ router.get(
 router.post(
   "/revisions/:id/publish",
   requireAuth,
-  requirePermission("approve_page"),
+  async (req, res, next) => {
+    const id = req.params.id as string;
+    const [rev] = await db
+      .select({ nodeId: contentRevisionsTable.nodeId })
+      .from(contentRevisionsTable)
+      .where(eq(contentRevisionsTable.id, id));
+    if (!rev) {
+      res.status(404).json({ error: "Revision not found" });
+      return;
+    }
+    (req as unknown as Record<string, string>)._resolvedNodeId = rev.nodeId;
+    next();
+  },
+  requirePermission(
+    "approve_page",
+    (req) =>
+      (req as unknown as Record<string, string>)._resolvedNodeId as string,
+  ),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -280,7 +297,24 @@ router.post(
 router.post(
   "/revisions/:id/restore",
   requireAuth,
-  requirePermission("edit_content"),
+  async (req, res, next) => {
+    const id = req.params.id as string;
+    const [rev] = await db
+      .select({ nodeId: contentRevisionsTable.nodeId })
+      .from(contentRevisionsTable)
+      .where(eq(contentRevisionsTable.id, id));
+    if (!rev) {
+      res.status(404).json({ error: "Revision not found" });
+      return;
+    }
+    (req as unknown as Record<string, string>)._resolvedNodeId = rev.nodeId;
+    next();
+  },
+  requirePermission(
+    "edit_content",
+    (req) =>
+      (req as unknown as Record<string, string>)._resolvedNodeId as string,
+  ),
   async (req, res) => {
     try {
       const id = req.params.id as string;

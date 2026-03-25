@@ -16,7 +16,6 @@ const configSchema = z.object({
   authDevMode: z
     .enum(["true", "false"])
     .optional()
-    .default("true")
     .transform((v) => v === "true"),
 });
 
@@ -33,7 +32,9 @@ function loadConfig(): AppConfig {
     entraTenantId: process.env["ENTRA_TENANT_ID"],
     entraRedirectUri: process.env["ENTRA_REDIRECT_URI"],
     sessionSecret: process.env["SESSION_SECRET"],
-    authDevMode: process.env["AUTH_DEV_MODE"],
+    authDevMode:
+      process.env["AUTH_DEV_MODE"] ??
+      (process.env["NODE_ENV"] === "development" ? "true" : "false"),
   });
 
   if (!result.success) {

@@ -25,21 +25,34 @@ import { auditEventsTable } from "@workspace/db/schema";
 
 const router = Router();
 
-router.get("/principals", requireAuth, async (req, res) => {
-  const q = req.query.q as string | undefined;
-  if (q) {
-    const results = await searchPrincipals(q);
+router.get(
+  "/principals",
+  requireAuth,
+  requirePermission("manage_permissions"),
+  async (req, res) => {
+    const q = req.query.q as string | undefined;
+    if (q) {
+      const results = await searchPrincipals(q);
+      res.json(results);
+      return;
+    }
+    const limit = parseInt((req.query.limit as string) ?? "50", 10);
+    const offset = parseInt((req.query.offset as string) ?? "0", 10);
+    const results = await listPrincipals(limit, offset);
     res.json(results);
-    return;
-  }
-  const limit = parseInt((req.query.limit as string) ?? "50", 10);
-  const offset = parseInt((req.query.offset as string) ?? "0", 10);
-  const results = await listPrincipals(limit, offset);
-  res.json(results);
-});
+  },
+);
 
 router.get("/principals/:id", requireAuth, async (req, res) => {
   const id = req.params.id as string;
+  const isSelf = req.user!.principalId === id;
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+  }
   const principal = await getPrincipalById(id);
   if (!principal) {
     res.status(404).json({ error: "Principal not found" });
@@ -51,6 +64,14 @@ router.get("/principals/:id", requireAuth, async (req, res) => {
 
 router.get("/principals/:id/permissions", requireAuth, async (req, res) => {
   const id = req.params.id as string;
+  const isSelf = req.user!.principalId === id;
+  if (!isSelf) {
+    const callerPerms = await getEffectivePermissions(req.user!.principalId);
+    if (!callerPerms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+  }
   const permissions = await getEffectivePermissions(
     id,
     req.query.nodeId as string | undefined,
@@ -113,19 +134,22 @@ router.get("/rbac/matrix", requireAuth, (_req, res) => {
 
 router.get("/graph/people", requireAuth, async (req, res) => {
   const q = (req.query.q as string) ?? "";
-  const results = await searchPeople("", q);
+  const accessToken = req.session?.graphAccessToken ?? "";
+  const results = await searchPeople(accessToken, q);
   res.json(results);
 });
 
 router.get("/graph/groups", requireAuth, async (req, res) => {
   const q = (req.query.q as string) ?? "";
-  const results = await searchGroups("", q);
+  const accessToken = req.session?.graphAccessToken ?? "";
+  const results = await searchGroups(accessToken, q);
   res.json(results);
 });
 
 router.get(
   "/content/nodes/:nodeId/permissions",
   requireAuth,
+  requirePermission("manage_permissions", (req) => req.params.nodeId),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const perms = await getPagePermissions(nodeId);
@@ -185,6 +209,7 @@ router.delete(
 router.get(
   "/content/nodes/:nodeId/ownership",
   requireAuth,
+  requirePermission("read_page", (req) => req.params.nodeId),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const ownership = await getNodeOwnership(nodeId);

@@ -46,7 +46,10 @@ router.get("/auth/login", async (req, res) => {
   }
 
   try {
-    const url = await getAuthUrl();
+    const { randomUUID } = await import("crypto");
+    const state = randomUUID();
+    req.session.oauthState = state;
+    const url = await getAuthUrl(state);
     res.json({ loginUrl: url });
   } catch (err) {
     logger.error({ err }, "Failed to generate auth URL");
@@ -61,13 +64,34 @@ router.get("/auth/callback", async (req, res) => {
   }
 
   const code = req.query.code as string;
+  const state = req.query.state as string | undefined;
   if (!code) {
     res.status(400).json({ error: "Missing authorization code" });
     return;
   }
 
+  const expectedState = req.session.oauthState;
+  if (expectedState && state !== expectedState) {
+    logger.warn("OAuth state mismatch — possible CSRF");
+    res.status(400).json({ error: "Invalid state parameter" });
+    return;
+  }
+  delete req.session.oauthState;
+
   try {
     const tokenResult = await exchangeCodeForToken(code);
+
+    if (
+      appConfig.entraTenantId &&
+      tokenResult.tenantId !== appConfig.entraTenantId
+    ) {
+      logger.warn(
+        { expected: appConfig.entraTenantId, got: tokenResult.tenantId },
+        "Tenant ID mismatch in auth callback",
+      );
+      res.status(403).json({ error: "Tenant not authorized" });
+      return;
+    }
 
     const principalId = await upsertPrincipal({
       principalType: "user",
@@ -78,16 +102,13 @@ router.get("/auth/callback", async (req, res) => {
       upn: tokenResult.upn,
     });
 
-    const session = (req as unknown as Record<string, Record<string, unknown>>)
-      .session;
-    if (session) {
-      session.user = {
-        principalId,
-        externalId: tokenResult.externalId,
-        displayName: tokenResult.displayName,
-        email: tokenResult.email,
-      };
-    }
+    req.session.user = {
+      principalId,
+      externalId: tokenResult.externalId,
+      displayName: tokenResult.displayName,
+      email: tokenResult.email,
+    };
+    req.session.graphAccessToken = tokenResult.accessToken;
 
     await db.insert(auditEventsTable).values({
       eventType: "auth",
@@ -133,16 +154,12 @@ router.post("/auth/logout", requireAuth, async (req, res) => {
     ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
   });
 
-  const session = (req as unknown as Record<string, Record<string, unknown>>)
-    .session;
-  if (session?.destroy) {
-    (session.destroy as (cb: (err?: unknown) => void) => void)(() => {
-      res.json({ message: "Logged out" });
-    });
-    return;
-  }
-
-  res.json({ message: "Logged out" });
+  req.session.destroy((err) => {
+    if (err) {
+      logger.warn({ err }, "Session destroy failed");
+    }
+    res.json({ message: "Logged out" });
+  });
 });
 
 router.get("/auth/dev-users", (_req, res) => {
