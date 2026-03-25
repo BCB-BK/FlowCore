@@ -44,7 +44,18 @@ function loadConfig(): AppConfig {
     throw new Error(`Configuration validation failed:\n${errors}`);
   }
 
-  return result.data;
+  const config = result.data;
+
+  if (
+    config.nodeEnv === "production" &&
+    config.sessionSecret === "dev-session-secret-change-me"
+  ) {
+    throw new Error(
+      "SESSION_SECRET must be set to a strong, unique value in production",
+    );
+  }
+
+  return config;
 }
 
 export const appConfig = loadConfig();

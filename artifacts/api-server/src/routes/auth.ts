@@ -71,9 +71,9 @@ router.get("/auth/callback", async (req, res) => {
   }
 
   const expectedState = req.session.oauthState;
-  if (expectedState && state !== expectedState) {
-    logger.warn("OAuth state mismatch — possible CSRF");
-    res.status(400).json({ error: "Invalid state parameter" });
+  if (!expectedState || !state || state !== expectedState) {
+    logger.warn("OAuth state missing or mismatch — possible CSRF");
+    res.status(400).json({ error: "Invalid or missing state parameter" });
     return;
   }
   delete req.session.oauthState;

@@ -29,6 +29,10 @@ function getGraphClient(accessToken: string): Client {
   });
 }
 
+function sanitizeODataValue(input: string): string {
+  return input.replace(/'/g, "''");
+}
+
 export async function searchPeople(
   accessToken: string,
   query: string,
@@ -38,15 +42,31 @@ export async function searchPeople(
     return getDevPeople(query);
   }
 
-  const client = getGraphClient(accessToken);
-  const result = await client
-    .api("/users")
-    .filter(`startswith(displayName,'${query}') or startswith(mail,'${query}')`)
-    .top(top)
-    .select("id,displayName,mail,userPrincipalName,jobTitle,department")
-    .get();
+  if (!accessToken) {
+    logger.warn("searchPeople called without access token");
+    return [];
+  }
 
-  return (result.value ?? []).map(mapGraphUser);
+  try {
+    const safe = sanitizeODataValue(query);
+    const client = getGraphClient(accessToken);
+    const result = await client
+      .api("/users")
+      .filter(`startswith(displayName,'${safe}') or startswith(mail,'${safe}')`)
+      .top(top)
+      .select("id,displayName,mail,userPrincipalName,jobTitle,department")
+      .get();
+
+    return (result.value ?? []).map(mapGraphUser);
+  } catch (err) {
+    const status = (err as { statusCode?: number }).statusCode;
+    if (status === 429) {
+      logger.warn("Graph API rate limited on searchPeople");
+    } else {
+      logger.error({ err }, "Graph searchPeople failed");
+    }
+    return [];
+  }
 }
 
 export async function getPersonById(
@@ -90,15 +110,31 @@ export async function searchGroups(
     return getDevGroups(query);
   }
 
-  const client = getGraphClient(accessToken);
-  const result = await client
-    .api("/groups")
-    .filter(`startswith(displayName,'${query}')`)
-    .top(top)
-    .select("id,displayName,description,mail")
-    .get();
+  if (!accessToken) {
+    logger.warn("searchGroups called without access token");
+    return [];
+  }
 
-  return (result.value ?? []).map(mapGraphGroup);
+  try {
+    const safe = sanitizeODataValue(query);
+    const client = getGraphClient(accessToken);
+    const result = await client
+      .api("/groups")
+      .filter(`startswith(displayName,'${safe}')`)
+      .top(top)
+      .select("id,displayName,description,mail")
+      .get();
+
+    return (result.value ?? []).map(mapGraphGroup);
+  } catch (err) {
+    const status = (err as { statusCode?: number }).statusCode;
+    if (status === 429) {
+      logger.warn("Graph API rate limited on searchGroups");
+    } else {
+      logger.error({ err }, "Graph searchGroups failed");
+    }
+    return [];
+  }
 }
 
 export async function getGroupMembers(
