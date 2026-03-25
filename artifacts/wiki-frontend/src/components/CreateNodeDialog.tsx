@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PAGE_TYPE_LABELS } from "@/lib/types";
+import type { CreateNodeInput } from "@workspace/api-client-react";
 
 interface CreateNodeDialogProps {
   open: boolean;
@@ -33,7 +34,9 @@ export function CreateNodeDialog({
   parentNodeId,
 }: CreateNodeDialogProps) {
   const [title, setTitle] = useState("");
-  const [templateType, setTemplateType] = useState("core_process_overview");
+  const [templateType, setTemplateType] = useState<
+    CreateNodeInput["templateType"]
+  >("core_process_overview");
   const createNode = useCreateNode();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -43,9 +46,11 @@ export function CreateNodeDialog({
 
     try {
       const node = await createNode.mutateAsync({
-        title: title.trim(),
-        templateType,
-        parentNodeId: parentNodeId || undefined,
+        data: {
+          title: title.trim(),
+          templateType,
+          parentNodeId: parentNodeId || undefined,
+        },
       });
 
       setTitle("");
@@ -85,7 +90,12 @@ export function CreateNodeDialog({
 
           <div className="space-y-2">
             <Label htmlFor="type">Seitentyp</Label>
-            <Select value={templateType} onValueChange={setTemplateType}>
+            <Select
+              value={templateType}
+              onValueChange={(v) =>
+                setTemplateType(v as CreateNodeInput["templateType"])
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

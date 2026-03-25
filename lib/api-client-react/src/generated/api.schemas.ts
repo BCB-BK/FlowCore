@@ -102,6 +102,39 @@ export interface CreateNodeInput {
   sortOrder?: number;
 }
 
+export type UpdateNodeInputTemplateType =
+  (typeof UpdateNodeInputTemplateType)[keyof typeof UpdateNodeInputTemplateType];
+
+export const UpdateNodeInputTemplateType = {
+  core_process_overview: "core_process_overview",
+  area_overview: "area_overview",
+  process_page_text: "process_page_text",
+  process_page_graphic: "process_page_graphic",
+  procedure_instruction: "procedure_instruction",
+  use_case: "use_case",
+  policy: "policy",
+  role_profile: "role_profile",
+  dashboard: "dashboard",
+  system_documentation: "system_documentation",
+} as const;
+
+export type UpdateNodeInputStatus =
+  (typeof UpdateNodeInputStatus)[keyof typeof UpdateNodeInputStatus];
+
+export const UpdateNodeInputStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  published: "published",
+  archived: "archived",
+} as const;
+
+export interface UpdateNodeInput {
+  title?: string;
+  templateType?: UpdateNodeInputTemplateType;
+  status?: UpdateNodeInputStatus;
+}
+
 export interface MoveNodeInput {
   newParentNodeId?: string | null;
   actorId?: string;

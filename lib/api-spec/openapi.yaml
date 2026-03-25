@@ -459,6 +459,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateNode
+      tags: [content]
+      summary: Update a content node's metadata
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNodeInput"
+      responses:
+        "200":
+          description: Updated node
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentNode"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: deleteNode
       tags: [content]
@@ -897,6 +928,33 @@ components:
       required:
         - title
         - templateType
+
+    UpdateNodeInput:
+      type: object
+      properties:
+        title:
+          type: string
+        templateType:
+          type: string
+          enum:
+            - core_process_overview
+            - area_overview
+            - process_page_text
+            - process_page_graphic
+            - procedure_instruction
+            - use_case
+            - policy
+            - role_profile
+            - dashboard
+            - system_documentation
+        status:
+          type: string
+          enum:
+            - draft
+            - in_review
+            - approved
+            - published
+            - archived
 
     MoveNodeInput:
       type: object

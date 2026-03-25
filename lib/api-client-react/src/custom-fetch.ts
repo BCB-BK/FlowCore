@@ -17,6 +17,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _defaultHeaders: Record<string, string> = {};
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -39,6 +40,12 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+export function setDefaultHeaders(
+  headers: Record<string, string> | null,
+): void {
+  _defaultHeaders = headers ?? {};
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -343,6 +350,7 @@ export async function customFetch<T = unknown>(
   }
 
   const headers = mergeHeaders(
+    _defaultHeaders,
     isRequest(input) ? input.headers : undefined,
     headersInit,
   );

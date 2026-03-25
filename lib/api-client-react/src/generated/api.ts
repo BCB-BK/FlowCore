@@ -54,6 +54,7 @@ import type {
   SetNodeOwnership200,
   SetNodeOwnershipInput,
   TreeNode,
+  UpdateNodeInput,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -2008,6 +2009,93 @@ export function useGetNode<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Update a content node's metadata
+ */
+export const getUpdateNodeUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}`;
+};
+
+export const updateNode = async (
+  nodeId: string,
+  updateNodeInput: UpdateNodeInput,
+  options?: RequestInit,
+): Promise<ContentNode> => {
+  return customFetch<ContentNode>(getUpdateNodeUrl(nodeId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateNodeInput),
+  });
+};
+
+export const getUpdateNodeMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateNode>>,
+    TError,
+    { nodeId: string; data: BodyType<UpdateNodeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateNode>>,
+  TError,
+  { nodeId: string; data: BodyType<UpdateNodeInput> },
+  TContext
+> => {
+  const mutationKey = ["updateNode"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateNode>>,
+    { nodeId: string; data: BodyType<UpdateNodeInput> }
+  > = (props) => {
+    const { nodeId, data } = props ?? {};
+
+    return updateNode(nodeId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateNodeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateNode>>
+>;
+export type UpdateNodeMutationBody = BodyType<UpdateNodeInput>;
+export type UpdateNodeMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a content node's metadata
+ */
+export const useUpdateNode = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateNode>>,
+    TError,
+    { nodeId: string; data: BodyType<UpdateNodeInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateNode>>,
+  TError,
+  { nodeId: string; data: BodyType<UpdateNodeInput> },
+  TContext
+> => {
+  return useMutation(getUpdateNodeMutationOptions(options));
+};
 
 /**
  * @summary Soft-delete a content node

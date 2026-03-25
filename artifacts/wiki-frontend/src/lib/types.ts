@@ -1,46 +1,8 @@
-export interface ContentNode {
-  id: string;
-  parentNodeId: string | null;
-  displayCode: string;
-  slug: string;
-  title: string;
-  templateType: string;
-  status: string;
-  sortOrder: number;
-  createdBy: string;
-  isDeleted: boolean;
-  deletedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AuthUser {
-  principalId: string;
-  externalId: string;
-  displayName: string;
-  email: string;
-  roles: Array<{ role: string; scope: string | null }>;
-  permissions: string[];
-}
-
-export interface ContentTemplate {
-  id: string;
-  templateType: string;
-  name: string;
-  description: string | null;
-  defaultContent: Record<string, unknown> | null;
-  fieldSchema: Record<string, unknown> | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type NodeStatus =
-  | "draft"
-  | "in_review"
-  | "published"
-  | "archived"
-  | "deleted";
+export type {
+  ContentNode,
+  AuthUser,
+  ContentTemplate,
+} from "@workspace/api-client-react";
 
 export const PAGE_TYPE_LABELS: Record<string, string> = {
   core_process_overview: "Kernprozess-Übersicht",

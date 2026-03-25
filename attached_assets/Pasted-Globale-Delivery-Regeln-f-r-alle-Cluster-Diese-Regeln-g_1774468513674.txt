@@ -1,0 +1,786 @@
+Globale Delivery-Regeln für alle Cluster
+Diese Regeln gelten in jedem Cluster ohne Ausnahme:
+Keine Hardcodings für konfigurierbare Werte.
+Keine stillen Fallbacks im Runtime-Code.
+Bestandsprüfung vor jeder Neuerstellung.
+Bestehende Architektur zuerst prüfen, dann erweitern.
+Altlasten im betroffenen Bereich direkt mitbereinigen.
+Root-Cause-Fix statt Workaround.
+Jede UI-relevante Änderung real im Frontend prüfen.
+Jeder relevante Output real öffnen und prüfen.
+Playwright-Evidenz für UI-/Workflow-/Output-relevante Pfade.
+Dokumentation wird im selben Arbeitsschritt aktualisiert wie der Code.
+Lint, Typecheck, Tests und No-Hardcode-Check sind Pflicht vor Abschluss.
+Jeder Cluster endet mit Umsetzungsbericht, Audit-Report, Dateiliste, Frontend-/Output-Evidenz und offenen Punkten.
+---
+
+Pflichtnachschärfung vor Cluster 1
+Diese Punkte sind in Cluster 1 zusätzlich verbindlich:
+Die Entscheidung für die Eigenentwicklung in Replit ist als feste Architekturprämisse zu dokumentieren. Replit soll keine erneute Produkt-Auswahlrunde eröffnen.
+Lege ein Benchmark-Feature-Register an, in dem die aus Confluence, Docmost, XWiki, Teams und AI-gestützten Wissenssystemen abgeleiteten Zielmerkmale festgehalten werden.
+Lege die Architekturprämisse Campus-first / Multi-Organisation / Multi-Brand fest: Bildungscampus, Schulen/Marken, Bereiche, Teams, Standorte, Querschnittsfunktionen.
+Lege früh Provider-Abstraktionen fest für:
+Auth / Identity
+Storage / Medien
+Search / Index
+AI / Retrieval
+Connectoren / Source Systems
+Notifications
+Die bestehende Dokumentations-UI ist nicht nur zu prüfen, sondern – wenn tragfähig – als zentrale Technik-/Audit-Doku-Oberfläche mitzudenken.
+Ergebnis dieses Clusters muss auch eine klare Entscheidung sein, wie Medien-, Wissens- und Connector-Provider in der Architektur sauber austauschbar werden.
+---
+Cluster 1 – Replit als sauberes Delivery-System aufsetzen
+Copy-Paste-Auftrag für Replit
+Titel
+Cluster 1 – Delivery-Fundament, Agent-Playbook, Qualitäts-Gates, Dokumentation und Audit-Basis für das Enterprise-Wiki
+Ziel
+Setze das Projekt so auf, dass ab jetzt sauber, prüfbar, reproduzierbar und dokumentiert entwickelt wird. Vor fachlichen Features muss das Repo ein belastbares Delivery-Fundament haben: Bestandsprüfung, Agent-Playbook, Config-Health, Audit-Basis, Logging, Dokumentationsstruktur, Test- und Qualitäts-Gates.
+Scope
+Bestehendes Repo vollständig analysieren und Architekturkarte erstellen.
+Das mitgelieferte Task-/Skill-Regelwerk in ein projektspezifisches Agent-Playbook übersetzen.
+Einen verbindlichen Delivery-Workflow im Repo verankern.
+Qualitäts-Gates einrichten: Lint, Typecheck, Tests, No-Hardcode-Check, Docs-Check.
+Playwright-/E2E-Basis für reale Frontend-Prüfungen einrichten.
+Konfigurations- und Secret-Handling professionell aufsetzen.
+Logging-, Fehler- und Audit-Basis schaffen.
+Die vorhandene Dokumentationsoberfläche prüfen und als zentrale Doku-Basis wiederverwenden, statt eine zweite Doku-Welt zu bauen.
+Grundlegende technische Dokumentation, ADR-Struktur, Change Log und Tech Log aufsetzen.
+Abschlussbericht und Audit-Bericht in einem verbindlichen Abgabeformat liefern.
+Nicht im Scope
+Fachliche Seitentypen bauen
+Editor bauen
+KI-Funktionen bauen
+Suche bauen
+Rollen- oder Freigabelogik final umsetzen
+SharePoint-/Graph-Integration fachlich vollständig bauen
+Verbindliche Leitplanken
+Vor jeder neuen Datei prüfen, ob bestehende Strukturen wiederverwendbar sind.
+Keine zweite Dokumentationslandschaft neben der vorhandenen Dokumentations-UI aufbauen.
+Keine Runtime-Defaults für kritische Konfigurationswerte.
+Keine Platzhalter-Implementierungen im finalen Code.
+Keine „temporären“ Hardcodings, die später entfernt werden sollen.
+Wenn ein Pflichtartefakt fehlt oder ein echter Frontend-Test nicht möglich ist: Stop und Rückfrage.
+Arbeitspakete / Tasks
+Task 1.1 – Repo-Audit und Architekturkarte
+Beschreibung
+Analysiere das gesamte bestehende Projekt: Frontend, Backend, Datenbankzugriffe, Routen, Typdefinitionen, Dokumentationsmechanik, Build-/Test-Skripte, Settings-/Config-Handling, vorhandene Audit- oder Log-Strukturen.
+Definition of Done
+Architekturkarte erstellt
+Hauptmodule und Datenflüsse dokumentiert
+Wiederverwendbare Bestandteile identifiziert
+technische Altlastenliste erstellt
+ADR „Current State“ erstellt
+Technische Anweisungen
+Repo-weite Suche nach bestehenden Docs, Configs, Routen, Types, Validators, UI-Komponenten, Audit-/Log-Mechaniken
+Abhängigkeiten und Ankerpunkte dokumentieren
+Vorhandene Dokumentationsansicht explizit prüfen und bewerten
+Worauf besonders zu achten ist
+Nicht vorschnell neue Ordner- oder Architekturschichten einführen
+Bestehende Dokumentationsmechanik möglichst als Single Source of Truth erhalten
+---
+Task 1.2 – Agent-Playbook und Delivery-Standard operationalisieren
+Beschreibung
+Übersetze das gelieferte Regelwerk in ein projektspezifisches Playbook, das ab jetzt für jeden Replit-Auftrag gilt.
+Definition of Done
+`docs/96-AGENT-PLAYBOOK.md` erstellt oder aktualisiert
+verbindliche Checklisten für Bestandsprüfung, No-Hardcode, Frontend-Test, Output-Test, Regression und Dokumentation vorhanden
+Standard-Abgabeformat als Markdown-Vorlage angelegt
+Abschluss-Checkliste im Repo verankert
+Technische Anweisungen
+Das Playbook muss mindestens regeln:
+Search-first-Workflow
+Bestandsprüfung vor Neuerstellung
+Fail-fast statt stille Fallbacks
+Pflicht zur Altlastenbereinigung
+Verbot der Selbstabnahme
+Playwright-/Realprüfung bei UI-/Workflow-/Output-Themen
+Pflichtige Abgabeformate
+Worauf besonders zu achten ist
+Nicht nur dokumentieren, sondern real in den Delivery-Prozess integrieren
+PLATO-spezifische Regelreste nicht blind übernehmen; die Disziplin übernehmen, aber das Projekt sauber auf das neue Wiki ausrichten
+---
+Task 1.3 – Qualitäts-Gates und lokale Build-Disziplin
+Beschreibung
+Richte technische Gates ein, damit künftig keine „schnellen“ unsauberen Änderungen durchrutschen.
+Definition of Done
+standardisierte Scripts für `lint`, `typecheck`, `test`, `e2e`, `docs:check`, `no-hardcode-check` vorhanden oder auf bestehende Skripte gemappt
+Lint-Policy für geänderte Dateien dokumentiert
+Typecheck verpflichtend vor Abschluss
+Test-Runner sauber eingebunden
+Build-/Check-Reihenfolge dokumentiert
+Technische Anweisungen
+Falls noch nicht vorhanden: `scripts/no-hardcode-check.*` anlegen
+Dokumentiere exakt, welche Kommandos vor jedem Task-Abschluss laufen müssen
+Warnungen nicht stillschweigend ignorieren
+Worauf besonders zu achten ist
+Keine neue Regelquelle neben der existierenden Toolchain erzeugen
+Keine Ignore-Listen ohne technische Begründung
+---
+Task 1.4 – Playwright- und E2E-Grundgerüst
+Beschreibung
+Richte ein echtes Browser-Testgerüst ein. Dieses Projekt darf nicht auf API-Tests und Code-Review allein vertrauen.
+Definition of Done
+Playwright läuft lokal und in der vorgesehenen Delivery-Pipeline
+Basistests für App-Start, Routing, Dokumentationsseite und mindestens einen realen UI-Pfad vorhanden
+Screenshot-/Trace-/Video-Artefakte werden gespeichert
+Testdaten-/Seed-Strategie dokumentiert
+Technische Anweisungen
+Testumgebung sauber von produktiven Konfigurationen trennen
+Playwright-Konfiguration so anlegen, dass spätere Kernpfade leicht ergänzt werden können
+Fehlerzustände sichtbar testen
+Worauf besonders zu achten ist
+Kein UI-relevanter Cluster-Abschluss ohne echte Frontend-Evidenz
+---
+Task 1.5 – Config-, Env- und Health-Fundament
+Beschreibung
+Schaffe eine saubere, fail-fast Konfigurationsbasis für Dev/Test/Prod und spätere Integrationen.
+Definition of Done
+`.env`-/Secrets-Konzept dokumentiert
+Konfigurationsschema und Validierung vorhanden
+Health-Mechanismus für Pflichtkonfigurationen vorhanden
+sichtbare Fehlerbehandlung bei unvollständiger Konfiguration spezifiziert
+Technische Anweisungen
+Schema-Validierung z. B. über Zod oder äquivalent
+Kritische Konfigurationswerte serverseitig validieren
+Kein Runtime-Fallback auf „Dummy“-Werte
+Konfigurationen logisch trennen: App, DB, Auth, Graph, AI, Storage, Feature Flags
+Worauf besonders zu achten ist
+Defaults nur als Seed oder bewusst dokumentierte Initialwerte, nicht als stille Runtime-Rettung
+---
+Task 1.6 – Logging, Fehlertracking und Audit-Basis
+Beschreibung
+Richte die technische Nachvollziehbarkeit des Systems ein.
+Definition of Done
+strukturierte Server-Logs vorhanden
+Request-/Correlation-ID eingeführt
+technische Fehlerklassen dokumentiert
+Audit-Basis für spätere fachliche Aktionen vorhanden
+sensible Daten werden nicht im Klartext geloggt
+Technische Anweisungen
+JSON-Logs
+klare Trennung zwischen App-Logs, Audit-Events, Security-Events und Integrationsfehlern
+erste Audit-Tabelle oder Audit-Schnittstelle vorbereiten
+Worauf besonders zu achten ist
+Kein „console.log“-Wildwuchs als Logging-Strategie
+---
+Task 1.7 – Dokumentationsstruktur, Tech Log und Change Log
+Beschreibung
+Schaffe eine belastbare technische Doku-Struktur und knüpfe sie an die bestehende Dokumentationsoberfläche an.
+Definition of Done
+nummerierte Doku-Struktur festgelegt
+ADR-Struktur vorhanden
+Change Log vorhanden
+technisches Log / Incident Log vorhanden
+Release-Notes-Struktur vorbereitet
+bestehende Dokumentations-UI nutzt diese Struktur oder ist darauf planbar ausgerichtet
+Technische Anweisungen
+Dokumentation als Markdown-First bzw. bestehende Doku-Single-Source aufsetzen
+Kategorien definieren: Architektur, Daten, Technik, KI, Sicherheit, Betrieb, Prozesse
+Exportfähigkeit prüfen: Gesamt-Markdown, ZIP, Config-Export, sofern bereits vorhanden
+Worauf besonders zu achten ist
+Keine zweite Schatten-Dokumentation in zufälligen Files anlegen
+---
+Task 1.8 – Cluster-1-Abschluss und Delivery-Nachweis
+Beschreibung
+Liefer einen vollständigen Abnahme-Block für Cluster 1.
+Definition of Done
+Umsetzungsbericht vollständig
+Audit-Report vollständig
+Liste geänderter Dateien vollständig
+dokumentierte Bestandsprüfung vorhanden
+Frontend-Evidenz vorhanden
+Output-Evidenz vorhanden, falls erzeugte Artefakte existieren
+offene Punkte und Risiken dokumentiert
+Technische Anweisungen
+Vor Cluster-Abschluss verpflichtend ausführen:
+`lint`
+`typecheck`
+`test`
+`e2e`
+`no-hardcode-check`
+`docs:check`
+Worauf besonders zu achten ist
+Cluster 1 ist nur bestanden, wenn das Delivery-System real benutzbar ist und nicht nur beschrieben wurde
+Pflichtartefakte für Cluster 1
+Architekturkarte
+ADR „Current State“
+`docs/96-AGENT-PLAYBOOK.md`
+Standard-Abgabeformat für Folgecluster
+Playwright-Grundgerüst
+Config-/Health-Konzept
+Logging-/Audit-Basis
+Doku-/Tech-Log-Struktur
+Cluster-1-Umsetzungsbericht
+Cluster-1-Audit-Report
+Abgabeformat
+Liefere am Ende von Cluster 1:
+Umsetzungsbericht Punkt für Punkt gemäß Scope
+Audit-Report mit Bestandsprüfung und Altlasten
+Vollständige Dateiliste
+Liste geprüfter Bestandsstrukturen
+Frontend-Evidenzen
+Output-Evidenzen
+Reale Verifikation
+Offene Punkte, Risiken und Folgeempfehlungen
+---
+
+Pflichtnachschärfung vor Cluster 2
+Diese Punkte sind in Cluster 2 zusätzlich verbindlich:
+Das Domain Model muss den gesamten Bildungscampus tragen können. Zusätzliche Kernentitäten oder nahe Verwandte sind vorzusehen, z. B.:
+`organization_units`
+`brands` / `schools`
+`locations`
+`business_functions`
+`source_systems`
+`storage_providers`
+Das Modell muss von Anfang an folgende Enterprise-Bausteine vorbereiten:
+`page_watchers`
+`page_comments` / `annotations`
+`page_verifications`
+`favorites`
+`notifications`
+`source_references`
+Das Modell muss die gelieferten Seitentemplates strukturiert tragen können:
+Gesamtprozess-Übersicht mit Prozessschritten / Child-Links
+Verfahrensanweisung mit Zweck, Geltungsbereich, Ausschlüssen, SIPOC, Swimlane, Detailablauf, RACI, KPIs
+geleitete Verfahrensanweisung mit Hilfetexten und Mindest-Veröffentlichungskriterien
+Stellenprofil mit Hierarchie, Zielsetzung, Kernaufgaben, Routinen, Schnittstellen, Kompetenzen, Erfolgskriterien, Datenschutz etc.
+Das Asset-/Medienmodell muss nicht nur Uploads kennen, sondern auch:
+Quelle / Bibliothek / Pfad
+Klassifikation
+Caption / Alt-Text
+Video-spezifische Metadaten
+Transkript / Untertitel-Referenz
+Verwendungsnachweise über mehrere Seiten
+Der Versionsstamm muss fachlich als sichtbarer Stammbaum vorbereitet werden, nicht nur als Liste technischer Snapshots.
+---
+Cluster 2 – Domain Model, Content Graph, Versions-/Revisionslogik und immutable Identity
+Copy-Paste-Auftrag für Replit
+Titel
+Cluster 2 – Fachliches Datenmodell, Content Graph, unveränderbare Identität, Hierarchie-Logik sowie Versions- und Revisionsstamm für das Enterprise-Wiki
+Ziel
+Baue das fachliche Rückgrat des Systems: stabile Inhaltsobjekte, strukturierte Felder, Relationen, hierarchische Navigation, versionierte Inhalte, Revisionskette, Versionsstamm und serverseitige Identitäts-/Nummerierungslogik. Ohne dieses Modell darf kein Editor, kein Freigabeworkflow und keine KI-Funktion gebaut werden.
+Scope
+Fachliches Datenmodell für Content, Revisionen, Templates, Relationen, Tags, Medien, Freigaben und Audit definieren.
+Datenbanktabellen, Migrationen, Shared Types und Validierungslogik anlegen.
+Tree + Graph parallel modellieren: Hierarchie plus Querverweise.
+Unveränderbare Objektidentität serverseitig einführen.
+Automatische Nummerierungslogik professionell designen.
+Vollständige Versions- und Revisionslogik inkl. Versionsstamm aufsetzen.
+Diffs, Restore-Regeln und Freigabe-Historie vorbereiten.
+Query-Layer und Testdaten für einen Kernprozess mit Beispielseiten aufsetzen.
+Dokumentation des fachlichen Modells und der Architekturentscheidungen liefern.
+Nicht im Scope
+finaler Rich-Text-Editor
+finales Suchfrontend
+KI-Oberflächen
+Teams-Einbettung
+vollständige Graph-/Auth-Umsetzung
+endgültige UI für alle Seitentypen
+Kritische Architekturentscheidung
+Wichtig: Eine vollständig hierarchische Nummer, die gleichzeitig die aktuelle Baumposition widerspiegelt und für immer unveränderbar bleibt, ist bei späteren Umstrukturierungen fachlich widersprüchlich.
+Darum ist der professionelle Standard hier:
+Immutable System-ID
+serverseitig vergeben
+nie editierbar
+nie neu vergeben
+bleibt auch bei Verschiebung oder Umbenennung gleich
+Display-/Hierarchie-Nummer
+für Nutzer sichtbar
+aus der aktuellen Struktur ableitbar
+darf sich bei echter Umstrukturierung ändern
+alte Werte werden als Alias-/Historienwerte nachvollziehbar gespeichert
+Falls das Projekt stattdessen eine absolut unveränderbare hierarchische Fachnummer verlangt, muss Replit diese Konsequenz explizit dokumentieren: nach Veröffentlichung sind strukturelle Moves dann nur noch über Neuanlage + Redirect/Alias zulässig.
+Replit darf diese Kollision nicht ignorieren und nicht so tun, als könne ein einziges Feld beides gleichzeitig leisten.
+Arbeitspakete / Tasks
+Task 2.1 – Fachliches Kernmodell definieren
+Beschreibung
+Definiere das Kernmodell für Inhaltsobjekte, Revisionen, Templates, strukturierte Felder, Medien, Relationen, Tags, Freigabe-Events und Audit.
+Definition of Done
+ER-Modell finalisiert
+fachliche Zustände dokumentiert
+Shared Types definiert
+Pflichtfelder je Kernentität definiert
+ADR zum Modell vorhanden
+Technische Anweisungen
+Das Modell muss mindestens diese logischen Bereiche abdecken:
+`core_processes`
+`content_nodes`
+`content_revisions`
+`content_revision_events`
+`content_templates`
+`content_relations`
+`content_tags`
+`media_assets`
+`review_workflows`
+`approvals`
+`audit_events`
+optional `content_aliases` für alte Display-Nummern / Redirects
+Worauf besonders zu achten ist
+Stable Object getrennt von inhaltlichen Snapshots modellieren
+Kein Mischmodell, bei dem die aktuelle Seite und ihre Historie im selben Datensatz „mitgeschleppt“ werden
+---
+Task 2.2 – Datenbankschema, Migrationen und Shared Contracts
+Beschreibung
+Setze das Modell als belastbares Datenbankschema um.
+Definition of Done
+Migrationen erstellt
+Constraints und Foreign Keys sauber gesetzt
+Shared Types zwischen Frontend und Backend vorhanden
+Validierungsschemas vorhanden
+Seed-/Fixture-Strategie vorhanden
+Technische Anweisungen
+JSONB nur dort verwenden, wo flexible Snapshot-Strukturen sinnvoll sind
+strukturierte Pflichtfelder trotzdem relational absichern
+Enum-/State-Machine-Werte zentral definieren
+Soft-Delete, Archivierung und Restore-Regeln unterscheiden
+Worauf besonders zu achten ist
+Nicht alles in ein einziges `content`-JSON-Feld kippen
+Nicht den Fehler machen, Revisionsdaten in `updated_at` und `version`-Strings zu verstecken
+---
+Task 2.3 – Tree + Graph parallel modellieren
+Beschreibung
+Das System braucht gleichzeitig eine klare Hierarchie und fachliche Querverbindungen.
+Definition of Done
+Parent-/Child-Modell vorhanden
+Sibling-Lookup möglich
+fachliche Querverweise möglich
+Upstream-/Downstream-Bezüge modellierbar
+Zyklen in unzulässigen Relationsarten werden validiert
+Technische Anweisungen
+`parent_node_id` für Primärhierarchie
+separate Relations-Tabelle für fachliche Beziehungen
+Relationstypen definieren, z. B. `related_to`, `uses_template`, `depends_on`, `implements_policy`, `upstream_of`, `downstream_of`, `replaces`, `references`
+Validierungslogik für unzulässige Selbst- oder Kreisreferenzen
+Worauf besonders zu achten ist
+Ein reiner Baum reicht für Prozessmanagement fachlich nicht aus
+---
+Task 2.4 – Immutable Identity und Nummerierungsservice
+Beschreibung
+Implementiere die serverseitige Vergabe der stabilen Objektidentität und die automatische Display-Nummerierung.
+Definition of Done
+Immutable System-ID funktioniert transaktional
+Display-/Hierarchie-Nummer funktioniert nachvollziehbar
+IDs werden nie clientseitig erzeugt
+UI kann IDs read-only anzeigen
+Tests für Parallelität und Race Conditions vorhanden
+Technische Anweisungen
+Empfohlener Standard:
+`immutable_id`: stabil, nicht editierbar, serverseitig
+`display_code`: aktueller hierarchischer Anzeige-Code
+`display_code_aliases`: Historie bisheriger Anzeige-Codes bei Umstrukturierung
+serverseitiger Namespace pro Kernprozess / Seitentyp / ggf. Bereich
+Vergabe in DB-Transaktion mit Locking / Sequence / Retry unter Kontrolle
+Worauf besonders zu achten ist
+Umstrukturierungen dürfen niemals zur Neuvergabe der Immutable ID führen
+Keine clientseitige Nummernlogik
+Nicht dieselbe Spalte für permanente Identität und aktuelle Navigationsnummer missbrauchen
+---
+Task 2.5 – Versions- und Revisionslogik sauber trennen
+Beschreibung
+Baue einen professionellen Versionsstamm. „Version“ und „Revision“ sind nicht dasselbe und dürfen nicht technisch vermischt werden.
+Definition of Done
+jede inhaltliche Änderung erzeugt eine nachvollziehbare Revision
+veröffentlichte Freigaben tragen eine echte Version
+Revisionskette ist vollständig sichtbar
+Diffs zwischen Revisionen möglich
+Restore-Regeln definiert
+Freigabe- und Review-Historie abbildbar
+Technische Anweisungen
+Empfohlene Logik:
+`content_node` = stabiles Objekt
+`content_revision` = unveränderlicher Snapshot pro Bearbeitungsstand
+`revision_no` = fortlaufend pro Objekt für jede Revision
+`version_label` = nur für veröffentlichte/freigegebene Stände, z. B. `1.0`, `1.1`, `2.0`
+`change_type` = `editorial`, `minor`, `major`, `regulatory`, `structural`
+`based_on_revision_id` = Herkunft der Revision
+`change_summary` und `changed_fields` dokumentieren, was geändert wurde
+Restore erzeugt neue Revision; historische Revisionen werden nie überschrieben
+Worauf besonders zu achten ist
+`updated_at` ist keine Revisionshistorie
+Ein Publikationsstatus ersetzt keine Versionslogik
+Historische Snapshots dürfen niemals mutiert werden
+---
+Task 2.6 – Versionsstamm-Ansicht fachlich vorbereiten
+Beschreibung
+Baue die fachliche Grundlage für eine später sichtbare Versionsstamm-/Chronikansicht.
+Definition of Done
+Abfrage für Versionsstamm vorhanden
+notwendige Datenfelder vorhanden
+Diffs und Verantwortlichkeiten referenzierbar
+Review-/Approval-Historie anschließbar
+Technische Anweisungen
+Der Versionsstamm muss mindestens liefern können:
+Version
+Revision
+Status
+Änderungsart
+Änderungssummary
+Autor
+Reviewer
+Approver/Freigeber
+erstellt am
+gültig ab
+nächstes Review
+Restore-/Vergleichsoption
+Worauf besonders zu achten ist
+Die spätere UI muss auf diesem Modell aufsetzen können, ohne dass das Schema nochmals grundlegend umgebaut werden muss
+---
+Task 2.7 – Templates, strukturierte Felder und Seitentypen-Basis
+Beschreibung
+Schaffe das datenseitige Fundament für Seitentemplates und strukturierte Seitentypen.
+Definition of Done
+Template-Struktur vorhanden
+Pflichtfelder und Feldtypen modelliert
+Seitentyp-Metadaten modelliert
+Validierung nach Seitentyp möglich
+Technische Anweisungen
+Berücksichtige mindestens:
+Kernprozess-Übersicht
+Bereichsübersicht
+Prozessseite Text
+Prozessseite Grafik/Swimlane
+Verfahrensanweisung / Arbeitsanweisung
+Use Case
+Richtlinie / Policy
+Rollen-/Stellenprofil
+Dashboardseite
+System-/Integrationsdoku
+Prozessnahe strukturierte Felder müssen die späteren Inhalte tragen können, u. a.:
+Zweck & Geltungsbereich
+Ausschlüsse
+SIPOC
+Ablauf / Swimlane / Detailschritte
+RACI
+KPIs
+Schnittstellen / Systeme
+Risiken & Kontrollen
+Normbezug / Compliance
+Dokumente / Vorlagen
+Worauf besonders zu achten ist
+Das Template-Modell muss strukturierte Pflichtfelder tragen; Freitext ist Ergänzung, nicht Ersatz
+---
+Task 2.8 – Query-Layer, Beispielseed und Tests
+Beschreibung
+Lege einen sauberen Query-Layer an und hinterlege Seed-Daten, damit das Modell real getestet werden kann.
+Definition of Done
+Beispiel-Kernprozess mit Beispielknoten vorhanden
+Beispielrelationen vorhanden
+Beispielrevisionen und Versionen vorhanden
+Tests für Kernpfade vorhanden
+Technische Anweisungen
+Teste mindestens:
+Anlage eines Content Nodes
+Vergabe von immutable_id und display_code
+Anlage mehrerer Revisionen
+Versionserzeugung bei Freigabe
+Umstrukturierung mit Alias-/Historienlogik
+Graph-Relationen und Zyklusvalidierung
+Worauf besonders zu achten ist
+Keine rein synthetischen Unit-Tests ohne realen fachlichen Beispielpfad
+---
+Task 2.9 – Cluster-2-Abschluss und Architektur-Nachweis
+Beschreibung
+Liefere eine belastbare Abnahme des Datenmodells.
+Definition of Done
+Datenmodell dokumentiert
+Migrationen erfolgreich
+Kernpfade getestet
+Versions-/Revisionslogik nachgewiesen
+Nummerierungskonzept dokumentiert
+offene Architekturentscheidungen explizit markiert
+Technische Anweisungen
+Vor Cluster-Abschluss verpflichtend ausführen:
+`lint`
+`typecheck`
+`test`
+relevante Integrations-/E2E-Tests
+`no-hardcode-check`
+`docs:check`
+Pflichtartefakte für Cluster 2
+ER-Modell / Datenmodell-Dokument
+ADR zur ID-/Nummerierungslogik
+ADR zur Versions-/Revisionslogik
+Migrationen
+Shared Types / Schemas
+Seed-Daten
+Testnachweise
+Cluster-2-Umsetzungsbericht
+Cluster-2-Audit-Report
+Abgabeformat
+Liefere am Ende von Cluster 2:
+Umsetzungsbericht Punkt für Punkt gemäß Scope
+Audit-Report mit Bestandsprüfung und Modellentscheidungen
+Dateiliste
+geprüfte Bestandsstrukturen
+Test- und Evidenznachweise
+klare Erklärung der ID-/Nummerierungsentscheidung
+klare Erklärung der Versions-/Revisionslogik
+offene Punkte und Risiken
+---
+
+Pflichtnachschärfung vor Cluster 3
+Diese Punkte sind in Cluster 3 zusätzlich verbindlich:
+Personenfelder müssen nicht nur gegen Microsoft Graph allgemein funktionieren, sondern so modelliert werden, dass später SharePoint-/M365-nahe Gruppen- und Rollenlogik sauber andockt.
+Das Rechtemodell muss Ebenen für
+Campus
+Marke/Schule
+Kernprozess
+Bereich
+Seite
+Revision/Workflow
+tragen können.
+Es ist früh festzulegen, wie delegierte Nutzerkontexte und app-/servicebasierte Integrationszugriffe sauber getrennt werden.
+Für spätere SharePoint-Medienablage und Connectoren sind die notwendigen Auth-/Permission-Pfade strukturiert vorzubereiten; keine direkte Wildwuchs-Integration in spätere Cluster verschieben.
+Rollen- und Ownership-Modell müssen klar trennen zwischen:
+fachlicher Verantwortung
+Bearbeitungsrecht
+Freigaberecht
+administrativer Systemhoheit
+---
+Cluster 3 – Auth, Graph, Rollen, Rechte, Ownership und Freigabeberechtigungen
+Copy-Paste-Auftrag für Replit
+Titel
+Cluster 3 – Microsoft-SSO, Graph-Abstraktionslayer, Rollen- und Rechtemodell, Ownership sowie Rechte für Bearbeitung, Review und Freigabe
+Ziel
+Setze Identität und Berechtigungen professionell auf: SSO über Microsoft, Benutzer- und Gruppenbezug über Graph, Rollenmatrix, page-level permissions, Ownership, Stellvertretung sowie getrennte Rechte für Content, Struktur, Review und Freigabe. Spätere Workflows und KI-Funktionen dürfen nie auf Freitext-Personen oder impliziten Rechten basieren.
+Scope
+Authentifizierung über Microsoft/Entra-ID aufsetzen.
+Teams-kompatible Auth-Strategie fachlich und technisch vorbereiten.
+Graph-Abstraktionslayer für Benutzer, Gruppen und Personensuche bauen.
+Lokales Principal-/Identity-Modell definieren, ohne ein Shadow-User-System für Menschen zu bauen.
+Rollen- und Rechtemodell definieren und implementieren.
+Page-Level-Permissions, Vererbung und Overrides umsetzen.
+Ownership, Stellvertretung, Reviewer und Freigeber nur aus Graph-Principals auswählbar machen.
+Rechte auf Revisions- und Workflow-Ebene berücksichtigen.
+Auditierung sicherheits- und governance-relevanter Rechteaktionen einführen.
+Dokumentation, Tests und Abnahme liefern.
+Nicht im Scope
+vollständige Teams-App-Verpackung
+produktiver SharePoint-Content-Connector
+finales Review-Dashboard
+finaler Admin-Bereich für alle Integrationen
+spätere KI-Policies und RAG-Logik
+Verbindliche Leitplanken
+Kein lokales Passwortsystem.
+Kein Freitextfeld für Verantwortliche, Stellvertretung, Reviewer oder Freigeber.
+Rollen sind nicht gleichbedeutend mit Ownership.
+Content-Bearbeitung und Struktur-Bearbeitung sauber trennen.
+Review und Freigabe dürfen technisch getrennt sein, auch wenn sie organisatorisch anfangs derselben Gruppe zugeordnet werden.
+Rechte dürfen nicht nur im Frontend ausgeblendet, sondern müssen serverseitig erzwungen werden.
+Arbeitspakete / Tasks
+Task 3.1 – Entra-SSO und Session-/Token-Architektur
+Beschreibung
+Setze die Login- und Session-Basis sauber auf.
+Definition of Done
+Login über Microsoft funktioniert
+Benutzerkontext serverseitig validierbar
+Session-/Token-Handling dokumentiert
+tenantgebundene Validierung vorhanden
+Teams-Kompatibilität fachlich vorbereitet
+Technische Anweisungen
+OIDC/OAuth2 auf Basis der bestehenden App-Architektur
+Delegated-Flow für User-Kontext bevorzugen, wenn passend
+Session-/Token-Handling sauber kapseln
+Fehlerzustände für fehlende Zustimmung / fehlende Berechtigungen sichtbar behandeln
+Worauf besonders zu achten ist
+Keine zweite Identitätsquelle für Mitarbeiter bauen
+Keine Auth-Logik nur im Frontend
+---
+Task 3.2 – Graph-Abstraktionslayer für Benutzer, Gruppen und Personenpicker
+Beschreibung
+Baue eine saubere technische Schicht zwischen App und Microsoft Graph.
+Definition of Done
+Personensuche funktioniert
+Gruppensuche bzw. definierte Gruppenauslese funktioniert
+Principals können für Ownership-/Review-/Freigabefelder verwendet werden
+Caching-/Sync-Strategie dokumentiert
+Technische Anweisungen
+kein direkter Wildwuchs von Graph-Calls in UI-Komponenten
+zentraler Service/Adapter für Graph-Zugriffe
+lokale Cache-/Projection-Tabelle nur als technische Beschleunigung, nicht als führende Wahrheit
+minimal nötige Permissions beantragen und dokumentieren
+Worauf besonders zu achten ist
+Freitexteingabe für Personen verbieten
+Fehler- und Rate-Limit-Verhalten sauber behandeln
+---
+Task 3.3 – Lokales Principal-Modell und Zuordnungslogik
+Beschreibung
+Lege fest, wie externe Identitäten intern referenziert werden.
+Definition of Done
+lokales Principal-Modell vorhanden
+Benutzer, Gruppen und ggf. Service Principals unterscheidbar
+Mapping von externen IDs auf interne Referenzen dokumentiert
+Deaktivierung / fehlende Auflösung fachlich behandelbar
+Technische Anweisungen
+Empfohlenes Modell:
+`principals`
+`principal_type` = `user`, `group`, optional `service_principal`
+`external_provider` = `microsoft_graph`
+`external_id`
+`display_name`
+`email/upn`
+`status`
+Ownership- und Rechtebeziehungen immer auf `principal_id`
+keine führende Stammdatenhaltung für Menschen im Wiki selbst
+Worauf besonders zu achten ist
+Dieses Modell ist Referenzschicht, kein Schattenverzeichnis
+---
+Task 3.4 – Rollenmatrix und Berechtigungsmodell
+Beschreibung
+Definiere Rollen und Rechte klar und serverseitig erzwingbar.
+Definition of Done
+Rollenmatrix dokumentiert
+serverseitige Permission-Checks vorhanden
+klare Trennung von Content, Struktur, Review, Approval und Admin
+Berechtigungen für Seiten und Revisionen anschließbar
+Technische Anweisungen
+Empfohlene Startrollen:
+`system_admin`
+`process_manager`
+`editor`
+`reviewer`
+`approver`
+`viewer`
+optional `compliance_manager`
+Empfohlene Start-Rechte:
+`read_page`
+`create_page`
+`edit_content`
+`edit_structure`
+`manage_relations`
+`submit_for_review`
+`review_page`
+`approve_page`
+`archive_page`
+`manage_permissions`
+`manage_templates`
+`manage_settings`
+`view_audit_log`
+Worauf besonders zu achten ist
+Nicht in groben Rollenlabels steckenbleiben; die technischen Permission-Bits müssen explizit definiert werden
+---
+Task 3.5 – Page-Level-Permissions, Vererbung und Overrides
+Beschreibung
+Setze seitenbezogene Rechte und Vererbungsregeln um.
+Definition of Done
+Rechtevererbung entlang der Hierarchie möglich
+per Seite Overrides möglich
+Lesen, Bearbeiten, Review, Freigabe und Admin pro Seite differenzierbar
+Ownership von Bearbeitungsrecht getrennt
+Technische Anweisungen
+Standard: Hierarchische Vererbung mit expliziten Overrides
+Nur so viel Komplexität wie nötig; keine überladene ACL-Maschinerie im ersten Schritt
+Serverseitige Auflösung der effektiven Rechte
+Konfliktregeln dokumentieren
+Worauf besonders zu achten ist
+Explizite Deny-Regeln nur, wenn fachlich wirklich nötig
+Rechte dürfen nicht nur als UI-Sperre existieren
+---
+Task 3.6 – Ownership, Stellvertretung, Reviewer und Freigeber
+Beschreibung
+Bilde Governance-Rollen auf Seiten- und Revisionsobjekten ab.
+Definition of Done
+Owner auswählbar aus Graph-Principals
+Stellvertretung auswählbar aus Graph-Principals
+Reviewer/Freigeber technisch abbildbar
+Verantwortlichkeiten in Inhalt, Revision und Workflow referenzierbar
+Technische Anweisungen
+Owner ist Metadatum, nicht automatisch gleich Bearbeitungsrecht
+Stellvertretung ist kein technischer Vollersatz für alle Rechte, sondern eine bewusst definierte Governance-Funktion
+Review- und Approval-Zuordnungen auf Revisionsebene vorbereiten
+Worauf besonders zu achten ist
+Keine versteckte Kopplung „Owner = darf alles“
+---
+Task 3.7 – Revisions- und Workflow-Berechtigungen anschließen
+Beschreibung
+Verbinde das Rollenmodell mit den in Cluster 2 gebauten Revisionen und Statusübergängen.
+Definition of Done
+Nur berechtigte Nutzer können Revisionen anlegen, einreichen, prüfen, freigeben oder archivieren
+Rechteprüfungen sind serverseitig vorhanden
+Audit-Events für kritische Status- und Rechteänderungen vorhanden
+Technische Anweisungen
+Rechteprüfungen auf API-/Service-Ebene
+Workflow-Transitions gegen Rollen und effektive Rechte validieren
+Konfliktfälle sauber als Fehlermeldung zurückgeben
+Worauf besonders zu achten ist
+Kein Vertrauen in Frontend-only Guards
+---
+Task 3.8 – Sicherheit, Least Privilege und Fehlermodi
+Beschreibung
+Richte die Auth-/Rechte-Schicht mit sauberer Sicherheitslogik ein.
+Definition of Done
+angeforderte Graph-/Auth-Berechtigungen dokumentiert
+Least-Privilege-Ansatz dokumentiert
+fehlende Einwilligungen / Scope-Probleme sichtbar behandelbar
+Sicherheitsrelevante Logs und Audit-Ereignisse vorhanden
+Technische Anweisungen
+dokumentiere exakt, welche Microsoft-Berechtigungen benötigt werden und wofür
+minimal starten, nicht überprivilegieren
+sichere Fehlerantworten und Admin-Hinweise für Consent-/Permission-Probleme
+Worauf besonders zu achten ist
+Keine pauschale Directory-Vollmacht, wenn kleinere Scopes reichen
+---
+Task 3.9 – Tests, Evidenzen und Cluster-Abschluss
+Beschreibung
+Liefere eine prüfbare Abnahme der Auth- und Rechtebasis.
+Definition of Done
+Login-Pfade getestet
+Rollen-/Rechtepfade getestet
+unberechtigte Zugriffe negativ getestet
+Personenauswahl real geprüft
+Audit-/Log-Nachweise vorhanden
+Dokumentation vollständig
+Technische Anweisungen
+Teste mindestens:
+erfolgreicher Login
+fehlende Berechtigung
+Auswahl eines Owners aus Graph-Principals
+Vererbung und Override von Seitenrechten
+unzulässiger Freigabeversuch ohne Approver-Recht
+auditierter Statuswechsel mit berechtigtem Nutzer
+Vor Cluster-Abschluss verpflichtend ausführen:
+`lint`
+`typecheck`
+`test`
+relevante Integrations-/E2E-Tests
+`no-hardcode-check`
+`docs:check`
+Pflichtartefakte für Cluster 3
+Auth-/Session-ADR
+Graph-Adapter-/Permissions-Dokument
+Rollenmatrix
+Permission-Matrix
+Principal-Modell-Dokument
+Seitenrechte-/Vererbungs-Dokument
+Test- und Auditnachweise
+Cluster-3-Umsetzungsbericht
+Cluster-3-Audit-Report
+Abgabeformat
+Liefere am Ende von Cluster 3:
+Umsetzungsbericht Punkt für Punkt gemäß Scope
+Audit-Report mit Bestandsprüfung und Altlasten
+Dateiliste
+geprüfte Bestandsstrukturen
+Frontend- und Test-Evidenzen
+Beschreibung der effektiven Rollen- und Rechteauflösung
+Dokumentation der benötigten Microsoft-Berechtigungen
+offene Punkte, Restrisiken und Empfehlungen für Cluster 4
+---
+Empfohlene Übergaberegel an Replit zwischen den Clustern
+Nach jedem Cluster ist Replit explizit zu verpflichten, nicht einfach weiterzubauen, sondern zuerst zu liefern:
+Scope-vs.-Ergebnis-Abgleich
+Audit-Report
+Liste aller geänderten Dateien
+Bestandsprüfung
+Frontend-/Output-Evidenzen
+offene Punkte
+konkrete Empfehlung für den nächsten Cluster
+---
+
+Pflichtnachschärfung vor Cluster 4
+Diese Punkte sind in Cluster 4 zusätzlich verbindlich:
+Die Startseite ist als campusweiter Knowledge Hub zu bauen, nicht als generische Homepage.
+Die IA muss sowohl kernprozesszentrierte Navigation als auch Querschnittssichten auf Marken/Schulen, Bereiche, Rollen, Richtlinien und Dashboards unterstützen.
+Shell-Module für Favoriten, zuletzt genutzt, Watchlist und persönliche Aufgabenlisten sind strukturell mitzudenken.
+Campus-, Marken- und Bereichsfilter dürfen nicht nachträglich angeklebt werden; sie müssen aus IA und Routing ableitbar sein.

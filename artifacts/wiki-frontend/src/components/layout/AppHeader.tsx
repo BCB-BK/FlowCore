@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthLogout } from "@workspace/api-client-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -15,6 +16,7 @@ import { useLocation } from "wouter";
 export function AppHeader() {
   const { data: user } = useAuth();
   const [, navigate] = useLocation();
+  const logout = useAuthLogout();
 
   const initials = user?.displayName
     ? user.displayName
@@ -24,6 +26,14 @@ export function AppHeader() {
         .slice(0, 2)
         .toUpperCase()
     : "?";
+
+  const handleLogout = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => {
+        window.location.href = import.meta.env.BASE_URL;
+      },
+    });
+  };
 
   return (
     <header className="flex h-14 items-center gap-3 border-b px-4">
@@ -62,11 +72,7 @@ export function AppHeader() {
             >
               {user.email}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                window.location.href = `${import.meta.env.BASE_URL}api/auth/logout`;
-              }}
-            >
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Abmelden
             </DropdownMenuItem>

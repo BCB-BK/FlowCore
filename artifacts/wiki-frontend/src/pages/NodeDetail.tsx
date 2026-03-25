@@ -1,5 +1,10 @@
 import { useRoute, useLocation } from "wouter";
-import { useNode, useNodeChildren, useDeleteNode } from "@/hooks/use-nodes";
+import {
+  useNode,
+  useNodeChildren,
+  useDeleteNode,
+  useUpdateNode,
+} from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,16 +33,24 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   FileText,
   FolderOpen,
   Plus,
   Trash2,
   Clock,
   Hash,
-  User,
   Calendar,
+  Pencil,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
+import type { UpdateNodeInput } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { useState } from "react";
 
@@ -38,9 +60,16 @@ export function NodeDetail() {
   const { data: node, isLoading } = useNode(nodeId);
   const { data: children } = useNodeChildren(nodeId);
   const deleteNode = useDeleteNode();
+  const updateNode = useUpdateNode();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const { toast } = useToast();
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editTemplateType, setEditTemplateType] = useState<
+    NonNullable<UpdateNodeInput["templateType"]>
+  >("core_process_overview");
 
   if (isLoading) {
     return (
@@ -69,12 +98,40 @@ export function NodeDetail() {
 
   const handleDelete = async () => {
     try {
-      await deleteNode.mutateAsync(node.id);
+      await deleteNode.mutateAsync({ nodeId: node.id });
       navigate("/");
     } catch (err) {
       toast({
         variant: "destructive",
         title: "Fehler beim Archivieren",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    }
+  };
+
+  const openEditDialog = () => {
+    setEditTitle(node.title);
+    setEditTemplateType(
+      node.templateType as NonNullable<UpdateNodeInput["templateType"]>,
+    );
+    setShowEdit(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      await updateNode.mutateAsync({
+        nodeId: node.id,
+        data: {
+          title: editTitle.trim(),
+          templateType: editTemplateType,
+        },
+      });
+      setShowEdit(false);
+      toast({ title: "Gespeichert" });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Speichern",
         description: err instanceof Error ? err.message : "Unbekannter Fehler",
       });
     }
@@ -102,6 +159,10 @@ export function NodeDetail() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={openEditDialog}>
+            <Pencil className="mr-1 h-4 w-4" />
+            Bearbeiten
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -120,8 +181,8 @@ export function NodeDetail() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Seite archivieren?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Die Seite "{node.title}" wird archiviert. Dieser Vorgang kann
-                  rückgängig gemacht werden.
+                  Die Seite &quot;{node.title}&quot; wird archiviert. Dieser
+                  Vorgang kann rückgängig gemacht werden.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -246,6 +307,63 @@ export function NodeDetail() {
         onOpenChange={setShowCreate}
         parentNodeId={node.id}
       />
+
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Seite bearbeiten</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Titel</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleUpdate();
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-type">Seitentyp</Label>
+              <Select
+                value={editTemplateType}
+                onValueChange={(v) =>
+                  setEditTemplateType(
+                    v as NonNullable<UpdateNodeInput["templateType"]>,
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PAGE_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEdit(false)}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleUpdate}
+              disabled={!editTitle.trim() || updateNode.isPending}
+            >
+              {updateNode.isPending ? "Wird gespeichert..." : "Speichern"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -80,6 +80,50 @@ router.get(
   },
 );
 
+router.patch(
+  "/nodes/:id",
+  requireAuth,
+  requirePermission("edit_content", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const { title, templateType, status } = req.body;
+
+    const updates: Record<string, unknown> = {};
+    if (title !== undefined) updates.title = title;
+    if (templateType !== undefined) updates.templateType = templateType;
+    if (status !== undefined) updates.status = status;
+
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ error: "No updatable fields provided" });
+      return;
+    }
+
+    updates.updatedAt = new Date();
+
+    const [updated] = await db
+      .update(contentNodesTable)
+      .set(updates)
+      .where(eq(contentNodesTable.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Node not found" });
+      return;
+    }
+
+    await db.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "node_updated",
+      actorId: req.user!.principalId,
+      resourceType: "content_node",
+      resourceId: id,
+      details: updates,
+    });
+
+    res.json(updated);
+  },
+);
+
 router.post(
   "/nodes",
   requireAuth,
