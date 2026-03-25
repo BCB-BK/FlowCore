@@ -174,10 +174,13 @@ export function NodeDetail() {
 
   const editBaseRevisionRef = useRef<string | null>(null);
   useEffect(() => {
-    if (latestRevision?.id) {
+    if (isEditing && latestRevision?.id && !editBaseRevisionRef.current) {
       editBaseRevisionRef.current = latestRevision.id;
     }
-  }, [latestRevision?.id]);
+    if (!isEditing) {
+      editBaseRevisionRef.current = null;
+    }
+  }, [isEditing, latestRevision?.id]);
 
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import type { Editor } from "@tiptap/react";
+import { TextSelection } from "@tiptap/pm/state";
 import {
   GripVertical,
   Plus,
@@ -179,12 +180,7 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
     const tr = state.tr;
     const newParagraph = state.schema.nodes.paragraph.create();
     tr.insert(blockEnd, newParagraph);
-    const newPos = tr.doc.resolve(blockEnd + 1);
-    const sel = (
-      state.selection.constructor as unknown as {
-        near: (pos: typeof newPos) => typeof state.selection;
-      }
-    ).near(newPos);
+    const sel = TextSelection.near(tr.doc.resolve(blockEnd + 1));
     tr.setSelection(sel);
     dispatch(tr);
     editor.view.focus();
