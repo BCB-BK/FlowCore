@@ -6,6 +6,7 @@ import {
   integer,
   boolean,
   uniqueIndex,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { nodeStatusEnum, templateTypeEnum } from "./enums";
@@ -23,7 +24,7 @@ export const contentNodesTable = pgTable(
     templateType: templateTypeEnum("template_type").notNull(),
     templateId: uuid("template_id").references(() => contentTemplatesTable.id),
     parentNodeId: uuid("parent_node_id").references(
-      (): any => contentNodesTable.id,
+      (): AnyPgColumn => contentNodesTable.id,
     ),
     sortOrder: integer("sort_order").notNull().default(0),
     status: nodeStatusEnum("status").notNull().default("draft"),

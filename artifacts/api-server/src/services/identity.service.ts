@@ -66,22 +66,20 @@ async function generateDisplayCodeInTx(
 
   await acquireParentLock(tx, parentNodeId);
 
-  const siblingCount = await tx
-    .select({ count: sql<number>`count(*)::int` })
+  const maxSuffix = await tx
+    .select({
+      maxNum: sql<number>`coalesce(max(
+        (regexp_match(display_code, '-(\\d+)$'))[1]::int
+      ), 0)`,
+    })
     .from(contentNodesTable)
     .where(
       parentNodeId
-        ? and(
-            eq(contentNodesTable.parentNodeId, parentNodeId),
-            eq(contentNodesTable.isDeleted, false),
-          )
-        : and(
-            isNull(contentNodesTable.parentNodeId),
-            eq(contentNodesTable.isDeleted, false),
-          ),
+        ? eq(contentNodesTable.parentNodeId, parentNodeId)
+        : isNull(contentNodesTable.parentNodeId),
     );
 
-  const nextNum = (siblingCount[0]?.count ?? 0) + 1;
+  const nextNum = (maxSuffix[0]?.maxNum ?? 0) + 1;
   return `${parentCode}${prefix}-${String(nextNum).padStart(3, "0")}`;
 }
 

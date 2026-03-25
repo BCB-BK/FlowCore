@@ -441,6 +441,53 @@ test.describe("Node Move and Aliases", () => {
   });
 });
 
+test.describe("Display Code Resilience", () => {
+  test("display_code remains unique after soft-delete and re-create", async ({
+    request,
+  }) => {
+    const parentRes = await request.post(`${API}/nodes`, {
+      data: { title: "DC Parent", templateType: "area_overview" },
+    });
+    const parent = await parentRes.json();
+
+    const child1Res = await request.post(`${API}/nodes`, {
+      data: {
+        title: "DC Child 1",
+        templateType: "process_page_text",
+        parentNodeId: parent.id,
+      },
+    });
+    const child1 = await child1Res.json();
+    const child1Code = child1.displayCode;
+
+    const child2Res = await request.post(`${API}/nodes`, {
+      data: {
+        title: "DC Child 2",
+        templateType: "process_page_text",
+        parentNodeId: parent.id,
+      },
+    });
+    const child2 = await child2Res.json();
+    const child2Code = child2.displayCode;
+
+    expect(child1Code).not.toBe(child2Code);
+
+    await request.delete(`${API}/nodes/${child1.id}`);
+
+    const child3Res = await request.post(`${API}/nodes`, {
+      data: {
+        title: "DC Child 3",
+        templateType: "process_page_text",
+        parentNodeId: parent.id,
+      },
+    });
+    const child3 = await child3Res.json();
+
+    expect(child3.displayCode).not.toBe(child1Code);
+    expect(child3.displayCode).not.toBe(child2Code);
+  });
+});
+
 test.describe("Tree Traversal", () => {
   test("GET /content/nodes/:id/tree returns hierarchical data", async ({
     request,
