@@ -12,5 +12,5 @@ export interface ContentAlias {
   previousDisplayCode: string;
   reason: string;
   changedBy?: string | null;
-  createdAt: Date;
+  changedAt: Date;
 }

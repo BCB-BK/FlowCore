@@ -5,13 +5,12 @@
  * Enterprise Wiki API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { CreateRelationInputMetadata } from "./createRelationInputMetadata";
 import type { CreateRelationInputRelationType } from "./createRelationInputRelationType";
 
 export interface CreateRelationInput {
   sourceNodeId: string;
   targetNodeId: string;
   relationType: CreateRelationInputRelationType;
-  metadata?: CreateRelationInputMetadata;
+  description?: string;
   createdBy?: string;
 }

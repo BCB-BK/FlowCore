@@ -113,12 +113,8 @@ paths:
       parameters:
         - $ref: "#/components/parameters/NodeId"
       responses:
-        "200":
-          description: Deleted node
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContentNode"
+        "204":
+          description: Deleted
 
   /content/nodes/{nodeId}/children:
     get:
@@ -548,7 +544,7 @@ components:
         changedBy:
           type: string
           nullable: true
-        createdAt:
+        changedAt:
           type: string
           format: date-time
       required:
@@ -556,7 +552,7 @@ components:
         - nodeId
         - previousDisplayCode
         - reason
-        - createdAt
+        - changedAt
 
     TreeNode:
       type: object
@@ -686,8 +682,8 @@ components:
             - downstream_of
             - replaces
             - references
-        metadata:
-          type: object
+        description:
+          type: string
           nullable: true
         createdBy:
           type: string
@@ -722,8 +718,8 @@ components:
             - downstream_of
             - replaces
             - references
-        metadata:
-          type: object
+        description:
+          type: string
         createdBy:
           type: string
       required:

@@ -172,43 +172,6 @@ export const DeleteNodeParams = zod.object({
   nodeId: zod.coerce.string().uuid(),
 });
 
-export const DeleteNodeResponse = zod.object({
-  id: zod.string().uuid(),
-  immutableId: zod.string(),
-  displayCode: zod.string(),
-  title: zod.string(),
-  templateType: zod.enum([
-    "core_process_overview",
-    "area_overview",
-    "process_page_text",
-    "process_page_graphic",
-    "procedure_instruction",
-    "use_case",
-    "policy",
-    "role_profile",
-    "dashboard",
-    "system_documentation",
-  ]),
-  templateId: zod.string().uuid().nullish(),
-  parentNodeId: zod.string().uuid().nullish(),
-  sortOrder: zod.number(),
-  status: zod.enum([
-    "draft",
-    "in_review",
-    "approved",
-    "published",
-    "archived",
-    "deleted",
-  ]),
-  currentRevisionId: zod.string().uuid().nullish(),
-  publishedRevisionId: zod.string().uuid().nullish(),
-  ownerId: zod.string().nullish(),
-  isDeleted: zod.boolean(),
-  deletedAt: zod.date().nullish(),
-  createdAt: zod.date(),
-  updatedAt: zod.date(),
-});
-
 /**
  * @summary Get children of a content node
  */
@@ -316,7 +279,7 @@ export const GetNodeAliasesResponseItem = zod.object({
   previousDisplayCode: zod.string(),
   reason: zod.string(),
   changedBy: zod.string().nullish(),
-  createdAt: zod.date(),
+  changedAt: zod.date(),
 });
 export const GetNodeAliasesResponse = zod.array(GetNodeAliasesResponseItem);
 
@@ -465,7 +428,7 @@ export const GetNodeRelationsResponseItem = zod.object({
     "replaces",
     "references",
   ]),
-  metadata: zod.object({}).passthrough().nullish(),
+  description: zod.string().nullish(),
   createdBy: zod.string().nullish(),
   createdAt: zod.date(),
 });
@@ -487,7 +450,7 @@ export const CreateRelationBody = zod.object({
     "replaces",
     "references",
   ]),
-  metadata: zod.object({}).passthrough().optional(),
+  description: zod.string().optional(),
   createdBy: zod.string().optional(),
 });
 

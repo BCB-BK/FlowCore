@@ -113,7 +113,7 @@ export interface ContentAlias {
   previousDisplayCode: string;
   reason: string;
   changedBy?: string | null;
-  createdAt: string;
+  changedAt: string;
 }
 
 export interface TreeNode {
@@ -213,14 +213,12 @@ export const ContentRelationRelationType = {
   references: "references",
 } as const;
 
-export type ContentRelationMetadata = { [key: string]: unknown } | null;
-
 export interface ContentRelation {
   id: string;
   sourceNodeId: string;
   targetNodeId: string;
   relationType: ContentRelationRelationType;
-  metadata?: ContentRelationMetadata;
+  description?: string | null;
   createdBy?: string | null;
   createdAt: string;
 }
@@ -239,13 +237,11 @@ export const CreateRelationInputRelationType = {
   references: "references",
 } as const;
 
-export type CreateRelationInputMetadata = { [key: string]: unknown };
-
 export interface CreateRelationInput {
   sourceNodeId: string;
   targetNodeId: string;
   relationType: CreateRelationInputRelationType;
-  metadata?: CreateRelationInputMetadata;
+  description?: string;
   createdBy?: string;
 }
 

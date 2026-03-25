@@ -5,7 +5,6 @@
  * Enterprise Wiki API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ContentRelationMetadata } from "./contentRelationMetadata";
 import type { ContentRelationRelationType } from "./contentRelationRelationType";
 
 export interface ContentRelation {
@@ -13,7 +12,7 @@ export interface ContentRelation {
   sourceNodeId: string;
   targetNodeId: string;
   relationType: ContentRelationRelationType;
-  metadata?: ContentRelationMetadata;
+  description?: string | null;
   createdBy?: string | null;
   createdAt: Date;
 }

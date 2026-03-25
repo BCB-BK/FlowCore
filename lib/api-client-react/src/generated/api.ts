@@ -433,8 +433,8 @@ export const getDeleteNodeUrl = (nodeId: string) => {
 export const deleteNode = async (
   nodeId: string,
   options?: RequestInit,
-): Promise<ContentNode> => {
-  return customFetch<ContentNode>(getDeleteNodeUrl(nodeId), {
+): Promise<void> => {
+  return customFetch<void>(getDeleteNodeUrl(nodeId), {
     ...options,
     method: "DELETE",
   });

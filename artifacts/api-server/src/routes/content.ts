@@ -209,4 +209,16 @@ router.get("/templates", async (_req, res) => {
   res.json(templates);
 });
 
+router.get("/templates/:id", async (req, res) => {
+  const [template] = await db
+    .select()
+    .from(contentTemplatesTable)
+    .where(eq(contentTemplatesTable.id, req.params.id));
+  if (!template) {
+    res.status(404).json({ error: "Template not found" });
+    return;
+  }
+  res.json(template);
+});
+
 export default router;
