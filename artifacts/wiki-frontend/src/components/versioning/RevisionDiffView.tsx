@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, Minus, Plus, Equal } from "lucide-react";
+import { customFetch } from "@workspace/api-client-react";
 
 interface RevisionDiffViewProps {
   revisionIdA: string;
@@ -40,6 +41,20 @@ interface DiffResult {
   contentChanged: boolean;
   contentA?: Record<string, unknown> | null;
   contentB?: Record<string, unknown> | null;
+  nodeContext?: {
+    relations: Array<{
+      id: string;
+      sourceNodeId: string;
+      targetNodeId: string;
+      relationType: string;
+      description: string | null;
+    }>;
+    tags: Array<{
+      tagId: string;
+      tagName: string;
+      tagSlug: string;
+    }>;
+  };
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -64,8 +79,9 @@ export function RevisionDiffView({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    fetch(`${apiBase}/content/revisions/${revisionIdA}/diff/${revisionIdB}`)
-      .then((res) => res.json())
+    customFetch<DiffResult>(
+      `${apiBase}/content/revisions/${revisionIdA}/diff/${revisionIdB}`,
+    )
       .then(setDiff)
       .catch(() => setDiff(null))
       .finally(() => setLoading(false));
@@ -236,6 +252,54 @@ export function RevisionDiffView({
                   </div>
                 )}
               </div>
+
+              {diff.nodeContext &&
+                (diff.nodeContext.relations.length > 0 ||
+                  diff.nodeContext.tags.length > 0) && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">
+                      Verknüpfungen & Tags (aktueller Stand)
+                    </h4>
+                    {diff.nodeContext.relations.length > 0 && (
+                      <div className="space-y-1 mb-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Verknüpfungen
+                        </p>
+                        {diff.nodeContext.relations.map((rel) => (
+                          <div
+                            key={rel.id}
+                            className="flex items-center gap-2 text-xs rounded border px-2 py-1"
+                          >
+                            <Badge variant="outline" className="text-[10px]">
+                              {rel.relationType}
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              → {rel.targetNodeId}
+                            </span>
+                            {rel.description && (
+                              <span className="italic text-muted-foreground">
+                                {rel.description}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {diff.nodeContext.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {diff.nodeContext.tags.map((tag) => (
+                          <Badge
+                            key={tag.tagId}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {tag.tagName}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {Object.keys(diff.metadataChanges).length === 0 &&
                 Object.keys(diff.structuredFieldChanges).length === 0 &&

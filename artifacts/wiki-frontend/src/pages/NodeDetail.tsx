@@ -331,17 +331,14 @@ export function NodeDetail() {
                 node.status as Parameters<typeof StatusBadge>[0]["status"]
               }
               nextReviewDate={
-                (node as unknown as Record<string, unknown>).nextReviewDate as
-                  | string
-                  | null
-                  | undefined
+                (
+                  structuredFields as Record<
+                    string,
+                    Record<string, string> | undefined
+                  >
+                )?.governance?.nextReviewDate
               }
-              ownerId={
-                (node as unknown as Record<string, unknown>).ownerId as
-                  | string
-                  | null
-                  | undefined
-              }
+              ownerId={node.ownerId}
             />
             <Badge variant="secondary">
               {PAGE_TYPE_LABELS[node.templateType] || node.templateType}

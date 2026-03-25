@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { customFetch } from "@workspace/api-client-react";
 import {
   Send,
   CheckCircle2,
@@ -82,15 +83,12 @@ export function ReviewWorkflowPanel({
 
   const fetchWorkflow = useCallback(async () => {
     try {
-      const res = await fetch(
+      const data = await customFetch<WorkflowData>(
         `${apiBase}/content/revisions/${revisionId}/workflow`,
-        { credentials: "include" },
       );
-      if (res.ok) {
-        const data = await res.json();
-        setWorkflow(data);
-      }
+      setWorkflow(data);
     } catch {
+      setWorkflow(null);
     } finally {
       setLoading(false);
     }
@@ -105,29 +103,23 @@ export function ReviewWorkflowPanel({
       queryKey: [`/api/content/nodes/${nodeId}/revisions`],
     });
     queryClient.invalidateQueries({
-      queryKey: ["/api/content/nodes", nodeId],
+      queryKey: [`/api/content/nodes/${nodeId}`],
     });
   }, [queryClient, nodeId]);
 
   const handleSubmitForReview = useCallback(async () => {
     setSubmitting(true);
     try {
-      const res = await fetch(
+      await customFetch(
         `${apiBase}/content/revisions/${revisionId}/submit-for-review`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             reviewerId: reviewerId || undefined,
             comment: comment || undefined,
           }),
-          credentials: "include",
         },
       );
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        throw new Error(data.error || "Fehler");
-      }
       toast({ title: "Zur Prüfung eingereicht" });
       setSubmitDialogOpen(false);
       setComment("");
@@ -155,19 +147,13 @@ export function ReviewWorkflowPanel({
   const handleApprove = useCallback(async () => {
     setSubmitting(true);
     try {
-      const res = await fetch(
-        `${apiBase}/content/revisions/${revisionId}/approve`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            comment: comment || undefined,
-            nextReviewDate: nextReviewDate || undefined,
-          }),
-          credentials: "include",
-        },
-      );
-      if (!res.ok) throw new Error("Fehler");
+      await customFetch(`${apiBase}/content/revisions/${revisionId}/approve`, {
+        method: "POST",
+        body: JSON.stringify({
+          comment: comment || undefined,
+          nextReviewDate: nextReviewDate || undefined,
+        }),
+      });
       toast({ title: "Revision genehmigt" });
       setApproveDialogOpen(false);
       setComment("");
@@ -192,19 +178,13 @@ export function ReviewWorkflowPanel({
   const handleReject = useCallback(async () => {
     setSubmitting(true);
     try {
-      const res = await fetch(
-        `${apiBase}/content/revisions/${revisionId}/reject`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            comment: comment || undefined,
-            decision: rejectDecision,
-          }),
-          credentials: "include",
-        },
-      );
-      if (!res.ok) throw new Error("Fehler");
+      await customFetch(`${apiBase}/content/revisions/${revisionId}/reject`, {
+        method: "POST",
+        body: JSON.stringify({
+          comment: comment || undefined,
+          decision: rejectDecision,
+        }),
+      });
       toast({
         title:
           rejectDecision === "returned_for_changes"

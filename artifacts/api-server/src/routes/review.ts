@@ -7,19 +7,28 @@ import {
   contentRevisionEventsTable,
   pageWatchersTable,
   auditEventsTable,
+  contentRelationsTable,
+  contentNodeTagsTable,
+  contentTagsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
+import type { Request } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import type { WikiPermission } from "../services/rbac.service";
 
 const router: IRouter = Router();
 
+interface RevisionResolvedRequest extends Request {
+  _resolvedNodeId: string;
+  _resolvedRevisionStatus: string;
+}
+
 function resolveNodeIdFromRevision(permissionKey: WikiPermission) {
   return [
     requireAuth,
     async (
-      req: import("express").Request,
+      req: Request,
       res: import("express").Response,
       next: import("express").NextFunction,
     ) => {
@@ -35,15 +44,13 @@ function resolveNodeIdFromRevision(permissionKey: WikiPermission) {
         res.status(404).json({ error: "Revision not found" });
         return;
       }
-      (req as unknown as Record<string, string>)._resolvedNodeId = rev.nodeId;
-      (req as unknown as Record<string, string>)._resolvedRevisionStatus =
-        rev.status;
+      (req as RevisionResolvedRequest)._resolvedNodeId = rev.nodeId;
+      (req as RevisionResolvedRequest)._resolvedRevisionStatus = rev.status;
       next();
     },
     requirePermission(
       permissionKey,
-      (req) =>
-        (req as unknown as Record<string, string>)._resolvedNodeId as string,
+      (req) => (req as RevisionResolvedRequest)._resolvedNodeId,
     ),
   ];
 }
@@ -54,7 +61,7 @@ router.post(
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
-      const currentStatus = (req as unknown as Record<string, string>)
+      const currentStatus = (req as RevisionResolvedRequest)
         ._resolvedRevisionStatus;
       const { reviewerId, comment } = req.body;
 
@@ -138,7 +145,7 @@ router.post(
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
-      const currentStatus = (req as unknown as Record<string, string>)
+      const currentStatus = (req as RevisionResolvedRequest)
         ._resolvedRevisionStatus;
       const { comment, nextReviewDate } = req.body;
 
@@ -233,7 +240,7 @@ router.post(
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
-      const currentStatus = (req as unknown as Record<string, string>)
+      const currentStatus = (req as RevisionResolvedRequest)
         ._resolvedRevisionStatus;
       const { comment, decision } = req.body;
 
@@ -366,8 +373,7 @@ router.get(
   async (req, res) => {
     const id = req.params.id as string;
     const compareId = req.params.compareId as string;
-    const authorizedNodeId = (req as unknown as Record<string, string>)
-      ._resolvedNodeId;
+    const authorizedNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
 
     const [revA] = await db
       .select()
@@ -442,6 +448,30 @@ router.get(
     const contentChanged =
       JSON.stringify(contentA) !== JSON.stringify(contentB);
 
+    const relations = await db
+      .select({
+        id: contentRelationsTable.id,
+        sourceNodeId: contentRelationsTable.sourceNodeId,
+        targetNodeId: contentRelationsTable.targetNodeId,
+        relationType: contentRelationsTable.relationType,
+        description: contentRelationsTable.description,
+      })
+      .from(contentRelationsTable)
+      .where(eq(contentRelationsTable.sourceNodeId, authorizedNodeId));
+
+    const tags = await db
+      .select({
+        tagId: contentNodeTagsTable.tagId,
+        tagName: contentTagsTable.name,
+        tagSlug: contentTagsTable.slug,
+      })
+      .from(contentNodeTagsTable)
+      .innerJoin(
+        contentTagsTable,
+        eq(contentNodeTagsTable.tagId, contentTagsTable.id),
+      )
+      .where(eq(contentNodeTagsTable.nodeId, authorizedNodeId));
+
     res.json({
       revisionA: {
         id: revA.id,
@@ -464,6 +494,10 @@ router.get(
       contentChanged,
       contentA: contentChanged ? contentA : undefined,
       contentB: contentChanged ? contentB : undefined,
+      nodeContext: {
+        relations,
+        tags,
+      },
     });
   },
 );

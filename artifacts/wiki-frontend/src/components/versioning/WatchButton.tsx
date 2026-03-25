@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { customFetch } from "@workspace/api-client-react";
+
+interface WatchStatus {
+  watching: boolean;
+}
 
 interface WatchButtonProps {
   nodeId: string;
@@ -15,13 +20,10 @@ export function WatchButton({ nodeId }: WatchButtonProps) {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch(`${apiBase}/content/nodes/${nodeId}/watch`, {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { watching: boolean };
-        setWatching(data.watching);
-      }
+      const data = await customFetch<WatchStatus>(
+        `${apiBase}/content/nodes/${nodeId}/watch`,
+      );
+      setWatching(data.watching);
     } catch {
     } finally {
       setLoading(false);
@@ -36,21 +38,17 @@ export function WatchButton({ nodeId }: WatchButtonProps) {
     setLoading(true);
     try {
       if (watching) {
-        const res = await fetch(`${apiBase}/content/nodes/${nodeId}/watch`, {
+        await customFetch(`${apiBase}/content/nodes/${nodeId}/watch`, {
           method: "DELETE",
-          credentials: "include",
+          responseType: "text",
         });
-        if (!res.ok) throw new Error("unwatch failed");
         setWatching(false);
         toast({ title: "Seite wird nicht mehr beobachtet" });
       } else {
-        const res = await fetch(`${apiBase}/content/nodes/${nodeId}/watch`, {
+        await customFetch(`${apiBase}/content/nodes/${nodeId}/watch`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ watchChildren: false }),
-          credentials: "include",
         });
-        if (!res.ok) throw new Error("watch failed");
         setWatching(true);
         toast({ title: "Seite wird beobachtet" });
       }

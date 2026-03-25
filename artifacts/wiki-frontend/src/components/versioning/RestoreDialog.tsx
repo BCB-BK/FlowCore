@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { customFetch } from "@workspace/api-client-react";
 
 interface RestoreDialogProps {
   revisionId: string;
@@ -33,18 +34,10 @@ export function RestoreDialog({
 
   const handleRestore = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${apiBase}/content/revisions/${revisionId}/restore`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error("Wiederherstellung fehlgeschlagen");
-      }
+      await customFetch(`${apiBase}/content/revisions/${revisionId}/restore`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
 
       toast({
         title: "Revision wiederhergestellt",
@@ -52,10 +45,10 @@ export function RestoreDialog({
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["/api/content/nodes", nodeId],
+        queryKey: [`/api/content/nodes/${nodeId}/revisions`],
       });
       queryClient.invalidateQueries({
-        queryKey: [`/api/content/nodes/${nodeId}/revisions`],
+        queryKey: [`/api/content/nodes/${nodeId}`],
       });
       onOpenChange(false);
     } catch {
