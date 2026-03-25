@@ -9,6 +9,7 @@ import {
   useCreateNode as useCreateNodeMutation,
   useDeleteNode as useDeleteNodeMutation,
   useUpdateNode as useUpdateNodeMutation,
+  useCreateRevision as useCreateRevisionMutation,
   getListRootNodesQueryKey,
   getGetNodeQueryKey,
   getGetNodeChildrenQueryKey,
@@ -117,6 +118,22 @@ export function useUpdateNode() {
         });
         queryClient.invalidateQueries({
           queryKey: getListNodesQueryKey(),
+        });
+      },
+    },
+  });
+}
+
+export function useCreateRevision() {
+  const queryClient = useQueryClient();
+  return useCreateRevisionMutation({
+    mutation: {
+      onSuccess: (_data, variables) => {
+        queryClient.invalidateQueries({
+          queryKey: getListNodeRevisionsQueryKey(variables.nodeId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: getGetNodeQueryKey(variables.nodeId),
         });
       },
     },

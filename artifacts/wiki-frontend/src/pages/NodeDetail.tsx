@@ -5,6 +5,7 @@ import {
   useNodeRevisions,
   useDeleteNode,
   useUpdateNode,
+  useCreateRevision,
 } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
@@ -62,7 +63,7 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
@@ -72,6 +73,7 @@ export function NodeDetail() {
   const { data: revisions } = useNodeRevisions(nodeId);
   const deleteNode = useDeleteNode();
   const updateNode = useUpdateNode();
+  const createRevision = useCreateRevision();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -81,6 +83,52 @@ export function NodeDetail() {
   const [editTemplateType, setEditTemplateType] = useState<
     NonNullable<UpdateNodeInput["templateType"]>
   >("core_process_overview");
+  const [editableMetadata, setEditableMetadata] = useState<
+    Record<string, unknown>
+  >({});
+  const [metadataDirty, setMetadataDirty] = useState(false);
+
+  const latestRevision =
+    revisions && revisions.length > 0 ? revisions[0] : null;
+  const revisionContent =
+    (latestRevision?.content as Record<string, unknown>) ?? {};
+
+  useEffect(() => {
+    setEditableMetadata(revisionContent);
+    setMetadataDirty(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestRevision?.id]);
+
+  const handleMetadataChange = useCallback((key: string, value: unknown) => {
+    setEditableMetadata((prev) => ({ ...prev, [key]: value }));
+    setMetadataDirty(true);
+  }, []);
+
+  const handleMetadataSave = useCallback(async () => {
+    if (!node || !nodeId) return;
+    try {
+      await createRevision.mutateAsync({
+        nodeId,
+        data: {
+          title: node.title,
+          content: editableMetadata,
+          structuredFields:
+            (latestRevision?.structuredFields as Record<string, unknown>) ?? {},
+          changeType: "editorial",
+          changeSummary: "Metadaten aktualisiert",
+        },
+      });
+      setMetadataDirty(false);
+      toast({ title: "Metadaten gespeichert" });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Speichern",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId, node?.title, editableMetadata, latestRevision?.structuredFields]);
 
   if (isLoading) {
     return (
@@ -108,12 +156,9 @@ export function NodeDetail() {
   }
 
   const pageDef = getPageType(node.templateType);
-  const latestRevision =
-    revisions && revisions.length > 0 ? revisions[0] : null;
   const structuredFields: Record<string, unknown> =
     (latestRevision?.structuredFields as Record<string, unknown>) ?? {};
-  const metadata: Record<string, unknown> =
-    (latestRevision?.content as Record<string, unknown>) ?? {};
+  const metadata: Record<string, unknown> = editableMetadata;
 
   const handleDelete = async () => {
     try {
@@ -297,9 +342,20 @@ export function NodeDetail() {
           <MetadataPanel
             templateType={node.templateType}
             metadata={metadata}
-            onChange={() => {}}
-            readOnly
+            onChange={handleMetadataChange}
           />
+          {metadataDirty && (
+            <div className="flex justify-end mt-4">
+              <Button
+                onClick={handleMetadataSave}
+                disabled={createRevision.isPending}
+              >
+                {createRevision.isPending
+                  ? "Wird gespeichert..."
+                  : "Metadaten speichern"}
+              </Button>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="children" className="mt-4">

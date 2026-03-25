@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useCreateNode } from "@/hooks/use-nodes";
+import { useCreateNode, useCreateRevision } from "@/hooks/use-nodes";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -47,6 +47,7 @@ export function CreateNodeDialog({
   const [ownerId, setOwnerId] = useState<string | undefined>();
   const [ownerName, setOwnerName] = useState<string | undefined>();
   const createNode = useCreateNode();
+  const createRevision = useCreateRevision();
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
@@ -87,6 +88,24 @@ export function CreateNodeDialog({
           title: title.trim(),
           templateType,
           parentNodeId: parentNodeId || undefined,
+          ownerId: ownerId || undefined,
+        },
+      });
+
+      const metadata: Record<string, unknown> = {};
+      if (ownerId) {
+        metadata.owner = ownerId;
+        metadata.ownerName = ownerName;
+      }
+
+      await createRevision.mutateAsync({
+        nodeId: node.id,
+        data: {
+          title: title.trim(),
+          content: metadata,
+          structuredFields: {},
+          changeType: "editorial",
+          changeSummary: "Erstellt",
         },
       });
 
