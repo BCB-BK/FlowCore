@@ -45,6 +45,7 @@ import type {
   MoveNodeInput,
   NodeOwnership,
   PagePermission,
+  PageTypeDefinition,
   Principal,
   PrincipalWithRoles,
   PublishRevisionInput,
@@ -3224,6 +3225,170 @@ export const useDeleteRelation = <
 > => {
   return useMutation(getDeleteRelationMutationOptions(options));
 };
+
+/**
+ * Returns the page type registry with metadata fields, sections, allowed children, icons, and completeness rules.
+ * @summary List all page type definitions from the registry
+ */
+export const getListPageTypesUrl = () => {
+  return `/api/content/page-types`;
+};
+
+export const listPageTypes = async (
+  options?: RequestInit,
+): Promise<PageTypeDefinition[]> => {
+  return customFetch<PageTypeDefinition[]>(getListPageTypesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListPageTypesQueryKey = () => {
+  return [`/api/content/page-types`] as const;
+};
+
+export const getListPageTypesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPageTypes>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPageTypes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListPageTypesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listPageTypes>>> = ({
+    signal,
+  }) => listPageTypes({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPageTypes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListPageTypesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPageTypes>>
+>;
+export type ListPageTypesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all page type definitions from the registry
+ */
+
+export function useListPageTypes<
+  TData = Awaited<ReturnType<typeof listPageTypes>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listPageTypes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListPageTypesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a single page type definition
+ */
+export const getGetPageTypeUrl = (templateType: string) => {
+  return `/api/content/page-types/${templateType}`;
+};
+
+export const getPageType = async (
+  templateType: string,
+  options?: RequestInit,
+): Promise<PageTypeDefinition> => {
+  return customFetch<PageTypeDefinition>(getGetPageTypeUrl(templateType), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPageTypeQueryKey = (templateType: string) => {
+  return [`/api/content/page-types/${templateType}`] as const;
+};
+
+export const getGetPageTypeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPageType>>,
+  TError = ErrorType<void>,
+>(
+  templateType: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPageType>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPageTypeQueryKey(templateType);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPageType>>> = ({
+    signal,
+  }) => getPageType(templateType, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!templateType,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPageType>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPageTypeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPageType>>
+>;
+export type GetPageTypeQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a single page type definition
+ */
+
+export function useGetPageType<
+  TData = Awaited<ReturnType<typeof getPageType>>,
+  TError = ErrorType<void>,
+>(
+  templateType: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPageType>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPageTypeQueryOptions(templateType, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary List all content templates

@@ -39,8 +39,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FileText,
   FolderOpen,
   Plus,
   Trash2,
@@ -49,9 +49,18 @@ import {
   Calendar,
   Pencil,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from "@/lib/types";
+import {
+  PAGE_TYPE_LABELS,
+  STATUS_LABELS,
+  STATUS_COLORS,
+  getPageType,
+} from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
+import { PageTypeIcon } from "@/components/PageTypeIcon";
+import { PageLayout } from "@/components/layouts/PageLayout";
+import { MetadataPanel } from "@/components/metadata/MetadataPanel";
+import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { useState } from "react";
 
 export function NodeDetail() {
@@ -95,6 +104,10 @@ export function NodeDetail() {
       </div>
     );
   }
+
+  const pageDef = getPageType(node.templateType);
+  const structuredFields: Record<string, unknown> = {};
+  const metadata: Record<string, unknown> = {};
 
   const handleDelete = async () => {
     try {
@@ -144,6 +157,14 @@ export function NodeDetail() {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
+            {pageDef && (
+              <div
+                className="flex h-7 w-7 items-center justify-center rounded-md text-white"
+                style={{ backgroundColor: pageDef.color }}
+              >
+                <PageTypeIcon iconName={pageDef.icon} className="h-3.5 w-3.5" />
+              </div>
+            )}
             <Badge
               variant="outline"
               className={STATUS_COLORS[node.status] || ""}
@@ -153,6 +174,12 @@ export function NodeDetail() {
             <Badge variant="secondary">
               {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
             </Badge>
+            <CompletenessIndicator
+              templateType={node.templateType}
+              metadata={metadata}
+              sectionData={structuredFields}
+              compact
+            />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{node.title}</h1>
           <p className="text-sm text-muted-foreground">{node.displayCode}</p>
@@ -196,116 +223,174 @@ export function NodeDetail() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Metadaten</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Hash className="h-3.5 w-3.5" />
-                <span>System-ID</span>
-              </div>
-              <p className="font-mono text-xs">{node.id.slice(0, 8)}...</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <FileText className="h-3.5 w-3.5" />
-                <span>Display-Code</span>
-              </div>
-              <p className="font-medium">{node.displayCode}</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
-                <span>Erstellt</span>
-              </div>
-              <p>{new Date(node.createdAt).toLocaleDateString("de-DE")}</p>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>Aktualisiert</span>
-              </div>
-              <p>{new Date(node.updatedAt).toLocaleDateString("de-DE")}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="content" className="w-full">
+        <TabsList>
+          <TabsTrigger value="content">Inhalt</TabsTrigger>
+          <TabsTrigger value="metadata">Metadaten</TabsTrigger>
+          <TabsTrigger value="children">
+            Unterseiten
+            {children && children.length > 0 && (
+              <Badge variant="secondary" className="ml-1.5 text-xs h-5 px-1.5">
+                {children.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      <Separator />
-
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Unterseiten</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            Hinzufügen
-          </Button>
-        </div>
-
-        {children && children.length > 0 ? (
-          <div className="space-y-2">
-            {children.map((child) => (
-              <Card
-                key={child.id}
-                className="cursor-pointer hover:shadow-sm transition-shadow"
-                onClick={() => navigate(`/node/${child.id}`)}
-              >
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+        <TabsContent value="content" className="mt-4">
+          <Card className="mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Seitendetails</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Hash className="h-3.5 w-3.5" />
+                    <span>System-ID</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
-                      {child.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {child.displayCode} ·{" "}
-                      {PAGE_TYPE_LABELS[child.templateType] ||
-                        child.templateType}
-                    </p>
+                  <p className="font-mono text-xs">{node.immutableId}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Hash className="h-3.5 w-3.5" />
+                    <span>Display-Code</span>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${STATUS_COLORS[child.status] || ""}`}
-                  >
-                    {STATUS_LABELS[child.status] || child.status}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-              <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Keine Unterseiten vorhanden
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-3"
-                onClick={() => setShowCreate(true)}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Erste Unterseite anlegen
-              </Button>
+                  <p className="font-medium">{node.displayCode}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>Erstellt</span>
+                  </div>
+                  <p>{new Date(node.createdAt).toLocaleDateString("de-DE")}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>Aktualisiert</span>
+                  </div>
+                  <p>{new Date(node.updatedAt).toLocaleDateString("de-DE")}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        )}
-      </div>
+
+          <PageLayout
+            templateType={node.templateType}
+            structuredFields={structuredFields}
+          />
+        </TabsContent>
+
+        <TabsContent value="metadata" className="mt-4 space-y-4">
+          <CompletenessIndicator
+            templateType={node.templateType}
+            metadata={metadata}
+            sectionData={structuredFields}
+          />
+          <MetadataPanel
+            templateType={node.templateType}
+            metadata={metadata}
+            onChange={() => {}}
+            readOnly
+          />
+        </TabsContent>
+
+        <TabsContent value="children" className="mt-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Unterseiten</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCreate(true)}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              Hinzufügen
+            </Button>
+          </div>
+
+          {children && children.length > 0 ? (
+            <div className="space-y-2">
+              {children.map((child) => {
+                const childDef = getPageType(child.templateType);
+                return (
+                  <Card
+                    key={child.id}
+                    className="cursor-pointer hover:shadow-sm transition-shadow"
+                    onClick={() => navigate(`/node/${child.id}`)}
+                  >
+                    <CardContent className="flex items-center gap-3 p-4">
+                      {childDef ? (
+                        <div
+                          className="flex h-8 w-8 items-center justify-center rounded-md text-white"
+                          style={{ backgroundColor: childDef.color }}
+                        >
+                          <PageTypeIcon
+                            iconName={childDef.icon}
+                            className="h-4 w-4"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
+                          <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {child.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {child.displayCode} ·{" "}
+                          {PAGE_TYPE_LABELS[child.templateType] ||
+                            child.templateType}
+                        </p>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${STATUS_COLORS[child.status] || ""}`}
+                      >
+                        {STATUS_LABELS[child.status] || child.status}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Keine Unterseiten vorhanden
+                </p>
+                {pageDef && pageDef.allowedChildTypes.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Erlaubte Typen:{" "}
+                    {pageDef.allowedChildTypes
+                      .map((t) => PAGE_TYPE_LABELS[t] ?? t)
+                      .join(", ")}
+                  </p>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => setShowCreate(true)}
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  Erste Unterseite anlegen
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <CreateNodeDialog
         open={showCreate}
         onOpenChange={setShowCreate}
         parentNodeId={node.id}
+        parentTemplateType={node.templateType}
       />
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>

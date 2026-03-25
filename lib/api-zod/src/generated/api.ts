@@ -843,6 +843,108 @@ export const DeleteRelationParams = zod.object({
 });
 
 /**
+ * Returns the page type registry with metadata fields, sections, allowed children, icons, and completeness rules.
+ * @summary List all page type definitions from the registry
+ */
+export const ListPageTypesResponseItem = zod.object({
+  type: zod.string(),
+  label: zod.string(),
+  labelDe: zod.string(),
+  description: zod.string(),
+  descriptionDe: zod.string(),
+  icon: zod.string(),
+  color: zod.string(),
+  category: zod.enum(["process", "documentation", "governance", "system"]),
+  allowedChildTypes: zod.array(zod.string()),
+  metadataFields: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      type: zod.enum([
+        "text",
+        "date",
+        "person",
+        "enum",
+        "tags",
+        "number",
+        "boolean",
+      ]),
+      required: zod.boolean(),
+      group: zod.enum([
+        "identity",
+        "governance",
+        "responsibilities",
+        "validity",
+        "classification",
+      ]),
+      description: zod.string().nullish(),
+      options: zod.array(zod.string()).nullish(),
+    }),
+  ),
+  sections: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      description: zod.string().nullish(),
+      required: zod.boolean(),
+    }),
+  ),
+});
+export const ListPageTypesResponse = zod.array(ListPageTypesResponseItem);
+
+/**
+ * @summary Get a single page type definition
+ */
+export const GetPageTypeParams = zod.object({
+  templateType: zod.coerce.string(),
+});
+
+export const GetPageTypeResponse = zod.object({
+  type: zod.string(),
+  label: zod.string(),
+  labelDe: zod.string(),
+  description: zod.string(),
+  descriptionDe: zod.string(),
+  icon: zod.string(),
+  color: zod.string(),
+  category: zod.enum(["process", "documentation", "governance", "system"]),
+  allowedChildTypes: zod.array(zod.string()),
+  metadataFields: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      type: zod.enum([
+        "text",
+        "date",
+        "person",
+        "enum",
+        "tags",
+        "number",
+        "boolean",
+      ]),
+      required: zod.boolean(),
+      group: zod.enum([
+        "identity",
+        "governance",
+        "responsibilities",
+        "validity",
+        "classification",
+      ]),
+      description: zod.string().nullish(),
+      options: zod.array(zod.string()).nullish(),
+    }),
+  ),
+  sections: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      description: zod.string().nullish(),
+      required: zod.boolean(),
+    }),
+  ),
+});
+
+/**
  * @summary List all content templates
  */
 export const ListTemplatesResponseItem = zod.object({

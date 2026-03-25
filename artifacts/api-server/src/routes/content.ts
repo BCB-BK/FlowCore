@@ -25,8 +25,27 @@ import {
 } from "../services/graph.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import {
+  PAGE_TYPE_REGISTRY,
+  getPageType as getPageTypeDef,
+} from "@workspace/shared/page-types";
 
 const router: IRouter = Router();
+
+router.get("/page-types", requireAuth, async (_req, res) => {
+  const types = Object.values(PAGE_TYPE_REGISTRY);
+  res.json(types);
+});
+
+router.get("/page-types/:templateType", requireAuth, async (req, res) => {
+  const templateType = req.params.templateType as string;
+  const def = getPageTypeDef(templateType);
+  if (!def) {
+    res.status(404).json({ error: "Page type not found" });
+    return;
+  }
+  res.json(def);
+});
 
 router.get(
   "/nodes",

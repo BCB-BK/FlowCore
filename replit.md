@@ -110,10 +110,20 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Routing: Wouter (lightweight client-side router)
 - Data fetching: React Query via `@workspace/api-client-react`
 - Auth: Dev-mode header injection (`X-Dev-Principal-Id`) via `lib/api.ts`
-- Pages: Hub (landing), NodeDetail (view/manage nodes), SearchPage (real-time search)
-- Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog, TreeNode
+- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Unterseiten), SearchPage (real-time search)
+- Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog (multi-step), TreeNode, PeoplePicker, PageTypeIcon
+- Metadata: MetadataPanel, MetadataFieldRenderer, CompletenessIndicator
+- Layouts: PageLayout (dispatcher), ProcessOverviewLayout, ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
 - Entry: `src/main.tsx` → `src/App.tsx`
 - Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080
+
+### `lib/shared` (`@workspace/shared`)
+
+Shared types, provider abstractions, and page type registry.
+
+- `src/providers/` — Provider interfaces (IAuthProvider, IStorageProvider, etc.) and ProviderResult<T>
+- `src/page-types/registry.ts` — Comprehensive registry of all 10 page types with metadata fields, sections, icons, colors, categories, allowedChildTypes
+- `src/page-types/index.ts` — Exports: PAGE_TYPE_REGISTRY, calculateCompleteness, getAllowedChildTypes, METADATA_GROUP_LABELS, types
 
 ### `lib/db` (`@workspace/db`)
 

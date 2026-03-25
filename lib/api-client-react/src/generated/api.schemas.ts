@@ -266,6 +266,71 @@ export interface CreateRelationInput {
   createdBy?: string;
 }
 
+export type PageTypeDefinitionCategory =
+  (typeof PageTypeDefinitionCategory)[keyof typeof PageTypeDefinitionCategory];
+
+export const PageTypeDefinitionCategory = {
+  process: "process",
+  documentation: "documentation",
+  governance: "governance",
+  system: "system",
+} as const;
+
+export type MetadataFieldDefType =
+  (typeof MetadataFieldDefType)[keyof typeof MetadataFieldDefType];
+
+export const MetadataFieldDefType = {
+  text: "text",
+  date: "date",
+  person: "person",
+  enum: "enum",
+  tags: "tags",
+  number: "number",
+  boolean: "boolean",
+} as const;
+
+export type MetadataFieldDefGroup =
+  (typeof MetadataFieldDefGroup)[keyof typeof MetadataFieldDefGroup];
+
+export const MetadataFieldDefGroup = {
+  identity: "identity",
+  governance: "governance",
+  responsibilities: "responsibilities",
+  validity: "validity",
+  classification: "classification",
+} as const;
+
+export interface MetadataFieldDef {
+  key: string;
+  label: string;
+  type: MetadataFieldDefType;
+  required: boolean;
+  group: MetadataFieldDefGroup;
+  description?: string | null;
+  options?: string[] | null;
+}
+
+export interface PageTypeSection {
+  key: string;
+  label: string;
+  description?: string | null;
+  required: boolean;
+}
+
+export interface PageTypeDefinition {
+  type: string;
+  label: string;
+  labelDe: string;
+  description: string;
+  descriptionDe: string;
+  icon: string;
+  color: string;
+  category: PageTypeDefinitionCategory;
+  allowedChildTypes: string[];
+  metadataFields: MetadataFieldDef[];
+  sections: PageTypeSection[];
+}
+
 export type ContentTemplateFieldSchema = { [key: string]: unknown };
 
 export interface ContentTemplate {

@@ -20,6 +20,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Expiration-aware role filtering (expired role assignments excluded)
   - Updated data model documentation with enterprise and collaboration entities
 
+- Cluster 5: Page Types, Templates, and Creation Flow
+  - Shared page type registry (`lib/shared/src/page-types/`) with all 10 types (process_overview, procedure, work_instruction, change_record, checklist, role_profile, policy, onboarding_plan, dashboard, system_steckbrief)
+  - Each type: icon, color, category, allowedChildTypes, metadataFields with groups, sections
+  - `calculateCompleteness()` helper for metadata completeness percentage
+  - Backend GET /content/page-types and GET /content/page-types/:templateType endpoints
+  - OpenAPI spec updated with PageTypeDefinition, MetadataFieldDef, PageTypeSection schemas
+  - Multi-step CreateNodeDialog (type-selection cards → title/parent → summary/create)
+  - PeoplePicker component with debounced Graph API search
+  - MetadataFieldRenderer, MetadataPanel (grouped by identity/governance/validity/classification)
+  - CompletenessIndicator (progress bar with tooltip breakdown)
+  - Type-specific layouts: ProcessOverviewLayout (SIPOC/KPIs), ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
+  - PageLayout dispatcher selecting layout by templateType
+  - NodeDetail enhanced with tabs (Inhalt/Metadaten/Unterseiten), colored PageTypeIcon, completeness indicator
+  - PageTypeIcon component mapping template types to Lucide icons with type colors
+
 - Cluster 4: React+Vite frontend with navigation, Knowledge Hub shell
   - React 19 + Vite + TailwindCSS 4 + shadcn/ui frontend artifact (`wiki-frontend`)
   - App shell with collapsible sidebar, header with search bar, user info

@@ -728,6 +728,43 @@ paths:
         "204":
           description: Deleted
 
+  /content/page-types:
+    get:
+      operationId: listPageTypes
+      tags: [templates]
+      summary: List all page type definitions from the registry
+      description: Returns the page type registry with metadata fields, sections, allowed children, icons, and completeness rules.
+      responses:
+        "200":
+          description: Page type registry
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PageTypeDefinition"
+
+  /content/page-types/{templateType}:
+    get:
+      operationId: getPageType
+      tags: [templates]
+      summary: Get a single page type definition
+      parameters:
+        - name: templateType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Page type definition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageTypeDefinition"
+        "404":
+          description: Not found
+
   /content/templates:
     get:
       operationId: listTemplates
@@ -1156,6 +1193,98 @@ components:
         - sourceNodeId
         - targetNodeId
         - relationType
+
+    PageTypeDefinition:
+      type: object
+      properties:
+        type:
+          type: string
+        label:
+          type: string
+        labelDe:
+          type: string
+        description:
+          type: string
+        descriptionDe:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+        category:
+          type: string
+          enum: [process, documentation, governance, system]
+        allowedChildTypes:
+          type: array
+          items:
+            type: string
+        metadataFields:
+          type: array
+          items:
+            $ref: "#/components/schemas/MetadataFieldDef"
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/PageTypeSection"
+      required:
+        - type
+        - label
+        - labelDe
+        - description
+        - descriptionDe
+        - icon
+        - color
+        - category
+        - allowedChildTypes
+        - metadataFields
+        - sections
+
+    MetadataFieldDef:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [text, date, person, enum, tags, number, boolean]
+        required:
+          type: boolean
+        group:
+          type: string
+          enum: [identity, governance, responsibilities, validity, classification]
+        description:
+          type: string
+          nullable: true
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+      required:
+        - key
+        - label
+        - type
+        - required
+        - group
+
+    PageTypeSection:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        required:
+          type: boolean
+      required:
+        - key
+        - label
+        - required
 
     ContentTemplate:
       type: object
