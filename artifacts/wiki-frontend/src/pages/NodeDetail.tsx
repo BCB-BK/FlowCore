@@ -63,7 +63,9 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
-import { useState, useCallback, useEffect } from "react";
+import { BlockEditor } from "@/components/editor";
+import type { JSONContent } from "@tiptap/react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
@@ -90,6 +92,8 @@ export function NodeDetail() {
     Record<string, string>
   >({});
   const [metadataDirty, setMetadataDirty] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   const latestRevision =
     revisions && revisions.length > 0 ? revisions[0] : null;
@@ -152,6 +156,44 @@ export function NodeDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeId, node?.title, editableMetadata, latestRevision?.structuredFields]);
 
+  const structuredFields: Record<string, unknown> = useMemo(
+    () => (latestRevision?.structuredFields as Record<string, unknown>) ?? {},
+    [latestRevision?.structuredFields],
+  );
+
+  const editorContent = useMemo(() => {
+    if (
+      structuredFields._editorContent &&
+      typeof structuredFields._editorContent === "object"
+    ) {
+      return structuredFields._editorContent as JSONContent;
+    }
+    return null;
+  }, [structuredFields]);
+
+  const handleEditorSave = useCallback(
+    async (json: JSONContent) => {
+      if (!node || !nodeId) return;
+      const updatedFields = {
+        ...structuredFields,
+        _editorContent: json,
+      };
+      await createRevision.mutateAsync({
+        nodeId,
+        data: {
+          title: node.title,
+          content: editableMetadata,
+          structuredFields: updatedFields,
+          changeType: "editorial",
+          changeSummary: "Inhalt bearbeitet",
+        },
+      });
+      setLastSavedAt(new Date());
+      toast({ title: "Inhalt gespeichert" });
+    },
+    [nodeId, node, structuredFields, editableMetadata, createRevision, toast],
+  );
+
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto space-y-4">
@@ -178,8 +220,6 @@ export function NodeDetail() {
   }
 
   const pageDef = getPageType(node.templateType);
-  const structuredFields: Record<string, unknown> =
-    (latestRevision?.structuredFields as Record<string, unknown>) ?? {};
   const metadata: Record<string, unknown> = editableMetadata;
 
   const handleDelete = async () => {
@@ -353,6 +393,27 @@ export function NodeDetail() {
             templateType={node.templateType}
             structuredFields={structuredFields}
           />
+
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold">Inhalt</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                {isEditing ? "Vorschau" : "Bearbeiten"}
+              </Button>
+            </div>
+            <BlockEditor
+              content={editorContent}
+              onSave={handleEditorSave}
+              editable={isEditing}
+              nodeId={nodeId}
+              lastSavedAt={lastSavedAt}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="metadata" className="mt-4 space-y-4">

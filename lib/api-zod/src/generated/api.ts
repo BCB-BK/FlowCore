@@ -998,3 +998,147 @@ export const GetTemplateResponse = zod.object({
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
+
+/**
+ * @summary Upload a media file
+ */
+export const UploadMediaBody = zod.object({
+  file: zod.instanceof(File),
+  altText: zod.string().optional(),
+  caption: zod.string().optional(),
+  nodeId: zod.string().uuid().optional(),
+});
+
+/**
+ * @summary List media assets
+ */
+export const listMediaAssetsQueryLimitDefault = 50;
+export const listMediaAssetsQueryOffsetDefault = 0;
+
+export const ListMediaAssetsQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+  classification: zod
+    .enum([
+      "document",
+      "image",
+      "video",
+      "audio",
+      "spreadsheet",
+      "presentation",
+      "template",
+      "form",
+      "archive",
+      "other",
+    ])
+    .optional(),
+  limit: zod.coerce.number().default(listMediaAssetsQueryLimitDefault),
+  offset: zod.coerce.number().default(listMediaAssetsQueryOffsetDefault),
+});
+
+export const ListMediaAssetsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  filename: zod.string(),
+  originalFilename: zod.string(),
+  mimeType: zod.string(),
+  sizeBytes: zod.number(),
+  storageKey: zod.string(),
+  altText: zod.string().nullish(),
+  caption: zod.string().nullish(),
+  classification: zod.enum([
+    "document",
+    "image",
+    "video",
+    "audio",
+    "spreadsheet",
+    "presentation",
+    "template",
+    "form",
+    "archive",
+    "other",
+  ]),
+  nodeId: zod.string().uuid().nullish(),
+  uploadedBy: zod.string().uuid(),
+  isDeleted: zod.boolean(),
+  createdAt: zod.date(),
+  url: zod.string().optional(),
+});
+export const ListMediaAssetsResponse = zod.array(ListMediaAssetsResponseItem);
+
+/**
+ * @summary Get a media asset by ID
+ */
+export const GetMediaAssetParams = zod.object({
+  assetId: zod.coerce.string().uuid(),
+});
+
+export const GetMediaAssetResponse = zod.object({
+  id: zod.string().uuid(),
+  filename: zod.string(),
+  originalFilename: zod.string(),
+  mimeType: zod.string(),
+  sizeBytes: zod.number(),
+  storageKey: zod.string(),
+  altText: zod.string().nullish(),
+  caption: zod.string().nullish(),
+  classification: zod.enum([
+    "document",
+    "image",
+    "video",
+    "audio",
+    "spreadsheet",
+    "presentation",
+    "template",
+    "form",
+    "archive",
+    "other",
+  ]),
+  nodeId: zod.string().uuid().nullish(),
+  uploadedBy: zod.string().uuid(),
+  isDeleted: zod.boolean(),
+  createdAt: zod.date(),
+  url: zod.string().optional(),
+});
+
+/**
+ * @summary Delete a media asset
+ */
+export const DeleteMediaAssetParams = zod.object({
+  assetId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Serve a media file by storage key
+ */
+export const ServeMediaFileParams = zod.object({
+  key: zod.coerce.string(),
+});
+
+/**
+ * @summary Track usage of a media asset in a node
+ */
+export const TrackMediaUsageParams = zod.object({
+  assetId: zod.coerce.string().uuid(),
+});
+
+export const TrackMediaUsageBody = zod.object({
+  nodeId: zod.string().uuid().optional(),
+  revisionId: zod.string().uuid().optional(),
+  usageContext: zod.string().optional(),
+});
+
+/**
+ * @summary Get usages of a media asset
+ */
+export const GetMediaUsagesParams = zod.object({
+  assetId: zod.coerce.string().uuid(),
+});
+
+export const GetMediaUsagesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  assetId: zod.string().uuid(),
+  nodeId: zod.string().uuid().nullish(),
+  revisionId: zod.string().uuid().nullish(),
+  usageContext: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const GetMediaUsagesResponse = zod.array(GetMediaUsagesResponseItem);

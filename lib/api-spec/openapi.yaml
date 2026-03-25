@@ -24,6 +24,8 @@ tags:
     description: Content relation/graph operations
   - name: templates
     description: Template operations
+  - name: media
+    description: Media asset management
 paths:
   /healthz:
     get:
@@ -800,6 +802,200 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /media/upload:
+    post:
+      operationId: uploadMedia
+      tags: [media]
+      summary: Upload a media file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                altText:
+                  type: string
+                caption:
+                  type: string
+                nodeId:
+                  type: string
+                  format: uuid
+              required:
+                - file
+      responses:
+        "201":
+          description: Uploaded media asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /media/assets:
+    get:
+      operationId: listMediaAssets
+      tags: [media]
+      summary: List media assets
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: classification
+          in: query
+          schema:
+            type: string
+            enum: [document, image, video, audio, spreadsheet, presentation, template, form, archive, other]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of media assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MediaAsset"
+
+  /media/assets/{assetId}:
+    get:
+      operationId: getMediaAsset
+      tags: [media]
+      summary: Get a media asset by ID
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Media asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAsset"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteMediaAsset
+      tags: [media]
+      summary: Delete a media asset
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+  /media/files/{key}:
+    get:
+      operationId: serveMediaFile
+      tags: [media]
+      summary: Serve a media file by storage key
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /media/assets/{assetId}/usages:
+    post:
+      operationId: trackMediaUsage
+      tags: [media]
+      summary: Track usage of a media asset in a node
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nodeId:
+                  type: string
+                  format: uuid
+                revisionId:
+                  type: string
+                  format: uuid
+                usageContext:
+                  type: string
+      responses:
+        "201":
+          description: Usage record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaAssetUsage"
+    get:
+      operationId: getMediaUsages
+      tags: [media]
+      summary: Get usages of a media asset
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of usages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MediaAssetUsage"
 
 components:
   parameters:
@@ -1639,3 +1835,82 @@ components:
       required:
         - id
         - displayName
+
+    MediaAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        originalFilename:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+        storageKey:
+          type: string
+        altText:
+          type: string
+          nullable: true
+        caption:
+          type: string
+          nullable: true
+        classification:
+          type: string
+          enum: [document, image, video, audio, spreadsheet, presentation, template, form, archive, other]
+        nodeId:
+          type: string
+          format: uuid
+          nullable: true
+        uploadedBy:
+          type: string
+          format: uuid
+        isDeleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        url:
+          type: string
+      required:
+        - id
+        - filename
+        - originalFilename
+        - mimeType
+        - sizeBytes
+        - storageKey
+        - classification
+        - uploadedBy
+        - isDeleted
+        - createdAt
+
+    MediaAssetUsage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        assetId:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+          nullable: true
+        revisionId:
+          type: string
+          format: uuid
+          nullable: true
+        usageContext:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - assetId
+        - createdAt

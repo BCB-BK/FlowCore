@@ -500,6 +500,48 @@ export interface GraphGroup {
   memberCount?: number;
 }
 
+export type MediaAssetClassification =
+  (typeof MediaAssetClassification)[keyof typeof MediaAssetClassification];
+
+export const MediaAssetClassification = {
+  document: "document",
+  image: "image",
+  video: "video",
+  audio: "audio",
+  spreadsheet: "spreadsheet",
+  presentation: "presentation",
+  template: "template",
+  form: "form",
+  archive: "archive",
+  other: "other",
+} as const;
+
+export interface MediaAsset {
+  id: string;
+  filename: string;
+  originalFilename: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageKey: string;
+  altText?: string | null;
+  caption?: string | null;
+  classification: MediaAssetClassification;
+  nodeId?: string | null;
+  uploadedBy: string;
+  isDeleted: boolean;
+  createdAt: string;
+  url?: string;
+}
+
+export interface MediaAssetUsage {
+  id: string;
+  assetId: string;
+  nodeId?: string | null;
+  revisionId?: string | null;
+  usageContext?: string | null;
+  createdAt: string;
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -545,4 +587,40 @@ export type GrantPagePermission201 = {
 
 export type SetNodeOwnership200 = {
   id?: string;
+};
+
+export type UploadMediaBody = {
+  file: Blob;
+  altText?: string;
+  caption?: string;
+  nodeId?: string;
+};
+
+export type ListMediaAssetsParams = {
+  q?: string;
+  classification?: ListMediaAssetsClassification;
+  limit?: number;
+  offset?: number;
+};
+
+export type ListMediaAssetsClassification =
+  (typeof ListMediaAssetsClassification)[keyof typeof ListMediaAssetsClassification];
+
+export const ListMediaAssetsClassification = {
+  document: "document",
+  image: "image",
+  video: "video",
+  audio: "audio",
+  spreadsheet: "spreadsheet",
+  presentation: "presentation",
+  template: "template",
+  form: "form",
+  archive: "archive",
+  other: "other",
+} as const;
+
+export type TrackMediaUsageBody = {
+  nodeId?: string;
+  revisionId?: string;
+  usageContext?: string;
 };
