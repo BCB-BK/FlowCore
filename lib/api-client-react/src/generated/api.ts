@@ -40,6 +40,7 @@ import type {
   DevUser,
   EffectivePermissions,
   ErrorResponse,
+  ForwardLink,
   GetPrincipalPermissionsParams,
   GetRolePermissionMatrix200,
   GetSearchAnalyticsParams,
@@ -51,6 +52,7 @@ import type {
   GraphGroup,
   GraphPerson,
   HealthStatus,
+  LinkGlossaryTermBody,
   ListGlossaryTermsParams,
   ListMediaAssetsParams,
   ListPrincipalsParams,
@@ -82,6 +84,8 @@ import type {
   SubmitForReviewBody,
   Tag,
   TrackMediaUsageBody,
+  TrackSearchClick201,
+  TrackSearchClickBody,
   TreeNode,
   UpdateNodeInput,
   UploadMediaBody,
@@ -5395,6 +5399,92 @@ export function useGetSearchAnalytics<
 }
 
 /**
+ * @summary Track a search result click-through
+ */
+export const getTrackSearchClickUrl = () => {
+  return `/api/search/click`;
+};
+
+export const trackSearchClick = async (
+  trackSearchClickBody: TrackSearchClickBody,
+  options?: RequestInit,
+): Promise<TrackSearchClick201> => {
+  return customFetch<TrackSearchClick201>(getTrackSearchClickUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(trackSearchClickBody),
+  });
+};
+
+export const getTrackSearchClickMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof trackSearchClick>>,
+    TError,
+    { data: BodyType<TrackSearchClickBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof trackSearchClick>>,
+  TError,
+  { data: BodyType<TrackSearchClickBody> },
+  TContext
+> => {
+  const mutationKey = ["trackSearchClick"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof trackSearchClick>>,
+    { data: BodyType<TrackSearchClickBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return trackSearchClick(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TrackSearchClickMutationResult = NonNullable<
+  Awaited<ReturnType<typeof trackSearchClick>>
+>;
+export type TrackSearchClickMutationBody = BodyType<TrackSearchClickBody>;
+export type TrackSearchClickMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Track a search result click-through
+ */
+export const useTrackSearchClick = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof trackSearchClick>>,
+    TError,
+    { data: BodyType<TrackSearchClickBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof trackSearchClick>>,
+  TError,
+  { data: BodyType<TrackSearchClickBody> },
+  TContext
+> => {
+  return useMutation(getTrackSearchClickMutationOptions(options));
+};
+
+/**
  * @summary List all tags
  */
 export const getListTagsUrl = (params?: ListTagsParams) => {
@@ -6446,6 +6536,266 @@ export const useDeleteGlossaryTerm = <
 };
 
 /**
+ * @summary Link a glossary term to a content node
+ */
+export const getLinkGlossaryTermUrl = (id: string) => {
+  return `/api/glossary/${id}/link`;
+};
+
+export const linkGlossaryTerm = async (
+  id: string,
+  linkGlossaryTermBody: LinkGlossaryTermBody,
+  options?: RequestInit,
+): Promise<GlossaryTerm> => {
+  return customFetch<GlossaryTerm>(getLinkGlossaryTermUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(linkGlossaryTermBody),
+  });
+};
+
+export const getLinkGlossaryTermMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof linkGlossaryTerm>>,
+    TError,
+    { id: string; data: BodyType<LinkGlossaryTermBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof linkGlossaryTerm>>,
+  TError,
+  { id: string; data: BodyType<LinkGlossaryTermBody> },
+  TContext
+> => {
+  const mutationKey = ["linkGlossaryTerm"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof linkGlossaryTerm>>,
+    { id: string; data: BodyType<LinkGlossaryTermBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return linkGlossaryTerm(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LinkGlossaryTermMutationResult = NonNullable<
+  Awaited<ReturnType<typeof linkGlossaryTerm>>
+>;
+export type LinkGlossaryTermMutationBody = BodyType<LinkGlossaryTermBody>;
+export type LinkGlossaryTermMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Link a glossary term to a content node
+ */
+export const useLinkGlossaryTerm = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof linkGlossaryTerm>>,
+    TError,
+    { id: string; data: BodyType<LinkGlossaryTermBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof linkGlossaryTerm>>,
+  TError,
+  { id: string; data: BodyType<LinkGlossaryTermBody> },
+  TContext
+> => {
+  return useMutation(getLinkGlossaryTermMutationOptions(options));
+};
+
+/**
+ * @summary Unlink a glossary term from its content node
+ */
+export const getUnlinkGlossaryTermUrl = (id: string) => {
+  return `/api/glossary/${id}/unlink`;
+};
+
+export const unlinkGlossaryTerm = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GlossaryTerm> => {
+  return customFetch<GlossaryTerm>(getUnlinkGlossaryTermUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getUnlinkGlossaryTermMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unlinkGlossaryTerm>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unlinkGlossaryTerm>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["unlinkGlossaryTerm"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unlinkGlossaryTerm>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return unlinkGlossaryTerm(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnlinkGlossaryTermMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unlinkGlossaryTerm>>
+>;
+
+export type UnlinkGlossaryTermMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unlink a glossary term from its content node
+ */
+export const useUnlinkGlossaryTerm = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unlinkGlossaryTerm>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof unlinkGlossaryTerm>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getUnlinkGlossaryTermMutationOptions(options));
+};
+
+/**
+ * @summary Get glossary terms linked to a content node
+ */
+export const getGetGlossaryTermsByNodeUrl = (nodeId: string) => {
+  return `/api/glossary/by-node/${nodeId}`;
+};
+
+export const getGlossaryTermsByNode = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<GlossaryTerm[]> => {
+  return customFetch<GlossaryTerm[]>(getGetGlossaryTermsByNodeUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGlossaryTermsByNodeQueryKey = (nodeId: string) => {
+  return [`/api/glossary/by-node/${nodeId}`] as const;
+};
+
+export const getGetGlossaryTermsByNodeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGlossaryTermsByNode>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGlossaryTermsByNode>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGlossaryTermsByNodeQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGlossaryTermsByNode>>
+  > = ({ signal }) =>
+    getGlossaryTermsByNode(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGlossaryTermsByNode>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGlossaryTermsByNodeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGlossaryTermsByNode>>
+>;
+export type GetGlossaryTermsByNodeQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get glossary terms linked to a content node
+ */
+
+export function useGetGlossaryTermsByNode<
+  TData = Awaited<ReturnType<typeof getGlossaryTermsByNode>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGlossaryTermsByNode>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGlossaryTermsByNodeQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
  * @summary Get backlinks to a node
  */
 export const getGetBacklinksUrl = (nodeId: string) => {
@@ -6524,6 +6874,93 @@ export function useGetBacklinks<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetBacklinksQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get forward links from a node
+ */
+export const getGetForwardLinksUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/forward-links`;
+};
+
+export const getForwardLinks = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<ForwardLink[]> => {
+  return customFetch<ForwardLink[]>(getGetForwardLinksUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetForwardLinksQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/forward-links`] as const;
+};
+
+export const getGetForwardLinksQueryOptions = <
+  TData = Awaited<ReturnType<typeof getForwardLinks>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getForwardLinks>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetForwardLinksQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getForwardLinks>>> = ({
+    signal,
+  }) => getForwardLinks(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getForwardLinks>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetForwardLinksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getForwardLinks>>
+>;
+export type GetForwardLinksQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get forward links from a node
+ */
+
+export function useGetForwardLinks<
+  TData = Awaited<ReturnType<typeof getForwardLinks>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getForwardLinks>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetForwardLinksQueryOptions(nodeId, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -5,12 +5,19 @@ import {
   contentNodeTagsTable,
   contentAliasesTable,
   searchQueriesTable,
+  searchClicksTable,
 } from "@workspace/db/schema";
 import { eq, sql, and, desc, gte, lte, ilike, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 
 const router: IRouter = Router();
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUUID(v: unknown): v is string {
+  return typeof v === "string" && UUID_RE.test(v);
+}
 
 router.get(
   "/",
@@ -271,6 +278,32 @@ router.get(
       popularQueries,
       zeroResultQueries,
     });
+  },
+);
+
+router.post(
+  "/click",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    const { queryId, nodeId, position } = req.body;
+
+    if (!isUUID(nodeId)) {
+      res.status(400).json({ error: "nodeId must be a valid UUID" });
+      return;
+    }
+
+    await db
+      .insert(searchClicksTable)
+      .values({
+        queryId: queryId || null,
+        nodeId,
+        position: typeof position === "number" ? position : null,
+        userId: req.user?.principalId || null,
+      })
+      .catch(() => {});
+
+    res.status(201).json({ ok: true });
   },
 );
 

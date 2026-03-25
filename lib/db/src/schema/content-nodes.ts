@@ -6,9 +6,17 @@ import {
   integer,
   boolean,
   uniqueIndex,
+  index,
+  customType,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector";
+  },
+});
 import { nodeStatusEnum, templateTypeEnum } from "./enums";
 import { contentTemplatesTable } from "./content-templates";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -31,6 +39,7 @@ export const contentNodesTable = pgTable(
     currentRevisionId: uuid("current_revision_id"),
     publishedRevisionId: uuid("published_revision_id"),
     ownerId: text("owner_id"),
+    searchVector: tsvector("search_vector"),
     isDeleted: boolean("is_deleted").notNull().default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -44,12 +53,13 @@ export const contentNodesTable = pgTable(
     uniqueIndex("idx_content_nodes_display_code")
       .on(table.displayCode)
       .where(sql`is_deleted = false`),
+    index("idx_content_nodes_search").using("gin", table.searchVector),
   ],
 );
 
 export const insertContentNodeSchema = createInsertSchema(
   contentNodesTable,
-).omit({ id: true, createdAt: true, updatedAt: true });
+).omit({ id: true, createdAt: true, updatedAt: true, searchVector: true });
 export const selectContentNodeSchema = createSelectSchema(contentNodesTable);
 export type InsertContentNode = z.infer<typeof insertContentNodeSchema>;
 export type ContentNode = typeof contentNodesTable.$inferSelect;

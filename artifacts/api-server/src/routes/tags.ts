@@ -12,6 +12,12 @@ import { requirePermission } from "../middlewares/require-permission";
 
 const router: IRouter = Router();
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUUID(v: unknown): v is string {
+  return typeof v === "string" && UUID_RE.test(v);
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -162,8 +168,8 @@ router.post(
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const { tagId } = req.body;
-    if (!tagId) {
-      res.status(400).json({ error: "tagId is required" });
+    if (!isUUID(tagId)) {
+      res.status(400).json({ error: "tagId must be a valid UUID" });
       return;
     }
 

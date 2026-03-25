@@ -787,6 +787,16 @@ export interface Backlink {
   sourceStatus?: string;
 }
 
+export interface ForwardLink {
+  id: string;
+  targetId: string;
+  relationType: string;
+  targetTitle: string;
+  targetDisplayCode?: string | null;
+  targetTemplateType?: string;
+  targetStatus?: string;
+}
+
 export type BrokenLinksReportBrokenRelationsItem = {
   relationId?: string;
   sourceNodeId?: string;
@@ -946,6 +956,16 @@ export type GetSearchAnalyticsParams = {
   days?: number;
 };
 
+export type TrackSearchClickBody = {
+  queryId?: string;
+  nodeId: string;
+  position?: number;
+};
+
+export type TrackSearchClick201 = {
+  ok?: boolean;
+};
+
 export type ListTagsParams = {
   q?: string;
 };
@@ -957,4 +977,8 @@ export type AssignTagToNodeBody = {
 export type ListGlossaryTermsParams = {
   q?: string;
   letter?: string;
+};
+
+export type LinkGlossaryTermBody = {
+  nodeId: string;
 };

@@ -1304,6 +1304,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/SearchAnalytics"
 
+  /search/click:
+    post:
+      operationId: trackSearchClick
+      tags: [search]
+      summary: Track a search result click-through
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queryId:
+                  type: string
+                  format: uuid
+                nodeId:
+                  type: string
+                  format: uuid
+                position:
+                  type: integer
+              required:
+                - nodeId
+      responses:
+        "201":
+          description: Click tracked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+
   /tags:
     get:
       operationId: listTags
@@ -1549,6 +1582,80 @@ paths:
         "204":
           description: Deleted
 
+  /glossary/{id}/link:
+    post:
+      operationId: linkGlossaryTerm
+      tags: [glossary]
+      summary: Link a glossary term to a content node
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nodeId:
+                  type: string
+                  format: uuid
+              required:
+                - nodeId
+      responses:
+        "200":
+          description: Term linked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlossaryTerm"
+
+  /glossary/{id}/unlink:
+    post:
+      operationId: unlinkGlossaryTerm
+      tags: [glossary]
+      summary: Unlink a glossary term from its content node
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Term unlinked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlossaryTerm"
+
+  /glossary/by-node/{nodeId}:
+    get:
+      operationId: getGlossaryTermsByNode
+      tags: [glossary]
+      summary: Get glossary terms linked to a content node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Glossary terms for this node
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GlossaryTerm"
+
   /content/nodes/{nodeId}/backlinks:
     get:
       operationId: getBacklinks
@@ -1570,6 +1677,28 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Backlink"
+
+  /content/nodes/{nodeId}/forward-links:
+    get:
+      operationId: getForwardLinks
+      tags: [content]
+      summary: Get forward links from a node
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Forward links
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ForwardLink"
 
   /content/broken-links:
     get:
@@ -2951,6 +3080,32 @@ components:
         - sourceId
         - relationType
         - sourceTitle
+
+    ForwardLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        targetId:
+          type: string
+          format: uuid
+        relationType:
+          type: string
+        targetTitle:
+          type: string
+        targetDisplayCode:
+          type: string
+          nullable: true
+        targetTemplateType:
+          type: string
+        targetStatus:
+          type: string
+      required:
+        - id
+        - targetId
+        - relationType
+        - targetTitle
 
     BrokenLinksReport:
       type: object

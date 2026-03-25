@@ -1529,6 +1529,15 @@ export const GetSearchAnalyticsResponse = zod.object({
 });
 
 /**
+ * @summary Track a search result click-through
+ */
+export const TrackSearchClickBody = zod.object({
+  queryId: zod.string().uuid().optional(),
+  nodeId: zod.string().uuid(),
+  position: zod.number().optional(),
+});
+
+/**
  * @summary List all tags
  */
 export const ListTagsQueryParams = zod.object({
@@ -1708,6 +1717,73 @@ export const DeleteGlossaryTermParams = zod.object({
 });
 
 /**
+ * @summary Link a glossary term to a content node
+ */
+export const LinkGlossaryTermParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const LinkGlossaryTermBody = zod.object({
+  nodeId: zod.string().uuid(),
+});
+
+export const LinkGlossaryTermResponse = zod.object({
+  id: zod.string().uuid(),
+  term: zod.string(),
+  slug: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).nullish(),
+  abbreviation: zod.string().nullish(),
+  nodeId: zod.string().uuid().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+
+/**
+ * @summary Unlink a glossary term from its content node
+ */
+export const UnlinkGlossaryTermParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const UnlinkGlossaryTermResponse = zod.object({
+  id: zod.string().uuid(),
+  term: zod.string(),
+  slug: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).nullish(),
+  abbreviation: zod.string().nullish(),
+  nodeId: zod.string().uuid().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+
+/**
+ * @summary Get glossary terms linked to a content node
+ */
+export const GetGlossaryTermsByNodeParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetGlossaryTermsByNodeResponseItem = zod.object({
+  id: zod.string().uuid(),
+  term: zod.string(),
+  slug: zod.string(),
+  definition: zod.string(),
+  synonyms: zod.array(zod.string()).nullish(),
+  abbreviation: zod.string().nullish(),
+  nodeId: zod.string().uuid().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+export const GetGlossaryTermsByNodeResponse = zod.array(
+  GetGlossaryTermsByNodeResponseItem,
+);
+
+/**
  * @summary Get backlinks to a node
  */
 export const GetBacklinksParams = zod.object({
@@ -1724,6 +1800,24 @@ export const GetBacklinksResponseItem = zod.object({
   sourceStatus: zod.string().optional(),
 });
 export const GetBacklinksResponse = zod.array(GetBacklinksResponseItem);
+
+/**
+ * @summary Get forward links from a node
+ */
+export const GetForwardLinksParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetForwardLinksResponseItem = zod.object({
+  id: zod.string().uuid(),
+  targetId: zod.string().uuid(),
+  relationType: zod.string(),
+  targetTitle: zod.string(),
+  targetDisplayCode: zod.string().nullish(),
+  targetTemplateType: zod.string().optional(),
+  targetStatus: zod.string().optional(),
+});
+export const GetForwardLinksResponse = zod.array(GetForwardLinksResponseItem);
 
 /**
  * @summary Get broken links and orphaned nodes

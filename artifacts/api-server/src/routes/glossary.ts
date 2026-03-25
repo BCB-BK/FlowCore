@@ -7,6 +7,12 @@ import { requirePermission } from "../middlewares/require-permission";
 
 const router: IRouter = Router();
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUUID(v: unknown): v is string {
+  return typeof v === "string" && UUID_RE.test(v);
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -59,8 +65,20 @@ router.post(
   async (req, res) => {
     const { term, definition, synonyms, abbreviation, nodeId } = req.body;
 
-    if (!term || !definition) {
-      res.status(400).json({ error: "term and definition are required" });
+    if (
+      typeof term !== "string" ||
+      term.trim().length === 0 ||
+      typeof definition !== "string" ||
+      definition.trim().length === 0
+    ) {
+      res
+        .status(400)
+        .json({ error: "term and definition are required strings" });
+      return;
+    }
+
+    if (nodeId !== undefined && nodeId !== null && !isUUID(nodeId)) {
+      res.status(400).json({ error: "nodeId must be a valid UUID" });
       return;
     }
 
@@ -108,10 +126,22 @@ router.patch(
       updates.term = term.trim();
       updates.slug = slugify(term.trim());
     }
-    if (definition !== undefined) updates.definition = definition.trim();
+    if (definition !== undefined) {
+      if (typeof definition !== "string") {
+        res.status(400).json({ error: "definition must be a string" });
+        return;
+      }
+      updates.definition = definition.trim();
+    }
     if (synonyms !== undefined) updates.synonyms = synonyms;
     if (abbreviation !== undefined) updates.abbreviation = abbreviation;
-    if (nodeId !== undefined) updates.nodeId = nodeId;
+    if (nodeId !== undefined) {
+      if (nodeId !== null && !isUUID(nodeId)) {
+        res.status(400).json({ error: "nodeId must be a valid UUID or null" });
+        return;
+      }
+      updates.nodeId = nodeId;
+    }
     updates.updatedAt = new Date();
 
     if (Object.keys(updates).length <= 1) {
@@ -130,6 +160,69 @@ router.patch(
       return;
     }
     res.json(updated);
+  },
+);
+
+router.post(
+  "/:id/link",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const { nodeId } = req.body;
+
+    if (!isUUID(nodeId)) {
+      res.status(400).json({ error: "nodeId must be a valid UUID" });
+      return;
+    }
+
+    const [updated] = await db
+      .update(glossaryTermsTable)
+      .set({ nodeId, updatedAt: new Date() })
+      .where(eq(glossaryTermsTable.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Term not found" });
+      return;
+    }
+    res.json(updated);
+  },
+);
+
+router.post(
+  "/:id/unlink",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    const id = req.params.id as string;
+
+    const [updated] = await db
+      .update(glossaryTermsTable)
+      .set({ nodeId: null, updatedAt: new Date() })
+      .where(eq(glossaryTermsTable.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Term not found" });
+      return;
+    }
+    res.json(updated);
+  },
+);
+
+router.get(
+  "/by-node/:nodeId",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.nodeId),
+  async (req, res) => {
+    const nodeId = req.params.nodeId as string;
+    const terms = await db
+      .select()
+      .from(glossaryTermsTable)
+      .where(eq(glossaryTermsTable.nodeId, nodeId))
+      .orderBy(glossaryTermsTable.term);
+    res.json(terms);
   },
 );
 

@@ -583,6 +583,39 @@ router.get(
 );
 
 router.get(
+  "/nodes/:nodeId/forward-links",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.nodeId),
+  async (req, res) => {
+    const nodeId = req.params.nodeId as string;
+
+    const forwardLinks = await db
+      .select({
+        id: contentRelationsTable.id,
+        targetId: contentRelationsTable.targetNodeId,
+        relationType: contentRelationsTable.relationType,
+        targetTitle: contentNodesTable.title,
+        targetDisplayCode: contentNodesTable.displayCode,
+        targetTemplateType: contentNodesTable.templateType,
+        targetStatus: contentNodesTable.status,
+      })
+      .from(contentRelationsTable)
+      .innerJoin(
+        contentNodesTable,
+        eq(contentRelationsTable.targetNodeId, contentNodesTable.id),
+      )
+      .where(
+        and(
+          eq(contentRelationsTable.sourceNodeId, nodeId),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      );
+
+    res.json(forwardLinks);
+  },
+);
+
+router.get(
   "/broken-links",
   requireAuth,
   requirePermission("read_page"),

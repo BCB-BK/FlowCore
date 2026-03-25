@@ -10,11 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, FileText, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  FileText,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+} from "lucide-react";
 import { useLocation } from "wouter";
 import { PAGE_TYPE_LABELS, STATUS_LABELS } from "@/lib/types";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
-import { useSearchContent, useListTags } from "@workspace/api-client-react";
+import {
+  useSearchContent,
+  useListTags,
+  useTrackSearchClick,
+} from "@workspace/api-client-react";
 
 function sanitizeHeadline(html: string): string {
   return html.replace(/<\/?b>/g, "").replace(/<[^>]*>/g, "");
@@ -26,6 +37,9 @@ export function SearchPage() {
   const [templateType, setTemplateType] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [tagId, setTagId] = useState<string>("");
+  const [ownerId, setOwnerId] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [offset, setOffset] = useState(0);
   const limit = 20;
   const [, navigate] = useLocation();
@@ -37,27 +51,45 @@ export function SearchPage() {
 
   useEffect(() => {
     setOffset(0);
-  }, [debouncedQuery, templateType, status, tagId]);
+  }, [debouncedQuery, templateType, status, tagId, ownerId, dateFrom, dateTo]);
 
   const { data: searchData, isLoading } = useSearchContent({
     q: debouncedQuery || undefined,
     templateType: templateType || undefined,
     status: status || undefined,
     tagId: tagId || undefined,
+    ownerId: ownerId || undefined,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
     limit,
     offset,
   });
 
   const { data: tags } = useListTags();
+  const trackClick = useTrackSearchClick();
 
   const clearFilters = useCallback(() => {
     setTemplateType("");
     setStatus("");
     setTagId("");
+    setOwnerId("");
+    setDateFrom("");
+    setDateTo("");
     setOffset(0);
   }, []);
 
-  const hasFilters = templateType || status || tagId;
+  const handleResultClick = useCallback(
+    (nodeId: string, position: number) => {
+      trackClick.mutate({
+        data: { nodeId, position },
+      });
+      navigate(`/node/${nodeId}`);
+    },
+    [trackClick, navigate],
+  );
+
+  const hasFilters =
+    templateType || status || tagId || ownerId || dateFrom || dateTo;
   const totalPages = searchData ? Math.ceil(searchData.total / limit) : 0;
   const currentPage = Math.floor(offset / limit) + 1;
 
@@ -118,6 +150,25 @@ export function SearchPage() {
           </SelectContent>
         </Select>
 
+        <div className="flex items-center gap-1">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Input
+            type="date"
+            className="w-[140px] h-9 text-xs"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            placeholder="Von"
+          />
+          <span className="text-muted-foreground text-xs">–</span>
+          <Input
+            type="date"
+            className="w-[140px] h-9 text-xs"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            placeholder="Bis"
+          />
+        </div>
+
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             <X className="h-3 w-3 mr-1" />
@@ -150,11 +201,11 @@ export function SearchPage() {
             : `${searchData?.total ?? 0} Ergebnis${(searchData?.total ?? 0) !== 1 ? "se" : ""}`}
         </p>
 
-        {searchData?.results?.map((node) => (
+        {searchData?.results?.map((node, idx) => (
           <Card
             key={node.id}
             className="cursor-pointer hover:shadow-sm transition-shadow"
-            onClick={() => navigate(`/node/${node.id}`)}
+            onClick={() => handleResultClick(node.id, offset + idx)}
           >
             <CardContent className="flex items-center gap-3 p-4">
               <FileText className="h-5 w-5 text-muted-foreground shrink-0" />

@@ -93,8 +93,11 @@ Express 5 API server with structured logging, config validation, content managem
 - Routes: `src/routes/health.ts` — `GET /api/healthz` with DB connectivity check
 - Routes: `src/routes/auth.ts` — login, callback, me, logout, dev-users (5 endpoints)
 - Routes: `src/routes/principals.ts` — principal CRUD, role mgmt, page perms, ownership (12 endpoints)
-- Routes: `src/routes/content.ts` — Content CRUD, revisions, relations, templates (17 endpoints, all auth-guarded)
+- Routes: `src/routes/content.ts` — Content CRUD, revisions, relations, templates, backlinks, forward-links, broken-links (20 endpoints, all auth-guarded)
 - Routes: `src/routes/media.ts` — Media upload, list, get, delete, file serving, usage tracking (7 endpoints)
+- Routes: `src/routes/search.ts` — Full-text search (FTS with tsvector), suggestions, analytics, click-through tracking (4 endpoints)
+- Routes: `src/routes/tags.ts` — Tag CRUD + node tag assignment/removal (6 endpoints)
+- Routes: `src/routes/glossary.ts` — Glossary term CRUD, manual linking/unlinking to nodes, by-node lookup (8 endpoints)
 - Routes: `src/routes/review.ts` — Review workflow (submit/approve/reject), revision events, diff, watchers (10 endpoints, all auth+permission-guarded)
 - Services: `src/services/storage.service.ts` — LocalStorageProvider implementing IStorageProvider (local file uploads in `.uploads/`)
 - Services: `src/services/identity.service.ts` — Dual ID system (immutable_id + display_code)
@@ -121,7 +124,8 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Metadata: MetadataPanel, MetadataFieldRenderer, CompletenessIndicator
 - Versioning: StatusBadge, WatchButton, VersionHistoryPanel, ReviewWorkflowPanel, RevisionDiffView, RestoreDialog
 - Tags: TagManager (inline tag assignment with create/assign/remove)
-- Content: RelatedContentSidebar (backlinks to current node)
+- Content: RelatedContentSidebar (backlinks + forward-links to current node)
+- Content: GlossaryTermsPanel (linked glossary terms on node detail)
 - Layouts: PageLayout (dispatcher), ProcessOverviewLayout, ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
 - Entry: `src/main.tsx` → `src/App.tsx`
 - Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080
@@ -141,13 +145,13 @@ Database layer using Drizzle ORM with PostgreSQL.
 - `src/index.ts` — Pool + Drizzle instance
 - `src/schema/enums.ts` — PostgreSQL enums (node_status, change_type, relation_type, principal_type, wiki_role, wiki_permission, etc.)
 - `src/schema/content-templates.ts` — 10 page type definitions
-- `src/schema/content-nodes.ts` — Stable content objects with dual IDs
+- `src/schema/content-nodes.ts` — Stable content objects with dual IDs, tsvector search index
 - `src/schema/content-revisions.ts` — Immutable content snapshots + lifecycle events
 - `src/schema/content-aliases.ts` — Display code history
 - `src/schema/content-relations.ts` — Typed graph edges
 - `src/schema/content-tags.ts` — Tags + junction table
 - `src/schema/glossary.ts` — Glossary terms with synonyms, abbreviation, nodeId link
-- `src/schema/search-analytics.ts` — Search query analytics tracking
+- `src/schema/search-analytics.ts` — Search query analytics tracking + click-through tracking
 - `src/schema/media-assets.ts` — File attachments
 - `src/schema/audit-events.ts` — Audit trail
 - `src/schema/principals.ts` — Principals, role assignments, page permissions, node ownership

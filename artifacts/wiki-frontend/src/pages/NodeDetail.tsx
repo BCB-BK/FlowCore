@@ -60,6 +60,7 @@ import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { TagManager } from "@/components/tags/TagManager";
 import { RelatedContentSidebar } from "@/components/content/RelatedContentSidebar";
+import { GlossaryTermsPanel } from "@/components/content/GlossaryTermsPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
@@ -456,6 +457,7 @@ export function NodeDetail() {
           )}
 
           {nodeId && <RelatedContentSidebar nodeId={nodeId} />}
+          {nodeId && <GlossaryTermsPanel nodeId={nodeId} />}
 
           <PageLayout
             templateType={node.templateType}
