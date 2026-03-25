@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useRootNodes } from "@/hooks/use-nodes";
 import { TreeNode } from "./TreeNode";
-import { BookOpen, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,17 +23,16 @@ export function WikiSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-3">
         <div
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer"
           onClick={() => navigate("/")}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <BookOpen className="h-4 w-4" />
-          </div>
+          <img
+            src={`${import.meta.env.BASE_URL}bildungscampus-logo.jpg`}
+            alt="BildungsCampus"
+            className="h-8 w-auto"
+          />
           <div>
-            <p className="text-sm font-semibold leading-tight">
-              Bildungscampus
-            </p>
-            <p className="text-xs text-muted-foreground">Knowledge Hub</p>
+            <p className="text-sm font-semibold leading-tight">Knowledge Hub</p>
           </div>
         </div>
       </SidebarHeader>
