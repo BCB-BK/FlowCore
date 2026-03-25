@@ -8,6 +8,7 @@
 import type { MetadataFieldDef } from "./metadataFieldDef";
 import type { PageTypeDefinitionCategory } from "./pageTypeDefinitionCategory";
 import type { PageTypeSection } from "./pageTypeSection";
+import type { TemplateVariant } from "./templateVariant";
 
 export interface PageTypeDefinition {
   type: string;
@@ -22,4 +23,5 @@ export interface PageTypeDefinition {
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   helpText?: string;
+  variants: TemplateVariant[];
 }

@@ -890,6 +890,14 @@ export const ListPageTypesResponseItem = zod.object({
     }),
   ),
   helpText: zod.string().optional(),
+  variants: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      description: zod.string(),
+      prefilledSections: zod.array(zod.string()).optional(),
+    }),
+  ),
 });
 export const ListPageTypesResponse = zod.array(ListPageTypesResponseItem);
 
@@ -944,6 +952,14 @@ export const GetPageTypeResponse = zod.object({
     }),
   ),
   helpText: zod.string().optional(),
+  variants: zod.array(
+    zod.object({
+      key: zod.string(),
+      label: zod.string(),
+      description: zod.string(),
+      prefilledSections: zod.array(zod.string()).optional(),
+    }),
+  ),
 });
 
 /**

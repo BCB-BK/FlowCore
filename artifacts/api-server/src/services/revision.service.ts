@@ -195,6 +195,8 @@ export async function getVersionTree(nodeId: string) {
       validFrom: contentRevisionsTable.validFrom,
       nextReviewDate: contentRevisionsTable.nextReviewDate,
       createdAt: contentRevisionsTable.createdAt,
+      content: contentRevisionsTable.content,
+      structuredFields: contentRevisionsTable.structuredFields,
     })
     .from(contentRevisionsTable)
     .where(eq(contentRevisionsTable.nodeId, nodeId))

@@ -317,6 +317,13 @@ export interface PageTypeSection {
   required: boolean;
 }
 
+export interface TemplateVariant {
+  key: string;
+  label: string;
+  description: string;
+  prefilledSections?: string[];
+}
+
 export interface PageTypeDefinition {
   type: string;
   label: string;
@@ -330,6 +337,7 @@ export interface PageTypeDefinition {
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   helpText?: string;
+  variants: TemplateVariant[];
 }
 
 export type ContentTemplateFieldSchema = { [key: string]: unknown };
