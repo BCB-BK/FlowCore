@@ -78,7 +78,7 @@ cd e2e && npx playwright test
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 
-Express 5 API server with structured logging, config validation, and audit events.
+Express 5 API server with structured logging, config validation, content management, and audit events.
 
 - Entry: `src/index.ts` — uses validated config (Zod)
 - App: `src/app.ts` — correlation ID middleware, pinoHttp, CORS, routes at `/api`
@@ -87,14 +87,28 @@ Express 5 API server with structured logging, config validation, and audit event
 - Audit: `src/lib/audit.ts` — persistent audit event logging
 - Middlewares: `src/middlewares/correlation-id.ts` — request correlation IDs
 - Routes: `src/routes/health.ts` — `GET /api/healthz` with DB connectivity check
+- Routes: `src/routes/content.ts` — Content CRUD, revisions, relations, templates (17 endpoints)
+- Services: `src/services/identity.service.ts` — Dual ID system (immutable_id + display_code)
+- Services: `src/services/revision.service.ts` — Revision/version lifecycle
+- Services: `src/services/graph.service.ts` — Graph relations with cycle detection
 
 ### `lib/db` (`@workspace/db`)
 
 Database layer using Drizzle ORM with PostgreSQL.
 
 - `src/index.ts` — Pool + Drizzle instance
-- `src/schema/audit-events.ts` — audit_events table
-- Migrations: `pnpm --filter @workspace/db run push`
+- `src/schema/enums.ts` — PostgreSQL enums (node_status, change_type, relation_type, etc.)
+- `src/schema/content-templates.ts` — 10 page type definitions
+- `src/schema/content-nodes.ts` — Stable content objects with dual IDs
+- `src/schema/content-revisions.ts` — Immutable content snapshots + lifecycle events
+- `src/schema/content-aliases.ts` — Display code history
+- `src/schema/content-relations.ts` — Typed graph edges
+- `src/schema/content-tags.ts` — Tags + junction table
+- `src/schema/media-assets.ts` — File attachments
+- `src/schema/audit-events.ts` — Audit trail
+- `src/seed.ts` — Example seed data
+- Push: `pnpm --filter @workspace/db run push`
+- Seed: `npx -p tsx tsx lib/db/src/seed.ts`
 
 ### `lib/api-spec` (`@workspace/api-spec`)
 
@@ -116,8 +130,9 @@ Utility scripts: `no-hardcode-check`, `docs-check`.
 All project documentation lives in `docs/`. See `docs/00-INDEX.md` for the full index.
 
 - Architecture: `docs/01-ARCHITECTURE.md`
+- Data Model: `docs/02-DATA-MODEL.md`
 - Config/Env: `docs/05-CONFIG-ENV.md`
 - Logging/Audit: `docs/06-LOGGING-AUDIT.md`
 - Agent Playbook: `docs/96-AGENT-PLAYBOOK.md`
-- ADRs: `docs/adr/`
+- ADRs: `docs/adr/` (ADR-001 Current State, ADR-002 Dual ID, ADR-003 Revision/Version)
 - Reports: `docs/reports/`
