@@ -88,8 +88,38 @@ router.patch(
     const id = req.params.id as string;
     const { title, templateType } = req.body;
 
+    if (
+      title !== undefined &&
+      (typeof title !== "string" || title.trim().length === 0)
+    ) {
+      res.status(400).json({ error: "title must be a non-empty string" });
+      return;
+    }
+
+    const VALID_TEMPLATE_TYPES = [
+      "core_process_overview",
+      "area_overview",
+      "process_page_text",
+      "process_page_graphic",
+      "procedure_instruction",
+      "use_case",
+      "policy",
+      "role_profile",
+      "dashboard",
+      "system_documentation",
+    ];
+    if (
+      templateType !== undefined &&
+      !VALID_TEMPLATE_TYPES.includes(templateType)
+    ) {
+      res.status(400).json({
+        error: `templateType must be one of: ${VALID_TEMPLATE_TYPES.join(", ")}`,
+      });
+      return;
+    }
+
     const updates: Record<string, unknown> = {};
-    if (title !== undefined) updates.title = title;
+    if (title !== undefined) updates.title = title.trim();
     if (templateType !== undefined) updates.templateType = templateType;
 
     if (Object.keys(updates).length === 0) {
