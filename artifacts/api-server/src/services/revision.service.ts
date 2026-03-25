@@ -22,50 +22,58 @@ export interface CreateRevisionInput {
 export async function createRevision(
   input: CreateRevisionInput,
 ): Promise<string> {
-  const maxRevision = await db
-    .select({ maxNo: sql<number>`coalesce(max(revision_no), 0)::int` })
-    .from(contentRevisionsTable)
-    .where(eq(contentRevisionsTable.nodeId, input.nodeId));
+  const revisionId = await db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${input.nodeId}))`,
+    );
+    const maxResult = await tx
+      .select({
+        maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
+      })
+      .from(contentRevisionsTable)
+      .where(eq(contentRevisionsTable.nodeId, input.nodeId));
+    const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
 
-  const revisionNo = (maxRevision[0]?.maxNo ?? 0) + 1;
+    const [revision] = await tx
+      .insert(contentRevisionsTable)
+      .values({
+        nodeId: input.nodeId,
+        revisionNo,
+        title: input.title,
+        content: input.content,
+        structuredFields: input.structuredFields,
+        changeType: input.changeType ?? "editorial",
+        changeSummary: input.changeSummary,
+        changedFields: input.changedFields,
+        basedOnRevisionId: input.basedOnRevisionId,
+        authorId: input.authorId,
+        status: "draft",
+      })
+      .returning({ id: contentRevisionsTable.id });
 
-  const [revision] = await db
-    .insert(contentRevisionsTable)
-    .values({
-      nodeId: input.nodeId,
-      revisionNo,
-      title: input.title,
-      content: input.content,
-      structuredFields: input.structuredFields,
-      changeType: input.changeType ?? "editorial",
-      changeSummary: input.changeSummary,
-      changedFields: input.changedFields,
-      basedOnRevisionId: input.basedOnRevisionId,
-      authorId: input.authorId,
-      status: "draft",
-    })
-    .returning({ id: contentRevisionsTable.id });
+    await tx
+      .update(contentNodesTable)
+      .set({
+        currentRevisionId: revision.id,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentNodesTable.id, input.nodeId));
 
-  await db
-    .update(contentNodesTable)
-    .set({
-      currentRevisionId: revision.id,
-      updatedAt: new Date(),
-    })
-    .where(eq(contentNodesTable.id, input.nodeId));
+    await tx.insert(contentRevisionEventsTable).values({
+      revisionId: revision.id,
+      eventType: "created",
+      actorId: input.authorId,
+    });
 
-  await db.insert(contentRevisionEventsTable).values({
-    revisionId: revision.id,
-    eventType: "created",
-    actorId: input.authorId,
+    logger.info(
+      { revisionId: revision.id, nodeId: input.nodeId, revisionNo },
+      "Revision created",
+    );
+
+    return revision.id;
   });
 
-  logger.info(
-    { revisionId: revision.id, nodeId: input.nodeId, revisionNo },
-    "Revision created",
-  );
-
-  return revision.id;
+  return revisionId;
 }
 
 export async function publishRevision(

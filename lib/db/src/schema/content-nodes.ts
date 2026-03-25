@@ -22,7 +22,9 @@ export const contentNodesTable = pgTable(
     title: text("title").notNull(),
     templateType: templateTypeEnum("template_type").notNull(),
     templateId: uuid("template_id").references(() => contentTemplatesTable.id),
-    parentNodeId: uuid("parent_node_id"),
+    parentNodeId: uuid("parent_node_id").references(
+      (): any => contentNodesTable.id,
+    ),
     sortOrder: integer("sort_order").notNull().default(0),
     status: nodeStatusEnum("status").notNull().default("draft"),
     currentRevisionId: uuid("current_revision_id"),
