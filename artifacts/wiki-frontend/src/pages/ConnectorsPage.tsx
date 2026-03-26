@@ -337,6 +337,12 @@ function EditSourceSystemDialog({
           siteName: connConfig.siteName ?? connConfig.siteId,
           driveId: connConfig.driveId,
           driveName: connConfig.driveName ?? connConfig.driveId,
+          folderId: connConfig.folderId ?? undefined,
+          folderName: connConfig.folderName ?? undefined,
+          folderPath: connConfig.folderPath ?? undefined,
+          itemId: connConfig.itemId ?? undefined,
+          itemName: connConfig.itemName ?? undefined,
+          isFolder: connConfig.isFolder != null ? Boolean(connConfig.isFolder) : undefined,
         }
       : null;
   const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
@@ -360,6 +366,12 @@ function EditSourceSystemDialog({
         siteName: spSelection.siteName,
         driveId: spSelection.driveId,
         driveName: spSelection.driveName,
+        ...(spSelection.folderId && { folderId: spSelection.folderId }),
+        ...(spSelection.folderName && { folderName: spSelection.folderName }),
+        ...(spSelection.folderPath && { folderPath: spSelection.folderPath }),
+        ...(spSelection.itemId && { itemId: spSelection.itemId }),
+        ...(spSelection.itemName && { itemName: spSelection.itemName }),
+        ...(spSelection.isFolder != null && { isFolder: spSelection.isFolder }),
       };
     }
 
@@ -409,10 +421,13 @@ function EditSourceSystemDialog({
 
           {isSharePoint && (
             <div>
-              <Label className="mb-2 block">SharePoint Site & Bibliothek</Label>
+              <Label className="mb-2 block">
+                SharePoint Site, Bibliothek & Ordner/Datei auswählen
+              </Label>
               <SharePointSiteDrivePicker
                 value={spSelection}
                 onChange={setSpSelection}
+                mode="source"
               />
             </div>
           )}
@@ -730,6 +745,12 @@ function CreateSourceSystemDialog({
         siteName: spSelection.siteName,
         driveId: spSelection.driveId,
         driveName: spSelection.driveName,
+        ...(spSelection.folderId && { folderId: spSelection.folderId }),
+        ...(spSelection.folderName && { folderName: spSelection.folderName }),
+        ...(spSelection.folderPath && { folderPath: spSelection.folderPath }),
+        ...(spSelection.itemId && { itemId: spSelection.itemId }),
+        ...(spSelection.itemName && { itemName: spSelection.itemName }),
+        ...(spSelection.isFolder != null && { isFolder: spSelection.isFolder }),
       };
     }
     createSystem.mutate(
@@ -774,11 +795,12 @@ function CreateSourceSystemDialog({
           {systemType === "sharepoint" && (
             <div>
               <Label className="mb-2 block">
-                SharePoint Site & Bibliothek auswählen
+                SharePoint Site, Bibliothek & Ordner/Datei auswählen
               </Label>
               <SharePointSiteDrivePicker
                 value={spSelection}
                 onChange={handleSpSelect}
+                mode="source"
               />
             </div>
           )}
@@ -881,6 +903,10 @@ function CreateStorageProviderDialog({
             siteName: spSelection.siteName,
             driveId: spSelection.driveId,
             driveName: spSelection.driveName,
+            ...(spSelection.folderId && { folderId: spSelection.folderId }),
+            ...(spSelection.folderName && { folderName: spSelection.folderName }),
+            ...(spSelection.folderPath && { folderPath: spSelection.folderPath }),
+            ...(spSelection.isFolder != null && { isFolder: spSelection.isFolder }),
           }
         : undefined;
     createProvider.mutate(
@@ -928,11 +954,12 @@ function CreateStorageProviderDialog({
           {providerType === "sharepoint" && (
             <div>
               <Label className="mb-2 block">
-                SharePoint Site & Bibliothek auswählen
+                SharePoint Site, Bibliothek & Ordner auswählen
               </Label>
               <SharePointSiteDrivePicker
                 value={spSelection}
                 onChange={handleSpSelect}
+                mode="storage"
               />
             </div>
           )}
