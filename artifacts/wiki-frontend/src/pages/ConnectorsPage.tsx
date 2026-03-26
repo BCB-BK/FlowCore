@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { SharePointBrowser } from "@/components/settings/SharePointBrowser";
+import {
+  SharePointSiteDrivePicker,
+  type SharePointSelection,
+} from "@/components/settings/SharePointSiteDrivePicker";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -319,7 +323,6 @@ function EditSourceSystemDialog({
   queryClient: ReturnType<typeof useQueryClient>;
 }) {
   const connConfig = (system.connectionConfig ?? {}) as Record<string, string>;
-  const isRedacted = (v: string | undefined) => v === "***REDACTED***" || !v;
 
   const [name, setName] = useState(system.name as string);
   const [isActive, setIsActive] = useState(system.isActive as boolean);
@@ -327,10 +330,18 @@ function EditSourceSystemDialog({
   const [syncInterval, setSyncInterval] = useState(
     String(system.syncIntervalMinutes ?? 60),
   );
-  const [tenantId, setTenantId] = useState(connConfig.tenantId ?? "");
-  const [clientId, setClientId] = useState(connConfig.clientId ?? "");
-  const [clientSecret, setClientSecret] = useState("");
-  const [driveId, setDriveId] = useState(connConfig.driveId ?? "");
+  const initialSp: SharePointSelection | null =
+    connConfig.siteId && connConfig.driveId
+      ? {
+          siteId: connConfig.siteId,
+          siteName: connConfig.siteName ?? connConfig.siteId,
+          driveId: connConfig.driveId,
+          driveName: connConfig.driveName ?? connConfig.driveId,
+        }
+      : null;
+  const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
+    initialSp,
+  );
   const updateSystem = useUpdateSourceSystem();
 
   const isSharePoint = system.systemType === "sharepoint";
@@ -343,17 +354,13 @@ function EditSourceSystemDialog({
       syncIntervalMinutes: parseInt(syncInterval, 10),
     };
 
-    if (isSharePoint) {
-      const cc: Record<string, string> = {
-        ...connConfig,
-        tenantId,
-        clientId,
-        driveId,
+    if (isSharePoint && spSelection) {
+      data.connectionConfig = {
+        siteId: spSelection.siteId,
+        siteName: spSelection.siteName,
+        driveId: spSelection.driveId,
+        driveName: spSelection.driveName,
       };
-      if (clientSecret && clientSecret !== "***REDACTED***") {
-        cc.clientSecret = clientSecret;
-      }
-      data.connectionConfig = cc;
     }
 
     updateSystem.mutate(
@@ -401,55 +408,13 @@ function EditSourceSystemDialog({
           )}
 
           {isSharePoint && (
-            <>
-              <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-medium mb-3">
-                  SharePoint-Verbindung
-                </p>
-              </div>
-              <div>
-                <Label>Tenant-ID</Label>
-                <Input
-                  value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                />
-              </div>
-              <div>
-                <Label>Client-ID (App-Registrierung)</Label>
-                <Input
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                />
-              </div>
-              <div>
-                <Label>Client-Secret</Label>
-                <Input
-                  type="password"
-                  value={clientSecret}
-                  onChange={(e) => setClientSecret(e.target.value)}
-                  placeholder={
-                    isRedacted(connConfig.clientSecret)
-                      ? "Neues Secret eingeben"
-                      : "Secret bereits hinterlegt"
-                  }
-                />
-                {!isRedacted(connConfig.clientSecret) && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Secret ist hinterlegt. Leer lassen um beizubehalten.
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label>Drive-ID (optional)</Label>
-                <Input
-                  value={driveId}
-                  onChange={(e) => setDriveId(e.target.value)}
-                  placeholder="Standard-Drive-ID"
-                />
-              </div>
-            </>
+            <div>
+              <Label className="mb-2 block">SharePoint Site & Bibliothek</Label>
+              <SharePointSiteDrivePicker
+                value={spSelection}
+                onChange={setSpSelection}
+              />
+            </div>
           )}
         </div>
         <DialogFooter>
@@ -731,11 +696,24 @@ function CreateSourceSystemDialog({
   const [systemType, setSystemType] = useState("sharepoint");
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [syncInterval, setSyncInterval] = useState("60");
-  const [tenantId, setTenantId] = useState("");
-  const [clientId, setClientId] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-  const [driveId, setDriveId] = useState("");
+  const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
+    null,
+  );
   const createSystem = useCreateSourceSystem();
+
+  const handleSpSelect = (sel: SharePointSelection | null) => {
+    setSpSelection(sel);
+    if (sel && !name) {
+      const autoName = `SharePoint – ${sel.siteName}`;
+      setName(autoName);
+      setSlug(
+        autoName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
+      );
+    }
+  };
 
   const handleCreate = () => {
     if (!name || !slug) return;
@@ -746,13 +724,13 @@ function CreateSourceSystemDialog({
       syncEnabled,
       syncIntervalMinutes: parseInt(syncInterval, 10),
     };
-    if (systemType === "sharepoint" && (tenantId || clientId)) {
-      const cc: Record<string, string> = {};
-      if (tenantId) cc.tenantId = tenantId;
-      if (clientId) cc.clientId = clientId;
-      if (clientSecret) cc.clientSecret = clientSecret;
-      if (driveId) cc.driveId = driveId;
-      data.connectionConfig = cc;
+    if (systemType === "sharepoint" && spSelection) {
+      data.connectionConfig = {
+        siteId: spSelection.siteId,
+        siteName: spSelection.siteName,
+        driveId: spSelection.driveId,
+        driveName: spSelection.driveName,
+      };
     }
     createSystem.mutate(
       {
@@ -773,11 +751,38 @@ function CreateSourceSystemDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Neues Quellsystem</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div>
+            <Label>Systemtyp</Label>
+            <Select value={systemType} onValueChange={setSystemType}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sharepoint">SharePoint</SelectItem>
+                <SelectItem value="confluence">Confluence</SelectItem>
+                <SelectItem value="file_share">Dateifreigabe</SelectItem>
+                <SelectItem value="custom">Benutzerdefiniert</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {systemType === "sharepoint" && (
+            <div>
+              <Label className="mb-2 block">
+                SharePoint Site & Bibliothek auswählen
+              </Label>
+              <SharePointSiteDrivePicker
+                value={spSelection}
+                onChange={handleSpSelect}
+              />
+            </div>
+          )}
+
           <div>
             <Label>Name</Label>
             <Input
@@ -804,20 +809,7 @@ function CreateSourceSystemDialog({
               placeholder="z.B. sharepoint-qm"
             />
           </div>
-          <div>
-            <Label>Systemtyp</Label>
-            <Select value={systemType} onValueChange={setSystemType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sharepoint">SharePoint</SelectItem>
-                <SelectItem value="confluence">Confluence</SelectItem>
-                <SelectItem value="file_share">Dateifreigabe</SelectItem>
-                <SelectItem value="custom">Benutzerdefiniert</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
           <div className="flex items-center gap-3">
             <Switch checked={syncEnabled} onCheckedChange={setSyncEnabled} />
             <Label>Automatische Synchronisation</Label>
@@ -832,49 +824,6 @@ function CreateSourceSystemDialog({
                 min={5}
               />
             </div>
-          )}
-
-          {systemType === "sharepoint" && (
-            <>
-              <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-medium mb-3">
-                  SharePoint-Verbindung (optional)
-                </p>
-              </div>
-              <div>
-                <Label>Tenant-ID</Label>
-                <Input
-                  value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                />
-              </div>
-              <div>
-                <Label>Client-ID (App-Registrierung)</Label>
-                <Input
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                />
-              </div>
-              <div>
-                <Label>Client-Secret</Label>
-                <Input
-                  type="password"
-                  value={clientSecret}
-                  onChange={(e) => setClientSecret(e.target.value)}
-                  placeholder="App-Secret eingeben"
-                />
-              </div>
-              <div>
-                <Label>Drive-ID (optional)</Label>
-                <Input
-                  value={driveId}
-                  onChange={(e) => setDriveId(e.target.value)}
-                  placeholder="Standard-Drive-ID"
-                />
-              </div>
-            </>
           )}
         </div>
         <DialogFooter>
@@ -904,17 +853,35 @@ function CreateStorageProviderDialog({
   const [slug, setSlug] = useState("");
   const [providerType, setProviderType] = useState("local");
   const [isDefault, setIsDefault] = useState(false);
-  const [tenantId, setTenantId] = useState("");
-  const [clientId, setClientId] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-  const [spDriveId, setSpDriveId] = useState("");
+  const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
+    null,
+  );
   const createProvider = useCreateStorageProvider();
+
+  const handleSpSelect = (sel: SharePointSelection | null) => {
+    setSpSelection(sel);
+    if (sel && !name) {
+      const autoName = `SharePoint – ${sel.driveName}`;
+      setName(autoName);
+      setSlug(
+        autoName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
+      );
+    }
+  };
 
   const handleCreate = () => {
     if (!name || !slug) return;
     const config =
-      providerType === "sharepoint"
-        ? { tenantId, clientId, clientSecret, driveId: spDriveId }
+      providerType === "sharepoint" && spSelection
+        ? {
+            siteId: spSelection.siteId,
+            siteName: spSelection.siteName,
+            driveId: spSelection.driveId,
+            driveName: spSelection.driveName,
+          }
         : undefined;
     createProvider.mutate(
       {
@@ -939,11 +906,37 @@ function CreateStorageProviderDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Neuer Speicheranbieter</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div>
+            <Label>Anbietertyp</Label>
+            <Select value={providerType} onValueChange={setProviderType}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="local">Lokal</SelectItem>
+                <SelectItem value="sharepoint">SharePoint</SelectItem>
+                <SelectItem value="azure_blob">Azure Blob Storage</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {providerType === "sharepoint" && (
+            <div>
+              <Label className="mb-2 block">
+                SharePoint Site & Bibliothek auswählen
+              </Label>
+              <SharePointSiteDrivePicker
+                value={spSelection}
+                onChange={handleSpSelect}
+              />
+            </div>
+          )}
+
           <div>
             <Label>Name</Label>
             <Input
@@ -970,56 +963,6 @@ function CreateStorageProviderDialog({
               placeholder="z.B. sharepoint-docs"
             />
           </div>
-          <div>
-            <Label>Anbietertyp</Label>
-            <Select value={providerType} onValueChange={setProviderType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="local">Lokal</SelectItem>
-                <SelectItem value="sharepoint">SharePoint</SelectItem>
-                <SelectItem value="azure_blob">Azure Blob Storage</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {providerType === "sharepoint" && (
-            <>
-              <div>
-                <Label>Tenant ID</Label>
-                <Input
-                  value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  placeholder="Azure AD Tenant ID"
-                />
-              </div>
-              <div>
-                <Label>Client ID</Label>
-                <Input
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  placeholder="App Registration Client ID"
-                />
-              </div>
-              <div>
-                <Label>Client Secret</Label>
-                <Input
-                  type="password"
-                  value={clientSecret}
-                  onChange={(e) => setClientSecret(e.target.value)}
-                  placeholder="App Registration Client Secret"
-                />
-              </div>
-              <div>
-                <Label>Drive ID</Label>
-                <Input
-                  value={spDriveId}
-                  onChange={(e) => setSpDriveId(e.target.value)}
-                  placeholder="SharePoint Drive ID"
-                />
-              </div>
-            </>
-          )}
           <div className="flex items-center gap-3">
             <Switch checked={isDefault} onCheckedChange={setIsDefault} />
             <Label>Als Standard setzen</Label>
