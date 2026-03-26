@@ -6,6 +6,7 @@ import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +32,8 @@ import {
   Save,
   CheckCircle2,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections } from "@/lib/types";
+import type { ValidationResult } from "@/lib/types";
 import {
   useGetActiveWorkingCopy,
   useCreateWorkingCopy,
@@ -54,7 +56,7 @@ import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import type { JSONContent } from "@tiptap/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
-import { Bot, Sparkles } from "lucide-react";
+import { Bot, Sparkles, AlertCircle, Info } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 const AUTOSAVE_DELAY_MS = 2000;
@@ -116,6 +118,7 @@ export function WorkingCopyEditorPage() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [validationSFSnapshot, setValidationSFSnapshot] = useState<Record<string, unknown>>({});
 
   const wcRef = useRef<WorkingCopy | null>(null);
   useEffect(() => {
@@ -153,7 +156,9 @@ export function WorkingCopyEditorPage() {
   const localStructuredFieldsRef = useRef<Record<string, unknown>>({});
   useEffect(() => {
     if (activeWC) {
-      localStructuredFieldsRef.current = (activeWC.structuredFields as Record<string, unknown>) ?? {};
+      const sf = (activeWC.structuredFields as Record<string, unknown>) ?? {};
+      localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
     }
   }, [activeWC]);
 
@@ -233,6 +238,7 @@ export function WorkingCopyEditorPage() {
     async (json: JSONContent) => {
       const sf = { ...localStructuredFieldsRef.current, _editorContent: json };
       localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
       const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
       pendingPatchRef.current = {};
@@ -245,6 +251,7 @@ export function WorkingCopyEditorPage() {
     (json: JSONContent) => {
       const sf = { ...localStructuredFieldsRef.current, _editorContent: json };
       localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
       scheduleAutosave({ structuredFields: sf });
     },
     [scheduleAutosave],
@@ -254,6 +261,7 @@ export function WorkingCopyEditorPage() {
     async (sectionKey: string, value: string) => {
       const sf = { ...localStructuredFieldsRef.current, [sectionKey]: value };
       localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
       scheduleAutosave({ structuredFields: sf });
     },
     [scheduleAutosave],
@@ -309,8 +317,24 @@ export function WorkingCopyEditorPage() {
     }
   }, [doSave, editableMetadata, toast]);
 
+  const submitValidation = useMemo<ValidationResult | null>(() => {
+    if (!node) return null;
+    return validateForPublication(node.templateType, editableMetadata, validationSFSnapshot);
+  }, [node, editableMetadata, validationSFSnapshot]);
+
   const handleSubmit = useCallback(async () => {
-    if (!activeWC) return;
+    if (!activeWC || !node) return;
+
+    const validation = validateForPublication(node.templateType, editableMetadata, validationSFSnapshot);
+    if (validation && !validation.valid) {
+      toast({
+        variant: "destructive",
+        title: "Veröffentlichungsanforderungen nicht erfüllt",
+        description: `${validation.errors.length} Fehler müssen behoben werden.`,
+      });
+      return;
+    }
+
     if (autosaveTimerRef.current) {
       clearTimeout(autosaveTimerRef.current);
     }
@@ -347,7 +371,7 @@ export function WorkingCopyEditorPage() {
       });
     }
   }, [
-    activeWC, doSave, editableMetadata, changeType,
+    activeWC, node, doSave, editableMetadata, validationSFSnapshot, changeType,
     changeSummary, submitComment, submitWorkingCopy, toast, nodeId, queryClient, navigate,
   ]);
 
@@ -480,6 +504,61 @@ export function WorkingCopyEditorPage() {
           Zuletzt gespeichert: {lastSavedAt.toLocaleTimeString("de-DE")}
         </div>
       )}
+
+      {canEdit && node && (() => {
+        const readiness = getPublicationReadiness(node.templateType, editableMetadata, validationSFSnapshot);
+        const guided = getGuidedSections(node.templateType);
+        return (
+          <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Info className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Veröffentlichungsbereitschaft</span>
+              </div>
+              <Badge variant={readiness.ready ? "default" : "secondary"} className={readiness.ready ? "bg-green-600" : ""}>
+                {readiness.percentage}%
+              </Badge>
+            </div>
+            <Progress value={readiness.percentage} className="h-2" />
+            {readiness.missingRequired.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-red-600 dark:text-red-400">Pflichtfelder fehlen:</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5">
+                  {readiness.missingRequired.map((m) => (
+                    <li key={m} className="flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3 text-red-500" />
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {readiness.missingRecommended.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Empfohlen:</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5">
+                  {readiness.missingRecommended.map((m) => (
+                    <li key={m} className="flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3 text-amber-500" />
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {guided.length > 0 && (
+              <div className="space-y-1 pt-1 border-t">
+                <p className="text-xs font-medium text-muted-foreground">Empfohlene Bearbeitungsreihenfolge:</p>
+                <ol className="text-xs text-muted-foreground space-y-0.5 list-decimal list-inside">
+                  {guided.map((s) => (
+                    <li key={s.key}>{s.label}{s.helpText ? ` — ${s.helpText}` : ""}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       <Tabs defaultValue="content" className="w-full">
         <TabsList>
@@ -619,6 +698,36 @@ export function WorkingCopyEditorPage() {
             );
           })()}
 
+          {submitOpen && submitValidation && !submitValidation.valid && (
+            <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 p-3 space-y-2">
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                Veröffentlichungsanforderungen nicht erfüllt ({submitValidation.readinessPercentage}% bereit)
+              </p>
+              <ul className="text-xs space-y-1">
+                {submitValidation.errors.map((e) => (
+                  <li key={e.field} className="flex items-start gap-1.5 text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span>{e.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {submitOpen && submitValidation && submitValidation.valid && submitValidation.warnings.length > 0 && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-3 space-y-2">
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Empfehlungen</p>
+              <ul className="text-xs space-y-1">
+                {submitValidation.warnings.map((w) => (
+                  <li key={w.field} className="flex items-start gap-1.5 text-amber-600 dark:text-amber-400">
+                    <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span>{w.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="space-y-4 py-2">
             <div className="space-y-1">
               <Label>Art der Änderung</Label>
@@ -690,7 +799,7 @@ export function WorkingCopyEditorPage() {
             <Button variant="outline" onClick={() => setSubmitOpen(false)}>
               Abbrechen
             </Button>
-            <Button onClick={handleSubmit} disabled={submitWorkingCopy.isPending}>
+            <Button onClick={handleSubmit} disabled={submitWorkingCopy.isPending || (submitValidation !== null && !submitValidation.valid)}>
               {submitWorkingCopy.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
               Einreichen
             </Button>

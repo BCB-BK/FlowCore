@@ -25,6 +25,8 @@ export type MetadataGroupKey =
   | "validity"
   | "classification";
 
+export type FieldRequirement = "required" | "recommended" | "conditional";
+
 export interface MetadataFieldDef {
   key: string;
   label: string;
@@ -33,6 +35,10 @@ export interface MetadataFieldDef {
   group: MetadataGroupKey;
   description?: string;
   options?: string[];
+  requirement?: FieldRequirement;
+  conditionDescription?: string;
+  publishRequired?: boolean;
+  errorMessage?: string;
 }
 
 export interface PageTypeSection {
@@ -42,6 +48,12 @@ export interface PageTypeSection {
   helpText?: string;
   guidingQuestions?: string[];
   required: boolean;
+  requirement?: FieldRequirement;
+  conditionDescription?: string;
+  publishRequired?: boolean;
+  minContentLength?: number;
+  guidedModeStep?: number;
+  errorMessage?: string;
 }
 
 export interface TemplateVariant {
@@ -59,6 +71,43 @@ export type PageTypeCategory =
   | "quality"
   | "knowledge";
 
+export interface PublicationRules {
+  minimumSections: string[];
+  minimumMetadata: string[];
+  minSectionContentLength: number;
+  customRules?: PublicationRule[];
+}
+
+export interface PublicationRule {
+  id: string;
+  description: string;
+  check: (metadata: Record<string, unknown>, sections: Record<string, unknown>) => boolean;
+  errorMessage: string;
+}
+
+export interface ValidationError {
+  field: string;
+  fieldLabel: string;
+  message: string;
+  type: "missing_required" | "content_too_short" | "invalid_format" | "custom_rule";
+}
+
+export interface ValidationWarning {
+  field: string;
+  fieldLabel: string;
+  message: string;
+  type: "recommended_empty" | "conditional_empty";
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  readinessPercentage: number;
+}
+
+export const REGISTRY_VERSION = "1.0.0";
+
 export interface PageTypeDefinition {
   type: TemplateType;
   label: string;
@@ -73,6 +122,7 @@ export interface PageTypeDefinition {
   category: PageTypeCategory;
   helpText?: string;
   variants: TemplateVariant[];
+  publicationRules: PublicationRules;
 }
 
 const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
@@ -81,6 +131,7 @@ const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
     label: "Dokumentenart",
     type: "enum",
     required: false,
+    requirement: "recommended",
     group: "identity",
     options: [
       "procedure",
@@ -94,6 +145,7 @@ const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
       "record",
     ],
     description: "Art des Dokuments gemäß Dokumentenklassifikation",
+    errorMessage: "Bitte wählen Sie eine Dokumentenart aus.",
   },
 ];
 
@@ -103,14 +155,18 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     label: "Prozesseigner",
     type: "person",
     required: true,
+    requirement: "required",
+    publishRequired: true,
     group: "governance",
     description: "Verantwortlicher für den Inhalt",
+    errorMessage: "Ein Prozesseigner muss zugewiesen werden.",
   },
   {
     key: "deputy",
     label: "Stellvertreter",
     type: "person",
     required: false,
+    requirement: "recommended",
     group: "governance",
     description: "Vertretung des Prozesseigners",
   },
@@ -119,14 +175,20 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     label: "Prüfer",
     type: "person",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Erforderlich, wenn der Inhalt einen Freigabeprozess durchläuft",
+    publishRequired: true,
     group: "governance",
     description: "Fachliche Prüfung",
+    errorMessage: "Für die Veröffentlichung muss ein Prüfer benannt werden.",
   },
   {
     key: "approver",
     label: "Freigeber",
     type: "person",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Erforderlich für regulatorische oder governance-relevante Inhalte",
     group: "governance",
     description: "Freigabe-Verantwortlicher",
   },
@@ -135,6 +197,7 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     label: "Führendes System",
     type: "text",
     required: false,
+    requirement: "recommended",
     group: "governance",
     description: "System oder Quelle, die als maßgeblich gilt",
   },
@@ -146,14 +209,19 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     label: "Gültig ab",
     type: "date",
     required: false,
+    requirement: "recommended",
+    publishRequired: true,
     group: "validity",
     description: "Datum der Gültigkeit",
+    errorMessage: "Bitte geben Sie ein Gültigkeitsdatum an.",
   },
   {
     key: "valid_until",
     label: "Gültig bis",
     type: "date",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Setzen, wenn das Dokument zeitlich befristet ist",
     group: "validity",
   },
   {
@@ -161,6 +229,8 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     label: "Inkrafttretungsdatum",
     type: "date",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Erforderlich für regulatorisch relevante Dokumente",
     group: "validity",
     description: "Datum, ab dem das Dokument verbindlich gilt",
   },
@@ -169,14 +239,18 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     label: "Prüfzyklus (Monate)",
     type: "number",
     required: false,
+    requirement: "recommended",
+    publishRequired: true,
     group: "validity",
     description: "Regelmäßiger Prüfintervall in Monaten",
+    errorMessage: "Bitte definieren Sie einen Prüfzyklus für die Veröffentlichung.",
   },
   {
     key: "next_review_date",
     label: "Nächste Prüfung",
     type: "date",
     required: false,
+    requirement: "recommended",
     group: "validity",
   },
   {
@@ -184,6 +258,8 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     label: "Prüfung erforderlich bis",
     type: "date",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Automatisch gesetzt basierend auf Prüfzyklus",
     group: "validity",
     description: "Deadline für die nächste inhaltliche Prüfung",
   },
@@ -192,6 +268,8 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     label: "Letzte Verifizierung",
     type: "date",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Wird bei der ersten Verifizierung gesetzt",
     group: "validity",
     description: "Datum der letzten inhaltlichen Verifizierung",
   },
@@ -200,6 +278,8 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     label: "Verifizierungsergebnis",
     type: "enum",
     required: false,
+    requirement: "conditional",
+    conditionDescription: "Wird nach der Verifizierung gesetzt",
     group: "validity",
     options: ["current", "update_needed", "obsolete"],
     description: "Ergebnis der letzten Verifizierung",
@@ -212,15 +292,19 @@ const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
     label: "Vertraulichkeit",
     type: "enum",
     required: false,
+    requirement: "recommended",
+    publishRequired: true,
     group: "classification",
     options: ["public", "internal", "confidential", "strictly_confidential"],
     description: "Vertraulichkeitsstufe des Dokuments",
+    errorMessage: "Bitte stufen Sie die Vertraulichkeit ein.",
   },
   {
     key: "risk_level",
     label: "Risikoeinstufung",
     type: "enum",
     required: false,
+    requirement: "recommended",
     group: "classification",
     options: ["low", "medium", "high", "critical"],
     description: "Risikoeinstufung bei Nichtbeachtung oder Ausfall",
@@ -230,6 +314,7 @@ const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
     label: "Schlagwörter",
     type: "tags",
     required: false,
+    requirement: "recommended",
     group: "classification",
   },
 ];
@@ -278,6 +363,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Welche Ergebnisse liefert der Prozess?",
         ],
         required: true,
+        requirement: "required",
+        publishRequired: true,
+        minContentLength: 50,
+        guidedModeStep: 1,
+        errorMessage: "Bitte beschreiben Sie den Zweck und Geltungsbereich des Prozesses.",
       },
       {
         key: "sipoc",
@@ -293,6 +383,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Wer erhält die Ergebnisse (Customers)?",
         ],
         required: true,
+        requirement: "required",
+        publishRequired: true,
+        minContentLength: 30,
+        guidedModeStep: 2,
+        errorMessage: "Bitte füllen Sie die SIPOC-Analyse aus.",
       },
       {
         key: "kpis",
@@ -306,6 +401,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Wie häufig wird gemessen?",
         ],
         required: false,
+        requirement: "recommended",
+        publishRequired: true,
+        guidedModeStep: 3,
+        errorMessage: "Es wird empfohlen, mindestens einen KPI zu definieren.",
       },
       {
         key: "compliance",
@@ -319,6 +418,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Gibt es branchenspezifische Vorgaben?",
         ],
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 4,
       },
       {
         key: "risks",
@@ -332,9 +433,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Wie hoch ist die Eintrittswahrscheinlichkeit?",
         ],
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 5,
       },
-      { key: "children", label: "Untergeordnete Prozesse", required: false },
+      { key: "children", label: "Untergeordnete Prozesse", required: false, requirement: "conditional", conditionDescription: "Wenn Teilprozesse existieren" },
     ],
+    publicationRules: {
+      minimumSections: ["overview", "sipoc"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -399,6 +507,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Wie ordnet sich der Bereich in die Gesamtorganisation ein?",
         ],
         required: true,
+        requirement: "required",
+        publishRequired: true,
+        minContentLength: 50,
+        guidedModeStep: 1,
+        errorMessage: "Bitte beschreiben Sie die Aufgaben und Zuständigkeiten des Bereichs.",
       },
       {
         key: "structure",
@@ -412,6 +525,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Wie viele Mitarbeitende sind zugeordnet?",
         ],
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 2,
       },
       {
         key: "interfaces",
@@ -424,9 +539,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Welche Leistungen werden ausgetauscht?",
         ],
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 3,
       },
-      { key: "children", label: "Zugehörige Seiten", required: false },
+      { key: "children", label: "Zugehörige Seiten", required: false, requirement: "conditional", conditionDescription: "Wenn zugehörige Seiten existieren" },
     ],
+    publicationRules: {
+      minimumSections: ["description"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -521,8 +643,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         helpText:
           "Listen Sie die IT-Systeme, Formulare und Dokumente auf, die im Prozess verwendet werden.",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 4,
       },
     ],
+    publicationRules: {
+      minimumSections: ["procedure"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -593,8 +722,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Legende & Symbole",
         description: "Erklärung der verwendeten Symbole und Farben",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 3,
       },
     ],
+    publicationRules: {
+      minimumSections: ["diagram"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "blank",
@@ -798,8 +934,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         helpText:
           "Führen Sie eine Übersicht der wesentlichen Änderungen an diesem Dokument.",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 12,
       },
     ],
+    publicationRules: {
+      minimumSections: ["purpose", "scope", "procedure", "responsibilities"],
+      minimumMetadata: ["owner", "document_number"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -894,8 +1037,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Nachbedingungen",
         description: "Was gilt nach erfolgreicher Durchführung?",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 5,
       },
     ],
+    publicationRules: {
+      minimumSections: ["actors", "preconditions", "main_flow"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "standard",
@@ -1020,8 +1170,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Referenzen & mitgeltende Dokumente",
         description: "Verknüpfte Normen, Gesetze und Dokumente",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 6,
       },
     ],
+    publicationRules: {
+      minimumSections: ["purpose", "scope", "policy_text"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -1149,8 +1306,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Welche externen Kontakte bestehen?",
         ],
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 5,
       },
     ],
+    publicationRules: {
+      minimumSections: ["role_definition", "responsibilities"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -1202,8 +1366,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description: "Dashboard-Konfiguration",
         required: false,
       },
-      { key: "description", label: "Beschreibung", required: false },
+      { key: "description", label: "Beschreibung", required: false, requirement: "recommended" },
     ],
+    publicationRules: {
+      minimumSections: ["widgets"],
+      minimumMetadata: [],
+      minSectionContentLength: 10,
+    },
     variants: [
       {
         key: "standard",
@@ -1240,8 +1409,18 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         helpText:
           "Pflegen Sie die Begriffe alphabetisch mit Definition, Kontext und ggf. Synonymen.",
         required: true,
+        requirement: "required",
+        publishRequired: true,
+        minContentLength: 20,
+        guidedModeStep: 1,
+        errorMessage: "Bitte definieren Sie mindestens einen Glossarbegriff.",
       },
     ],
+    publicationRules: {
+      minimumSections: ["terms"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "blank",
@@ -1351,8 +1530,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         helpText:
           "Dokumentieren Sie SLAs, Wartungsfenster und Betriebsprozeduren.",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 6,
       },
     ],
+    publicationRules: {
+      minimumSections: ["system_info"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -1473,8 +1659,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Mitgeltende Unterlagen",
         description: "Referenzierte Dokumente und Formulare",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 7,
       },
     ],
+    publicationRules: {
+      minimumSections: ["purpose", "scope", "steps"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -1577,8 +1770,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Abschlusskriterien",
         description: "Wann gilt die Checkliste als vollständig abgeschlossen?",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 4,
       },
     ],
+    publicationRules: {
+      minimumSections: ["purpose", "checklist_items"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "blank",
@@ -1669,8 +1869,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Verwandte Themen",
         description: "Links zu verwandten Artikeln und Prozessen",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 3,
       },
     ],
+    publicationRules: {
+      minimumSections: ["summary", "content"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "faq",
@@ -1785,8 +1992,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Verantwortlichkeiten",
         description: "Wer ist für welche Seite der Schnittstelle verantwortlich?",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 6,
       },
     ],
+    publicationRules: {
+      minimumSections: ["overview", "data_flow"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "blank",
@@ -1922,8 +2136,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Nächster Termin",
         description: "Datum und Ort der nächsten Sitzung",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 6,
       },
     ],
+    publicationRules: {
+      minimumSections: ["participants", "agenda", "discussion"],
+      minimumMetadata: ["owner", "meeting_date"],
+      minSectionContentLength: 10,
+    },
     variants: [
       {
         key: "blank",
@@ -2064,8 +2285,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Materialien & Ressourcen",
         description: "Benötigte und ergänzende Materialien",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 6,
       },
     ],
+    publicationRules: {
+      minimumSections: ["objectives", "content"],
+      minimumMetadata: ["owner", "target_audience"],
+      minSectionContentLength: 30,
+    },
     variants: [
       {
         key: "blank",
@@ -2208,8 +2436,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         helpText:
           "Definieren Sie, wie und wann die Wirksamkeit der Maßnahmen überprüft wird.",
         required: false,
+        requirement: "recommended",
+        guidedModeStep: 6,
       },
     ],
+    publicationRules: {
+      minimumSections: ["finding", "evidence"],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 20,
+    },
     variants: [
       {
         key: "blank",
@@ -2385,3 +2620,278 @@ export const PAGE_TYPE_CATEGORIES: Record<
     icon: "GraduationCap",
   },
 };
+
+function isNonEmpty(val: unknown): boolean {
+  if (val === undefined || val === null) return false;
+  if (typeof val === "string") return val.trim().length > 0;
+  if (Array.isArray(val)) return val.length > 0;
+  if (typeof val === "object") return Object.keys(val as Record<string, unknown>).length > 0;
+  return true;
+}
+
+function contentLength(val: unknown): number {
+  if (val === undefined || val === null) return 0;
+  if (typeof val === "string") return val.trim().length;
+  if (typeof val === "object") return JSON.stringify(val).length;
+  return String(val).length;
+}
+
+export function validateForPublication(
+  type: string,
+  metadata: Record<string, unknown>,
+  sectionData: Record<string, unknown>,
+): ValidationResult {
+  const def = getPageType(type);
+  if (!def) {
+    return { valid: false, errors: [{ field: "type", fieldLabel: "Seitentyp", message: `Unbekannter Seitentyp: ${type}`, type: "invalid_format" }], warnings: [], readinessPercentage: 0 };
+  }
+
+  const errors: ValidationError[] = [];
+  const warnings: ValidationWarning[] = [];
+  const rules = def.publicationRules;
+
+  for (const metaKey of rules.minimumMetadata) {
+    const field = def.metadataFields.find((f) => f.key === metaKey);
+    if (!field) continue;
+    if (!isNonEmpty(metadata[metaKey])) {
+      errors.push({
+        field: metaKey,
+        fieldLabel: field.label,
+        message: field.errorMessage ?? `„${field.label}" ist ein Pflichtfeld für die Veröffentlichung.`,
+        type: "missing_required",
+      });
+    }
+  }
+
+  for (const field of def.metadataFields) {
+    if (field.publishRequired && !rules.minimumMetadata.includes(field.key)) {
+      if (!isNonEmpty(metadata[field.key])) {
+        errors.push({
+          field: field.key,
+          fieldLabel: field.label,
+          message: field.errorMessage ?? `„${field.label}" muss für die Veröffentlichung ausgefüllt werden.`,
+          type: "missing_required",
+        });
+      }
+    }
+  }
+
+  for (const sectionKey of rules.minimumSections) {
+    const section = def.sections.find((s) => s.key === sectionKey);
+    if (!section) continue;
+    const val = sectionData[sectionKey];
+    if (!isNonEmpty(val)) {
+      errors.push({
+        field: sectionKey,
+        fieldLabel: section.label,
+        message: section.errorMessage ?? `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
+        type: "missing_required",
+      });
+    } else {
+      const minLen = section.minContentLength ?? rules.minSectionContentLength;
+      if (contentLength(val) < minLen) {
+        errors.push({
+          field: sectionKey,
+          fieldLabel: section.label,
+          message: `Der Abschnitt „${section.label}" ist zu kurz (mindestens ${minLen} Zeichen erforderlich).`,
+          type: "content_too_short",
+        });
+      }
+    }
+  }
+
+  for (const section of def.sections) {
+    if (section.publishRequired && !rules.minimumSections.includes(section.key)) {
+      if (!isNonEmpty(sectionData[section.key])) {
+        errors.push({
+          field: section.key,
+          fieldLabel: section.label,
+          message: section.errorMessage ?? `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
+          type: "missing_required",
+        });
+      }
+    }
+  }
+
+  if (rules.customRules) {
+    for (const rule of rules.customRules) {
+      if (!rule.check(metadata, sectionData)) {
+        errors.push({
+          field: rule.id,
+          fieldLabel: rule.description,
+          message: rule.errorMessage,
+          type: "custom_rule",
+        });
+      }
+    }
+  }
+
+  for (const field of def.metadataFields) {
+    if (field.requirement === "recommended" && !field.publishRequired && !isNonEmpty(metadata[field.key])) {
+      warnings.push({
+        field: field.key,
+        fieldLabel: field.label,
+        message: `„${field.label}" wird empfohlen, ist aber nicht zwingend erforderlich.`,
+        type: "recommended_empty",
+      });
+    }
+    if (field.requirement === "conditional" && !field.publishRequired && !isNonEmpty(metadata[field.key])) {
+      warnings.push({
+        field: field.key,
+        fieldLabel: field.label,
+        message: field.conditionDescription
+          ? `„${field.label}": ${field.conditionDescription}`
+          : `„${field.label}" kann unter bestimmten Bedingungen erforderlich sein.`,
+        type: "conditional_empty",
+      });
+    }
+  }
+
+  for (const section of def.sections) {
+    if (
+      section.requirement === "recommended" &&
+      !section.publishRequired &&
+      !rules.minimumSections.includes(section.key) &&
+      !isNonEmpty(sectionData[section.key])
+    ) {
+      warnings.push({
+        field: section.key,
+        fieldLabel: section.label,
+        message: `Der Abschnitt „${section.label}" wird empfohlen.`,
+        type: "recommended_empty",
+      });
+    }
+  }
+
+  const allEnforcedFieldKeys = new Set<string>();
+  for (const k of rules.minimumMetadata) allEnforcedFieldKeys.add(`meta:${k}`);
+  for (const k of rules.minimumSections) allEnforcedFieldKeys.add(`section:${k}`);
+  for (const f of def.metadataFields) {
+    if (f.publishRequired && !rules.minimumMetadata.includes(f.key)) allEnforcedFieldKeys.add(`meta:${f.key}`);
+  }
+  for (const s of def.sections) {
+    if (s.publishRequired && !rules.minimumSections.includes(s.key)) allEnforcedFieldKeys.add(`section:${s.key}`);
+  }
+  if (rules.customRules) {
+    for (const r of rules.customRules) allEnforcedFieldKeys.add(`rule:${r.id}`);
+  }
+  const totalEnforced = allEnforcedFieldKeys.size;
+  const failedFieldKeys = new Set<string>();
+  for (const e of errors) {
+    if (e.type === "custom_rule") {
+      failedFieldKeys.add(`rule:${e.field}`);
+    } else if (rules.minimumSections.includes(e.field) || def.sections.some((s) => s.key === e.field)) {
+      failedFieldKeys.add(`section:${e.field}`);
+    } else {
+      failedFieldKeys.add(`meta:${e.field}`);
+    }
+  }
+  const passedEnforced = totalEnforced - failedFieldKeys.size;
+  const readinessPercentage = totalEnforced === 0 ? 100 : Math.round((Math.max(0, passedEnforced) / totalEnforced) * 100);
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    readinessPercentage,
+  };
+}
+
+export function validateForDraft(
+  type: string,
+  metadata: Record<string, unknown>,
+  _sectionData: Record<string, unknown>,
+): ValidationResult {
+  const def = getPageType(type);
+  if (!def) {
+    return { valid: false, errors: [{ field: "type", fieldLabel: "Seitentyp", message: `Unbekannter Seitentyp: ${type}`, type: "invalid_format" }], warnings: [], readinessPercentage: 0 };
+  }
+
+  const errors: ValidationError[] = [];
+  const warnings: ValidationWarning[] = [];
+
+  for (const field of def.metadataFields) {
+    if (field.required && !isNonEmpty(metadata[field.key])) {
+      errors.push({
+        field: field.key,
+        fieldLabel: field.label,
+        message: field.errorMessage ?? `„${field.label}" ist ein Pflichtfeld.`,
+        type: "missing_required",
+      });
+    }
+  }
+
+  const totalRequired = def.metadataFields.filter((f) => f.required).length;
+  const filledRequired = totalRequired - errors.length;
+  const readinessPercentage = totalRequired === 0 ? 100 : Math.round((filledRequired / totalRequired) * 100);
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    readinessPercentage,
+  };
+}
+
+export function getGuidedSections(type: string): PageTypeSection[] {
+  const def = getPageType(type);
+  if (!def) return [];
+
+  return [...def.sections]
+    .filter((s) => s.guidedModeStep !== undefined)
+    .sort((a, b) => (a.guidedModeStep ?? 999) - (b.guidedModeStep ?? 999));
+}
+
+export function getPublicationReadiness(
+  type: string,
+  metadata: Record<string, unknown>,
+  sectionData: Record<string, unknown>,
+): { ready: boolean; percentage: number; missingRequired: string[]; missingRecommended: string[] } {
+  const result = validateForPublication(type, metadata, sectionData);
+  return {
+    ready: result.valid,
+    percentage: result.readinessPercentage,
+    missingRequired: result.errors.map((e) => e.fieldLabel),
+    missingRecommended: result.warnings.filter((w) => w.type === "recommended_empty").map((w) => w.fieldLabel),
+  };
+}
+
+export function getFieldsByRequirement(
+  type: string,
+): { required: MetadataFieldDef[]; recommended: MetadataFieldDef[]; conditional: MetadataFieldDef[] } {
+  const def = getPageType(type);
+  if (!def) return { required: [], recommended: [], conditional: [] };
+
+  const required: MetadataFieldDef[] = [];
+  const recommended: MetadataFieldDef[] = [];
+  const conditional: MetadataFieldDef[] = [];
+
+  for (const field of def.metadataFields) {
+    const req = field.requirement ?? (field.required ? "required" : "recommended");
+    if (req === "required") required.push(field);
+    else if (req === "recommended") recommended.push(field);
+    else conditional.push(field);
+  }
+
+  return { required, recommended, conditional };
+}
+
+export function getSectionsByRequirement(
+  type: string,
+): { required: PageTypeSection[]; recommended: PageTypeSection[]; conditional: PageTypeSection[] } {
+  const def = getPageType(type);
+  if (!def) return { required: [], recommended: [], conditional: [] };
+
+  const required: PageTypeSection[] = [];
+  const recommended: PageTypeSection[] = [];
+  const conditional: PageTypeSection[] = [];
+
+  for (const section of def.sections) {
+    const req = section.requirement ?? (section.required ? "required" : "recommended");
+    if (req === "required") required.push(section);
+    else if (req === "recommended") recommended.push(section);
+    else conditional.push(section);
+  }
+
+  return { required, recommended, conditional };
+}

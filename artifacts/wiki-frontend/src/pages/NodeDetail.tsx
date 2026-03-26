@@ -389,7 +389,7 @@ export function NodeDetail() {
                 onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 isCreating={createWorkingCopy.isPending}
               />
-              <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
+              <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
             </div>
           )}
 
@@ -591,7 +591,7 @@ export function NodeDetail() {
                   authorName={wcAuthor?.displayName ?? undefined}
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
-                <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
+                <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
               </CardContent>
             </Card>
           )}

@@ -9,6 +9,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, and, sql, notInArray, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { validateForPublication } from "@workspace/shared/page-types";
 
 export type WorkingCopyStatus =
   | "draft"
@@ -252,6 +253,23 @@ export async function submitWorkingCopy(
     );
   }
 
+  const [node] = await db
+    .select({ templateType: contentNodesTable.templateType })
+    .from(contentNodesTable)
+    .where(eq(contentNodesTable.id, wc.nodeId));
+
+  if (node) {
+    const metadata = (wc.content as Record<string, unknown>) ?? {};
+    const sectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
+    const validation = validateForPublication(node.templateType, metadata, sectionData);
+    if (validation && !validation.valid) {
+      const errorMessages = validation.errors.map((e) => e.message).join("; ");
+      throw new Error(
+        `Veröffentlichungsanforderungen nicht erfüllt: ${errorMessages}`,
+      );
+    }
+  }
+
   const updateData: Record<string, unknown> = {
     status: "submitted",
     submittedBy: actorId,
@@ -388,6 +406,23 @@ export async function publishWorkingCopy(
     throw new Error(
       `Arbeitskopie kann im Status '${wc.status}' nicht veröffentlicht werden. Nur freigegebene Arbeitskopien können veröffentlicht werden.`,
     );
+  }
+
+  const [pubNode] = await db
+    .select({ templateType: contentNodesTable.templateType })
+    .from(contentNodesTable)
+    .where(eq(contentNodesTable.id, wc.nodeId));
+
+  if (pubNode) {
+    const metadata = (wc.content as Record<string, unknown>) ?? {};
+    const sectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
+    const validation = validateForPublication(pubNode.templateType, metadata, sectionData);
+    if (validation && !validation.valid) {
+      const errorMessages = validation.errors.map((e) => e.message).join("; ");
+      throw new Error(
+        `Veröffentlichungsanforderungen nicht erfüllt: ${errorMessages}`,
+      );
+    }
   }
 
   const summary =

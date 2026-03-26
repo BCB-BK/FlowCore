@@ -1,10 +1,17 @@
 export {
   PAGE_TYPE_REGISTRY,
   ALL_TEMPLATE_TYPES,
+  REGISTRY_VERSION,
   getPageType,
   getAllowedChildTypes,
   getMetadataGroups,
   calculateCompleteness,
+  validateForPublication,
+  validateForDraft,
+  getGuidedSections,
+  getPublicationReadiness,
+  getFieldsByRequirement,
+  getSectionsByRequirement,
   METADATA_GROUP_LABELS,
   PAGE_TYPE_CATEGORIES,
 } from "./registry";
@@ -17,4 +24,10 @@ export type {
   PageTypeDefinition,
   PageTypeCategory,
   TemplateVariant,
+  FieldRequirement,
+  PublicationRules,
+  PublicationRule,
+  ValidationError,
+  ValidationWarning,
+  ValidationResult,
 } from "./registry";

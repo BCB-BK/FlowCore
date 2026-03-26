@@ -9,10 +9,17 @@ export type {
 
 export {
   PAGE_TYPE_REGISTRY,
+  REGISTRY_VERSION,
   getPageType,
   getAllowedChildTypes,
   getMetadataGroups,
   calculateCompleteness,
+  validateForPublication,
+  validateForDraft,
+  getGuidedSections,
+  getPublicationReadiness,
+  getFieldsByRequirement,
+  getSectionsByRequirement,
   METADATA_GROUP_LABELS,
   PAGE_TYPE_CATEGORIES,
 } from "@workspace/shared/page-types";
@@ -21,6 +28,11 @@ export type {
   TemplateType,
   MetadataGroupKey,
   PageTypeCategory,
+  FieldRequirement,
+  PublicationRules,
+  ValidationError,
+  ValidationWarning,
+  ValidationResult,
 } from "@workspace/shared/page-types";
 
 export const PAGE_TYPE_LABELS: Record<string, string> = {

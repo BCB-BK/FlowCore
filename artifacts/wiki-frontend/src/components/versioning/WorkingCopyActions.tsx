@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -27,17 +27,20 @@ import {
   XCircle,
   Loader2,
   ShieldAlert,
+  AlertCircle,
 } from "lucide-react";
+import { validateForPublication } from "@/lib/types";
 
 interface WorkingCopyActionsProps {
   workingCopy: WorkingCopy;
   nodeId: string;
+  templateType?: string;
   currentUserId?: string;
   userPermissions?: string[];
   sodRules?: Record<string, boolean>;
 }
 
-export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPermissions, sodRules }: WorkingCopyActionsProps) {
+export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentUserId, userPermissions, sodRules }: WorkingCopyActionsProps) {
   const [approveOpen, setApproveOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -51,6 +54,13 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
   const returnForChanges = useReturnWorkingCopyForChanges();
   const publish = usePublishWorkingCopy();
   const cancel = useCancelWorkingCopy();
+
+  const publishValidation = useMemo(() => {
+    if (!templateType) return null;
+    const metadata = (workingCopy.content as Record<string, unknown>) ?? {};
+    const sectionData = (workingCopy.structuredFields as Record<string, unknown>) ?? {};
+    return validateForPublication(templateType, metadata, sectionData);
+  }, [templateType, workingCopy.content, workingCopy.structuredFields]);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
@@ -103,6 +113,14 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
 
   const handlePublish = async () => {
     if (!versionLabel.trim()) return;
+    if (publishValidation && !publishValidation.valid) {
+      toast({
+        variant: "destructive",
+        title: "Veröffentlichungsanforderungen nicht erfüllt",
+        description: `${publishValidation.errors.length} Fehler müssen behoben werden.`,
+      });
+      return;
+    }
     try {
       await publish.mutateAsync({
         workingCopyId: workingCopy.id,
@@ -295,6 +313,21 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
           <DialogHeader>
             <DialogTitle>Version veröffentlichen</DialogTitle>
           </DialogHeader>
+          {publishValidation && !publishValidation.valid && (
+            <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 p-3 space-y-2">
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                Veröffentlichungsanforderungen nicht erfüllt ({publishValidation.readinessPercentage}% bereit)
+              </p>
+              <ul className="text-xs space-y-1">
+                {publishValidation.errors.map((e) => (
+                  <li key={e.field} className="flex items-start gap-1.5 text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span>{e.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="space-y-3">
             <div className="space-y-1">
               <Label>Versionslabel *</Label>
@@ -311,7 +344,7 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
             </Button>
             <Button
               onClick={handlePublish}
-              disabled={publish.isPending || !versionLabel.trim()}
+              disabled={publish.isPending || !versionLabel.trim() || (publishValidation !== null && !publishValidation.valid)}
               className="bg-green-600 hover:bg-green-700"
             >
               {publish.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}

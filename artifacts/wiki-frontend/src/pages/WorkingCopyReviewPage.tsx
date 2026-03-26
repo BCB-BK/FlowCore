@@ -379,6 +379,7 @@ export function WorkingCopyReviewPage() {
         <WorkingCopyActions
           workingCopy={activeWC}
           nodeId={nodeId!}
+          templateType={node?.templateType}
           currentUserId={currentUser?.principalId}
           userPermissions={currentUser?.permissions}
           sodRules={currentUser?.sodRules}
