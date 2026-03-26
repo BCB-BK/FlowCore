@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import {
   AlertCircle,
@@ -24,6 +24,7 @@ import {
   ImageIcon,
   Copyright,
   Link2,
+  GalleryHorizontalEnd,
 } from "lucide-react";
 import {
   getVideoEmbedUrl,
@@ -37,6 +38,7 @@ import {
   type ProcessStep,
   type DiagramRole,
 } from "./extensions/diagram-block";
+import type { GalleryImage } from "./extensions/gallery-block";
 
 function SourceTypeBadge({ sourceType }: { sourceType?: MediaSourceType }) {
   if (!sourceType || sourceType === "upload") {
@@ -1018,6 +1020,225 @@ function DiagramMetaPanel({
         )}
       </div>
     </div>
+  );
+}
+
+export function GalleryBlockNodeView({ node, editor }: NodeViewProps) {
+  const { images, columns, caption, layout } = node.attrs;
+  const galleryImages = (images || []) as GalleryImage[];
+  const colCount = columns || 3;
+  const galleryLayout = layout || "grid";
+
+  const handleUpdateAttrs = useCallback(
+    (attrs: Record<string, unknown>) => {
+      editor
+        .chain()
+        .focus()
+        .updateAttributes("galleryBlock", attrs)
+        .run();
+    },
+    [editor],
+  );
+
+  const galleryListenerRef = useRef<((e: Event) => void) | null>(null);
+
+  const cleanupGalleryListener = useCallback(() => {
+    if (galleryListenerRef.current) {
+      window.removeEventListener("editor:gallery-media-selected", galleryListenerRef.current);
+      galleryListenerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      cleanupGalleryListener();
+    };
+  }, [cleanupGalleryListener]);
+
+  const handleAddImages = useCallback(() => {
+    cleanupGalleryListener();
+
+    const onMediaSelected = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) {
+        const newImage: GalleryImage = {
+          id: detail.id || crypto.randomUUID(),
+          src: detail.url,
+          alt: detail.originalFilename || "",
+          caption: "",
+        };
+        handleUpdateAttrs({ images: [...galleryImages, newImage] });
+      }
+      cleanupGalleryListener();
+    };
+
+    galleryListenerRef.current = onMediaSelected;
+    window.addEventListener("editor:gallery-media-selected", onMediaSelected);
+
+    const onDialogClose = () => {
+      setTimeout(() => {
+        cleanupGalleryListener();
+      }, 100);
+      window.removeEventListener("editor:media-dialog-closed", onDialogClose);
+    };
+    window.addEventListener("editor:media-dialog-closed", onDialogClose);
+
+    window.dispatchEvent(
+      new CustomEvent("editor:open-media-library", {
+        detail: { type: "image", galleryMode: true },
+      }),
+    );
+  }, [galleryImages, handleUpdateAttrs, cleanupGalleryListener]);
+
+  const handleRemoveImage = useCallback(
+    (id: string) => {
+      handleUpdateAttrs({
+        images: galleryImages.filter((img) => img.id !== id),
+      });
+    },
+    [galleryImages, handleUpdateAttrs],
+  );
+
+  const handleUpdateImageCaption = useCallback(
+    (id: string, newCaption: string) => {
+      handleUpdateAttrs({
+        images: galleryImages.map((img) =>
+          img.id === id ? { ...img, caption: newCaption } : img,
+        ),
+      });
+    },
+    [galleryImages, handleUpdateAttrs],
+  );
+
+  if (galleryImages.length === 0) {
+    return (
+      <NodeViewWrapper>
+        <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 my-2 text-muted-foreground">
+          <GalleryHorizontalEnd className="h-8 w-8 mb-2" />
+          <p className="text-sm font-medium">Bildergalerie</p>
+          <p className="text-xs mt-1">
+            Bilder hinzufügen, um eine Galerie zu erstellen
+          </p>
+          {editor.isEditable && (
+            <div className="flex gap-2 mt-3">
+              <button
+                className="text-xs px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1"
+                onClick={handleAddImages}
+              >
+                <Plus className="h-3 w-3" />
+                Bilder hinzufügen
+              </button>
+            </div>
+          )}
+        </div>
+      </NodeViewWrapper>
+    );
+  }
+
+  return (
+    <NodeViewWrapper>
+      <div className="rounded-lg border p-3 my-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <GalleryHorizontalEnd className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">
+              Galerie ({galleryImages.length} Bilder)
+            </span>
+          </div>
+          {editor.isEditable && (
+            <div className="flex items-center gap-1">
+              <select
+                className="text-[10px] px-1.5 py-0.5 rounded border bg-background"
+                value={galleryLayout}
+                onChange={(e) =>
+                  handleUpdateAttrs({ layout: e.target.value })
+                }
+              >
+                <option value="grid">Raster</option>
+              </select>
+              <select
+                className="text-[10px] px-1.5 py-0.5 rounded border bg-background"
+                value={colCount}
+                onChange={(e) =>
+                  handleUpdateAttrs({ columns: Number(e.target.value) })
+                }
+              >
+                <option value={2}>2 Spalten</option>
+                <option value={3}>3 Spalten</option>
+                <option value={4}>4 Spalten</option>
+              </select>
+              <button
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                onClick={handleAddImages}
+              >
+                <Plus className="h-3 w-3" />
+                Bild
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div
+          className="gap-2"
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${colCount}, 1fr)`,
+          }}
+        >
+          {galleryImages.map((img) => (
+            <div key={img.id} className="relative group">
+              <img
+                src={img.src}
+                alt={img.alt || ""}
+                className="w-full h-32 object-cover rounded"
+              />
+              {editor.isEditable && (
+                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+                  <button
+                    className="p-1 rounded bg-background/80 text-xs hover:bg-background"
+                    onClick={() => handleRemoveImage(img.id)}
+                    title="Entfernen"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              {img.caption && (
+                <p className="text-[10px] text-muted-foreground text-center mt-0.5 truncate">
+                  {img.caption}
+                </p>
+              )}
+              {editor.isEditable && (
+                <input
+                  className="w-full text-[10px] text-center bg-transparent border-none focus:outline-none text-muted-foreground mt-0.5"
+                  value={img.caption || ""}
+                  onChange={(e) =>
+                    handleUpdateImageCaption(img.id, e.target.value)
+                  }
+                  placeholder="Bildunterschrift..."
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {caption && (
+          <p className="text-sm text-center mt-2 text-muted-foreground italic">
+            {caption}
+          </p>
+        )}
+        {editor.isEditable && (
+          <div className="mt-2">
+            <input
+              className="w-full text-xs text-center bg-transparent border-none focus:outline-none text-muted-foreground"
+              value={caption || ""}
+              onChange={(e) => handleUpdateAttrs({ caption: e.target.value })}
+              placeholder="Galerie-Beschriftung..."
+            />
+          </div>
+        )}
+      </div>
+    </NodeViewWrapper>
   );
 }
 

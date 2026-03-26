@@ -9,11 +9,268 @@ import {
   ArrowUp,
   ArrowDown,
   Pilcrow,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  CheckSquare,
+  Table,
+  Quote,
+  Minus,
+  Image,
+  Video,
+  FileText,
+  Globe,
+  AlertCircle,
+  GitBranch,
+  GalleryHorizontalEnd,
+  type LucideIcon,
 } from "lucide-react";
 
 interface BlockActionMenuProps {
   editor: Editor;
 }
+
+interface InsertItem {
+  title: string;
+  icon: LucideIcon;
+  category: string;
+  action: (editor: Editor, pos: number) => void;
+}
+
+function insertEmptyParagraphAt(editor: Editor, pos: number) {
+  const tr = editor.state.tr;
+  const node = editor.state.schema.nodes.paragraph.create();
+  tr.insert(pos, node);
+  const sel = TextSelection.near(tr.doc.resolve(pos + 1));
+  tr.setSelection(sel);
+  editor.view.dispatch(tr);
+  editor.view.focus();
+}
+
+const INSERT_ITEMS: InsertItem[] = [
+  {
+    title: "Absatz",
+    icon: Pilcrow,
+    category: "Text",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const node = editor.state.schema.nodes.paragraph.create();
+      tr.insert(pos, node);
+      const sel = TextSelection.near(tr.doc.resolve(pos + 1));
+      tr.setSelection(sel);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Überschrift 1",
+    icon: Heading1,
+    category: "Text",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const node = editor.state.schema.nodes.heading.create({ level: 1 });
+      tr.insert(pos, node);
+      const sel = TextSelection.near(tr.doc.resolve(pos + 1));
+      tr.setSelection(sel);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Überschrift 2",
+    icon: Heading2,
+    category: "Text",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const node = editor.state.schema.nodes.heading.create({ level: 2 });
+      tr.insert(pos, node);
+      const sel = TextSelection.near(tr.doc.resolve(pos + 1));
+      tr.setSelection(sel);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Überschrift 3",
+    icon: Heading3,
+    category: "Text",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const node = editor.state.schema.nodes.heading.create({ level: 3 });
+      tr.insert(pos, node);
+      const sel = TextSelection.near(tr.doc.resolve(pos + 1));
+      tr.setSelection(sel);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Aufzählung",
+    icon: List,
+    category: "Listen",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const schema = editor.state.schema;
+      const listItem = schema.nodes.listItem.create(
+        null,
+        schema.nodes.paragraph.create(),
+      );
+      const list = schema.nodes.bulletList.create(null, listItem);
+      tr.insert(pos, list);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Nummerierung",
+    icon: ListOrdered,
+    category: "Listen",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const schema = editor.state.schema;
+      const listItem = schema.nodes.listItem.create(
+        null,
+        schema.nodes.paragraph.create(),
+      );
+      const list = schema.nodes.orderedList.create(null, listItem);
+      tr.insert(pos, list);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Checkliste",
+    icon: CheckSquare,
+    category: "Listen",
+    action: (editor, pos) => {
+      const tr = editor.state.tr;
+      const schema = editor.state.schema;
+      const taskItem = schema.nodes.taskItem.create(
+        { checked: false },
+        schema.nodes.paragraph.create(),
+      );
+      const taskList = schema.nodes.taskList.create(null, taskItem);
+      tr.insert(pos, taskList);
+      editor.view.dispatch(tr);
+      editor.view.focus();
+    },
+  },
+  {
+    title: "Tabelle",
+    icon: Table,
+    category: "Struktur",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      editor
+        .chain()
+        .focus()
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run();
+    },
+  },
+  {
+    title: "Hinweis",
+    icon: AlertCircle,
+    category: "Struktur",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      editor.chain().focus().setCallout({ type: "info" }).run();
+    },
+  },
+  {
+    title: "Zitat",
+    icon: Quote,
+    category: "Struktur",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      editor.chain().focus().setBlockquote().run();
+    },
+  },
+  {
+    title: "Trennlinie",
+    icon: Minus,
+    category: "Struktur",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      editor.chain().focus().setHorizontalRule().run();
+    },
+  },
+  {
+    title: "Bild",
+    icon: Image,
+    category: "Medien",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      window.dispatchEvent(
+        new CustomEvent("editor:open-media-library", {
+          detail: { type: "image" },
+        }),
+      );
+    },
+  },
+  {
+    title: "Galerie",
+    icon: GalleryHorizontalEnd,
+    category: "Medien",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      editor.chain().focus().setGalleryBlock({ images: [], columns: 3 }).run();
+    },
+  },
+  {
+    title: "Video",
+    icon: Video,
+    category: "Medien",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      window.dispatchEvent(
+        new CustomEvent("editor:open-media-library", {
+          detail: { type: "video" },
+        }),
+      );
+    },
+  },
+  {
+    title: "Datei",
+    icon: FileText,
+    category: "Medien",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      window.dispatchEvent(
+        new CustomEvent("editor:open-media-library", {
+          detail: { type: "file" },
+        }),
+      );
+    },
+  },
+  {
+    title: "Einbettung",
+    icon: Globe,
+    category: "Medien",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      const url = prompt("URL eingeben:");
+      if (url) {
+        editor.chain().focus().setEmbedBlock({ src: url }).run();
+      }
+    },
+  },
+  {
+    title: "Diagramm",
+    icon: GitBranch,
+    category: "Medien",
+    action: (editor, pos) => {
+      insertEmptyParagraphAt(editor, pos);
+      editor
+        .chain()
+        .focus()
+        .setDiagramBlock({ diagramType: "flowchart" })
+        .run();
+    },
+  },
+];
 
 export function BlockActionMenu({ editor }: BlockActionMenuProps) {
   const [menuState, setMenuState] = useState<{
@@ -24,7 +281,11 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
   }>({ visible: false, pos: 0, top: 0, left: 0 });
 
   const [showActions, setShowActions] = useState(false);
+  const [showInsertPicker, setShowInsertPicker] = useState(false);
+  const [insertFilter, setInsertFilter] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+  const insertRef = useRef<HTMLDivElement>(null);
+  const filterInputRef = useRef<HTMLInputElement>(null);
 
   const updatePosition = useCallback(() => {
     if (!editor.isEditable) {
@@ -62,15 +323,26 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
   }, [editor, updatePosition]);
 
   useEffect(() => {
-    if (!showActions) return;
+    if (!showActions && !showInsertPicker) return;
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (menuRef.current && !menuRef.current.contains(target)) {
         setShowActions(false);
+      }
+      if (insertRef.current && !insertRef.current.contains(target)) {
+        setShowInsertPicker(false);
+        setInsertFilter("");
       }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [showActions]);
+  }, [showActions, showInsertPicker]);
+
+  useEffect(() => {
+    if (showInsertPicker && filterInputRef.current) {
+      filterInputRef.current.focus();
+    }
+  }, [showInsertPicker]);
 
   function getBlockRange(state: typeof editor.state) {
     const $pos = state.doc.resolve(state.selection.from);
@@ -155,20 +427,32 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
     setShowActions(false);
   }, [editor]);
 
-  const insertBlockBelow = useCallback(() => {
-    const { state, dispatch } = editor.view;
-    const range = getBlockRange(state);
-    if (!range) return;
+  const handleInsertItem = useCallback(
+    (item: InsertItem) => {
+      const range = getBlockRange(editor.state);
+      const insertPos = range ? range.end : editor.state.doc.content.size;
+      item.action(editor, insertPos);
+      setShowInsertPicker(false);
+      setInsertFilter("");
+    },
+    [editor],
+  );
 
-    const tr = state.tr;
-    const newParagraph = state.schema.nodes.paragraph.create();
-    tr.insert(range.end, newParagraph);
-    const sel = TextSelection.near(tr.doc.resolve(range.end + 1));
-    tr.setSelection(sel);
-    dispatch(tr);
-    editor.view.focus();
-    setShowActions(false);
-  }, [editor]);
+  const filteredInsertItems = INSERT_ITEMS.filter(
+    (item) =>
+      !insertFilter ||
+      item.title.toLowerCase().includes(insertFilter.toLowerCase()) ||
+      item.category.toLowerCase().includes(insertFilter.toLowerCase()),
+  );
+
+  const grouped = filteredInsertItems.reduce<Record<string, InsertItem[]>>(
+    (acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    },
+    {},
+  );
 
   if (!menuState.visible) return null;
 
@@ -178,15 +462,76 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
       className="absolute z-10 flex items-center gap-0.5"
       style={{ top: menuState.top, left: menuState.left }}
     >
+      <div className="relative" ref={insertRef}>
+        <button
+          onClick={() => {
+            setShowInsertPicker((prev) => !prev);
+            setShowActions(false);
+            setInsertFilter("");
+          }}
+          className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          title="Block einfügen"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+
+        {showInsertPicker && (
+          <div className="absolute left-0 top-full mt-1 w-64 rounded-lg border bg-popover shadow-lg z-50">
+            <div className="p-1.5 border-b">
+              <input
+                ref={filterInputRef}
+                type="text"
+                className="w-full px-2 py-1 text-xs rounded border bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Block suchen..."
+                value={insertFilter}
+                onChange={(e) => setInsertFilter(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setShowInsertPicker(false);
+                    setInsertFilter("");
+                  }
+                  if (e.key === "Enter" && filteredInsertItems.length > 0) {
+                    handleInsertItem(filteredInsertItems[0]);
+                  }
+                }}
+              />
+            </div>
+            <div className="p-1 max-h-72 overflow-y-auto">
+              {Object.entries(grouped).map(([category, items]) => (
+                <div key={category}>
+                  <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    {category}
+                  </div>
+                  {items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.title}
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                        onClick={() => handleInsertItem(item)}
+                      >
+                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="font-medium text-xs">{item.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+              {filteredInsertItems.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-3">
+                  Keine Blöcke gefunden
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
       <button
-        onClick={insertBlockBelow}
-        className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        title="Block einfügen"
-      >
-        <Plus className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => setShowActions((prev) => !prev)}
+        onClick={() => {
+          setShowActions((prev) => !prev);
+          setShowInsertPicker(false);
+        }}
         className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors cursor-grab"
         title="Block-Aktionen"
       >

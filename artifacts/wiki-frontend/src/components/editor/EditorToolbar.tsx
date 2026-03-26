@@ -26,6 +26,7 @@ import {
   ImageIcon,
   VideoIcon,
   Paperclip,
+  GalleryHorizontalEnd,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
@@ -299,6 +300,14 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         title="Datei anhängen"
       >
         <Paperclip className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() =>
+          editor.chain().focus().setGalleryBlock({ images: [], columns: 3 }).run()
+        }
+        title="Bildergalerie"
+      >
+        <GalleryHorizontalEnd className="h-4 w-4" />
       </ToolbarButton>
     </div>
   );

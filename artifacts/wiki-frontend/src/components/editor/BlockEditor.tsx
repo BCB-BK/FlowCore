@@ -22,6 +22,7 @@ import { EmbedBlock } from "./extensions/embed-block";
 import { VideoBlock } from "./extensions/video-block";
 import { FileBlock } from "./extensions/file-block";
 import { DiagramBlock } from "./extensions/diagram-block";
+import { GalleryBlock } from "./extensions/gallery-block";
 import { BlockId } from "./extensions/block-id";
 import { DragHandle } from "./extensions/drag-handle";
 import {
@@ -30,6 +31,7 @@ import {
   VideoBlockNodeView,
   FileBlockNodeView,
   DiagramBlockNodeView,
+  GalleryBlockNodeView,
 } from "./NodeViews";
 import { EditorToolbar } from "./EditorToolbar";
 import { SlashCommandMenu } from "./SlashCommandMenu";
@@ -37,6 +39,7 @@ import { MediaLibraryDialog } from "./MediaLibraryDialog";
 import { BlockActionMenu } from "./BlockActionMenu";
 import { EditorDropzone } from "./EditorDropzone";
 import { ContextualSubpageButton } from "./ContextualSubpageButton";
+import { ContentCompletenessBar } from "./ContentCompletenessBar";
 import { EDITOR_CONFIG } from "@/lib/editor-config";
 
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +94,11 @@ export function BlockEditor({
     open: boolean;
     type: "image" | "video" | "file" | null;
     replace: boolean;
-  }>({ open: false, type: null, replace: false });
+    galleryMode: boolean;
+  }>({ open: false, type: null, replace: false, galleryMode: false });
+
+  const mediaDialogRef = useRef(mediaDialog);
+  mediaDialogRef.current = mediaDialog;
 
   const [hasDraft, setHasDraft] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -146,6 +153,11 @@ export function BlockEditor({
       DiagramBlock.extend({
         addNodeView() {
           return ReactNodeViewRenderer(DiagramBlockNodeView);
+        },
+      }),
+      GalleryBlock.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(GalleryBlockNodeView);
         },
       }),
       BlockId,
@@ -295,6 +307,7 @@ export function BlockEditor({
         open: true,
         type: detail?.type || null,
         replace: !!detail?.replace,
+        galleryMode: !!detail?.galleryMode,
       });
     };
     window.addEventListener("editor:open-media-library", handleMediaEvent);
@@ -312,7 +325,19 @@ export function BlockEditor({
     }) => {
       if (!editor) return;
 
-      if (mediaDialog.replace) {
+      const currentDialog = mediaDialogRef.current;
+
+      if (currentDialog.galleryMode) {
+        window.dispatchEvent(
+          new CustomEvent("editor:gallery-media-selected", { detail: asset }),
+        );
+        if (onTrackMediaUsage && asset.id) {
+          onTrackMediaUsage(asset.id);
+        }
+        return;
+      }
+
+      if (currentDialog.replace) {
         const { state } = editor;
         const { selection } = state;
         const node = state.doc.nodeAt(selection.from);
@@ -393,7 +418,7 @@ export function BlockEditor({
         onTrackMediaUsage(asset.id);
       }
     },
-    [editor, onTrackMediaUsage, mediaDialog.replace],
+    [editor, onTrackMediaUsage],
   );
 
   if (!editor) return null;
@@ -452,13 +477,19 @@ export function BlockEditor({
 
       {editable && (
         <div className="flex items-center justify-between border-t p-2 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {isDirty && <Badge variant="outline">Nicht gespeichert</Badge>}
             {lastSavedAt && (
               <span>
                 Zuletzt gespeichert: {lastSavedAt.toLocaleTimeString("de-DE")}
               </span>
             )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <ContentCompletenessBar
+              editor={editor}
+              parentTemplateType={parentTemplateType}
+            />
           </div>
           <button
             onClick={handleSave}
@@ -481,7 +512,12 @@ export function BlockEditor({
 
       <MediaLibraryDialog
         open={mediaDialog.open}
-        onOpenChange={(open) => setMediaDialog({ open, type: null, replace: false })}
+        onOpenChange={(open) => {
+          if (!open) {
+            window.dispatchEvent(new CustomEvent("editor:media-dialog-closed"));
+          }
+          setMediaDialog({ open, type: null, replace: false, galleryMode: false });
+        }}
         onSelect={handleMediaSelect}
         filterType={mediaDialog.type}
         nodeId={nodeId}

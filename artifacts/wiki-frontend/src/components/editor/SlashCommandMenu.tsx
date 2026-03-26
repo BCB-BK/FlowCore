@@ -16,6 +16,7 @@ import {
   Globe,
   AlertCircle,
   GitBranch,
+  GalleryHorizontalEnd,
   type LucideIcon,
 } from "lucide-react";
 
@@ -155,6 +156,20 @@ const SLASH_ITEMS: SlashMenuItem[] = [
         detail: { type: "file" },
       });
       window.dispatchEvent(event);
+    },
+  },
+  {
+    title: "Galerie",
+    description: "Bildergalerie einfügen",
+    icon: GalleryHorizontalEnd,
+    category: "Medien",
+    command: (editor, range) => {
+      editor.chain().focus().deleteRange(range).run();
+      editor
+        .chain()
+        .focus()
+        .setGalleryBlock({ images: [], columns: 3 })
+        .run();
     },
   },
   {

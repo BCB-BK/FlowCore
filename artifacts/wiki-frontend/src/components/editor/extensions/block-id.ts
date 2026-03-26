@@ -27,6 +27,7 @@ export const BlockId = Extension.create({
           "embedBlock",
           "fileBlock",
           "diagramBlock",
+          "galleryBlock",
         ],
         attributes: {
           blockId: {
