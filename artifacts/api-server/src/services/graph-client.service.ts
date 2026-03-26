@@ -183,43 +183,83 @@ function getDevPeople(query: string): GraphPerson[] {
   const all: GraphPerson[] = [
     {
       id: "dev-admin-001",
-      displayName: "Dev Admin",
-      mail: "admin@dev.local",
-      userPrincipalName: "admin@dev.local",
+      displayName: "Thomas Müller",
+      mail: "t.mueller@bildungscampus-backnang.de",
+      userPrincipalName: "t.mueller@bildungscampus-backnang.de",
       jobTitle: "System Administrator",
       department: "IT",
     },
     {
       id: "dev-editor-001",
-      displayName: "Dev Editor",
-      mail: "editor@dev.local",
-      userPrincipalName: "editor@dev.local",
+      displayName: "Sarah Weber",
+      mail: "s.weber@bildungscampus-backnang.de",
+      userPrincipalName: "s.weber@bildungscampus-backnang.de",
       jobTitle: "Content Editor",
       department: "QM",
     },
     {
       id: "dev-viewer-001",
-      displayName: "Dev Viewer",
-      mail: "viewer@dev.local",
-      userPrincipalName: "viewer@dev.local",
-      jobTitle: "Staff",
-      department: "Operations",
+      displayName: "Michael Schmidt",
+      mail: "m.schmidt@bildungscampus-backnang.de",
+      userPrincipalName: "m.schmidt@bildungscampus-backnang.de",
+      jobTitle: "Dozent",
+      department: "Lehre",
     },
     {
       id: "dev-reviewer-001",
-      displayName: "Dev Reviewer",
-      mail: "reviewer@dev.local",
-      userPrincipalName: "reviewer@dev.local",
-      jobTitle: "Quality Manager",
+      displayName: "Lisa Ecker",
+      mail: "l.ecker@bildungscampus-backnang.de",
+      userPrincipalName: "l.ecker@bildungscampus-backnang.de",
+      jobTitle: "Qualitätsmanagerin",
       department: "QM",
     },
     {
       id: "dev-pm-001",
-      displayName: "Dev Process Manager",
-      mail: "pm@dev.local",
-      userPrincipalName: "pm@dev.local",
-      jobTitle: "Process Manager",
+      displayName: "Markus Hoffmann",
+      mail: "m.hoffmann@bildungscampus-backnang.de",
+      userPrincipalName: "m.hoffmann@bildungscampus-backnang.de",
+      jobTitle: "Prozessmanager",
       department: "QM",
+    },
+    {
+      id: "dev-user-006",
+      displayName: "Anna Eckergerf",
+      mail: "a.eckergerf@bildungscampus-backnang.de",
+      userPrincipalName: "a.eckergerf@bildungscampus-backnang.de",
+      jobTitle: "Verwaltungsangestellte",
+      department: "Verwaltung",
+    },
+    {
+      id: "dev-user-007",
+      displayName: "Julia Fischer",
+      mail: "j.fischer@bildungscampus-backnang.de",
+      userPrincipalName: "j.fischer@bildungscampus-backnang.de",
+      jobTitle: "Studiengangkoordinatorin",
+      department: "Studienberatung",
+    },
+    {
+      id: "dev-user-008",
+      displayName: "Stefan Bauer",
+      mail: "s.bauer@bildungscampus-backnang.de",
+      userPrincipalName: "s.bauer@bildungscampus-backnang.de",
+      jobTitle: "IT-Techniker",
+      department: "IT",
+    },
+    {
+      id: "dev-user-009",
+      displayName: "Petra Zimmermann",
+      mail: "p.zimmermann@bildungscampus-backnang.de",
+      userPrincipalName: "p.zimmermann@bildungscampus-backnang.de",
+      jobTitle: "Compliance-Managerin",
+      department: "Recht & Compliance",
+    },
+    {
+      id: "dev-user-010",
+      displayName: "Klaus Wagner",
+      mail: "k.wagner@bildungscampus-backnang.de",
+      userPrincipalName: "k.wagner@bildungscampus-backnang.de",
+      jobTitle: "Campusleiter",
+      department: "Leitung",
     },
   ];
   const q = query.toLowerCase();
@@ -239,17 +279,47 @@ function getDevGroups(query: string): GraphGroup[] {
   const all: GraphGroup[] = [
     {
       id: "dev-group-qm",
-      displayName: "QM Team",
-      description: "Quality Management Team",
+      displayName: "Qualitätsmanagement",
+      description: "Team Qualitätsmanagement",
+      mail: "qm@bildungscampus-backnang.de",
     },
     {
       id: "dev-group-it",
-      displayName: "IT Team",
-      description: "IT Department",
+      displayName: "IT & Digitalisierung",
+      description: "IT-Abteilung und Digitalisierungsteam",
+      mail: "it@bildungscampus-backnang.de",
+    },
+    {
+      id: "dev-group-leitung",
+      displayName: "Campusleitung",
+      description: "Leitungsgremium Bildungscampus",
+      mail: "leitung@bildungscampus-backnang.de",
+    },
+    {
+      id: "dev-group-dozenten",
+      displayName: "Dozentenkollegium",
+      description: "Alle Dozentinnen und Dozenten",
+      mail: "dozenten@bildungscampus-backnang.de",
+    },
+    {
+      id: "dev-group-verwaltung",
+      displayName: "Verwaltung",
+      description: "Campus-Verwaltung",
+      mail: "verwaltung@bildungscampus-backnang.de",
+    },
+    {
+      id: "dev-group-alle",
+      displayName: "Bildungscampus Alle",
+      description: "Alle Mitarbeitenden",
+      mail: "alle@bildungscampus-backnang.de",
     },
   ];
   const q = query.toLowerCase();
-  return all.filter((g) => g.displayName.toLowerCase().includes(q));
+  return all.filter(
+    (g) =>
+      g.displayName.toLowerCase().includes(q) ||
+      (g.description ?? "").toLowerCase().includes(q),
+  );
 }
 
 logger.info("Graph client service initialized");
