@@ -1,3 +1,10 @@
+/**
+ * @deprecated These revision-centric review routes are superseded by
+ * the working copy workflow endpoints at /api/content/working-copies/:id/{submit,approve,...}.
+ * New code should use the working copy API for all review/approval workflows.
+ * These legacy routes are retained for backward compatibility during transition.
+ */
+
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import {

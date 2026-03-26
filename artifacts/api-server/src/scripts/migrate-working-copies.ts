@@ -5,41 +5,106 @@ import { logger } from "../lib/logger";
 export async function migrateToWorkingCopyModel() {
   logger.info("Starting working copy migration...");
 
-  const result = await db.execute(sql`
-    WITH nodes_to_migrate AS (
-      SELECT cn.id as node_id, cn.current_revision_id, cn.published_revision_id
-      FROM content_nodes cn
-      WHERE cn.is_deleted = false
-        AND cn.current_revision_id IS NOT NULL
-        AND cn.published_revision_id IS NULL
-    )
-    UPDATE content_nodes cn
-    SET
-      published_revision_id = ntm.current_revision_id,
-      status = 'published',
-      updated_at = NOW()
-    FROM nodes_to_migrate ntm
-    WHERE cn.id = ntm.node_id
-    RETURNING cn.id, cn.title
-  `);
+  return await db.transaction(async (tx) => {
+    const pubResult = await tx.execute(sql`
+      WITH nodes_needing_publish AS (
+        SELECT cn.id as node_id, cn.current_revision_id
+        FROM content_nodes cn
+        WHERE cn.is_deleted = false
+          AND cn.current_revision_id IS NOT NULL
+          AND cn.published_revision_id IS NOT NULL
+          AND cn.published_revision_id = cn.current_revision_id
+      )
+      UPDATE content_revisions cr
+      SET status = 'published', valid_from = COALESCE(cr.valid_from, cr.created_at)
+      FROM nodes_needing_publish ntp
+      WHERE cr.id = ntp.current_revision_id
+        AND cr.status = 'draft'
+      RETURNING cr.id
+    `);
+    const revisionsPromoted = pubResult.rows.length;
 
-  const migratedNodes = result.rows.length;
-  logger.info({ migratedNodes }, "Migrated nodes: set publishedRevisionId from currentRevisionId");
+    const nodesWithoutPublished = await tx.execute(sql`
+      WITH nodes_to_backfill AS (
+        SELECT cn.id as node_id, cn.current_revision_id
+        FROM content_nodes cn
+        WHERE cn.is_deleted = false
+          AND cn.current_revision_id IS NOT NULL
+          AND cn.published_revision_id IS NULL
+      )
+      UPDATE content_nodes cn
+      SET
+        published_revision_id = ntb.current_revision_id,
+        status = 'published',
+        updated_at = NOW()
+      FROM nodes_to_backfill ntb
+      WHERE cn.id = ntb.node_id
+      RETURNING cn.id
+    `);
+    const nodesBackfilled = nodesWithoutPublished.rows.length;
 
-  const revResult = await db.execute(sql`
-    UPDATE content_revisions cr
-    SET status = 'published', valid_from = COALESCE(cr.valid_from, cr.created_at)
-    FROM content_nodes cn
-    WHERE cr.id = cn.published_revision_id
-      AND cr.status = 'draft'
-    RETURNING cr.id
-  `);
+    if (nodesBackfilled > 0) {
+      await tx.execute(sql`
+        UPDATE content_revisions cr
+        SET status = 'published', valid_from = COALESCE(cr.valid_from, cr.created_at)
+        FROM content_nodes cn
+        WHERE cr.id = cn.published_revision_id
+          AND cr.status = 'draft'
+      `);
+    }
 
-  const migratedRevisions = revResult.rows.length;
-  logger.info({ migratedRevisions }, "Migrated draft revisions to published status");
+    const draftRevsResult = await tx.execute(sql`
+      SELECT cr.id as revision_id, cr.node_id, cr.title, cr.content,
+             cr.structured_fields, cr.change_type, cr.change_summary,
+             cr.author_id, cr.created_at
+      FROM content_revisions cr
+      JOIN content_nodes cn ON cn.id = cr.node_id
+      WHERE cr.status = 'draft'
+        AND cn.is_deleted = false
+        AND cn.published_revision_id IS NOT NULL
+        AND cr.id != cn.published_revision_id
+        AND NOT EXISTS (
+          SELECT 1 FROM content_working_copies wc
+          WHERE wc.node_id = cr.node_id
+            AND wc.base_revision_id = cr.id
+        )
+    `);
 
-  return {
-    migratedNodes,
-    migratedRevisions,
-  };
+    let draftsConverted = 0;
+    for (const row of draftRevsResult.rows) {
+      const r = row as Record<string, unknown>;
+      await tx.execute(sql`
+        INSERT INTO content_working_copies (
+          node_id, base_revision_id, status, title, content,
+          structured_fields, change_type, change_summary, author_id,
+          created_at, updated_at
+        ) VALUES (
+          ${r.node_id as string},
+          ${r.revision_id as string},
+          'draft',
+          ${(r.title as string) || 'Unbenannt'},
+          ${sql.raw(`'${JSON.stringify(r.content || {}).replace(/'/g, "''")}'::jsonb`)},
+          ${sql.raw(`'${JSON.stringify(r.structured_fields || {}).replace(/'/g, "''")}'::jsonb`)},
+          ${(r.change_type as string) || 'editorial'},
+          ${(r.change_summary as string) || null},
+          ${(r.author_id as string) || 'system'},
+          ${(r.created_at as string) || sql`NOW()`},
+          NOW()
+        )
+        ON CONFLICT DO NOTHING
+      `);
+      draftsConverted++;
+    }
+
+    logger.info(
+      { nodesBackfilled, revisionsPromoted, draftsConverted },
+      "Working copy migration complete",
+    );
+
+    return {
+      nodesBackfilled,
+      revisionsPromoted,
+      draftsConverted,
+    };
+  });
 }
