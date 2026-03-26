@@ -1,10 +1,18 @@
 import * as fs from "fs";
 import * as path from "path";
+import { db } from "@workspace/db";
+import { storageProvidersTable } from "@workspace/db/schema";
+import { eq, and } from "drizzle-orm";
 import type {
   IStorageProvider,
   StorageUploadResult,
   StorageDownloadResult,
 } from "@workspace/shared/providers";
+import {
+  SharePointStorageProvider,
+  type SharePointStorageConfig,
+} from "./sharepoint-storage.service";
+import { logger } from "../lib/logger";
 
 const UPLOAD_DIR = path.join(process.cwd(), ".uploads");
 
@@ -109,11 +117,45 @@ export class LocalStorageProvider implements IStorageProvider {
   }
 }
 
-let storageProvider: IStorageProvider | null = null;
+let defaultProvider: IStorageProvider | null = null;
+const providerCache = new Map<string, IStorageProvider>();
 
 export function getStorageProvider(): IStorageProvider {
-  if (!storageProvider) {
-    storageProvider = new LocalStorageProvider();
+  if (!defaultProvider) {
+    defaultProvider = new LocalStorageProvider();
   }
-  return storageProvider;
+  return defaultProvider;
+}
+
+export async function getStorageProviderById(
+  providerId: string,
+): Promise<IStorageProvider> {
+  const cached = providerCache.get(providerId);
+  if (cached) return cached;
+
+  const [row] = await db
+    .select()
+    .from(storageProvidersTable)
+    .where(
+      and(
+        eq(storageProvidersTable.id, providerId),
+        eq(storageProvidersTable.isActive, true),
+      ),
+    );
+
+  if (!row) {
+    logger.warn({ providerId }, "Storage provider not found, using local");
+    return getStorageProvider();
+  }
+
+  let provider: IStorageProvider;
+  if (row.providerType === "sharepoint") {
+    const config = row.config as SharePointStorageConfig;
+    provider = new SharePointStorageProvider(config);
+  } else {
+    provider = getStorageProvider();
+  }
+
+  providerCache.set(providerId, provider);
+  return provider;
 }

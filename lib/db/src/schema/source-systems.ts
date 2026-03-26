@@ -6,8 +6,11 @@ import {
   boolean,
   jsonb,
   uniqueIndex,
+  integer,
+  index,
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
+import { syncStatusEnum } from "./enums";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -19,8 +22,11 @@ export const sourceSystemsTable = pgTable(
     slug: text("slug").notNull(),
     systemType: text("system_type").notNull(),
     connectionConfig: jsonb("connection_config"),
+    syncEnabled: boolean("sync_enabled").notNull().default(false),
+    syncIntervalMinutes: integer("sync_interval_minutes").default(60),
     isActive: boolean("is_active").notNull().default(true),
     lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    lastSyncError: text("last_sync_error"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -51,23 +57,39 @@ export const storageProvidersTable = pgTable(
   (table) => [uniqueIndex("idx_storage_providers_slug").on(table.slug)],
 );
 
-export const sourceReferencesTable = pgTable("source_references", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  nodeId: uuid("node_id")
-    .notNull()
-    .references(() => contentNodesTable.id),
-  sourceSystemId: uuid("source_system_id")
-    .notNull()
-    .references(() => sourceSystemsTable.id),
-  externalId: text("external_id").notNull(),
-  externalUrl: text("external_url"),
-  syncStatus: text("sync_status").notNull().default("active"),
-  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const sourceReferencesTable = pgTable(
+  "source_references",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    nodeId: uuid("node_id")
+      .notNull()
+      .references(() => contentNodesTable.id),
+    sourceSystemId: uuid("source_system_id")
+      .notNull()
+      .references(() => sourceSystemsTable.id),
+    externalId: text("external_id").notNull(),
+    externalUrl: text("external_url"),
+    externalTitle: text("external_title"),
+    externalMimeType: text("external_mime_type"),
+    externalModifiedAt: timestamp("external_modified_at", {
+      withTimezone: true,
+    }),
+    syncStatus: syncStatusEnum("sync_status").notNull().default("active"),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    syncError: text("sync_error"),
+    metadata: jsonb("metadata"),
+    createdBy: text("created_by"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_source_refs_node").on(table.nodeId),
+    index("idx_source_refs_system").on(table.sourceSystemId),
+    index("idx_source_refs_status").on(table.syncStatus),
+  ],
+);
 
 export const insertSourceSystemSchema = createInsertSchema(
   sourceSystemsTable,

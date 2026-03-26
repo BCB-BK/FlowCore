@@ -826,6 +826,202 @@ export interface BrokenLinksReport {
   orphanedNodes?: BrokenLinksReportOrphanedNodesItem[];
 }
 
+export type SourceSystemConnectionConfig = { [key: string]: unknown } | null;
+
+export interface SourceSystem {
+  id: string;
+  name: string;
+  slug: string;
+  systemType: string;
+  connectionConfig?: SourceSystemConnectionConfig;
+  syncEnabled?: boolean;
+  syncIntervalMinutes?: number | null;
+  isActive?: boolean;
+  lastSyncAt?: string | null;
+  lastSyncError?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type SourceSystemWithCount = SourceSystem & {
+  referenceCount?: number;
+};
+
+export interface ActiveSourceSystem {
+  id: string;
+  name: string;
+  slug: string;
+  systemType: string;
+  isActive: boolean;
+}
+
+export type CreateSourceSystemInputConnectionConfig = {
+  [key: string]: unknown;
+} | null;
+
+export interface CreateSourceSystemInput {
+  name: string;
+  slug: string;
+  systemType: string;
+  connectionConfig?: CreateSourceSystemInputConnectionConfig;
+  syncEnabled?: boolean;
+  syncIntervalMinutes?: number;
+}
+
+export type UpdateSourceSystemInputConnectionConfig = {
+  [key: string]: unknown;
+} | null;
+
+export interface UpdateSourceSystemInput {
+  name?: string;
+  connectionConfig?: UpdateSourceSystemInputConnectionConfig;
+  isActive?: boolean;
+  syncEnabled?: boolean;
+  syncIntervalMinutes?: number;
+}
+
+export type StorageProviderConfig = { [key: string]: unknown } | null;
+
+export interface StorageProvider {
+  id: string;
+  name: string;
+  slug: string;
+  providerType: string;
+  config?: StorageProviderConfig;
+  isDefault?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type CreateStorageProviderInputConfig = {
+  [key: string]: unknown;
+} | null;
+
+export interface CreateStorageProviderInput {
+  name: string;
+  slug: string;
+  providerType: string;
+  config?: CreateStorageProviderInputConfig;
+  isDefault?: boolean;
+}
+
+export type UpdateStorageProviderInputConfig = {
+  [key: string]: unknown;
+} | null;
+
+export interface UpdateStorageProviderInput {
+  name?: string;
+  config?: UpdateStorageProviderInputConfig;
+  isActive?: boolean;
+  isDefault?: boolean;
+}
+
+export interface SyncResult {
+  systemId: string;
+  checkedCount: number;
+  staleCount: number;
+  errorCount: number;
+  syncedAt: string;
+}
+
+export interface SyncStatusEntry {
+  systemId: string;
+  systemName: string;
+  systemType: string;
+  syncEnabled?: boolean;
+  syncIntervalMinutes?: number | null;
+  lastSyncAt?: string | null;
+  lastSyncError?: string | null;
+  totalReferences?: number;
+  staleReferences?: number;
+  errorReferences?: number;
+  notFoundReferences?: number;
+}
+
+export interface SharePointSite {
+  id: string;
+  displayName: string;
+  webUrl: string;
+  description?: string | null;
+}
+
+export interface SharePointDrive {
+  id: string;
+  name: string;
+  driveType: string;
+  webUrl: string;
+  siteId: string;
+}
+
+export interface SharePointItem {
+  id: string;
+  name: string;
+  webUrl: string;
+  size: number;
+  mimeType: string;
+  lastModifiedAt?: string;
+  lastModifiedBy?: string;
+  isFolder: boolean;
+  childCount?: number | null;
+  driveId: string;
+  parentPath?: string | null;
+}
+
+export type SourceReferenceSyncStatus =
+  (typeof SourceReferenceSyncStatus)[keyof typeof SourceReferenceSyncStatus];
+
+export const SourceReferenceSyncStatus = {
+  active: "active",
+  stale: "stale",
+  error: "error",
+  not_found: "not_found",
+  pending: "pending",
+} as const;
+
+export type SourceReferenceMetadata = { [key: string]: unknown } | null;
+
+export interface SourceReference {
+  id: string;
+  nodeId: string;
+  sourceSystemId: string;
+  externalId: string;
+  externalUrl?: string | null;
+  externalTitle?: string | null;
+  externalMimeType?: string | null;
+  externalModifiedAt?: string | null;
+  syncStatus: SourceReferenceSyncStatus;
+  lastCheckedAt?: string | null;
+  lastSyncAt?: string | null;
+  syncError?: string | null;
+  metadata?: SourceReferenceMetadata;
+  createdBy?: string | null;
+  createdAt: string;
+  systemName?: string;
+  systemType?: string;
+}
+
+export type CreateSourceReferenceInputMetadata = {
+  [key: string]: unknown;
+} | null;
+
+export interface CreateSourceReferenceInput {
+  sourceSystemId: string;
+  externalId: string;
+  externalUrl?: string | null;
+  externalTitle?: string | null;
+  externalMimeType?: string | null;
+  externalModifiedAt?: string | null;
+  metadata?: CreateSourceReferenceInputMetadata;
+}
+
+export interface SourceReferenceCheckResult {
+  id: string;
+  syncStatus: string;
+  lastCheckedAt: string;
+  externalModifiedAt?: string | null;
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -988,4 +1184,12 @@ export type ListGlossaryTermsParams = {
 
 export type LinkGlossaryTermBody = {
   nodeId: string;
+};
+
+export type ListSharePointSitesParams = {
+  q?: string;
+};
+
+export type ListSharePointDriveItemsParams = {
+  folderId?: string;
 };

@@ -1850,3 +1850,362 @@ export const GetBrokenLinksResponse = zod.object({
     )
     .optional(),
 });
+
+/**
+ * @summary List all source systems (admin)
+ */
+export const ListSourceSystemsResponseItem = zod
+  .object({
+    id: zod.string().uuid(),
+    name: zod.string(),
+    slug: zod.string(),
+    systemType: zod.string(),
+    connectionConfig: zod.object({}).passthrough().nullish(),
+    syncEnabled: zod.boolean().optional(),
+    syncIntervalMinutes: zod.number().nullish(),
+    isActive: zod.boolean().optional(),
+    lastSyncAt: zod.date().nullish(),
+    lastSyncError: zod.string().nullish(),
+    createdAt: zod.date().optional(),
+    updatedAt: zod.date().optional(),
+  })
+  .and(
+    zod.object({
+      referenceCount: zod.number().optional(),
+    }),
+  );
+export const ListSourceSystemsResponse = zod.array(
+  ListSourceSystemsResponseItem,
+);
+
+/**
+ * @summary Create a source system
+ */
+export const CreateSourceSystemBody = zod.object({
+  name: zod.string(),
+  slug: zod.string(),
+  systemType: zod.string(),
+  connectionConfig: zod.object({}).passthrough().nullish(),
+  syncEnabled: zod.boolean().optional(),
+  syncIntervalMinutes: zod.number().optional(),
+});
+
+/**
+ * @summary List active source systems (editor-accessible)
+ */
+export const ListActiveSourceSystemsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  systemType: zod.string(),
+  isActive: zod.boolean(),
+});
+export const ListActiveSourceSystemsResponse = zod.array(
+  ListActiveSourceSystemsResponseItem,
+);
+
+/**
+ * @summary Get a source system by ID
+ */
+export const GetSourceSystemParams = zod.object({
+  systemId: zod.coerce.string().uuid(),
+});
+
+export const GetSourceSystemResponse = zod
+  .object({
+    id: zod.string().uuid(),
+    name: zod.string(),
+    slug: zod.string(),
+    systemType: zod.string(),
+    connectionConfig: zod.object({}).passthrough().nullish(),
+    syncEnabled: zod.boolean().optional(),
+    syncIntervalMinutes: zod.number().nullish(),
+    isActive: zod.boolean().optional(),
+    lastSyncAt: zod.date().nullish(),
+    lastSyncError: zod.string().nullish(),
+    createdAt: zod.date().optional(),
+    updatedAt: zod.date().optional(),
+  })
+  .and(
+    zod.object({
+      referenceCount: zod.number().optional(),
+    }),
+  );
+
+/**
+ * @summary Update a source system
+ */
+export const UpdateSourceSystemParams = zod.object({
+  systemId: zod.coerce.string().uuid(),
+});
+
+export const UpdateSourceSystemBody = zod.object({
+  name: zod.string().optional(),
+  connectionConfig: zod.object({}).passthrough().nullish(),
+  isActive: zod.boolean().optional(),
+  syncEnabled: zod.boolean().optional(),
+  syncIntervalMinutes: zod.number().optional(),
+});
+
+export const UpdateSourceSystemResponse = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  systemType: zod.string(),
+  connectionConfig: zod.object({}).passthrough().nullish(),
+  syncEnabled: zod.boolean().optional(),
+  syncIntervalMinutes: zod.number().nullish(),
+  isActive: zod.boolean().optional(),
+  lastSyncAt: zod.date().nullish(),
+  lastSyncError: zod.string().nullish(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+
+/**
+ * @summary Delete a source system
+ */
+export const DeleteSourceSystemParams = zod.object({
+  systemId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Trigger sync for a source system
+ */
+export const TriggerSyncParams = zod.object({
+  systemId: zod.coerce.string().uuid(),
+});
+
+export const TriggerSyncResponse = zod.object({
+  systemId: zod.string().uuid(),
+  checkedCount: zod.number(),
+  staleCount: zod.number(),
+  errorCount: zod.number(),
+  syncedAt: zod.date(),
+});
+
+/**
+ * @summary List all storage providers
+ */
+export const ListStorageProvidersResponseItem = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  providerType: zod.string(),
+  config: zod.object({}).passthrough().nullish(),
+  isDefault: zod.boolean().optional(),
+  isActive: zod.boolean().optional(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+export const ListStorageProvidersResponse = zod.array(
+  ListStorageProvidersResponseItem,
+);
+
+/**
+ * @summary Create a storage provider
+ */
+export const CreateStorageProviderBody = zod.object({
+  name: zod.string(),
+  slug: zod.string(),
+  providerType: zod.string(),
+  config: zod.object({}).passthrough().nullish(),
+  isDefault: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update a storage provider
+ */
+export const UpdateStorageProviderParams = zod.object({
+  providerId: zod.coerce.string().uuid(),
+});
+
+export const UpdateStorageProviderBody = zod.object({
+  name: zod.string().optional(),
+  config: zod.object({}).passthrough().nullish(),
+  isActive: zod.boolean().optional(),
+  isDefault: zod.boolean().optional(),
+});
+
+export const UpdateStorageProviderResponse = zod.object({
+  id: zod.string().uuid(),
+  name: zod.string(),
+  slug: zod.string(),
+  providerType: zod.string(),
+  config: zod.object({}).passthrough().nullish(),
+  isDefault: zod.boolean().optional(),
+  isActive: zod.boolean().optional(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+});
+
+/**
+ * @summary Get sync status across all systems
+ */
+export const GetSyncStatusResponseItem = zod.object({
+  systemId: zod.string().uuid(),
+  systemName: zod.string(),
+  systemType: zod.string(),
+  syncEnabled: zod.boolean().optional(),
+  syncIntervalMinutes: zod.number().nullish(),
+  lastSyncAt: zod.date().nullish(),
+  lastSyncError: zod.string().nullish(),
+  totalReferences: zod.number().optional(),
+  staleReferences: zod.number().optional(),
+  errorReferences: zod.number().optional(),
+  notFoundReferences: zod.number().optional(),
+});
+export const GetSyncStatusResponse = zod.array(GetSyncStatusResponseItem);
+
+/**
+ * @summary List SharePoint sites
+ */
+export const ListSharePointSitesQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+});
+
+export const ListSharePointSitesResponseItem = zod.object({
+  id: zod.string(),
+  displayName: zod.string(),
+  webUrl: zod.string(),
+  description: zod.string().nullish(),
+});
+export const ListSharePointSitesResponse = zod.array(
+  ListSharePointSitesResponseItem,
+);
+
+/**
+ * @summary List drives in a SharePoint site
+ */
+export const ListSharePointDrivesParams = zod.object({
+  siteId: zod.coerce.string(),
+});
+
+export const ListSharePointDrivesResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  driveType: zod.string(),
+  webUrl: zod.string(),
+  siteId: zod.string(),
+});
+export const ListSharePointDrivesResponse = zod.array(
+  ListSharePointDrivesResponseItem,
+);
+
+/**
+ * @summary List items in a SharePoint drive
+ */
+export const ListSharePointDriveItemsParams = zod.object({
+  driveId: zod.coerce.string(),
+});
+
+export const ListSharePointDriveItemsQueryParams = zod.object({
+  folderId: zod.coerce.string().optional(),
+});
+
+export const ListSharePointDriveItemsResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  webUrl: zod.string(),
+  size: zod.number(),
+  mimeType: zod.string(),
+  lastModifiedAt: zod.string().optional(),
+  lastModifiedBy: zod.string().optional(),
+  isFolder: zod.boolean(),
+  childCount: zod.number().nullish(),
+  driveId: zod.string(),
+  parentPath: zod.string().nullish(),
+});
+export const ListSharePointDriveItemsResponse = zod.array(
+  ListSharePointDriveItemsResponseItem,
+);
+
+/**
+ * @summary Get a SharePoint item by ID
+ */
+export const GetSharePointItemParams = zod.object({
+  driveId: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const GetSharePointItemResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  webUrl: zod.string(),
+  size: zod.number(),
+  mimeType: zod.string(),
+  lastModifiedAt: zod.string().optional(),
+  lastModifiedBy: zod.string().optional(),
+  isFolder: zod.boolean(),
+  childCount: zod.number().nullish(),
+  driveId: zod.string(),
+  parentPath: zod.string().nullish(),
+});
+
+/**
+ * @summary List source references for a node
+ */
+export const ListSourceReferencesParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const ListSourceReferencesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  sourceSystemId: zod.string().uuid(),
+  externalId: zod.string(),
+  externalUrl: zod.string().nullish(),
+  externalTitle: zod.string().nullish(),
+  externalMimeType: zod.string().nullish(),
+  externalModifiedAt: zod.date().nullish(),
+  syncStatus: zod.enum(["active", "stale", "error", "not_found", "pending"]),
+  lastCheckedAt: zod.date().nullish(),
+  lastSyncAt: zod.date().nullish(),
+  syncError: zod.string().nullish(),
+  metadata: zod.object({}).passthrough().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.date(),
+  systemName: zod.string().optional(),
+  systemType: zod.string().optional(),
+});
+export const ListSourceReferencesResponse = zod.array(
+  ListSourceReferencesResponseItem,
+);
+
+/**
+ * @summary Create a source reference for a node
+ */
+export const CreateSourceReferenceParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const CreateSourceReferenceBody = zod.object({
+  sourceSystemId: zod.string().uuid(),
+  externalId: zod.string(),
+  externalUrl: zod.string().nullish(),
+  externalTitle: zod.string().nullish(),
+  externalMimeType: zod.string().nullish(),
+  externalModifiedAt: zod.date().nullish(),
+  metadata: zod.object({}).passthrough().nullish(),
+});
+
+/**
+ * @summary Delete a source reference
+ */
+export const DeleteSourceReferenceParams = zod.object({
+  refId: zod.coerce.string().uuid(),
+});
+
+/**
+ * @summary Check freshness of a source reference
+ */
+export const CheckSourceReferenceParams = zod.object({
+  refId: zod.coerce.string().uuid(),
+});
+
+export const CheckSourceReferenceResponse = zod.object({
+  id: zod.string().uuid(),
+  syncStatus: zod.string(),
+  lastCheckedAt: zod.date(),
+  externalModifiedAt: zod.date().nullish(),
+});

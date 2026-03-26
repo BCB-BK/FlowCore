@@ -99,7 +99,11 @@ Express 5 API server with structured logging, config validation, content managem
 - Routes: `src/routes/tags.ts` — Tag CRUD + node tag assignment/removal (6 endpoints)
 - Routes: `src/routes/glossary.ts` — Glossary term CRUD, manual linking/unlinking to nodes, by-node lookup (8 endpoints)
 - Routes: `src/routes/review.ts` — Review workflow (submit/approve/reject), revision events, diff, watchers (10 endpoints, all auth+permission-guarded)
-- Services: `src/services/storage.service.ts` — LocalStorageProvider implementing IStorageProvider (local file uploads in `.uploads/`)
+- Routes: `src/routes/connectors.ts` — Source system CRUD, storage provider CRUD, SharePoint browsing (sites/drives/items), sync trigger, sync status dashboard (14 endpoints)
+- Routes: `src/routes/source-refs.ts` — Source reference CRUD per node, freshness check, per-node permission-guarded (4 endpoints)
+- Services: `src/services/storage.service.ts` — LocalStorageProvider + SharePoint provider selection via DB config
+- Services: `src/services/sharepoint.service.ts` — SharePoint Graph API integration (sites, drives, items browsing) with dev-mode mock data
+- Services: `src/services/sharepoint-storage.service.ts` — SharePointStorageProvider implementing IStorageProvider (upload/download via Graph API)
 - Services: `src/services/identity.service.ts` — Dual ID system (immutable_id + display_code)
 - Services: `src/services/revision.service.ts` — Revision/version lifecycle
 - Services: `src/services/graph.service.ts` — Graph relations with cycle detection

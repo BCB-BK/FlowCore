@@ -17,6 +17,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ActiveSourceSystem,
   ApproveRevisionBody,
   AssignRole201,
   AssignRoleInput,
@@ -36,6 +37,9 @@ import type {
   CreateNodeInput,
   CreateRelationInput,
   CreateRevisionInput,
+  CreateSourceReferenceInput,
+  CreateSourceSystemInput,
+  CreateStorageProviderInput,
   CreateTag,
   DevUser,
   EffectivePermissions,
@@ -56,6 +60,8 @@ import type {
   ListGlossaryTermsParams,
   ListMediaAssetsParams,
   ListPrincipalsParams,
+  ListSharePointDriveItemsParams,
+  ListSharePointSitesParams,
   ListTagsParams,
   MediaAsset,
   MediaAssetUsage,
@@ -81,13 +87,25 @@ import type {
   SearchSuggestions,
   SetNodeOwnership200,
   SetNodeOwnershipInput,
+  SharePointDrive,
+  SharePointItem,
+  SharePointSite,
+  SourceReference,
+  SourceReferenceCheckResult,
+  SourceSystem,
+  SourceSystemWithCount,
+  StorageProvider,
   SubmitForReviewBody,
+  SyncResult,
+  SyncStatusEntry,
   Tag,
   TrackMediaUsageBody,
   TrackSearchClick201,
   TrackSearchClickBody,
   TreeNode,
   UpdateNodeInput,
+  UpdateSourceSystemInput,
+  UpdateStorageProviderInput,
   UploadMediaBody,
   WatchNodeBody,
 } from "./api.schemas";
@@ -7043,3 +7061,1670 @@ export function useGetBrokenLinks<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all source systems (admin)
+ */
+export const getListSourceSystemsUrl = () => {
+  return `/api/connectors/source-systems`;
+};
+
+export const listSourceSystems = async (
+  options?: RequestInit,
+): Promise<SourceSystemWithCount[]> => {
+  return customFetch<SourceSystemWithCount[]>(getListSourceSystemsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSourceSystemsQueryKey = () => {
+  return [`/api/connectors/source-systems`] as const;
+};
+
+export const getListSourceSystemsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSourceSystems>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSourceSystems>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListSourceSystemsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSourceSystems>>
+  > = ({ signal }) => listSourceSystems({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSourceSystems>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSourceSystemsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSourceSystems>>
+>;
+export type ListSourceSystemsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all source systems (admin)
+ */
+
+export function useListSourceSystems<
+  TData = Awaited<ReturnType<typeof listSourceSystems>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSourceSystems>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSourceSystemsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a source system
+ */
+export const getCreateSourceSystemUrl = () => {
+  return `/api/connectors/source-systems`;
+};
+
+export const createSourceSystem = async (
+  createSourceSystemInput: CreateSourceSystemInput,
+  options?: RequestInit,
+): Promise<SourceSystem> => {
+  return customFetch<SourceSystem>(getCreateSourceSystemUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSourceSystemInput),
+  });
+};
+
+export const getCreateSourceSystemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSourceSystem>>,
+    TError,
+    { data: BodyType<CreateSourceSystemInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createSourceSystem>>,
+  TError,
+  { data: BodyType<CreateSourceSystemInput> },
+  TContext
+> => {
+  const mutationKey = ["createSourceSystem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createSourceSystem>>,
+    { data: BodyType<CreateSourceSystemInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createSourceSystem(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateSourceSystemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createSourceSystem>>
+>;
+export type CreateSourceSystemMutationBody = BodyType<CreateSourceSystemInput>;
+export type CreateSourceSystemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a source system
+ */
+export const useCreateSourceSystem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSourceSystem>>,
+    TError,
+    { data: BodyType<CreateSourceSystemInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createSourceSystem>>,
+  TError,
+  { data: BodyType<CreateSourceSystemInput> },
+  TContext
+> => {
+  return useMutation(getCreateSourceSystemMutationOptions(options));
+};
+
+/**
+ * @summary List active source systems (editor-accessible)
+ */
+export const getListActiveSourceSystemsUrl = () => {
+  return `/api/connectors/source-systems/active`;
+};
+
+export const listActiveSourceSystems = async (
+  options?: RequestInit,
+): Promise<ActiveSourceSystem[]> => {
+  return customFetch<ActiveSourceSystem[]>(getListActiveSourceSystemsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListActiveSourceSystemsQueryKey = () => {
+  return [`/api/connectors/source-systems/active`] as const;
+};
+
+export const getListActiveSourceSystemsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listActiveSourceSystems>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listActiveSourceSystems>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListActiveSourceSystemsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listActiveSourceSystems>>
+  > = ({ signal }) => listActiveSourceSystems({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listActiveSourceSystems>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListActiveSourceSystemsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listActiveSourceSystems>>
+>;
+export type ListActiveSourceSystemsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active source systems (editor-accessible)
+ */
+
+export function useListActiveSourceSystems<
+  TData = Awaited<ReturnType<typeof listActiveSourceSystems>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listActiveSourceSystems>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListActiveSourceSystemsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a source system by ID
+ */
+export const getGetSourceSystemUrl = (systemId: string) => {
+  return `/api/connectors/source-systems/${systemId}`;
+};
+
+export const getSourceSystem = async (
+  systemId: string,
+  options?: RequestInit,
+): Promise<SourceSystemWithCount> => {
+  return customFetch<SourceSystemWithCount>(getGetSourceSystemUrl(systemId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSourceSystemQueryKey = (systemId: string) => {
+  return [`/api/connectors/source-systems/${systemId}`] as const;
+};
+
+export const getGetSourceSystemQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSourceSystem>>,
+  TError = ErrorType<void>,
+>(
+  systemId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSourceSystem>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSourceSystemQueryKey(systemId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSourceSystem>>> = ({
+    signal,
+  }) => getSourceSystem(systemId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!systemId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSourceSystem>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSourceSystemQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSourceSystem>>
+>;
+export type GetSourceSystemQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a source system by ID
+ */
+
+export function useGetSourceSystem<
+  TData = Awaited<ReturnType<typeof getSourceSystem>>,
+  TError = ErrorType<void>,
+>(
+  systemId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSourceSystem>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSourceSystemQueryOptions(systemId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a source system
+ */
+export const getUpdateSourceSystemUrl = (systemId: string) => {
+  return `/api/connectors/source-systems/${systemId}`;
+};
+
+export const updateSourceSystem = async (
+  systemId: string,
+  updateSourceSystemInput: UpdateSourceSystemInput,
+  options?: RequestInit,
+): Promise<SourceSystem> => {
+  return customFetch<SourceSystem>(getUpdateSourceSystemUrl(systemId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateSourceSystemInput),
+  });
+};
+
+export const getUpdateSourceSystemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSourceSystem>>,
+    TError,
+    { systemId: string; data: BodyType<UpdateSourceSystemInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSourceSystem>>,
+  TError,
+  { systemId: string; data: BodyType<UpdateSourceSystemInput> },
+  TContext
+> => {
+  const mutationKey = ["updateSourceSystem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSourceSystem>>,
+    { systemId: string; data: BodyType<UpdateSourceSystemInput> }
+  > = (props) => {
+    const { systemId, data } = props ?? {};
+
+    return updateSourceSystem(systemId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSourceSystemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSourceSystem>>
+>;
+export type UpdateSourceSystemMutationBody = BodyType<UpdateSourceSystemInput>;
+export type UpdateSourceSystemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a source system
+ */
+export const useUpdateSourceSystem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSourceSystem>>,
+    TError,
+    { systemId: string; data: BodyType<UpdateSourceSystemInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSourceSystem>>,
+  TError,
+  { systemId: string; data: BodyType<UpdateSourceSystemInput> },
+  TContext
+> => {
+  return useMutation(getUpdateSourceSystemMutationOptions(options));
+};
+
+/**
+ * @summary Delete a source system
+ */
+export const getDeleteSourceSystemUrl = (systemId: string) => {
+  return `/api/connectors/source-systems/${systemId}`;
+};
+
+export const deleteSourceSystem = async (
+  systemId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteSourceSystemUrl(systemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteSourceSystemMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteSourceSystem>>,
+    TError,
+    { systemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteSourceSystem>>,
+  TError,
+  { systemId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteSourceSystem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteSourceSystem>>,
+    { systemId: string }
+  > = (props) => {
+    const { systemId } = props ?? {};
+
+    return deleteSourceSystem(systemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteSourceSystemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteSourceSystem>>
+>;
+
+export type DeleteSourceSystemMutationError = ErrorType<void>;
+
+/**
+ * @summary Delete a source system
+ */
+export const useDeleteSourceSystem = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteSourceSystem>>,
+    TError,
+    { systemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteSourceSystem>>,
+  TError,
+  { systemId: string },
+  TContext
+> => {
+  return useMutation(getDeleteSourceSystemMutationOptions(options));
+};
+
+/**
+ * @summary Trigger sync for a source system
+ */
+export const getTriggerSyncUrl = (systemId: string) => {
+  return `/api/connectors/source-systems/${systemId}/sync`;
+};
+
+export const triggerSync = async (
+  systemId: string,
+  options?: RequestInit,
+): Promise<SyncResult> => {
+  return customFetch<SyncResult>(getTriggerSyncUrl(systemId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getTriggerSyncMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof triggerSync>>,
+    TError,
+    { systemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof triggerSync>>,
+  TError,
+  { systemId: string },
+  TContext
+> => {
+  const mutationKey = ["triggerSync"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof triggerSync>>,
+    { systemId: string }
+  > = (props) => {
+    const { systemId } = props ?? {};
+
+    return triggerSync(systemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TriggerSyncMutationResult = NonNullable<
+  Awaited<ReturnType<typeof triggerSync>>
+>;
+
+export type TriggerSyncMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Trigger sync for a source system
+ */
+export const useTriggerSync = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof triggerSync>>,
+    TError,
+    { systemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof triggerSync>>,
+  TError,
+  { systemId: string },
+  TContext
+> => {
+  return useMutation(getTriggerSyncMutationOptions(options));
+};
+
+/**
+ * @summary List all storage providers
+ */
+export const getListStorageProvidersUrl = () => {
+  return `/api/connectors/storage-providers`;
+};
+
+export const listStorageProviders = async (
+  options?: RequestInit,
+): Promise<StorageProvider[]> => {
+  return customFetch<StorageProvider[]>(getListStorageProvidersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListStorageProvidersQueryKey = () => {
+  return [`/api/connectors/storage-providers`] as const;
+};
+
+export const getListStorageProvidersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listStorageProviders>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStorageProviders>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListStorageProvidersQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listStorageProviders>>
+  > = ({ signal }) => listStorageProviders({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listStorageProviders>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListStorageProvidersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listStorageProviders>>
+>;
+export type ListStorageProvidersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all storage providers
+ */
+
+export function useListStorageProviders<
+  TData = Awaited<ReturnType<typeof listStorageProviders>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStorageProviders>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListStorageProvidersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a storage provider
+ */
+export const getCreateStorageProviderUrl = () => {
+  return `/api/connectors/storage-providers`;
+};
+
+export const createStorageProvider = async (
+  createStorageProviderInput: CreateStorageProviderInput,
+  options?: RequestInit,
+): Promise<StorageProvider> => {
+  return customFetch<StorageProvider>(getCreateStorageProviderUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createStorageProviderInput),
+  });
+};
+
+export const getCreateStorageProviderMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStorageProvider>>,
+    TError,
+    { data: BodyType<CreateStorageProviderInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createStorageProvider>>,
+  TError,
+  { data: BodyType<CreateStorageProviderInput> },
+  TContext
+> => {
+  const mutationKey = ["createStorageProvider"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createStorageProvider>>,
+    { data: BodyType<CreateStorageProviderInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createStorageProvider(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateStorageProviderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createStorageProvider>>
+>;
+export type CreateStorageProviderMutationBody =
+  BodyType<CreateStorageProviderInput>;
+export type CreateStorageProviderMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a storage provider
+ */
+export const useCreateStorageProvider = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createStorageProvider>>,
+    TError,
+    { data: BodyType<CreateStorageProviderInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createStorageProvider>>,
+  TError,
+  { data: BodyType<CreateStorageProviderInput> },
+  TContext
+> => {
+  return useMutation(getCreateStorageProviderMutationOptions(options));
+};
+
+/**
+ * @summary Update a storage provider
+ */
+export const getUpdateStorageProviderUrl = (providerId: string) => {
+  return `/api/connectors/storage-providers/${providerId}`;
+};
+
+export const updateStorageProvider = async (
+  providerId: string,
+  updateStorageProviderInput: UpdateStorageProviderInput,
+  options?: RequestInit,
+): Promise<StorageProvider> => {
+  return customFetch<StorageProvider>(getUpdateStorageProviderUrl(providerId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateStorageProviderInput),
+  });
+};
+
+export const getUpdateStorageProviderMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStorageProvider>>,
+    TError,
+    { providerId: string; data: BodyType<UpdateStorageProviderInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateStorageProvider>>,
+  TError,
+  { providerId: string; data: BodyType<UpdateStorageProviderInput> },
+  TContext
+> => {
+  const mutationKey = ["updateStorageProvider"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateStorageProvider>>,
+    { providerId: string; data: BodyType<UpdateStorageProviderInput> }
+  > = (props) => {
+    const { providerId, data } = props ?? {};
+
+    return updateStorageProvider(providerId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateStorageProviderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateStorageProvider>>
+>;
+export type UpdateStorageProviderMutationBody =
+  BodyType<UpdateStorageProviderInput>;
+export type UpdateStorageProviderMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a storage provider
+ */
+export const useUpdateStorageProvider = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStorageProvider>>,
+    TError,
+    { providerId: string; data: BodyType<UpdateStorageProviderInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateStorageProvider>>,
+  TError,
+  { providerId: string; data: BodyType<UpdateStorageProviderInput> },
+  TContext
+> => {
+  return useMutation(getUpdateStorageProviderMutationOptions(options));
+};
+
+/**
+ * @summary Get sync status across all systems
+ */
+export const getGetSyncStatusUrl = () => {
+  return `/api/connectors/sync/status`;
+};
+
+export const getSyncStatus = async (
+  options?: RequestInit,
+): Promise<SyncStatusEntry[]> => {
+  return customFetch<SyncStatusEntry[]>(getGetSyncStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSyncStatusQueryKey = () => {
+  return [`/api/connectors/sync/status`] as const;
+};
+
+export const getGetSyncStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSyncStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSyncStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSyncStatusQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSyncStatus>>> = ({
+    signal,
+  }) => getSyncStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSyncStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSyncStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSyncStatus>>
+>;
+export type GetSyncStatusQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get sync status across all systems
+ */
+
+export function useGetSyncStatus<
+  TData = Awaited<ReturnType<typeof getSyncStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSyncStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSyncStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List SharePoint sites
+ */
+export const getListSharePointSitesUrl = (
+  params?: ListSharePointSitesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/connectors/sharepoint/sites?${stringifiedParams}`
+    : `/api/connectors/sharepoint/sites`;
+};
+
+export const listSharePointSites = async (
+  params?: ListSharePointSitesParams,
+  options?: RequestInit,
+): Promise<SharePointSite[]> => {
+  return customFetch<SharePointSite[]>(getListSharePointSitesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSharePointSitesQueryKey = (
+  params?: ListSharePointSitesParams,
+) => {
+  return [
+    `/api/connectors/sharepoint/sites`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getListSharePointSitesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSharePointSites>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListSharePointSitesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSharePointSites>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListSharePointSitesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSharePointSites>>
+  > = ({ signal }) =>
+    listSharePointSites(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSharePointSites>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSharePointSitesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSharePointSites>>
+>;
+export type ListSharePointSitesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List SharePoint sites
+ */
+
+export function useListSharePointSites<
+  TData = Awaited<ReturnType<typeof listSharePointSites>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListSharePointSitesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSharePointSites>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSharePointSitesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List drives in a SharePoint site
+ */
+export const getListSharePointDrivesUrl = (siteId: string) => {
+  return `/api/connectors/sharepoint/sites/${siteId}/drives`;
+};
+
+export const listSharePointDrives = async (
+  siteId: string,
+  options?: RequestInit,
+): Promise<SharePointDrive[]> => {
+  return customFetch<SharePointDrive[]>(getListSharePointDrivesUrl(siteId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSharePointDrivesQueryKey = (siteId: string) => {
+  return [`/api/connectors/sharepoint/sites/${siteId}/drives`] as const;
+};
+
+export const getListSharePointDrivesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSharePointDrives>>,
+  TError = ErrorType<unknown>,
+>(
+  siteId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSharePointDrives>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListSharePointDrivesQueryKey(siteId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSharePointDrives>>
+  > = ({ signal }) =>
+    listSharePointDrives(siteId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!siteId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSharePointDrives>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSharePointDrivesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSharePointDrives>>
+>;
+export type ListSharePointDrivesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List drives in a SharePoint site
+ */
+
+export function useListSharePointDrives<
+  TData = Awaited<ReturnType<typeof listSharePointDrives>>,
+  TError = ErrorType<unknown>,
+>(
+  siteId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSharePointDrives>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSharePointDrivesQueryOptions(siteId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List items in a SharePoint drive
+ */
+export const getListSharePointDriveItemsUrl = (
+  driveId: string,
+  params?: ListSharePointDriveItemsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/connectors/sharepoint/drives/${driveId}/items?${stringifiedParams}`
+    : `/api/connectors/sharepoint/drives/${driveId}/items`;
+};
+
+export const listSharePointDriveItems = async (
+  driveId: string,
+  params?: ListSharePointDriveItemsParams,
+  options?: RequestInit,
+): Promise<SharePointItem[]> => {
+  return customFetch<SharePointItem[]>(
+    getListSharePointDriveItemsUrl(driveId, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListSharePointDriveItemsQueryKey = (
+  driveId: string,
+  params?: ListSharePointDriveItemsParams,
+) => {
+  return [
+    `/api/connectors/sharepoint/drives/${driveId}/items`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getListSharePointDriveItemsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSharePointDriveItems>>,
+  TError = ErrorType<unknown>,
+>(
+  driveId: string,
+  params?: ListSharePointDriveItemsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSharePointDriveItems>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getListSharePointDriveItemsQueryKey(driveId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSharePointDriveItems>>
+  > = ({ signal }) =>
+    listSharePointDriveItems(driveId, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!driveId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSharePointDriveItems>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSharePointDriveItemsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSharePointDriveItems>>
+>;
+export type ListSharePointDriveItemsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List items in a SharePoint drive
+ */
+
+export function useListSharePointDriveItems<
+  TData = Awaited<ReturnType<typeof listSharePointDriveItems>>,
+  TError = ErrorType<unknown>,
+>(
+  driveId: string,
+  params?: ListSharePointDriveItemsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSharePointDriveItems>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSharePointDriveItemsQueryOptions(
+    driveId,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a SharePoint item by ID
+ */
+export const getGetSharePointItemUrl = (driveId: string, itemId: string) => {
+  return `/api/connectors/sharepoint/drives/${driveId}/items/${itemId}`;
+};
+
+export const getSharePointItem = async (
+  driveId: string,
+  itemId: string,
+  options?: RequestInit,
+): Promise<SharePointItem> => {
+  return customFetch<SharePointItem>(getGetSharePointItemUrl(driveId, itemId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSharePointItemQueryKey = (
+  driveId: string,
+  itemId: string,
+) => {
+  return [
+    `/api/connectors/sharepoint/drives/${driveId}/items/${itemId}`,
+  ] as const;
+};
+
+export const getGetSharePointItemQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSharePointItem>>,
+  TError = ErrorType<void>,
+>(
+  driveId: string,
+  itemId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSharePointItem>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSharePointItemQueryKey(driveId, itemId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSharePointItem>>
+  > = ({ signal }) =>
+    getSharePointItem(driveId, itemId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(driveId && itemId),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSharePointItem>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSharePointItemQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSharePointItem>>
+>;
+export type GetSharePointItemQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a SharePoint item by ID
+ */
+
+export function useGetSharePointItem<
+  TData = Awaited<ReturnType<typeof getSharePointItem>>,
+  TError = ErrorType<void>,
+>(
+  driveId: string,
+  itemId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSharePointItem>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSharePointItemQueryOptions(
+    driveId,
+    itemId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List source references for a node
+ */
+export const getListSourceReferencesUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/source-references`;
+};
+
+export const listSourceReferences = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<SourceReference[]> => {
+  return customFetch<SourceReference[]>(getListSourceReferencesUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSourceReferencesQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/source-references`] as const;
+};
+
+export const getListSourceReferencesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSourceReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSourceReferences>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListSourceReferencesQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSourceReferences>>
+  > = ({ signal }) =>
+    listSourceReferences(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSourceReferences>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSourceReferencesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSourceReferences>>
+>;
+export type ListSourceReferencesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List source references for a node
+ */
+
+export function useListSourceReferences<
+  TData = Awaited<ReturnType<typeof listSourceReferences>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSourceReferences>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSourceReferencesQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a source reference for a node
+ */
+export const getCreateSourceReferenceUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/source-references`;
+};
+
+export const createSourceReference = async (
+  nodeId: string,
+  createSourceReferenceInput: CreateSourceReferenceInput,
+  options?: RequestInit,
+): Promise<SourceReference> => {
+  return customFetch<SourceReference>(getCreateSourceReferenceUrl(nodeId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSourceReferenceInput),
+  });
+};
+
+export const getCreateSourceReferenceMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSourceReference>>,
+    TError,
+    { nodeId: string; data: BodyType<CreateSourceReferenceInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createSourceReference>>,
+  TError,
+  { nodeId: string; data: BodyType<CreateSourceReferenceInput> },
+  TContext
+> => {
+  const mutationKey = ["createSourceReference"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createSourceReference>>,
+    { nodeId: string; data: BodyType<CreateSourceReferenceInput> }
+  > = (props) => {
+    const { nodeId, data } = props ?? {};
+
+    return createSourceReference(nodeId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateSourceReferenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createSourceReference>>
+>;
+export type CreateSourceReferenceMutationBody =
+  BodyType<CreateSourceReferenceInput>;
+export type CreateSourceReferenceMutationError = ErrorType<void>;
+
+/**
+ * @summary Create a source reference for a node
+ */
+export const useCreateSourceReference = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSourceReference>>,
+    TError,
+    { nodeId: string; data: BodyType<CreateSourceReferenceInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createSourceReference>>,
+  TError,
+  { nodeId: string; data: BodyType<CreateSourceReferenceInput> },
+  TContext
+> => {
+  return useMutation(getCreateSourceReferenceMutationOptions(options));
+};
+
+/**
+ * @summary Delete a source reference
+ */
+export const getDeleteSourceReferenceUrl = (refId: string) => {
+  return `/api/content/source-references/${refId}`;
+};
+
+export const deleteSourceReference = async (
+  refId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteSourceReferenceUrl(refId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteSourceReferenceMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteSourceReference>>,
+    TError,
+    { refId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteSourceReference>>,
+  TError,
+  { refId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteSourceReference"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteSourceReference>>,
+    { refId: string }
+  > = (props) => {
+    const { refId } = props ?? {};
+
+    return deleteSourceReference(refId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteSourceReferenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteSourceReference>>
+>;
+
+export type DeleteSourceReferenceMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a source reference
+ */
+export const useDeleteSourceReference = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteSourceReference>>,
+    TError,
+    { refId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteSourceReference>>,
+  TError,
+  { refId: string },
+  TContext
+> => {
+  return useMutation(getDeleteSourceReferenceMutationOptions(options));
+};
+
+/**
+ * @summary Check freshness of a source reference
+ */
+export const getCheckSourceReferenceUrl = (refId: string) => {
+  return `/api/content/source-references/${refId}/check`;
+};
+
+export const checkSourceReference = async (
+  refId: string,
+  options?: RequestInit,
+): Promise<SourceReferenceCheckResult> => {
+  return customFetch<SourceReferenceCheckResult>(
+    getCheckSourceReferenceUrl(refId),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getCheckSourceReferenceMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkSourceReference>>,
+    TError,
+    { refId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof checkSourceReference>>,
+  TError,
+  { refId: string },
+  TContext
+> => {
+  const mutationKey = ["checkSourceReference"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof checkSourceReference>>,
+    { refId: string }
+  > = (props) => {
+    const { refId } = props ?? {};
+
+    return checkSourceReference(refId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CheckSourceReferenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof checkSourceReference>>
+>;
+
+export type CheckSourceReferenceMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Check freshness of a source reference
+ */
+export const useCheckSourceReference = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof checkSourceReference>>,
+    TError,
+    { refId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof checkSourceReference>>,
+  TError,
+  { refId: string },
+  TContext
+> => {
+  return useMutation(getCheckSourceReferenceMutationOptions(options));
+};

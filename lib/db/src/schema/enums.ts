@@ -136,6 +136,14 @@ export const commentStatusEnum = pgEnum("comment_status", [
   "deleted",
 ]);
 
+export const syncStatusEnum = pgEnum("sync_status", [
+  "active",
+  "stale",
+  "error",
+  "not_found",
+  "pending",
+]);
+
 export const verificationStatusEnum = pgEnum("verification_status", [
   "pending",
   "verified",

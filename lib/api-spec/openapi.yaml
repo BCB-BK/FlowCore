@@ -32,6 +32,12 @@ tags:
     description: Tag/taxonomy management
   - name: glossary
     description: Glossary term management
+  - name: connectors
+    description: Source system and storage provider management
+  - name: sharepoint
+    description: SharePoint document library browsing
+  - name: source-references
+    description: External source reference tracking
 paths:
   /healthz:
     get:
@@ -1069,7 +1075,19 @@ paths:
           in: query
           schema:
             type: string
-            enum: [document, image, video, audio, spreadsheet, presentation, template, form, archive, other]
+            enum:
+              [
+                document,
+                image,
+                video,
+                audio,
+                spreadsheet,
+                presentation,
+                template,
+                form,
+                archive,
+                other,
+              ]
         - name: limit
           in: query
           schema:
@@ -1713,6 +1731,374 @@ paths:
               schema:
                 $ref: "#/components/schemas/BrokenLinksReport"
 
+  /connectors/source-systems:
+    get:
+      operationId: listSourceSystems
+      tags: [connectors]
+      summary: List all source systems (admin)
+      responses:
+        "200":
+          description: List of source systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SourceSystemWithCount"
+    post:
+      operationId: createSourceSystem
+      tags: [connectors]
+      summary: Create a source system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSourceSystemInput"
+      responses:
+        "201":
+          description: Created source system
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceSystem"
+
+  /connectors/source-systems/active:
+    get:
+      operationId: listActiveSourceSystems
+      tags: [connectors]
+      summary: List active source systems (editor-accessible)
+      responses:
+        "200":
+          description: List of active source systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActiveSourceSystem"
+
+  /connectors/source-systems/{systemId}:
+    get:
+      operationId: getSourceSystem
+      tags: [connectors]
+      summary: Get a source system by ID
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Source system
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceSystemWithCount"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSourceSystem
+      tags: [connectors]
+      summary: Update a source system
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSourceSystemInput"
+      responses:
+        "200":
+          description: Updated source system
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceSystem"
+    delete:
+      operationId: deleteSourceSystem
+      tags: [connectors]
+      summary: Delete a source system
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+        "409":
+          description: Has active references
+
+  /connectors/source-systems/{systemId}/sync:
+    post:
+      operationId: triggerSync
+      tags: [connectors]
+      summary: Trigger sync for a source system
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
+
+  /connectors/storage-providers:
+    get:
+      operationId: listStorageProviders
+      tags: [connectors]
+      summary: List all storage providers
+      responses:
+        "200":
+          description: List of storage providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StorageProvider"
+    post:
+      operationId: createStorageProvider
+      tags: [connectors]
+      summary: Create a storage provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStorageProviderInput"
+      responses:
+        "201":
+          description: Created storage provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageProvider"
+
+  /connectors/storage-providers/{providerId}:
+    patch:
+      operationId: updateStorageProvider
+      tags: [connectors]
+      summary: Update a storage provider
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStorageProviderInput"
+      responses:
+        "200":
+          description: Updated storage provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageProvider"
+
+  /connectors/sync/status:
+    get:
+      operationId: getSyncStatus
+      tags: [connectors]
+      summary: Get sync status across all systems
+      responses:
+        "200":
+          description: Sync status overview
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SyncStatusEntry"
+
+  /connectors/sharepoint/sites:
+    get:
+      operationId: listSharePointSites
+      tags: [sharepoint]
+      summary: List SharePoint sites
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: SharePoint sites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SharePointSite"
+
+  /connectors/sharepoint/sites/{siteId}/drives:
+    get:
+      operationId: listSharePointDrives
+      tags: [sharepoint]
+      summary: List drives in a SharePoint site
+      parameters:
+        - name: siteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: SharePoint drives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SharePointDrive"
+
+  /connectors/sharepoint/drives/{driveId}/items:
+    get:
+      operationId: listSharePointDriveItems
+      tags: [sharepoint]
+      summary: List items in a SharePoint drive
+      parameters:
+        - name: driveId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folderId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Drive items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SharePointItem"
+
+  /connectors/sharepoint/drives/{driveId}/items/{itemId}:
+    get:
+      operationId: getSharePointItem
+      tags: [sharepoint]
+      summary: Get a SharePoint item by ID
+      parameters:
+        - name: driveId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: SharePoint item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharePointItem"
+        "404":
+          description: Not found
+
+  /content/nodes/{nodeId}/source-references:
+    get:
+      operationId: listSourceReferences
+      tags: [source-references]
+      summary: List source references for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Source references
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SourceReference"
+    post:
+      operationId: createSourceReference
+      tags: [source-references]
+      summary: Create a source reference for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSourceReferenceInput"
+      responses:
+        "201":
+          description: Created source reference
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceReference"
+        "409":
+          description: Already referenced
+
+  /content/source-references/{refId}:
+    delete:
+      operationId: deleteSourceReference
+      tags: [source-references]
+      summary: Delete a source reference
+      parameters:
+        - name: refId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted
+
+  /content/source-references/{refId}/check:
+    post:
+      operationId: checkSourceReference
+      tags: [source-references]
+      summary: Check freshness of a source reference
+      parameters:
+        - name: refId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceReferenceCheckResult"
+
 components:
   parameters:
     NodeId:
@@ -2132,7 +2518,17 @@ components:
           format: uuid
         eventType:
           type: string
-          enum: [created, submitted_for_review, review_approved, review_rejected, published, archived, restored, superseded]
+          enum:
+            [
+              created,
+              submitted_for_review,
+              review_approved,
+              review_rejected,
+              published,
+              archived,
+              restored,
+              superseded,
+            ]
         actorId:
           type: string
           nullable: true
@@ -2371,7 +2767,8 @@ components:
           type: boolean
         group:
           type: string
-          enum: [identity, governance, responsibilities, validity, classification]
+          enum:
+            [identity, governance, responsibilities, validity, classification]
         description:
           type: string
           nullable: true
@@ -2775,7 +3172,19 @@ components:
           nullable: true
         classification:
           type: string
-          enum: [document, image, video, audio, spreadsheet, presentation, template, form, archive, other]
+          enum:
+            [
+              document,
+              image,
+              video,
+              audio,
+              spreadsheet,
+              presentation,
+              template,
+              form,
+              archive,
+              other,
+            ]
         nodeId:
           type: string
           format: uuid
@@ -3162,3 +3571,412 @@ components:
                 type: string
                 format: uuid
                 nullable: true
+
+    SourceSystem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        systemType:
+          type: string
+        connectionConfig:
+          type: object
+          nullable: true
+        syncEnabled:
+          type: boolean
+        syncIntervalMinutes:
+          type: integer
+          nullable: true
+        isActive:
+          type: boolean
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSyncError:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - slug
+        - systemType
+
+    SourceSystemWithCount:
+      allOf:
+        - $ref: "#/components/schemas/SourceSystem"
+        - type: object
+          properties:
+            referenceCount:
+              type: integer
+
+    ActiveSourceSystem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        systemType:
+          type: string
+        isActive:
+          type: boolean
+      required:
+        - id
+        - name
+        - slug
+        - systemType
+        - isActive
+
+    CreateSourceSystemInput:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        systemType:
+          type: string
+        connectionConfig:
+          type: object
+          nullable: true
+        syncEnabled:
+          type: boolean
+        syncIntervalMinutes:
+          type: integer
+      required:
+        - name
+        - slug
+        - systemType
+
+    UpdateSourceSystemInput:
+      type: object
+      properties:
+        name:
+          type: string
+        connectionConfig:
+          type: object
+          nullable: true
+        isActive:
+          type: boolean
+        syncEnabled:
+          type: boolean
+        syncIntervalMinutes:
+          type: integer
+
+    StorageProvider:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        providerType:
+          type: string
+        config:
+          type: object
+          nullable: true
+        isDefault:
+          type: boolean
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - slug
+        - providerType
+
+    CreateStorageProviderInput:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        providerType:
+          type: string
+        config:
+          type: object
+          nullable: true
+        isDefault:
+          type: boolean
+      required:
+        - name
+        - slug
+        - providerType
+
+    UpdateStorageProviderInput:
+      type: object
+      properties:
+        name:
+          type: string
+        config:
+          type: object
+          nullable: true
+        isActive:
+          type: boolean
+        isDefault:
+          type: boolean
+
+    SyncResult:
+      type: object
+      properties:
+        systemId:
+          type: string
+          format: uuid
+        checkedCount:
+          type: integer
+        staleCount:
+          type: integer
+        errorCount:
+          type: integer
+        syncedAt:
+          type: string
+          format: date-time
+      required:
+        - systemId
+        - checkedCount
+        - staleCount
+        - errorCount
+        - syncedAt
+
+    SyncStatusEntry:
+      type: object
+      properties:
+        systemId:
+          type: string
+          format: uuid
+        systemName:
+          type: string
+        systemType:
+          type: string
+        syncEnabled:
+          type: boolean
+        syncIntervalMinutes:
+          type: integer
+          nullable: true
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSyncError:
+          type: string
+          nullable: true
+        totalReferences:
+          type: integer
+        staleReferences:
+          type: integer
+        errorReferences:
+          type: integer
+        notFoundReferences:
+          type: integer
+      required:
+        - systemId
+        - systemName
+        - systemType
+
+    SharePointSite:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        webUrl:
+          type: string
+        description:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+        - webUrl
+
+    SharePointDrive:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        driveType:
+          type: string
+        webUrl:
+          type: string
+        siteId:
+          type: string
+      required:
+        - id
+        - name
+        - driveType
+        - webUrl
+        - siteId
+
+    SharePointItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        webUrl:
+          type: string
+        size:
+          type: integer
+        mimeType:
+          type: string
+        lastModifiedAt:
+          type: string
+        lastModifiedBy:
+          type: string
+        isFolder:
+          type: boolean
+        childCount:
+          type: integer
+          nullable: true
+        driveId:
+          type: string
+        parentPath:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+        - webUrl
+        - size
+        - mimeType
+        - isFolder
+        - driveId
+
+    SourceReference:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        sourceSystemId:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        externalUrl:
+          type: string
+          nullable: true
+        externalTitle:
+          type: string
+          nullable: true
+        externalMimeType:
+          type: string
+          nullable: true
+        externalModifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        syncStatus:
+          type: string
+          enum: [active, stale, error, not_found, pending]
+        lastCheckedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+        syncError:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        createdBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        systemName:
+          type: string
+        systemType:
+          type: string
+      required:
+        - id
+        - nodeId
+        - sourceSystemId
+        - externalId
+        - syncStatus
+        - createdAt
+
+    CreateSourceReferenceInput:
+      type: object
+      properties:
+        sourceSystemId:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+        externalUrl:
+          type: string
+          nullable: true
+        externalTitle:
+          type: string
+          nullable: true
+        externalMimeType:
+          type: string
+          nullable: true
+        externalModifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+      required:
+        - sourceSystemId
+        - externalId
+
+    SourceReferenceCheckResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        syncStatus:
+          type: string
+        lastCheckedAt:
+          type: string
+          format: date-time
+        externalModifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - syncStatus
+        - lastCheckedAt

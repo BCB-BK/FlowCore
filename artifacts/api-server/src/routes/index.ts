@@ -8,6 +8,8 @@ import mediaRouter from "./media";
 import { searchRouter } from "./search";
 import { tagsRouter } from "./tags";
 import { glossaryRouter } from "./glossary";
+import { connectorsRouter } from "./connectors";
+import { sourceRefsRouter } from "./source-refs";
 
 const router: IRouter = Router();
 
@@ -20,5 +22,7 @@ router.use("/search", searchRouter);
 router.use("/tags", tagsRouter);
 router.use("/glossary", glossaryRouter);
 router.use("/media", mediaRouter);
+router.use("/connectors", connectorsRouter);
+router.use("/content", sourceRefsRouter);
 
 export default router;

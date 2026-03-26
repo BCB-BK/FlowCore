@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useRootNodes } from "@/hooks/use-nodes";
 import { TreeNode } from "./TreeNode";
-import { Home, BookOpen, Search, AlertTriangle } from "lucide-react";
+import { Home, BookOpen, Search, AlertTriangle, Database } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,6 +74,15 @@ export function WikiSidebar() {
               >
                 <AlertTriangle className="h-4 w-4" />
                 <span>Defekte Links</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/connectors"}
+                onClick={() => navigate("/connectors")}
+              >
+                <Database className="h-4 w-4" />
+                <span>Konnektoren</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
