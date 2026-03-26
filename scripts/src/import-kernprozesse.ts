@@ -35,7 +35,7 @@ const RELEVANT_TABS = [
   "Undefinierte Prozesse",
 ];
 
-const SYSTEM_OWNER_ID = "00000000-0000-0000-0000-000000000001";
+const SYSTEM_OWNER_ID = "bdb316ff-13be-4a10-a5f9-a821f81938b5";
 
 interface ParsedRow {
   level: number;
@@ -212,32 +212,67 @@ function getTemplateType(level: number): "core_process_overview" | "process_page
 
 function buildTitle(
   tabShortName: string,
-  level: number,
+  _level: number,
   bezeichnung: string,
 ): string {
-  if (level === 1) {
-    return `${tabShortName}: ${bezeichnung}`;
-  }
-  return bezeichnung;
+  return `${bezeichnung} (${tabShortName})`;
 }
 
-function buildRevisionContent(row: ParsedRow): Record<string, unknown> {
-  const parts: string[] = [];
+function buildEditorContent(row: ParsedRow, tabName: string): Record<string, unknown> {
+  const nodes: Record<string, unknown>[] = [];
+
+  nodes.push({
+    type: "paragraph",
+    content: [
+      { type: "text", marks: [{ type: "bold" }], text: "Quelle (Arbeitsmappe): " },
+      { type: "text", text: tabName },
+    ],
+  });
+
+  nodes.push({
+    type: "paragraph",
+    content: [
+      { type: "text", marks: [{ type: "bold" }], text: "Bezeichnung: " },
+      { type: "text", text: row.bezeichnung },
+    ],
+  });
 
   if (row.beschreibung) {
-    parts.push(row.beschreibung);
+    nodes.push({
+      type: "paragraph",
+      content: [
+        { type: "text", marks: [{ type: "bold" }], text: "Beschreibung: " },
+        { type: "text", text: row.beschreibung },
+      ],
+    });
   }
 
   if (row.rollen) {
-    parts.push(`\n**Rollen:** ${row.rollen}`);
+    nodes.push({
+      type: "paragraph",
+      content: [
+        { type: "text", marks: [{ type: "bold" }], text: "Rollen: " },
+        { type: "text", text: row.rollen },
+      ],
+    });
   }
 
   if (row.erwartetesErgebnis) {
-    parts.push(`\n**Erwartetes Ergebnis:** ${row.erwartetesErgebnis}`);
+    nodes.push({
+      type: "paragraph",
+      content: [
+        { type: "text", marks: [{ type: "bold" }], text: "Erwartetes Ergebnis: " },
+        { type: "text", text: row.erwartetesErgebnis },
+      ],
+    });
   }
 
+  return { type: "doc", content: nodes };
+}
+
+function buildRevisionContent(row: ParsedRow): Record<string, unknown> {
   return {
-    description: parts.join("\n") || undefined,
+    description: row.beschreibung || undefined,
     owner: row.rollen || undefined,
   };
 }
@@ -274,6 +309,7 @@ async function createNodeWithRevision(
   parentNodeId: string | null,
   sortOrder: number,
   revisionContent: Record<string, unknown>,
+  editorContent: Record<string, unknown>,
 ): Promise<string> {
   const immutableId = `import-kp-${randomUUID()}`;
 
@@ -294,8 +330,7 @@ async function createNodeWithRevision(
       })
       .returning({ id: contentNodesTable.id });
 
-    const hasContent = revisionContent.description || revisionContent.owner;
-    if (hasContent) {
+    {
       const [revision] = await tx
         .insert(contentRevisionsTable)
         .values({
@@ -303,6 +338,7 @@ async function createNodeWithRevision(
           revisionNo: 1,
           title,
           content: revisionContent,
+          structuredFields: { _editorContent: editorContent },
           changeType: "editorial",
           changeSummary: "Initiale Revision aus Excel-Import",
           status: "draft",
@@ -420,7 +456,8 @@ async function importTab(tabName: string, sheet: XLSX.WorkSheet): Promise<{ crea
     }
 
     const content = buildRevisionContent(row);
-    const nodeId = await createNodeWithRevision(title, templateType, parentNodeId, i + 1, content);
+    const editor = buildEditorContent(row, tabName);
+    const nodeId = await createNodeWithRevision(title, templateType, parentNodeId, i + 1, content, editor);
 
     parentStack.push({ level: row.level, nodeId });
     created++;
