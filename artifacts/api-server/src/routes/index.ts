@@ -13,10 +13,12 @@ import { sourceRefsRouter } from "./source-refs";
 import { aiRouter } from "./ai";
 import { qualityRouter } from "./quality";
 import { teamsRouter } from "./teams";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(adminRouter);
 router.use(authRouter);
 router.use(principalsRouter);
 router.use("/content", contentRouter);

@@ -104,6 +104,7 @@ Express 5 API server with structured logging, config validation, content managem
 - Routes: `src/routes/connectors.ts` — Source system CRUD, storage provider CRUD, SharePoint browsing (sites/drives/items), sync trigger, sync status dashboard (14 endpoints)
 - Routes: `src/routes/source-refs.ts` — Source reference CRUD per node, freshness check, per-node permission-guarded (4 endpoints)
 - Routes: `src/routes/ai.ts` — AI assistant settings CRUD, knowledge Q&A (SSE streaming), page writing assistant (SSE streaming), usage stats (4 endpoints)
+- Routes: `src/routes/admin.ts` — System info endpoint (auth-guarded, returns version/env/DB/auth/integrations status)
 - Routes: `src/routes/quality.ts` — Quality dashboard overview, page quality list (filterable), duplicates analysis, maintenance hints, personal work items, search insights (6 endpoints)
 - Services: `src/services/ai.service.ts` — AI orchestration: settings management, wiki content retrieval (FTS), prompt construction, OpenAI streaming, source citations, usage logging
 - Services: `src/services/storage.service.ts` — LocalStorageProvider + DB-backed default provider resolution + SharePoint provider selection
@@ -126,7 +127,7 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Routing: Wouter (lightweight client-side router)
 - Data fetching: React Query via `@workspace/api-client-react`
 - Auth: Dev-mode header injection (`X-Dev-Principal-Id`) via `lib/api.ts`
-- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (server-side FTS with facets), GlossaryPage (A-Z term management), BrokenLinksPage (broken relations + orphaned nodes), AISettingsPage (admin KI-Assistent configuration + usage stats), QualityDashboard (/dashboard — KPI tiles, page quality list, maintenance hints, duplicate analysis), MyWorkPage (/my-work — personal cockpit with pending reviews/approvals/drafts)
+- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (server-side FTS with facets), GlossaryPage (A-Z term management), BrokenLinksPage (broken relations + orphaned nodes), SettingsPage (/settings — unified admin settings with 5 tabs: Allgemein/Verbindungen/KI-Assistent/Seitentemplates/Konnektoren), AISettingsPage (admin KI-Assistent configuration + usage stats), QualityDashboard (/dashboard — KPI tiles, page quality list, maintenance hints, duplicate analysis), MyWorkPage (/my-work — personal cockpit with pending reviews/approvals/drafts)
 - AI Components: GlobalAssistant (floating chat panel with SSE streaming, source citations), PageAssistant (writing aid panel: reformulate, summarize, expand, shorten, grammar, gap analysis)
 - Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog (multi-step), TreeNode, PeoplePicker, PageTypeIcon
 - Editor: BlockEditor (Tiptap-based rich text editor with 12+ block types, slash commands, edit/preview toggle, autosave to localStorage, draft recovery)

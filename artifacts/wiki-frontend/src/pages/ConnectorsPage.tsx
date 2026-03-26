@@ -53,7 +53,7 @@ import {
   getGetSyncStatusQueryKey,
 } from "@workspace/api-client-react";
 
-export function ConnectorsPage() {
+export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
   const queryClient = useQueryClient();
   const [showCreateSystem, setShowCreateSystem] = useState(false);
   const [showCreateProvider, setShowCreateProvider] = useState(false);
@@ -62,19 +62,21 @@ export function ConnectorsPage() {
   >("systems");
 
   return (
-    <div className="max-w-6xl mx-auto py-6 px-4 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Database className="w-6 h-6" />
-            Konnektoren & Quellsysteme
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Verwalten Sie externe Quellsysteme, Speicheranbieter und
-            Synchronisation
-          </p>
+    <div className={embedded ? "space-y-6" : "max-w-6xl mx-auto py-6 px-4 space-y-6"}>
+      {!embedded && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Database className="w-6 h-6" />
+              Konnektoren & Quellsysteme
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Verwalten Sie externe Quellsysteme, Speicheranbieter und
+              Synchronisation
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex gap-2 border-b pb-2">
         <Button

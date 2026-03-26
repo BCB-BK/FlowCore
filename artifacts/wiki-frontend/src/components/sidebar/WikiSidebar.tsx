@@ -19,6 +19,7 @@ import {
   Bot,
   BarChart3,
   ClipboardList,
+  Settings,
 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
@@ -105,20 +106,11 @@ export function WikiSidebar() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={location === "/connectors"}
-                onClick={() => navigate("/connectors")}
+                isActive={location === "/settings" || location === "/connectors" || location === "/ai-settings"}
+                onClick={() => navigate("/settings")}
               >
-                <Database className="h-4 w-4" />
-                <span>Konnektoren</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/ai-settings"}
-                onClick={() => navigate("/ai-settings")}
-              >
-                <Bot className="h-4 w-4" />
-                <span>KI-Assistent</span>
+                <Settings className="h-4 w-4" />
+                <span>Einstellungen</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

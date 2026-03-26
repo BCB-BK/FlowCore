@@ -15,6 +15,7 @@ import { AISettingsPage } from "@/pages/AISettingsPage";
 import { QualityDashboard } from "@/pages/QualityDashboard";
 import { MyWorkPage } from "@/pages/MyWorkPage";
 import { TeamsTabConfig } from "@/pages/TeamsTabConfig";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
 import NotFound from "@/pages/not-found";
 
@@ -27,7 +28,8 @@ function Router() {
         <Route path="/search" component={SearchPage} />
         <Route path="/glossary" component={GlossaryPage} />
         <Route path="/broken-links" component={BrokenLinksPage} />
-        <Route path="/connectors" component={ConnectorsPage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route path="/connectors">{() => <ConnectorsPage />}</Route>
         <Route path="/ai-settings" component={AISettingsPage} />
         <Route path="/dashboard" component={QualityDashboard} />
         <Route path="/my-work" component={MyWorkPage} />
