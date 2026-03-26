@@ -8,11 +8,13 @@
     "no-hardcode-check": "tsx ./src/no-hardcode-check.ts",
     "docs:check": "tsx ./src/docs-check.ts",
     "migrate-pilot": "tsx ./src/migrate-pilot-content.ts",
+    "import-glossary": "tsx ./src/import-glossary.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@workspace/db": "workspace:*",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "catalog:",
