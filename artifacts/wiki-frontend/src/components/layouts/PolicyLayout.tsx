@@ -1,8 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Target, BookOpen, Gavel } from "lucide-react";
+import { EditableSectionCard } from "./EditableSectionCard";
 
 interface PolicyLayoutProps {
   structuredFields: Record<string, unknown>;
+  onSectionSave?: (key: string, value: string) => void;
 }
 
 function str(val: unknown): string {
@@ -10,76 +11,47 @@ function str(val: unknown): string {
   return String(val);
 }
 
-export function PolicyLayout({ structuredFields }: PolicyLayoutProps) {
+export function PolicyLayout({
+  structuredFields,
+  onSectionSave,
+}: PolicyLayoutProps) {
   return (
     <div className="space-y-4">
-      {structuredFields.purpose != null && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
-              Zweck
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.purpose)}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <EditableSectionCard
+        sectionKey="purpose"
+        label="Zweck"
+        icon={<Target className="h-4 w-4 text-primary" />}
+        value={str(structuredFields.purpose)}
+        onSave={onSectionSave}
+        emptyText="Noch kein Zweck erfasst"
+      />
 
-      {structuredFields.scope != null && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-blue-600" />
-              Geltungsbereich
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.scope)}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <EditableSectionCard
+        sectionKey="scope"
+        label="Geltungsbereich"
+        icon={<BookOpen className="h-4 w-4 text-blue-600" />}
+        value={str(structuredFields.scope)}
+        onSave={onSectionSave}
+        emptyText="Noch kein Geltungsbereich definiert"
+      />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Shield className="h-4 w-4 text-red-600" />
-            Richtlinientext
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {structuredFields.policy_text ? (
-            <div className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.policy_text)}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Noch kein Richtlinientext erfasst
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <EditableSectionCard
+        sectionKey="policy_text"
+        label="Richtlinientext"
+        icon={<Shield className="h-4 w-4 text-red-600" />}
+        value={str(structuredFields.policy_text)}
+        onSave={onSectionSave}
+        emptyText="Noch kein Richtlinientext erfasst"
+      />
 
-      {structuredFields.enforcement != null && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Gavel className="h-4 w-4 text-amber-600" />
-              Durchsetzung
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.enforcement)}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <EditableSectionCard
+        sectionKey="enforcement"
+        label="Durchsetzung"
+        icon={<Gavel className="h-4 w-4 text-amber-600" />}
+        value={str(structuredFields.enforcement)}
+        onSave={onSectionSave}
+        emptyText="Noch keine Durchsetzungsmaßnahmen definiert"
+      />
     </div>
   );
 }

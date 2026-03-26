@@ -235,6 +235,36 @@ export function NodeDetail() {
     ],
   );
 
+  const handleSectionSave = useCallback(
+    async (sectionKey: string, value: string) => {
+      if (!node || !nodeId) return;
+      const updatedFields = {
+        ...structuredFields,
+        [sectionKey]: value,
+      };
+      try {
+        await createRevision.mutateAsync({
+          nodeId,
+          data: {
+            title: node.title,
+            content: editableMetadata,
+            structuredFields: updatedFields,
+            changeType: "editorial",
+            changeSummary: `Abschnitt aktualisiert`,
+          },
+        });
+        toast({ title: "Abschnitt gespeichert" });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Fehler beim Speichern",
+          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, node, structuredFields, editableMetadata, createRevision, toast],
+  );
+
   const handleTrackMediaUsage = useCallback(
     (assetId: string) => {
       if (!nodeId) return;
@@ -475,6 +505,7 @@ export function NodeDetail() {
           <PageLayout
             templateType={node.templateType}
             structuredFields={structuredFields}
+            onSectionSave={handleSectionSave}
           />
 
           <div className="mt-6">

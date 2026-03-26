@@ -1,15 +1,23 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getPageType } from "@/lib/types";
 import { FileText } from "lucide-react";
+import { EditableSectionCard } from "./EditableSectionCard";
 
 interface GenericSectionLayoutProps {
   templateType: string;
   structuredFields: Record<string, unknown>;
+  onSectionSave?: (key: string, value: string) => void;
+}
+
+function str(val: unknown): string {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "object") return JSON.stringify(val, null, 2);
+  return String(val);
 }
 
 export function GenericSectionLayout({
   templateType,
   structuredFields,
+  onSectionSave,
 }: GenericSectionLayoutProps) {
   const pageDef = getPageType(templateType);
   if (!pageDef) return null;
@@ -21,35 +29,16 @@ export function GenericSectionLayout({
   return (
     <div className="space-y-4">
       {contentSections.map((section) => (
-        <Card key={section.key}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              {section.label}
-              {section.required && (
-                <span className="text-destructive text-xs">*</span>
-              )}
-            </CardTitle>
-            {section.description && (
-              <p className="text-xs text-muted-foreground">
-                {section.description}
-              </p>
-            )}
-          </CardHeader>
-          <CardContent>
-            {structuredFields[section.key] ? (
-              <div className="text-sm whitespace-pre-wrap">
-                {typeof structuredFields[section.key] === "object"
-                  ? JSON.stringify(structuredFields[section.key], null, 2)
-                  : String(structuredFields[section.key])}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Noch kein Inhalt
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <EditableSectionCard
+          key={section.key}
+          sectionKey={section.key}
+          label={section.label}
+          description={section.description}
+          required={section.required}
+          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+          value={str(structuredFields[section.key])}
+          onSave={onSectionSave}
+        />
       ))}
     </div>
   );

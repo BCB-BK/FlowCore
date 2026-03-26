@@ -1,8 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListChecks, FileStack, BookOpen } from "lucide-react";
+import { EditableSectionCard } from "./EditableSectionCard";
 
 interface ProcedureLayoutProps {
   structuredFields: Record<string, unknown>;
+  onSectionSave?: (key: string, value: string) => void;
 }
 
 function str(val: unknown): string {
@@ -10,64 +11,38 @@ function str(val: unknown): string {
   return String(val);
 }
 
-export function ProcedureLayout({ structuredFields }: ProcedureLayoutProps) {
+export function ProcedureLayout({
+  structuredFields,
+  onSectionSave,
+}: ProcedureLayoutProps) {
   return (
     <div className="space-y-4">
-      {structuredFields.scope != null && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-primary" />
-              Geltungsbereich
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.scope)}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <EditableSectionCard
+        sectionKey="scope"
+        label="Geltungsbereich"
+        icon={<BookOpen className="h-4 w-4 text-primary" />}
+        value={str(structuredFields.scope)}
+        onSave={onSectionSave}
+        emptyText="Noch kein Geltungsbereich definiert"
+      />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <ListChecks className="h-4 w-4 text-orange-600" />
-            Durchführung
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {structuredFields.procedure ? (
-            <div className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.procedure)}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Noch keine Schritte dokumentiert
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <EditableSectionCard
+        sectionKey="procedure"
+        label="Durchführung"
+        icon={<ListChecks className="h-4 w-4 text-orange-600" />}
+        value={str(structuredFields.procedure)}
+        onSave={onSectionSave}
+        emptyText="Noch keine Schritte dokumentiert"
+      />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <FileStack className="h-4 w-4 text-blue-600" />
-            Mitgeltende Unterlagen
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {structuredFields.documents ? (
-            <div className="text-sm whitespace-pre-wrap">
-              {str(structuredFields.documents)}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Keine mitgeltenden Unterlagen
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <EditableSectionCard
+        sectionKey="documents"
+        label="Mitgeltende Unterlagen"
+        icon={<FileStack className="h-4 w-4 text-blue-600" />}
+        value={str(structuredFields.documents)}
+        onSave={onSectionSave}
+        emptyText="Keine mitgeltenden Unterlagen"
+      />
     </div>
   );
 }
