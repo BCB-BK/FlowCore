@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { configureTab, isInTeamsRuntime } from "@/lib/teams";
+import { configureTab } from "@/lib/teams";
+import { useTeamsContext } from "@/hooks/useTeamsContext";
 
 type TabType = "wiki-home" | "wiki-search" | "wiki-dashboard" | "wiki-page";
 
@@ -20,6 +21,7 @@ interface TabConfig {
 }
 
 export function TeamsTabConfig() {
+  const { inTeams, initialized } = useTeamsContext();
   const [config, setConfig] = useState<TabConfig>({
     tabType: "wiki-home",
     nodeId: "",
@@ -51,7 +53,7 @@ export function TeamsTabConfig() {
   );
 
   useEffect(() => {
-    if (isInTeamsRuntime()) {
+    if (inTeams && initialized) {
       configureTab({
         entityId: config.tabType,
         contentUrl: getContentUrl(config),
@@ -59,7 +61,7 @@ export function TeamsTabConfig() {
         websiteUrl: `${window.location.origin}${basePath}`,
       });
     }
-  }, [config, getContentUrl, basePath]);
+  }, [config, getContentUrl, basePath, inTeams, initialized]);
 
   const tabTypeLabels: Record<TabType, string> = {
     "wiki-home": "Wiki-Startseite",
@@ -126,7 +128,7 @@ export function TeamsTabConfig() {
           </div>
 
           <p className="text-sm text-muted-foreground text-center">
-            {isInTeamsRuntime()
+            {inTeams
               ? 'Klicken Sie auf "Speichern" in der Teams-Kopfzeile, um den Tab zu erstellen.'
               : "Diese Seite wird innerhalb von Microsoft Teams angezeigt."}
           </p>

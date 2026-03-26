@@ -33,10 +33,10 @@ export function TeamsProvider({ children }: TeamsProviderProps) {
       const teamsCtx = await getTeamsContextFromSDK();
       setCtx(teamsCtx);
 
+      document.documentElement.classList.remove("dark", "high-contrast");
       if (teamsCtx.theme === "dark" || teamsCtx.theme === "contrast") {
         document.documentElement.classList.add("dark");
       }
-
       if (teamsCtx.theme === "contrast") {
         document.documentElement.classList.add("high-contrast");
       }
