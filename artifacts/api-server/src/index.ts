@@ -2,6 +2,7 @@ import app from "./app";
 import { appConfig } from "./lib/config";
 import { logger } from "./lib/logger";
 import { ensureDevPrincipals } from "./services/principal.service";
+import { startSyncScheduler } from "./services/sync-scheduler.service";
 
 async function start() {
   if (appConfig.authDevMode) {
@@ -29,6 +30,8 @@ async function start() {
       },
       "Server listening",
     );
+
+    startSyncScheduler();
   });
 }
 

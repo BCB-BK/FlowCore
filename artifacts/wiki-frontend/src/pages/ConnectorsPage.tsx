@@ -669,10 +669,18 @@ function CreateStorageProviderDialog({
   const [slug, setSlug] = useState("");
   const [providerType, setProviderType] = useState("local");
   const [isDefault, setIsDefault] = useState(false);
+  const [tenantId, setTenantId] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [spDriveId, setSpDriveId] = useState("");
   const createProvider = useCreateStorageProvider();
 
   const handleCreate = () => {
     if (!name || !slug) return;
+    const config =
+      providerType === "sharepoint"
+        ? { tenantId, clientId, clientSecret, driveId: spDriveId }
+        : undefined;
     createProvider.mutate(
       {
         data: {
@@ -680,6 +688,7 @@ function CreateStorageProviderDialog({
           slug,
           providerType,
           isDefault,
+          config: config as Record<string, unknown> | undefined,
         },
       },
       {
@@ -739,6 +748,43 @@ function CreateStorageProviderDialog({
               </SelectContent>
             </Select>
           </div>
+          {providerType === "sharepoint" && (
+            <>
+              <div>
+                <Label>Tenant ID</Label>
+                <Input
+                  value={tenantId}
+                  onChange={(e) => setTenantId(e.target.value)}
+                  placeholder="Azure AD Tenant ID"
+                />
+              </div>
+              <div>
+                <Label>Client ID</Label>
+                <Input
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  placeholder="App Registration Client ID"
+                />
+              </div>
+              <div>
+                <Label>Client Secret</Label>
+                <Input
+                  type="password"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  placeholder="App Registration Client Secret"
+                />
+              </div>
+              <div>
+                <Label>Drive ID</Label>
+                <Input
+                  value={spDriveId}
+                  onChange={(e) => setSpDriveId(e.target.value)}
+                  placeholder="SharePoint Drive ID"
+                />
+              </div>
+            </>
+          )}
           <div className="flex items-center gap-3">
             <Switch checked={isDefault} onCheckedChange={setIsDefault} />
             <Label>Als Standard setzen</Label>

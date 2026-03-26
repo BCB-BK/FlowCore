@@ -14,6 +14,17 @@ import { getDriveItemMeta } from "../services/sharepoint.service";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function resolveGraphToken(req: {
+  headers: Record<string, string | string[] | undefined>;
+  session?: { graphAccessToken?: string };
+}): string {
+  return (
+    (req.headers["x-graph-token"] as string) ||
+    req.session?.graphAccessToken ||
+    ""
+  );
+}
+
 export const sourceRefsRouter: IRouter = Router();
 
 sourceRefsRouter.get(
@@ -193,7 +204,6 @@ sourceRefsRouter.delete(
 sourceRefsRouter.post(
   "/source-references/:refId/check",
   requireAuth,
-  requirePermission("read_page"),
   async (req, res) => {
     const refId = req.params.refId as string;
     if (!UUID_RE.test(refId)) {
@@ -208,6 +218,16 @@ sourceRefsRouter.post(
 
     if (!ref) {
       res.status(404).json({ error: "Source reference not found" });
+      return;
+    }
+
+    const canRead = await hasPermission(
+      req.user!.principalId,
+      "read_page",
+      ref.nodeId,
+    );
+    if (!canRead) {
+      res.status(403).json({ error: "Insufficient permissions" });
       return;
     }
 
@@ -227,7 +247,7 @@ sourceRefsRouter.post(
       const meta = ref.metadata as { driveId?: string } | null;
       if (meta?.driveId) {
         try {
-          const accessToken = (req.headers["x-graph-token"] as string) || "";
+          const accessToken = resolveGraphToken(req);
           const itemMeta = await getDriveItemMeta(
             accessToken,
             meta.driveId,

@@ -21,6 +21,17 @@ const UUID_RE =
 
 export const connectorsRouter: IRouter = Router();
 
+function resolveGraphToken(req: {
+  headers: Record<string, string | string[] | undefined>;
+  session?: { graphAccessToken?: string };
+}): string {
+  return (
+    (req.headers["x-graph-token"] as string) ||
+    req.session?.graphAccessToken ||
+    ""
+  );
+}
+
 connectorsRouter.get(
   "/source-systems",
   requireAuth,
@@ -380,7 +391,7 @@ connectorsRouter.get(
   requirePermission("edit_content"),
   async (req, res) => {
     const query = req.query.q as string | undefined;
-    const accessToken = (req.headers["x-graph-token"] as string) || "";
+    const accessToken = resolveGraphToken(req);
     const sites = await listSites(accessToken, query);
     res.json(sites);
   },
@@ -392,7 +403,7 @@ connectorsRouter.get(
   requirePermission("read_page"),
   async (req, res) => {
     const siteId = req.params.siteId as string;
-    const accessToken = (req.headers["x-graph-token"] as string) || "";
+    const accessToken = resolveGraphToken(req);
     const drives = await listDrives(accessToken, siteId);
     res.json(drives);
   },
@@ -405,7 +416,7 @@ connectorsRouter.get(
   async (req, res) => {
     const driveId = req.params.driveId as string;
     const folderId = req.query.folderId as string | undefined;
-    const accessToken = (req.headers["x-graph-token"] as string) || "";
+    const accessToken = resolveGraphToken(req);
     const items = await listDriveItems(accessToken, driveId, folderId);
     res.json(items);
   },
@@ -418,7 +429,7 @@ connectorsRouter.get(
   async (req, res) => {
     const driveId = req.params.driveId as string;
     const itemId = req.params.itemId as string;
-    const accessToken = (req.headers["x-graph-token"] as string) || "";
+    const accessToken = resolveGraphToken(req);
     const item = await getDriveItemMeta(accessToken, driveId, itemId);
     if (!item) {
       res.status(404).json({ error: "Item not found" });
@@ -464,7 +475,7 @@ connectorsRouter.post(
         if (system.systemType === "sharepoint" && ref.metadata) {
           const meta = ref.metadata as { driveId?: string };
           if (meta.driveId) {
-            const accessToken = (req.headers["x-graph-token"] as string) || "";
+            const accessToken = resolveGraphToken(req);
             const itemMeta = await getDriveItemMeta(
               accessToken,
               meta.driveId,
