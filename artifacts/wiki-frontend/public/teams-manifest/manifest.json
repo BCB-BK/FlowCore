@@ -10,12 +10,12 @@
     "termsOfUseUrl": "{{APP_BASE_URL}}/terms"
   },
   "name": {
-    "short": "BC Wiki",
-    "full": "Bildungscampus Wiki – Wissensmanagement"
+    "short": "FlowCore",
+    "full": "FlowCore – Wissensmanagement Bildungscampus"
   },
   "description": {
     "short": "Zentrales Wissensmanagement für den Bildungscampus Backnang",
-    "full": "Das Bildungscampus Wiki ist die zentrale Wissensplattform für Prozessdokumentation, Richtlinien, Formulare und Arbeitsanweisungen. Durchsuchen, erstellen und verwalten Sie Inhalte direkt in Microsoft Teams."
+    "full": "FlowCore ist die zentrale Wissensplattform für Prozessdokumentation, Richtlinien, Formulare und Arbeitsanweisungen. Durchsuchen, erstellen und verwalten Sie Inhalte direkt in Microsoft Teams."
   },
   "icons": {
     "color": "color.png",
@@ -25,7 +25,7 @@
   "staticTabs": [
     {
       "entityId": "wiki-home",
-      "name": "Wiki",
+      "name": "FlowCore",
       "contentUrl": "{{APP_BASE_URL}}?context=teams&theme={theme}",
       "websiteUrl": "{{APP_BASE_URL}}",
       "scopes": ["personal"]

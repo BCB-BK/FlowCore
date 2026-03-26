@@ -1,9 +1,9 @@
-# Schnellstart – Bildungscampus Wiki
+# Schnellstart – FlowCore
 
 ## In 5 Minuten loslegen
 
 ### 1. Anmelden
-- Öffnen Sie das Wiki über den Link oder den Microsoft Teams-Tab **"BC Wiki"**
+- Öffnen Sie FlowCore über den Link oder den Microsoft Teams-Tab **"FlowCore"**
 - Die Anmeldung erfolgt automatisch über Ihr Microsoft-Konto
 
 ### 2. Navigieren

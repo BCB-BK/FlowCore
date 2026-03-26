@@ -1,4 +1,4 @@
-# Data Model – Enterprise Wiki
+# Data Model – FlowCore
 
 ## Overview
 

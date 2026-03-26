@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Dieses Protokoll definiert die Testszenarien, Pilotgruppen und Abnahmekriterien für den Benutzerakzeptanztest (UAT) des Bildungscampus Wiki.
+Dieses Protokoll definiert die Testszenarien, Pilotgruppen und Abnahmekriterien für den Benutzerakzeptanztest (UAT) von FlowCore.
 
 ## Pilotgruppen
 

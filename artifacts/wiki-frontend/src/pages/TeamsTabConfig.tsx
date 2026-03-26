@@ -25,7 +25,7 @@ export function TeamsTabConfig() {
   const [config, setConfig] = useState<TabConfig>({
     tabType: "wiki-home",
     nodeId: "",
-    label: "BC Wiki",
+    label: "FlowCore",
   });
 
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -57,7 +57,7 @@ export function TeamsTabConfig() {
       configureTab({
         entityId: config.tabType,
         contentUrl: getContentUrl(config),
-        suggestedDisplayName: config.label || "BC Wiki",
+        suggestedDisplayName: config.label || "FlowCore",
         websiteUrl: `${window.location.origin}${basePath}`,
       });
     }
@@ -123,7 +123,7 @@ export function TeamsTabConfig() {
               onChange={(e) =>
                 setConfig((c) => ({ ...c, label: e.target.value }))
               }
-              placeholder="BC Wiki"
+              placeholder="FlowCore"
             />
           </div>
 

@@ -1,8 +1,8 @@
-# Workspace – Enterprise Wiki (Bildungscampus Backnang)
+# Workspace – FlowCore (Bildungscampus Backnang)
 
 ## Overview
 
-pnpm workspace monorepo for a process-based Enterprise Wiki system. Uses TypeScript, Express 5 API server, React+Vite frontend, PostgreSQL with Drizzle ORM, and OpenAPI-first code generation.
+pnpm workspace monorepo for FlowCore, a process-based knowledge management system. Uses TypeScript, Express 5 API server, React+Vite frontend, PostgreSQL with Drizzle ORM, and OpenAPI-first code generation.
 
 ## Stack
 

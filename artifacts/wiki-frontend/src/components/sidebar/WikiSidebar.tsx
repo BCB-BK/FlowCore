@@ -37,11 +37,11 @@ export function WikiSidebar() {
         >
           <img
             src={`${import.meta.env.BASE_URL}bildungscampus-logo.jpg`}
-            alt="BildungsCampus"
+            alt="FlowCore"
             className="h-8 w-auto"
           />
           <div>
-            <p className="text-sm font-semibold leading-tight">Knowledge Hub</p>
+            <p className="text-sm font-semibold leading-tight">FlowCore</p>
           </div>
         </div>
       </SidebarHeader>
@@ -150,7 +150,7 @@ export function WikiSidebar() {
 
       <SidebarFooter className="border-t p-3">
         <p className="text-xs text-muted-foreground text-center">
-          Enterprise Wiki v0.4
+          FlowCore v0.4
         </p>
       </SidebarFooter>
     </Sidebar>

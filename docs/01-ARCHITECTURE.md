@@ -1,4 +1,4 @@
-# Architecture Map – Enterprise Wiki (Bildungscampus Backnang)
+# Architecture Map – FlowCore (Bildungscampus Backnang)
 
 ## Overview
 

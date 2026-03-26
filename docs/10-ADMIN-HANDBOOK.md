@@ -1,8 +1,8 @@
-# Administrationshandbuch – Bildungscampus Wiki
+# Administrationshandbuch – FlowCore
 
 ## Überblick
 
-Dieses Handbuch beschreibt die Systemadministration des Bildungscampus Wiki, einschließlich Konfiguration, Benutzerverwaltung, Sicherheit und Wartung.
+Dieses Handbuch beschreibt die Systemadministration von FlowCore, einschließlich Konfiguration, Benutzerverwaltung, Sicherheit und Wartung.
 
 ## Systemarchitektur
 

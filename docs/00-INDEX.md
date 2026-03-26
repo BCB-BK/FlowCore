@@ -1,4 +1,4 @@
-# Enterprise Wiki – Documentation Index
+# FlowCore – Documentation Index
 
 ## Architecture & Design
 - [01 – Architecture Map](./01-ARCHITECTURE.md)

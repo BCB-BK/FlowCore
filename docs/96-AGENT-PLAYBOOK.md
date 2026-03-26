@@ -1,4 +1,4 @@
-# Agent Playbook – Enterprise Wiki
+# Agent Playbook – FlowCore
 
 This playbook governs all development work on this project. Every task must follow these rules.
 

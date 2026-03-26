@@ -40,7 +40,7 @@ export interface AiSource {
   sourceSystemName?: string;
 }
 
-const DEFAULT_SYSTEM_PROMPT = `Du bist ein hilfreicher Wissensassistent für das Bildungscampus Backnang Enterprise Wiki.
+const DEFAULT_SYSTEM_PROMPT = `Du bist ein hilfreicher Wissensassistent für FlowCore, die Wissensplattform des Bildungscampus Backnang.
 Beantworte Fragen basierend auf den bereitgestellten Wiki-Inhalten.
 Gib immer Quellenverweise an, wenn du Informationen aus den Wiki-Seiten verwendest.
 Antworte auf Deutsch, es sei denn, der Benutzer schreibt auf Englisch.
@@ -570,7 +570,7 @@ export async function streamPageAssist(
     const stream = await client.responses.create({
       model: settings.model,
       instructions:
-        "Du bist ein Schreibassistent für das Bildungscampus Backnang Enterprise Wiki. Antworte auf Deutsch.",
+        "Du bist ein Schreibassistent für FlowCore, die Wissensplattform des Bildungscampus Backnang. Antworte auf Deutsch.",
       input: `${actionPrompt}\n\n${text}`,
       max_output_tokens: settings.maxCompletionTokens,
       stream: true,

@@ -40,7 +40,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 </svg>
               </button>
               <span className="text-sm font-semibold text-foreground">
-                BC Wiki
+                FlowCore
               </span>
             </header>
             <main className="flex-1 overflow-auto p-4">{children}</main>

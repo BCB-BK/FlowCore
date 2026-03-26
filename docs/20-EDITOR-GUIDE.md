@@ -1,9 +1,9 @@
-# Editor-Leitfaden – Bildungscampus Wiki
+# Editor-Leitfaden – FlowCore
 
 ## Erste Schritte
 
 ### Anmeldung
-1. Öffnen Sie das Wiki über den bereitgestellten Link oder den Teams-Tab "BC Wiki"
+1. Öffnen Sie FlowCore über den bereitgestellten Link oder den Teams-Tab "FlowCore"
 2. Die Anmeldung erfolgt automatisch über Ihr Microsoft-Konto (SSO)
 3. Nach der Anmeldung sehen Sie die Wiki-Startseite (Hub)
 

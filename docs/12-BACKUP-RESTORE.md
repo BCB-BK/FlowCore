@@ -2,7 +2,7 @@
 
 ## Übersicht
 
-Das Bildungscampus Wiki speichert alle Daten in PostgreSQL. Medien-Assets werden in der Datenbank als Referenzen mit Speicherort gespeichert. Eine vollständige Backup-Strategie umfasst Datenbank, Konfiguration und Dokumentation.
+FlowCore speichert alle Daten in PostgreSQL. Medien-Assets werden in der Datenbank als Referenzen mit Speicherort gespeichert. Eine vollständige Backup-Strategie umfasst Datenbank, Konfiguration und Dokumentation.
 
 ## Backup-Komponenten
 

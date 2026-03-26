@@ -27,7 +27,7 @@ export function Hub() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Knowledge Hub</h1>
+          <h1 className="text-2xl font-bold tracking-tight">FlowCore</h1>
           <p className="text-muted-foreground mt-1">
             {user
               ? `Willkommen, ${user.displayName}`
