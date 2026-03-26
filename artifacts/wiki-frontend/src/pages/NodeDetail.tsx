@@ -374,7 +374,7 @@ export function NodeDetail() {
                 onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 isCreating={createWorkingCopy.isPending}
               />
-              <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} />
+              <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} currentUserId={currentUser?.principalId} />
             </div>
           )}
 
@@ -499,7 +499,7 @@ export function NodeDetail() {
                   authorName={wcAuthor?.displayName ?? undefined}
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
-                <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} />
+                <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} currentUserId={currentUser?.principalId} />
               </CardContent>
             </Card>
           )}

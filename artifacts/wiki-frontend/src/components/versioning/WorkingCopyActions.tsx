@@ -31,9 +31,10 @@ import {
 interface WorkingCopyActionsProps {
   workingCopy: WorkingCopy;
   nodeId: string;
+  currentUserId?: string;
 }
 
-export function WorkingCopyActions({ workingCopy, nodeId }: WorkingCopyActionsProps) {
+export function WorkingCopyActions({ workingCopy, nodeId, currentUserId }: WorkingCopyActionsProps) {
   const [approveOpen, setApproveOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -132,13 +133,22 @@ export function WorkingCopyActions({ workingCopy, nodeId }: WorkingCopyActionsPr
     }
   };
 
+  const isOwner = !currentUserId || workingCopy.authorId === currentUserId;
+  const isReviewerOrApprover =
+    workingCopy.reviewerId === currentUserId ||
+    workingCopy.approverId === currentUserId;
+
   const showApproveReturn =
-    workingCopy.status === "submitted" || workingCopy.status === "in_review";
-  const showPublish = workingCopy.status === "approved_for_publish";
+    (workingCopy.status === "submitted" || workingCopy.status === "in_review") &&
+    (isReviewerOrApprover || !currentUserId);
+  const showPublish =
+    workingCopy.status === "approved_for_publish" &&
+    (isReviewerOrApprover || isOwner || !currentUserId);
   const showCancel =
-    workingCopy.status === "draft" ||
+    isOwner &&
+    (workingCopy.status === "draft" ||
     workingCopy.status === "submitted" ||
-    workingCopy.status === "changes_requested";
+    workingCopy.status === "changes_requested");
 
   if (!showApproveReturn && !showPublish && !showCancel) return null;
 
