@@ -5,7 +5,6 @@ import {
   getAuthUrl,
   exchangeCodeForToken,
   isAuthConfigured,
-  getDevUsers,
 } from "../services/auth.service";
 import {
   upsertPrincipal,
@@ -35,8 +34,7 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
   if (appConfig.authDevMode) {
     res.json({
       devMode: true,
-      devUsers: getDevUsers(),
-      message: "Use X-Dev-Principal-Id header with any dev user principalId",
+      message: "Dev mode active — use X-Dev-Principal-Id header with a real principal ID from the database",
     });
     return;
   }
@@ -161,14 +159,6 @@ router.post("/auth/logout", requireAuth, async (req, res) => {
     }
     res.json({ message: "Logged out" });
   });
-});
-
-router.get("/auth/dev-users", (_req, res) => {
-  if (!appConfig.authDevMode) {
-    res.status(404).json({ error: "Not available" });
-    return;
-  }
-  res.json(getDevUsers());
 });
 
 export default router;

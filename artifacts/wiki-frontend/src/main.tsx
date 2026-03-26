@@ -6,7 +6,7 @@ import "./index.css";
 
 if (import.meta.env.DEV) {
   setDefaultHeaders({
-    "X-Dev-Principal-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Dev-Principal-Id": "c911a9df-b47c-4539-9d26-c106825968b6",
   });
 }
 

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { appConfig } from "../lib/config";
-import { getDevUserById } from "../services/auth.service";
+import { getPrincipalById } from "../services/principal.service";
 import { logger } from "../lib/logger";
 
 export interface AuthUser {
@@ -33,18 +33,23 @@ export function requireAuth(
         .json({ error: "X-Dev-Principal-Id header required in dev mode" });
       return;
     }
-    const devUser = getDevUserById(devPrincipalId);
-    if (devUser) {
-      req.user = {
-        principalId: devUser.principalId,
-        externalId: devUser.externalId,
-        displayName: devUser.displayName,
-        email: devUser.email,
-      };
-      next();
-      return;
-    }
-    res.status(401).json({ error: "Invalid dev principal ID" });
+    getPrincipalById(devPrincipalId)
+      .then((principal) => {
+        if (principal) {
+          req.user = {
+            principalId: principal.id,
+            externalId: principal.externalId ?? "",
+            displayName: principal.displayName,
+            email: principal.email ?? "",
+          };
+          next();
+        } else {
+          res.status(401).json({ error: "Principal not found" });
+        }
+      })
+      .catch(() => {
+        res.status(401).json({ error: "Auth lookup failed" });
+      });
     return;
   }
 

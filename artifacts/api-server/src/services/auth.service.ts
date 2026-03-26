@@ -91,66 +91,6 @@ export async function exchangeCodeForToken(code: string): Promise<TokenResult> {
   };
 }
 
-export interface DevUser {
-  principalId: string;
-  externalId: string;
-  displayName: string;
-  email: string;
-  roles: string[];
-}
-
-const DEV_USERS: DevUser[] = [
-  {
-    principalId: "00000000-0000-0000-0000-000000000001",
-    externalId: "dev-admin-001",
-    displayName: "Dev Admin",
-    email: "admin@dev.local",
-    roles: ["system_admin"],
-  },
-  {
-    principalId: "00000000-0000-0000-0000-000000000002",
-    externalId: "dev-editor-001",
-    displayName: "Dev Editor",
-    email: "editor@dev.local",
-    roles: ["editor"],
-  },
-  {
-    principalId: "00000000-0000-0000-0000-000000000003",
-    externalId: "dev-viewer-001",
-    displayName: "Dev Viewer",
-    email: "viewer@dev.local",
-    roles: ["viewer"],
-  },
-  {
-    principalId: "00000000-0000-0000-0000-000000000004",
-    externalId: "dev-reviewer-001",
-    displayName: "Dev Reviewer",
-    email: "reviewer@dev.local",
-    roles: ["reviewer", "approver"],
-  },
-  {
-    principalId: "00000000-0000-0000-0000-000000000005",
-    externalId: "dev-pm-001",
-    displayName: "Dev Process Manager",
-    email: "pm@dev.local",
-    roles: ["process_manager"],
-  },
-];
-
-export function getDevUsers(): DevUser[] {
-  return DEV_USERS;
-}
-
-export function getDevUserById(principalId: string): DevUser | undefined {
-  return DEV_USERS.find((u) => u.principalId === principalId);
-}
-
-export function getDevUserByExternalId(
-  externalId: string,
-): DevUser | undefined {
-  return DEV_USERS.find((u) => u.externalId === externalId);
-}
-
 export async function getAppAccessToken(): Promise<string | null> {
   if (!isAuthConfigured()) {
     return null;
