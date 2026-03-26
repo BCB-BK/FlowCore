@@ -109,7 +109,7 @@ export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
         </div>
       )}
 
-      <div className="flex gap-2 border-b pb-2">
+      <div className="flex gap-2 border-b pb-2 overflow-x-auto">
         <Button
           variant={activeTab === "systems" ? "default" : "ghost"}
           size="sm"
@@ -235,8 +235,8 @@ function SourceSystemsTab({
         return (
           <Card key={system.id}>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg">{system.name}</CardTitle>
                   <Badge variant={system.isActive ? "default" : "secondary"}>
                     {system.isActive ? "Aktiv" : "Inaktiv"}
@@ -255,7 +255,7 @@ function SourceSystemsTab({
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -360,7 +360,7 @@ function SourceSystemsTab({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
                   Letzte Sync:{" "}
@@ -511,7 +511,7 @@ function EditSourceSystemDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Quellsystem bearbeiten</DialogTitle>
         </DialogHeader>
@@ -642,8 +642,8 @@ function StorageProvidersTab({
         return (
           <Card key={provider.id}>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg">{provider.name}</CardTitle>
                   <Badge variant={provider.isActive ? "default" : "secondary"}>
                     {provider.isActive ? "Aktiv" : "Inaktiv"}
@@ -670,7 +670,7 @@ function StorageProvidersTab({
                     </Badge>
                   )}
                 </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {!provider.isDefault && (
                   <Button
                     variant="outline"
@@ -756,8 +756,8 @@ function SyncStatusTab({
         return (
           <Card key={entry.systemId}>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg">{entry.systemName}</CardTitle>
                   <Badge variant="outline">{entry.systemType}</Badge>
                   {entry.purpose && PURPOSE_LABELS[entry.purpose] && (
@@ -808,7 +808,7 @@ function SyncStatusTab({
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Referenzen</p>
                   <p className="text-2xl font-semibold">
@@ -845,7 +845,7 @@ function SyncStatusTab({
                   </p>
                 </div>
               </div>
-              <div className="mt-3 flex gap-4 text-sm text-muted-foreground">
+              <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <span>
                   Letzte Sync:{" "}
                   {entry.lastSyncAt
@@ -946,7 +946,7 @@ function CreateSourceSystemDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Neues Quellsystem</DialogTitle>
         </DialogHeader>
@@ -1137,7 +1137,7 @@ function CreateStorageProviderDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Neuer Speicheranbieter</DialogTitle>
         </DialogHeader>

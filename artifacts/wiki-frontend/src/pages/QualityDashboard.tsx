@@ -204,13 +204,13 @@ export function QualityDashboard() {
       </div>
 
       {overviewLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <Skeleton key={i} className="h-24" />
           ))}
         </div>
       ) : overview ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Seiten gesamt"
             value={overview.totalPages}
@@ -315,6 +315,7 @@ export function QualityDashboard() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="overflow-x-auto">
         <TabsList>
           <TabsTrigger value="overview">Seitenqualität</TabsTrigger>
           <TabsTrigger value="pages">Seitenliste</TabsTrigger>
@@ -343,6 +344,7 @@ export function QualityDashboard() {
             )}
           </TabsTrigger>
         </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-4">
           <Card>
@@ -404,7 +406,7 @@ export function QualityDashboard() {
                               ? (item.count / overview.totalPages) * 100
                               : 0
                           }
-                          className="w-40 h-3"
+                          className="w-24 sm:w-40 h-3"
                           indicatorClassName={item.color}
                         />
                         <span className="text-sm font-medium w-12 text-right">
@@ -437,6 +439,7 @@ export function QualityDashboard() {
                   ))}
                 </div>
               ) : processByType && processByType.length > 0 ? (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -477,6 +480,7 @@ export function QualityDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
                   Keine Daten verfügbar
@@ -487,9 +491,9 @@ export function QualityDashboard() {
         </TabsContent>
 
         <TabsContent value="pages" className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <Select value={pageFilter} onValueChange={setPageFilter}>
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue placeholder="Filter wählen" />
               </SelectTrigger>
               <SelectContent>
@@ -524,6 +528,7 @@ export function QualityDashboard() {
                   ))}
                 </div>
               ) : pages && pages.items.length > 0 ? (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -546,7 +551,7 @@ export function QualityDashboard() {
                         <TableCell className="font-mono text-xs">
                           {page.displayCode}
                         </TableCell>
-                        <TableCell className="font-medium max-w-[300px] truncate">
+                        <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
                           {page.title}
                         </TableCell>
                         <TableCell>
@@ -613,6 +618,7 @@ export function QualityDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
                   Keine Seiten mit diesem Filter gefunden
@@ -641,6 +647,7 @@ export function QualityDashboard() {
                   ))}
                 </div>
               ) : hints && hints.length > 0 ? (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -679,13 +686,14 @@ export function QualityDashboard() {
                             <span className="font-medium">{hint.title}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate">
+                        <TableCell className="text-sm text-muted-foreground max-w-[200px] lg:max-w-[300px] truncate">
                           {hint.detail}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
                   <CheckCircle className="h-8 w-8 text-green-500" />
@@ -852,7 +860,7 @@ export function QualityDashboard() {
                         key={q.query}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span className="truncate max-w-[200px]">
+                        <span className="truncate max-w-[150px] sm:max-w-[200px]">
                           {q.query}
                         </span>
                         <Badge variant="outline">{q.count}x</Badge>

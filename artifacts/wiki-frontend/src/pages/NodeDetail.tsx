@@ -460,7 +460,7 @@ export function NodeDetail() {
               <CardTitle className="text-base">Seitendetails</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Hash className="h-3.5 w-3.5" />
@@ -510,7 +510,7 @@ export function NodeDetail() {
           />
 
           <div className="mt-6">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <h3 className="text-base font-semibold">Inhalt</h3>
               <div className="flex items-center gap-2">
                 <Button
@@ -533,7 +533,7 @@ export function NodeDetail() {
             </div>
             <div
               className={
-                showPageAssist ? "grid grid-cols-[1fr_320px] gap-4" : ""
+                showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
               }
             >
               <BlockEditor

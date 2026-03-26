@@ -458,7 +458,7 @@ export function CreateNodeDialog({
 
               <Separator />
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="text-muted-foreground">Status</span>
                   <div className="mt-0.5">

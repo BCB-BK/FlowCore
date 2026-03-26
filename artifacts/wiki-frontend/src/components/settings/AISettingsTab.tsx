@@ -148,7 +148,7 @@ export function AISettingsTab() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="model">Modell</Label>
               <Select value={model} onValueChange={setModel}>
@@ -243,7 +243,7 @@ export function AISettingsTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="source-priority">Quellen-Priorisierung</Label>
               <Select value={sourcePriority} onValueChange={setSourcePriority}>
@@ -282,7 +282,7 @@ export function AISettingsTab() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="citation-style">Zitierweise</Label>
               <Select value={citationStyle} onValueChange={setCitationStyle}>
@@ -330,7 +330,7 @@ export function AISettingsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
                 label="Anfragen gesamt"
                 value={stats.summary.totalQueries}

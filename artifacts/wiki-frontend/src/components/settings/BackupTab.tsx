@@ -335,7 +335,7 @@ function BackupConfigSection() {
           </div>
 
           {enabled && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Intervall</Label>
                 <Select value={interval} onValueChange={setInterval}>
