@@ -1,5 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/react";
 import { EDITOR_CONFIG, isDomainAllowed } from "@/lib/editor-config";
+import type { MediaSourceType } from "./video-block";
 
 export function isAllowedEmbedUrl(url: string): boolean {
   return isDomainAllowed(url, EDITOR_CONFIG.allowedEmbedDomains);
@@ -12,7 +13,12 @@ export interface EmbedBlockOptions {
 declare module "@tiptap/react" {
   interface Commands<ReturnType> {
     embedBlock: {
-      setEmbedBlock: (attrs: { src: string; caption?: string }) => ReturnType;
+      setEmbedBlock: (attrs: {
+        src: string;
+        caption?: string;
+        source?: string;
+        sourceType?: MediaSourceType;
+      }) => ReturnType;
     };
   }
 }
@@ -27,6 +33,8 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
     return {
       src: { default: null },
       caption: { default: "" },
+      source: { default: "" },
+      sourceType: { default: "external" as MediaSourceType },
       width: { default: "100%" },
       height: { default: "400" },
     };
@@ -46,7 +54,7 @@ export const EmbedBlock = Node.create<EmbedBlockOptions>({
   addCommands() {
     return {
       setEmbedBlock:
-        (attrs: { src: string; caption?: string }) =>
+        (attrs) =>
         ({
           commands,
         }: {

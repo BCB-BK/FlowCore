@@ -130,9 +130,11 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (server-side FTS with facets), GlossaryPage (A-Z term management), BrokenLinksPage (broken relations + orphaned nodes), SettingsPage (/settings — unified admin settings with 5 tabs: Allgemein/Verbindungen/KI-Assistent/Seitentemplates/Konnektoren), AISettingsPage (admin KI-Assistent configuration + usage stats), QualityDashboard (/dashboard — KPI tiles, page quality list, maintenance hints, duplicate analysis), MyWorkPage (/my-work — personal cockpit with pending reviews/approvals/drafts)
 - AI Components: GlobalAssistant (floating chat panel with SSE streaming, source citations), PageAssistant (writing aid panel: reformulate, summarize, expand, shorten, grammar, gap analysis)
 - Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog (multi-step), TreeNode, PeoplePicker, PageTypeIcon
-- Editor: BlockEditor (Tiptap-based rich text editor with 12+ block types, slash commands, edit/preview toggle, autosave to localStorage, draft recovery)
-- Editor Extensions: Callout, FileBlock, VideoBlock, EmbedBlock, DiagramBlock (custom Tiptap node views)
-- Editor UI: EditorToolbar (formatting), SlashCommandMenu (block insertion), MediaLibraryDialog (upload/browse)
+- Editor: BlockEditor (Tiptap-based rich text editor with 12+ block types, slash commands, edit/preview toggle, autosave to localStorage, draft recovery, drag & drop media upload)
+- Editor Extensions: Callout, FileBlock, VideoBlock, EmbedBlock, DiagramBlock (custom Tiptap node views with professional metadata: sourceType, altText, source, license, processSteps, roles)
+- Editor UI: EditorToolbar (formatting), SlashCommandMenu (block insertion), MediaLibraryDialog (upload/browse), EditorDropzone (drag & drop with progress/error), ContextualSubpageButton (create child pages from heading positions)
+- Media Blocks: Professional metadata (caption, alt-text, source, license), origin badges (Upload/SharePoint/Extern), inline replace functionality
+- Diagram Blocks: Typed diagrams (Flowchart, BPMN, Swimlane, Sequence, Orgchart) with structured process steps, roles, swimlane assignments, linked node IDs
 - Metadata: MetadataPanel, MetadataFieldRenderer, CompletenessIndicator
 - Versioning: StatusBadge, WatchButton, VersionHistoryPanel, ReviewWorkflowPanel, RevisionDiffView, RestoreDialog
 - Tags: TagManager (inline tag assignment with create/assign/remove)

@@ -35,6 +35,8 @@ import { EditorToolbar } from "./EditorToolbar";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { MediaLibraryDialog } from "./MediaLibraryDialog";
 import { BlockActionMenu } from "./BlockActionMenu";
+import { EditorDropzone } from "./EditorDropzone";
+import { ContextualSubpageButton } from "./ContextualSubpageButton";
 import { EDITOR_CONFIG } from "@/lib/editor-config";
 
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +51,8 @@ interface BlockEditorProps {
   conflictWarning?: string | null;
   className?: string;
   onTrackMediaUsage?: (assetId: string) => void;
+  onCreateSubpage?: (context: { headingText: string; afterPos: number }) => void;
+  parentTemplateType?: string;
 }
 
 const AUTOSAVE_INTERVAL = EDITOR_CONFIG.autosaveIntervalMs;
@@ -66,6 +70,8 @@ export function BlockEditor({
   conflictWarning,
   className,
   onTrackMediaUsage,
+  onCreateSubpage,
+  parentTemplateType,
 }: BlockEditorProps) {
   const [slashMenu, setSlashMenu] = useState<{
     isOpen: boolean;
@@ -82,7 +88,8 @@ export function BlockEditor({
   const [mediaDialog, setMediaDialog] = useState<{
     open: boolean;
     type: "image" | "video" | "file" | null;
-  }>({ open: false, type: null });
+    replace: boolean;
+  }>({ open: false, type: null, replace: false });
 
   const [hasDraft, setHasDraft] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -277,7 +284,11 @@ export function BlockEditor({
   useEffect(() => {
     const handleMediaEvent = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      setMediaDialog({ open: true, type: detail?.type || null });
+      setMediaDialog({
+        open: true,
+        type: detail?.type || null,
+        replace: !!detail?.replace,
+      });
     };
     window.addEventListener("editor:open-media-library", handleMediaEvent);
     return () =>
@@ -294,36 +305,88 @@ export function BlockEditor({
     }) => {
       if (!editor) return;
 
-      if (asset.mimeType.startsWith("image/")) {
-        editor
-          .chain()
-          .focus()
-          .setImage({ src: asset.url, alt: asset.originalFilename })
-          .run();
-      } else if (asset.mimeType.startsWith("video/")) {
-        editor
-          .chain()
-          .focus()
-          .setVideoBlock({ src: asset.url, caption: asset.originalFilename })
-          .run();
+      if (mediaDialog.replace) {
+        const { state } = editor;
+        const { selection } = state;
+        const node = state.doc.nodeAt(selection.from);
+        const resolvedPos = state.doc.resolve(selection.from);
+        const parentNode = resolvedPos.depth > 0 ? resolvedPos.parent : null;
+        const targetNode = node || parentNode;
+
+        if (targetNode) {
+          const nodeName = targetNode.type.name;
+          if (nodeName === "videoBlock") {
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("videoBlock", {
+                src: asset.url,
+                sourceType: "upload",
+              })
+              .run();
+          } else if (nodeName === "fileBlock") {
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("fileBlock", {
+                src: asset.url,
+                filename: asset.originalFilename,
+                filesize: asset.sizeBytes,
+                mimeType: asset.mimeType,
+                sourceType: "upload",
+              })
+              .run();
+          } else if (nodeName === "diagramBlock") {
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("diagramBlock", { src: asset.url })
+              .run();
+          } else if (asset.mimeType.startsWith("image/")) {
+            editor
+              .chain()
+              .focus()
+              .setImage({ src: asset.url, alt: asset.originalFilename })
+              .run();
+          }
+        }
       } else {
-        editor
-          .chain()
-          .focus()
-          .setFileBlock({
-            src: asset.url,
-            filename: asset.originalFilename,
-            filesize: asset.sizeBytes,
-            mimeType: asset.mimeType,
-          })
-          .run();
+        if (asset.mimeType.startsWith("image/")) {
+          editor
+            .chain()
+            .focus()
+            .setImage({ src: asset.url, alt: asset.originalFilename })
+            .run();
+        } else if (asset.mimeType.startsWith("video/")) {
+          editor
+            .chain()
+            .focus()
+            .setVideoBlock({
+              src: asset.url,
+              caption: asset.originalFilename,
+              sourceType: "upload",
+            })
+            .run();
+        } else {
+          editor
+            .chain()
+            .focus()
+            .setFileBlock({
+              src: asset.url,
+              filename: asset.originalFilename,
+              filesize: asset.sizeBytes,
+              mimeType: asset.mimeType,
+              sourceType: "upload",
+            })
+            .run();
+        }
       }
 
       if (onTrackMediaUsage && asset.id) {
         onTrackMediaUsage(asset.id);
       }
     },
-    [editor, onTrackMediaUsage],
+    [editor, onTrackMediaUsage, mediaDialog.replace],
   );
 
   if (!editor) return null;
@@ -362,10 +425,23 @@ export function BlockEditor({
 
       {editable && <EditorToolbar editor={editor} />}
 
-      <div className="relative pl-6">
-        {editable && <BlockActionMenu editor={editor} />}
-        <EditorContent editor={editor} />
-      </div>
+      <EditorDropzone
+        editor={editor}
+        nodeId={nodeId}
+        onTrackMediaUsage={onTrackMediaUsage}
+      >
+        <div className="relative pl-6">
+          {editable && <BlockActionMenu editor={editor} />}
+          {editable && onCreateSubpage && (
+            <ContextualSubpageButton
+              editor={editor}
+              nodeId={nodeId}
+              onCreateSubpage={onCreateSubpage}
+            />
+          )}
+          <EditorContent editor={editor} />
+        </div>
+      </EditorDropzone>
 
       {editable && (
         <div className="flex items-center justify-between border-t p-2 text-xs text-muted-foreground">
@@ -398,7 +474,7 @@ export function BlockEditor({
 
       <MediaLibraryDialog
         open={mediaDialog.open}
-        onOpenChange={(open) => setMediaDialog({ open, type: null })}
+        onOpenChange={(open) => setMediaDialog({ open, type: null, replace: false })}
         onSelect={handleMediaSelect}
         filterType={mediaDialog.type}
         nodeId={nodeId}

@@ -1,5 +1,29 @@
 import { Node, mergeAttributes } from "@tiptap/react";
 
+export const DIAGRAM_TYPES = {
+  flowchart: "Flussdiagramm",
+  bpmn: "BPMN-Prozess",
+  swimlane: "Swimlane-Diagramm",
+  sequence: "Sequenzdiagramm",
+  orgchart: "Organigramm",
+} as const;
+
+export type DiagramType = keyof typeof DIAGRAM_TYPES;
+
+export interface ProcessStep {
+  id: string;
+  label: string;
+  description?: string;
+  roleId?: string;
+  order: number;
+}
+
+export interface DiagramRole {
+  id: string;
+  name: string;
+  lane?: string;
+}
+
 export interface DiagramBlockOptions {
   HTMLAttributes: Record<string, unknown>;
 }
@@ -8,9 +32,13 @@ declare module "@tiptap/react" {
   interface Commands<ReturnType> {
     diagramBlock: {
       setDiagramBlock: (attrs: {
-        diagramType?: string;
+        diagramType?: DiagramType;
         src?: string;
         caption?: string;
+        description?: string;
+        processSteps?: ProcessStep[];
+        roles?: DiagramRole[];
+        linkedNodeIds?: string[];
       }) => ReturnType;
     };
   }
@@ -24,12 +52,60 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
 
   addAttributes() {
     return {
-      diagramType: { default: "flowchart" },
+      diagramType: { default: "flowchart" as DiagramType },
       src: { default: null },
       caption: { default: "" },
       description: { default: "" },
       width: { default: "100%" },
       height: { default: "400" },
+      processSteps: {
+        default: [] as ProcessStep[],
+        parseHTML: (el: HTMLElement) => {
+          const val = el.getAttribute("data-process-steps");
+          try {
+            return val ? JSON.parse(val) : [];
+          } catch {
+            return [];
+          }
+        },
+        renderHTML: (attrs: { processSteps?: ProcessStep[] }) => {
+          return attrs.processSteps && attrs.processSteps.length > 0
+            ? { "data-process-steps": JSON.stringify(attrs.processSteps) }
+            : {};
+        },
+      },
+      roles: {
+        default: [] as DiagramRole[],
+        parseHTML: (el: HTMLElement) => {
+          const val = el.getAttribute("data-roles");
+          try {
+            return val ? JSON.parse(val) : [];
+          } catch {
+            return [];
+          }
+        },
+        renderHTML: (attrs: { roles?: DiagramRole[] }) => {
+          return attrs.roles && attrs.roles.length > 0
+            ? { "data-roles": JSON.stringify(attrs.roles) }
+            : {};
+        },
+      },
+      linkedNodeIds: {
+        default: [] as string[],
+        parseHTML: (el: HTMLElement) => {
+          const val = el.getAttribute("data-linked-nodes");
+          try {
+            return val ? JSON.parse(val) : [];
+          } catch {
+            return [];
+          }
+        },
+        renderHTML: (attrs: { linkedNodeIds?: string[] }) => {
+          return attrs.linkedNodeIds && attrs.linkedNodeIds.length > 0
+            ? { "data-linked-nodes": JSON.stringify(attrs.linkedNodeIds) }
+            : {};
+        },
+      },
     };
   },
 
@@ -47,7 +123,7 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
   addCommands() {
     return {
       setDiagramBlock:
-        (attrs: { diagramType?: string; src?: string; caption?: string }) =>
+        (attrs) =>
         ({
           commands,
         }: {

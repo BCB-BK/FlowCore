@@ -544,6 +544,8 @@ export function NodeDetail() {
                 lastSavedAt={lastSavedAt}
                 conflictWarning={conflictWarning}
                 onTrackMediaUsage={handleTrackMediaUsage}
+                onCreateSubpage={() => setShowCreate(true)}
+                parentTemplateType={node?.templateType}
               />
               {showPageAssist && (
                 <PageAssistant

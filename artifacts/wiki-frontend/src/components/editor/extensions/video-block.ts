@@ -31,6 +31,8 @@ export function getVideoEmbedUrl(url: string): string | null {
   }
 }
 
+export type MediaSourceType = "upload" | "sharepoint" | "external";
+
 export interface VideoBlockOptions {
   HTMLAttributes: Record<string, unknown>;
 }
@@ -38,7 +40,14 @@ export interface VideoBlockOptions {
 declare module "@tiptap/react" {
   interface Commands<ReturnType> {
     videoBlock: {
-      setVideoBlock: (attrs: { src: string; caption?: string }) => ReturnType;
+      setVideoBlock: (attrs: {
+        src: string;
+        caption?: string;
+        altText?: string;
+        source?: string;
+        license?: string;
+        sourceType?: MediaSourceType;
+      }) => ReturnType;
     };
   }
 }
@@ -53,6 +62,10 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
     return {
       src: { default: null },
       caption: { default: "" },
+      altText: { default: "" },
+      source: { default: "" },
+      license: { default: "" },
+      sourceType: { default: "upload" as MediaSourceType },
       width: { default: "100%" },
       height: { default: "315" },
       assetId: { default: null },
@@ -73,7 +86,7 @@ export const VideoBlock = Node.create<VideoBlockOptions>({
   addCommands() {
     return {
       setVideoBlock:
-        (attrs: { src: string; caption?: string }) =>
+        (attrs) =>
         ({
           commands,
         }: {
