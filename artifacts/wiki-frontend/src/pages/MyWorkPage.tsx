@@ -25,6 +25,7 @@ import {
   ChevronRight,
   ArrowLeft,
   Inbox,
+  ShieldCheck,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useGetMyWork } from "@workspace/api-client-react";
@@ -48,6 +49,11 @@ const TYPE_CONFIG: Record<
     label: "Genehmigung ausstehend",
     icon: CheckSquare,
     color: "text-purple-600",
+  },
+  pending_pm_review: {
+    label: "Zur Freigabe",
+    icon: ShieldCheck,
+    color: "text-teal-600",
   },
   owned_unhealthy: {
     label: "Benötigt Aufmerksamkeit",
@@ -83,12 +89,13 @@ export function MyWorkPage() {
         reviews: items.filter(
           (i) => i.type === "pending_review" || i.type === "pending_approval",
         ),
+        pmReviews: items.filter((i) => i.type === "pending_pm_review"),
         drafts: items.filter((i) => i.type === "my_draft"),
         attention: items.filter(
           (i) => i.type === "owned_unhealthy" || i.type === "my_page_overdue",
         ),
       }
-    : { reviews: [], drafts: [], attention: [] };
+    : { reviews: [], pmReviews: [], drafts: [], attention: [] };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -108,7 +115,18 @@ export function MyWorkPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${grouped.pmReviews.length > 0 ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
+        {grouped.pmReviews.length > 0 && (
+          <Card>
+            <CardContent className="flex items-center gap-3 p-4">
+              <ShieldCheck className="h-8 w-8 text-teal-600" />
+              <div>
+                <p className="text-2xl font-bold">{grouped.pmReviews.length}</p>
+                <p className="text-sm text-muted-foreground">Zur Freigabe</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <Eye className="h-8 w-8 text-blue-600" />
@@ -150,6 +168,14 @@ export function MyWorkPage() {
         </div>
       ) : items && items.length > 0 ? (
         <div className="space-y-6">
+          {grouped.pmReviews.length > 0 && (
+            <WorkSection
+              title="Zur Freigabe"
+              description="Eingereichte Seiten, die auf Freigabe durch einen Prozessmanager warten"
+              items={grouped.pmReviews}
+              navigate={navigate}
+            />
+          )}
           {grouped.reviews.length > 0 && (
             <WorkSection
               title="Reviews & Genehmigungen"

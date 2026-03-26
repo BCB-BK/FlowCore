@@ -87,6 +87,8 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "edit_structure",
     "manage_relations",
     "submit_for_review",
+    "review_page",
+    "approve_page",
     "archive_page",
     "manage_permissions",
     "manage_templates",

@@ -4963,6 +4963,7 @@ components:
               my_draft,
               pending_review,
               pending_approval,
+              pending_pm_review,
               owned_unhealthy,
               my_page_overdue,
             ]

@@ -10,6 +10,7 @@ import {
   getSearchInsights,
   getQualityByProcess,
 } from "../services/quality.service";
+import { getRolesForPrincipal } from "../services/principal.service";
 import { logger } from "../lib/logger";
 
 export const qualityRouter: IRouter = Router();
@@ -101,7 +102,9 @@ qualityRouter.get(
   requirePermission("read_page"),
   async (req, res) => {
     try {
-      const items = await getPersonalWorkItems(req.user!.principalId);
+      const roleAssignments = await getRolesForPrincipal(req.user!.principalId);
+      const roles = roleAssignments.map((ra) => ra.role);
+      const items = await getPersonalWorkItems(req.user!.principalId, roles);
       res.json(items);
     } catch (err) {
       logger.error({ err }, "Failed to get personal work items");

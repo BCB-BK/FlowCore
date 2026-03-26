@@ -87,6 +87,7 @@ export interface PersonalWorkItem {
     | "my_draft"
     | "pending_review"
     | "pending_approval"
+    | "pending_pm_review"
     | "owned_unhealthy"
     | "my_page_overdue";
   nodeId: string;
@@ -780,6 +781,7 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
 
 export async function getPersonalWorkItems(
   principalId: string,
+  roles: string[] = [],
 ): Promise<PersonalWorkItem[]> {
   const items: PersonalWorkItem[] = [];
 
@@ -856,6 +858,36 @@ export async function getPersonalWorkItems(
       priority: "high",
       updatedAt: str(r, "updated_at"),
     });
+  }
+
+  const isProcessManager =
+    roles.includes("process_manager") || roles.includes("system_admin");
+  if (isProcessManager) {
+    const existingNodeIds = new Set(items.map((i) => i.nodeId));
+    const pmReviews = await db.execute(sql`
+      SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type, cn.status, cn.updated_at::text as updated_at
+      FROM content_nodes cn
+      WHERE NOT cn.is_deleted
+        AND cn.status = 'in_review'
+      ORDER BY cn.updated_at DESC
+    `);
+    for (const raw of pmReviews.rows) {
+      const r = raw as R;
+      const nodeId = str(r, "node_id");
+      if (!existingNodeIds.has(nodeId)) {
+        items.push({
+          type: "pending_pm_review",
+          nodeId,
+          title: str(r, "title"),
+          displayCode: str(r, "display_code"),
+          templateType: str(r, "template_type"),
+          status: str(r, "status"),
+          detail: "Zur Freigabe eingereicht",
+          priority: "high",
+          updatedAt: str(r, "updated_at"),
+        });
+      }
+    }
   }
 
   const ownedUnhealthy = await db.execute(sql`

@@ -13,6 +13,7 @@ export const PersonalWorkItemType = {
   my_draft: "my_draft",
   pending_review: "pending_review",
   pending_approval: "pending_approval",
+  pending_pm_review: "pending_pm_review",
   owned_unhealthy: "owned_unhealthy",
   my_page_overdue: "my_page_overdue",
 } as const;

@@ -44,6 +44,15 @@ export const AuthMeResponse = zod.object({
   externalId: zod.string().optional(),
   displayName: zod.string(),
   email: zod.string().optional(),
+  roles: zod
+    .array(
+      zod.object({
+        role: zod.string().optional(),
+        scope: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  permissions: zod.array(zod.string()).optional(),
 });
 
 /**
@@ -2627,6 +2636,7 @@ export const GetMyWorkResponseItem = zod.object({
     "my_draft",
     "pending_review",
     "pending_approval",
+    "pending_pm_review",
     "owned_unhealthy",
     "my_page_overdue",
   ]),

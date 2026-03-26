@@ -5,12 +5,13 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AuthUserRolesItem } from "./authUserRolesItem";
 
 export interface AuthUser {
   principalId: string;
   externalId?: string;
   displayName: string;
   email?: string;
-  roles?: { role: string; scope: string }[];
+  roles?: AuthUserRolesItem[];
   permissions?: string[];
 }
