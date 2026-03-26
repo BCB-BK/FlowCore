@@ -23,6 +23,7 @@ import type {
   AiSettings,
   AiUsageStats,
   ApproveRevisionBody,
+  ApproveWorkingCopyBody,
   AssignRole201,
   AssignRoleInput,
   AssignTagToNodeBody,
@@ -35,6 +36,7 @@ import type {
   BackupConfigUpdate,
   BackupRun,
   BrokenLinksReport,
+  CancelWorkingCopyBody,
   ConnectorValidationResult,
   ContentAlias,
   ContentNode,
@@ -91,10 +93,13 @@ import type {
   PrincipalWithRoles,
   ProcessQualityRow,
   PublishRevisionInput,
+  PublishWorkingCopyBody,
+  PublishWorkingCopyResult,
   QualityOverview,
   RejectRevisionBody,
   RestoreBackup200,
   RestoreRevisionInput,
+  ReturnWorkingCopyForChangesBody,
   ReviewWorkflow,
   ReviewWorkflowDetail,
   RevisionDiff,
@@ -117,6 +122,7 @@ import type {
   SourceSystemWithCount,
   StorageProvider,
   SubmitForReviewBody,
+  SubmitWorkingCopyInput,
   SyncResult,
   SyncStatusEntry,
   Tag,
@@ -132,10 +138,14 @@ import type {
   UpdateNodeInput,
   UpdateSourceSystemInput,
   UpdateStorageProviderInput,
+  UpdateWorkingCopyInput,
   UploadMediaBody,
   ValidateBackupTarget200,
   ValidateBackupTargetBody,
   WatchNodeBody,
+  WorkingCopy,
+  WorkingCopyDiff,
+  WorkingCopyEvent,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -4065,6 +4075,1067 @@ export const useUnwatchNode = <
 > => {
   return useMutation(getUnwatchNodeMutationOptions(options));
 };
+
+/**
+ * @summary Create a working copy for a node
+ */
+export const getCreateWorkingCopyUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/working-copies`;
+};
+
+export const createWorkingCopy = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getCreateWorkingCopyUrl(nodeId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCreateWorkingCopyMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkingCopy>>,
+    TError,
+    { nodeId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createWorkingCopy>>,
+  TError,
+  { nodeId: string },
+  TContext
+> => {
+  const mutationKey = ["createWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createWorkingCopy>>,
+    { nodeId: string }
+  > = (props) => {
+    const { nodeId } = props ?? {};
+
+    return createWorkingCopy(nodeId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createWorkingCopy>>
+>;
+
+export type CreateWorkingCopyMutationError = ErrorType<void>;
+
+/**
+ * @summary Create a working copy for a node
+ */
+export const useCreateWorkingCopy = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createWorkingCopy>>,
+    TError,
+    { nodeId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createWorkingCopy>>,
+  TError,
+  { nodeId: string },
+  TContext
+> => {
+  return useMutation(getCreateWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Get the active working copy for a node
+ */
+export const getGetActiveWorkingCopyUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/working-copy`;
+};
+
+export const getActiveWorkingCopy = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getGetActiveWorkingCopyUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetActiveWorkingCopyQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/working-copy`] as const;
+};
+
+export const getGetActiveWorkingCopyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getActiveWorkingCopy>>,
+  TError = ErrorType<void>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getActiveWorkingCopy>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetActiveWorkingCopyQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getActiveWorkingCopy>>
+  > = ({ signal }) =>
+    getActiveWorkingCopy(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getActiveWorkingCopy>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetActiveWorkingCopyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getActiveWorkingCopy>>
+>;
+export type GetActiveWorkingCopyQueryError = ErrorType<void>;
+
+/**
+ * @summary Get the active working copy for a node
+ */
+
+export function useGetActiveWorkingCopy<
+  TData = Awaited<ReturnType<typeof getActiveWorkingCopy>>,
+  TError = ErrorType<void>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getActiveWorkingCopy>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetActiveWorkingCopyQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a working copy by ID
+ */
+export const getGetWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}`;
+};
+
+export const getWorkingCopy = async (
+  workingCopyId: string,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getGetWorkingCopyUrl(workingCopyId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWorkingCopyQueryKey = (workingCopyId: string) => {
+  return [`/api/content/working-copies/${workingCopyId}`] as const;
+};
+
+export const getGetWorkingCopyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWorkingCopy>>,
+  TError = ErrorType<void>,
+>(
+  workingCopyId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkingCopy>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetWorkingCopyQueryKey(workingCopyId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkingCopy>>> = ({
+    signal,
+  }) => getWorkingCopy(workingCopyId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!workingCopyId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWorkingCopy>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWorkingCopyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWorkingCopy>>
+>;
+export type GetWorkingCopyQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a working copy by ID
+ */
+
+export function useGetWorkingCopy<
+  TData = Awaited<ReturnType<typeof getWorkingCopy>>,
+  TError = ErrorType<void>,
+>(
+  workingCopyId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkingCopy>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWorkingCopyQueryOptions(workingCopyId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a working copy (autosave)
+ */
+export const getUpdateWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}`;
+};
+
+export const updateWorkingCopy = async (
+  workingCopyId: string,
+  updateWorkingCopyInput: UpdateWorkingCopyInput,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getUpdateWorkingCopyUrl(workingCopyId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateWorkingCopyInput),
+  });
+};
+
+export const getUpdateWorkingCopyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<UpdateWorkingCopyInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<UpdateWorkingCopyInput> },
+  TContext
+> => {
+  const mutationKey = ["updateWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateWorkingCopy>>,
+    { workingCopyId: string; data: BodyType<UpdateWorkingCopyInput> }
+  > = (props) => {
+    const { workingCopyId, data } = props ?? {};
+
+    return updateWorkingCopy(workingCopyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateWorkingCopy>>
+>;
+export type UpdateWorkingCopyMutationBody = BodyType<UpdateWorkingCopyInput>;
+export type UpdateWorkingCopyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a working copy (autosave)
+ */
+export const useUpdateWorkingCopy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<UpdateWorkingCopyInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<UpdateWorkingCopyInput> },
+  TContext
+> => {
+  return useMutation(getUpdateWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Submit working copy for review
+ */
+export const getSubmitWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/submit`;
+};
+
+export const submitWorkingCopy = async (
+  workingCopyId: string,
+  submitWorkingCopyInput: SubmitWorkingCopyInput,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getSubmitWorkingCopyUrl(workingCopyId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(submitWorkingCopyInput),
+  });
+};
+
+export const getSubmitWorkingCopyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<SubmitWorkingCopyInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<SubmitWorkingCopyInput> },
+  TContext
+> => {
+  const mutationKey = ["submitWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitWorkingCopy>>,
+    { workingCopyId: string; data: BodyType<SubmitWorkingCopyInput> }
+  > = (props) => {
+    const { workingCopyId, data } = props ?? {};
+
+    return submitWorkingCopy(workingCopyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitWorkingCopy>>
+>;
+export type SubmitWorkingCopyMutationBody = BodyType<SubmitWorkingCopyInput>;
+export type SubmitWorkingCopyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Submit working copy for review
+ */
+export const useSubmitWorkingCopy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<SubmitWorkingCopyInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<SubmitWorkingCopyInput> },
+  TContext
+> => {
+  return useMutation(getSubmitWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Return working copy for changes
+ */
+export const getReturnWorkingCopyForChangesUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/return-for-changes`;
+};
+
+export const returnWorkingCopyForChanges = async (
+  workingCopyId: string,
+  returnWorkingCopyForChangesBody: ReturnWorkingCopyForChangesBody,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(
+    getReturnWorkingCopyForChangesUrl(workingCopyId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(returnWorkingCopyForChangesBody),
+    },
+  );
+};
+
+export const getReturnWorkingCopyForChangesMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof returnWorkingCopyForChanges>>,
+    TError,
+    { workingCopyId: string; data: BodyType<ReturnWorkingCopyForChangesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof returnWorkingCopyForChanges>>,
+  TError,
+  { workingCopyId: string; data: BodyType<ReturnWorkingCopyForChangesBody> },
+  TContext
+> => {
+  const mutationKey = ["returnWorkingCopyForChanges"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof returnWorkingCopyForChanges>>,
+    { workingCopyId: string; data: BodyType<ReturnWorkingCopyForChangesBody> }
+  > = (props) => {
+    const { workingCopyId, data } = props ?? {};
+
+    return returnWorkingCopyForChanges(workingCopyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReturnWorkingCopyForChangesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof returnWorkingCopyForChanges>>
+>;
+export type ReturnWorkingCopyForChangesMutationBody =
+  BodyType<ReturnWorkingCopyForChangesBody>;
+export type ReturnWorkingCopyForChangesMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Return working copy for changes
+ */
+export const useReturnWorkingCopyForChanges = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof returnWorkingCopyForChanges>>,
+    TError,
+    { workingCopyId: string; data: BodyType<ReturnWorkingCopyForChangesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof returnWorkingCopyForChanges>>,
+  TError,
+  { workingCopyId: string; data: BodyType<ReturnWorkingCopyForChangesBody> },
+  TContext
+> => {
+  return useMutation(getReturnWorkingCopyForChangesMutationOptions(options));
+};
+
+/**
+ * @summary Approve a working copy
+ */
+export const getApproveWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/approve`;
+};
+
+export const approveWorkingCopy = async (
+  workingCopyId: string,
+  approveWorkingCopyBody: ApproveWorkingCopyBody,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getApproveWorkingCopyUrl(workingCopyId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(approveWorkingCopyBody),
+  });
+};
+
+export const getApproveWorkingCopyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof approveWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<ApproveWorkingCopyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof approveWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<ApproveWorkingCopyBody> },
+  TContext
+> => {
+  const mutationKey = ["approveWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof approveWorkingCopy>>,
+    { workingCopyId: string; data: BodyType<ApproveWorkingCopyBody> }
+  > = (props) => {
+    const { workingCopyId, data } = props ?? {};
+
+    return approveWorkingCopy(workingCopyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ApproveWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof approveWorkingCopy>>
+>;
+export type ApproveWorkingCopyMutationBody = BodyType<ApproveWorkingCopyBody>;
+export type ApproveWorkingCopyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Approve a working copy
+ */
+export const useApproveWorkingCopy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof approveWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<ApproveWorkingCopyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof approveWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<ApproveWorkingCopyBody> },
+  TContext
+> => {
+  return useMutation(getApproveWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Publish working copy as new version
+ */
+export const getPublishWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/publish`;
+};
+
+export const publishWorkingCopy = async (
+  workingCopyId: string,
+  publishWorkingCopyBody: PublishWorkingCopyBody,
+  options?: RequestInit,
+): Promise<PublishWorkingCopyResult> => {
+  return customFetch<PublishWorkingCopyResult>(
+    getPublishWorkingCopyUrl(workingCopyId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(publishWorkingCopyBody),
+    },
+  );
+};
+
+export const getPublishWorkingCopyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof publishWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<PublishWorkingCopyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof publishWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<PublishWorkingCopyBody> },
+  TContext
+> => {
+  const mutationKey = ["publishWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof publishWorkingCopy>>,
+    { workingCopyId: string; data: BodyType<PublishWorkingCopyBody> }
+  > = (props) => {
+    const { workingCopyId, data } = props ?? {};
+
+    return publishWorkingCopy(workingCopyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PublishWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof publishWorkingCopy>>
+>;
+export type PublishWorkingCopyMutationBody = BodyType<PublishWorkingCopyBody>;
+export type PublishWorkingCopyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Publish working copy as new version
+ */
+export const usePublishWorkingCopy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof publishWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<PublishWorkingCopyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof publishWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<PublishWorkingCopyBody> },
+  TContext
+> => {
+  return useMutation(getPublishWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Cancel a working copy
+ */
+export const getCancelWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/cancel`;
+};
+
+export const cancelWorkingCopy = async (
+  workingCopyId: string,
+  cancelWorkingCopyBody: CancelWorkingCopyBody,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getCancelWorkingCopyUrl(workingCopyId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(cancelWorkingCopyBody),
+  });
+};
+
+export const getCancelWorkingCopyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<CancelWorkingCopyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<CancelWorkingCopyBody> },
+  TContext
+> => {
+  const mutationKey = ["cancelWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelWorkingCopy>>,
+    { workingCopyId: string; data: BodyType<CancelWorkingCopyBody> }
+  > = (props) => {
+    const { workingCopyId, data } = props ?? {};
+
+    return cancelWorkingCopy(workingCopyId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CancelWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cancelWorkingCopy>>
+>;
+export type CancelWorkingCopyMutationBody = BodyType<CancelWorkingCopyBody>;
+export type CancelWorkingCopyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Cancel a working copy
+ */
+export const useCancelWorkingCopy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelWorkingCopy>>,
+    TError,
+    { workingCopyId: string; data: BodyType<CancelWorkingCopyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof cancelWorkingCopy>>,
+  TError,
+  { workingCopyId: string; data: BodyType<CancelWorkingCopyBody> },
+  TContext
+> => {
+  return useMutation(getCancelWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Unlock a working copy (admin)
+ */
+export const getUnlockWorkingCopyUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/unlock`;
+};
+
+export const unlockWorkingCopy = async (
+  workingCopyId: string,
+  options?: RequestInit,
+): Promise<WorkingCopy> => {
+  return customFetch<WorkingCopy>(getUnlockWorkingCopyUrl(workingCopyId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getUnlockWorkingCopyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unlockWorkingCopy>>,
+    TError,
+    { workingCopyId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unlockWorkingCopy>>,
+  TError,
+  { workingCopyId: string },
+  TContext
+> => {
+  const mutationKey = ["unlockWorkingCopy"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unlockWorkingCopy>>,
+    { workingCopyId: string }
+  > = (props) => {
+    const { workingCopyId } = props ?? {};
+
+    return unlockWorkingCopy(workingCopyId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UnlockWorkingCopyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unlockWorkingCopy>>
+>;
+
+export type UnlockWorkingCopyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unlock a working copy (admin)
+ */
+export const useUnlockWorkingCopy = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unlockWorkingCopy>>,
+    TError,
+    { workingCopyId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof unlockWorkingCopy>>,
+  TError,
+  { workingCopyId: string },
+  TContext
+> => {
+  return useMutation(getUnlockWorkingCopyMutationOptions(options));
+};
+
+/**
+ * @summary Get diff between working copy and base revision
+ */
+export const getGetWorkingCopyDiffUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/diff`;
+};
+
+export const getWorkingCopyDiff = async (
+  workingCopyId: string,
+  options?: RequestInit,
+): Promise<WorkingCopyDiff> => {
+  return customFetch<WorkingCopyDiff>(getGetWorkingCopyDiffUrl(workingCopyId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWorkingCopyDiffQueryKey = (workingCopyId: string) => {
+  return [`/api/content/working-copies/${workingCopyId}/diff`] as const;
+};
+
+export const getGetWorkingCopyDiffQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWorkingCopyDiff>>,
+  TError = ErrorType<unknown>,
+>(
+  workingCopyId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkingCopyDiff>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetWorkingCopyDiffQueryKey(workingCopyId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getWorkingCopyDiff>>
+  > = ({ signal }) =>
+    getWorkingCopyDiff(workingCopyId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!workingCopyId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWorkingCopyDiff>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWorkingCopyDiffQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWorkingCopyDiff>>
+>;
+export type GetWorkingCopyDiffQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get diff between working copy and base revision
+ */
+
+export function useGetWorkingCopyDiff<
+  TData = Awaited<ReturnType<typeof getWorkingCopyDiff>>,
+  TError = ErrorType<unknown>,
+>(
+  workingCopyId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkingCopyDiff>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWorkingCopyDiffQueryOptions(
+    workingCopyId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get event history for a working copy
+ */
+export const getGetWorkingCopyEventsUrl = (workingCopyId: string) => {
+  return `/api/content/working-copies/${workingCopyId}/events`;
+};
+
+export const getWorkingCopyEvents = async (
+  workingCopyId: string,
+  options?: RequestInit,
+): Promise<WorkingCopyEvent[]> => {
+  return customFetch<WorkingCopyEvent[]>(
+    getGetWorkingCopyEventsUrl(workingCopyId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetWorkingCopyEventsQueryKey = (workingCopyId: string) => {
+  return [`/api/content/working-copies/${workingCopyId}/events`] as const;
+};
+
+export const getGetWorkingCopyEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWorkingCopyEvents>>,
+  TError = ErrorType<unknown>,
+>(
+  workingCopyId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkingCopyEvents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetWorkingCopyEventsQueryKey(workingCopyId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getWorkingCopyEvents>>
+  > = ({ signal }) =>
+    getWorkingCopyEvents(workingCopyId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!workingCopyId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWorkingCopyEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWorkingCopyEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWorkingCopyEvents>>
+>;
+export type GetWorkingCopyEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get event history for a working copy
+ */
+
+export function useGetWorkingCopyEvents<
+  TData = Awaited<ReturnType<typeof getWorkingCopyEvents>>,
+  TError = ErrorType<unknown>,
+>(
+  workingCopyId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWorkingCopyEvents>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWorkingCopyEventsQueryOptions(
+    workingCopyId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Get relations for a node

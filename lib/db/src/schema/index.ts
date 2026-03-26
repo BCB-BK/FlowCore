@@ -16,3 +16,4 @@ export * from "./glossary";
 export * from "./search-analytics";
 export * from "./ai-settings";
 export * from "./backups";
+export * from "./content-working-copies";

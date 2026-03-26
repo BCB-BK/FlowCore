@@ -181,3 +181,26 @@ export const assetOriginEnum = pgEnum("asset_origin", [
   "external_embed",
   "local_upload",
 ]);
+
+export const workingCopyStatusEnum = pgEnum("working_copy_status", [
+  "draft",
+  "submitted",
+  "in_review",
+  "changes_requested",
+  "approved_for_publish",
+  "cancelled",
+  "published",
+]);
+
+export const workingCopyEventTypeEnum = pgEnum("working_copy_event_type", [
+  "created",
+  "updated",
+  "submitted",
+  "review_started",
+  "returned_for_changes",
+  "amended_by_reviewer",
+  "approved",
+  "published",
+  "cancelled",
+  "unlocked",
+]);

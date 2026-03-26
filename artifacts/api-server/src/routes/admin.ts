@@ -4,6 +4,7 @@ import { appConfig } from "../lib/config";
 import { isAuthConfigured } from "../services/auth.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { migrateToWorkingCopyModel } from "../scripts/migrate-working-copies";
 
 const router: IRouter = Router();
 
@@ -54,6 +55,16 @@ router.get("/admin/system-info", requireAuth, requirePermission("manage_settings
       },
     },
   });
+});
+
+router.post("/admin/migrate-working-copies", requireAuth, requirePermission("manage_settings"), async (_req, res) => {
+  try {
+    const result = await migrateToWorkingCopyModel();
+    res.json({ success: true, ...result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
 });
 
 export default router;

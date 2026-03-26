@@ -15,6 +15,7 @@ import { qualityRouter } from "./quality";
 import { teamsRouter } from "./teams";
 import adminRouter from "./admin";
 import { backupRouter } from "./backup";
+import { workingCopiesRouter } from "./working-copies";
 
 const router: IRouter = Router();
 
@@ -25,6 +26,7 @@ router.use(authRouter);
 router.use(principalsRouter);
 router.use("/content", contentRouter);
 router.use("/content", reviewRouter);
+router.use("/content", workingCopiesRouter);
 router.use("/search", searchRouter);
 router.use("/tags", tagsRouter);
 router.use("/glossary", glossaryRouter);

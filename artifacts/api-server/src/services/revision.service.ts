@@ -51,14 +51,6 @@ export async function createRevision(
       })
       .returning({ id: contentRevisionsTable.id });
 
-    await tx
-      .update(contentNodesTable)
-      .set({
-        currentRevisionId: revision.id,
-        updatedAt: new Date(),
-      })
-      .where(eq(contentNodesTable.id, input.nodeId));
-
     await tx.insert(contentRevisionEventsTable).values({
       revisionId: revision.id,
       eventType: "created",

@@ -1613,6 +1613,115 @@ export interface BackupRun {
   createdAt: string;
 }
 
+export type WorkingCopyStatus =
+  (typeof WorkingCopyStatus)[keyof typeof WorkingCopyStatus];
+
+export const WorkingCopyStatus = {
+  draft: "draft",
+  submitted: "submitted",
+  in_review: "in_review",
+  changes_requested: "changes_requested",
+  approved_for_publish: "approved_for_publish",
+  cancelled: "cancelled",
+  published: "published",
+} as const;
+
+export type WorkingCopyStructuredFields = { [key: string]: unknown } | null;
+
+export interface WorkingCopy {
+  id: string;
+  nodeId: string;
+  baseRevisionId?: string | null;
+  authorId: string;
+  status: WorkingCopyStatus;
+  title?: string | null;
+  structuredFields?: WorkingCopyStructuredFields;
+  submitComment?: string | null;
+  reviewComment?: string | null;
+  reviewerId?: string | null;
+  publishedRevisionId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UpdateWorkingCopyInputStructuredFields = { [key: string]: unknown };
+
+export interface UpdateWorkingCopyInput {
+  title?: string;
+  structuredFields?: UpdateWorkingCopyInputStructuredFields;
+}
+
+export interface SubmitWorkingCopyInput {
+  comment?: string;
+}
+
+export type PublishWorkingCopyResultRevision = {
+  id?: string;
+  revisionNo?: number;
+  versionLabel?: string;
+};
+
+export interface PublishWorkingCopyResult {
+  workingCopy: WorkingCopy;
+  revision: PublishWorkingCopyResultRevision;
+}
+
+export type WorkingCopyDiffMetadataChanges = { [key: string]: unknown };
+
+export type WorkingCopyDiffStructuredFieldChanges = { [key: string]: unknown };
+
+export type WorkingCopyDiffBaseContent = { [key: string]: unknown } | null;
+
+export type WorkingCopyDiffNewContent = { [key: string]: unknown } | null;
+
+export type WorkingCopyDiffBaseStructuredFields = {
+  [key: string]: unknown;
+} | null;
+
+export type WorkingCopyDiffNewStructuredFields = {
+  [key: string]: unknown;
+} | null;
+
+export interface WorkingCopyDiff {
+  workingCopyId: string;
+  nodeId: string;
+  baseRevisionId?: string | null;
+  titleChanged: boolean;
+  contentChanged: boolean;
+  metadataChanges: WorkingCopyDiffMetadataChanges;
+  structuredFieldChanges: WorkingCopyDiffStructuredFieldChanges;
+  baseContent?: WorkingCopyDiffBaseContent;
+  newContent?: WorkingCopyDiffNewContent;
+  baseStructuredFields?: WorkingCopyDiffBaseStructuredFields;
+  newStructuredFields?: WorkingCopyDiffNewStructuredFields;
+}
+
+export type WorkingCopyEventType =
+  (typeof WorkingCopyEventType)[keyof typeof WorkingCopyEventType];
+
+export const WorkingCopyEventType = {
+  created: "created",
+  updated: "updated",
+  submitted: "submitted",
+  returned_for_changes: "returned_for_changes",
+  approved: "approved",
+  published: "published",
+  cancelled: "cancelled",
+  unlocked: "unlocked",
+} as const;
+
+export type WorkingCopyEventMetadata = { [key: string]: unknown } | null;
+
+export interface WorkingCopyEvent {
+  id: string;
+  workingCopyId: string;
+  eventType: WorkingCopyEventType;
+  actorId: string;
+  comment?: string | null;
+  metadata?: WorkingCopyEventMetadata;
+  createdAt: string;
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -1696,6 +1805,22 @@ export type GetWatchStatus200 = {
 
 export type WatchNodeBody = {
   watchChildren?: boolean;
+};
+
+export type ReturnWorkingCopyForChangesBody = {
+  comment?: string;
+};
+
+export type ApproveWorkingCopyBody = {
+  comment?: string;
+};
+
+export type PublishWorkingCopyBody = {
+  versionLabel: string;
+};
+
+export type CancelWorkingCopyBody = {
+  comment?: string;
 };
 
 export type UploadMediaBody = {

@@ -1189,6 +1189,398 @@ export const UnwatchNodeParams = zod.object({
 });
 
 /**
+ * @summary Create a working copy for a node
+ */
+export const CreateWorkingCopyParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const CreateWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Get the active working copy for a node
+ */
+export const GetActiveWorkingCopyParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetActiveWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Get a working copy by ID
+ */
+export const GetWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const GetWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Update a working copy (autosave)
+ */
+export const UpdateWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const UpdateWorkingCopyBody = zod.object({
+  title: zod.string().optional(),
+  structuredFields: zod.object({}).passthrough().optional(),
+});
+
+export const UpdateWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Submit working copy for review
+ */
+export const SubmitWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const SubmitWorkingCopyBody = zod.object({
+  comment: zod.string().optional(),
+});
+
+export const SubmitWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Return working copy for changes
+ */
+export const ReturnWorkingCopyForChangesParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const ReturnWorkingCopyForChangesBody = zod.object({
+  comment: zod.string().optional(),
+});
+
+export const ReturnWorkingCopyForChangesResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Approve a working copy
+ */
+export const ApproveWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const ApproveWorkingCopyBody = zod.object({
+  comment: zod.string().optional(),
+});
+
+export const ApproveWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Publish working copy as new version
+ */
+export const PublishWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const PublishWorkingCopyBody = zod.object({
+  versionLabel: zod.string(),
+});
+
+export const PublishWorkingCopyResponse = zod.object({
+  workingCopy: zod.object({
+    id: zod.string().uuid(),
+    nodeId: zod.string().uuid(),
+    baseRevisionId: zod.string().uuid().nullish(),
+    authorId: zod.string().uuid(),
+    status: zod.enum([
+      "draft",
+      "submitted",
+      "in_review",
+      "changes_requested",
+      "approved_for_publish",
+      "cancelled",
+      "published",
+    ]),
+    title: zod.string().nullish(),
+    structuredFields: zod.object({}).passthrough().nullish(),
+    submitComment: zod.string().nullish(),
+    reviewComment: zod.string().nullish(),
+    reviewerId: zod.string().uuid().nullish(),
+    publishedRevisionId: zod.string().uuid().nullish(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  revision: zod.object({
+    id: zod.string().uuid().optional(),
+    revisionNo: zod.number().optional(),
+    versionLabel: zod.string().optional(),
+  }),
+});
+
+/**
+ * @summary Cancel a working copy
+ */
+export const CancelWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const CancelWorkingCopyBody = zod.object({
+  comment: zod.string().optional(),
+});
+
+export const CancelWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Unlock a working copy (admin)
+ */
+export const UnlockWorkingCopyParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const UnlockWorkingCopyResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  authorId: zod.string().uuid(),
+  status: zod.enum([
+    "draft",
+    "submitted",
+    "in_review",
+    "changes_requested",
+    "approved_for_publish",
+    "cancelled",
+    "published",
+  ]),
+  title: zod.string().nullish(),
+  structuredFields: zod.object({}).passthrough().nullish(),
+  submitComment: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewerId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Get diff between working copy and base revision
+ */
+export const GetWorkingCopyDiffParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const GetWorkingCopyDiffResponse = zod.object({
+  workingCopyId: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  baseRevisionId: zod.string().uuid().nullish(),
+  titleChanged: zod.boolean(),
+  contentChanged: zod.boolean(),
+  metadataChanges: zod.object({}).passthrough(),
+  structuredFieldChanges: zod.object({}).passthrough(),
+  baseContent: zod.object({}).passthrough().nullish(),
+  newContent: zod.object({}).passthrough().nullish(),
+  baseStructuredFields: zod.object({}).passthrough().nullish(),
+  newStructuredFields: zod.object({}).passthrough().nullish(),
+});
+
+/**
+ * @summary Get event history for a working copy
+ */
+export const GetWorkingCopyEventsParams = zod.object({
+  workingCopyId: zod.coerce.string().uuid(),
+});
+
+export const GetWorkingCopyEventsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  workingCopyId: zod.string().uuid(),
+  eventType: zod.enum([
+    "created",
+    "updated",
+    "submitted",
+    "returned_for_changes",
+    "approved",
+    "published",
+    "cancelled",
+    "unlocked",
+  ]),
+  actorId: zod.string().uuid(),
+  comment: zod.string().nullish(),
+  metadata: zod.object({}).passthrough().nullish(),
+  createdAt: zod.string(),
+});
+export const GetWorkingCopyEventsResponse = zod.array(
+  GetWorkingCopyEventsResponseItem,
+);
+
+/**
  * @summary Get relations for a node
  */
 export const GetNodeRelationsParams = zod.object({

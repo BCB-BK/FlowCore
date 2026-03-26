@@ -46,6 +46,8 @@ tags:
     description: Microsoft Teams integration
   - name: backups
     description: Backup and restore management
+  - name: working-copies
+    description: Working copy lifecycle management
 paths:
   /healthz:
     get:
@@ -931,6 +933,244 @@ paths:
       responses:
         "204":
           description: Unwatched
+
+  /content/nodes/{nodeId}/working-copies:
+    post:
+      operationId: createWorkingCopy
+      tags: [working-copies]
+      summary: Create a working copy for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "201":
+          description: Working copy created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+        "200":
+          description: Existing working copy returned (same author)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+        "409":
+          description: Active working copy exists (different author)
+
+  /content/nodes/{nodeId}/working-copy:
+    get:
+      operationId: getActiveWorkingCopy
+      tags: [working-copies]
+      summary: Get the active working copy for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Active working copy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+        "404":
+          description: No active working copy
+
+  /content/working-copies/{workingCopyId}:
+    get:
+      operationId: getWorkingCopy
+      tags: [working-copies]
+      summary: Get a working copy by ID
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      responses:
+        "200":
+          description: Working copy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateWorkingCopy
+      tags: [working-copies]
+      summary: Update a working copy (autosave)
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorkingCopyInput"
+      responses:
+        "200":
+          description: Updated working copy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+
+  /content/working-copies/{workingCopyId}/submit:
+    post:
+      operationId: submitWorkingCopy
+      tags: [working-copies]
+      summary: Submit working copy for review
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitWorkingCopyInput"
+      responses:
+        "200":
+          description: Working copy submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+
+  /content/working-copies/{workingCopyId}/return-for-changes:
+    post:
+      operationId: returnWorkingCopyForChanges
+      tags: [working-copies]
+      summary: Return working copy for changes
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+      responses:
+        "200":
+          description: Working copy returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+
+  /content/working-copies/{workingCopyId}/approve:
+    post:
+      operationId: approveWorkingCopy
+      tags: [working-copies]
+      summary: Approve a working copy
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+      responses:
+        "200":
+          description: Working copy approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+
+  /content/working-copies/{workingCopyId}/publish:
+    post:
+      operationId: publishWorkingCopy
+      tags: [working-copies]
+      summary: Publish working copy as new version
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                versionLabel:
+                  type: string
+              required:
+                - versionLabel
+      responses:
+        "200":
+          description: Published result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublishWorkingCopyResult"
+
+  /content/working-copies/{workingCopyId}/cancel:
+    post:
+      operationId: cancelWorkingCopy
+      tags: [working-copies]
+      summary: Cancel a working copy
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+      responses:
+        "200":
+          description: Working copy cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+
+  /content/working-copies/{workingCopyId}/unlock:
+    post:
+      operationId: unlockWorkingCopy
+      tags: [working-copies]
+      summary: Unlock a working copy (admin)
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      responses:
+        "200":
+          description: Working copy unlocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopy"
+
+  /content/working-copies/{workingCopyId}/diff:
+    get:
+      operationId: getWorkingCopyDiff
+      tags: [working-copies]
+      summary: Get diff between working copy and base revision
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      responses:
+        "200":
+          description: Diff result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkingCopyDiff"
+
+  /content/working-copies/{workingCopyId}/events:
+    get:
+      operationId: getWorkingCopyEvents
+      tags: [working-copies]
+      summary: Get event history for a working copy
+      parameters:
+        - $ref: "#/components/parameters/WorkingCopyId"
+      responses:
+        "200":
+          description: Event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkingCopyEvent"
 
   /content/nodes/{nodeId}/relations:
     get:
@@ -2586,6 +2826,13 @@ components:
         format: uuid
     RelationId:
       name: relationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    WorkingCopyId:
+      name: workingCopyId
       in: path
       required: true
       schema:
@@ -5255,4 +5502,180 @@ components:
         - id
         - backupType
         - status
+        - createdAt
+
+    WorkingCopyStatus:
+      type: string
+      enum:
+        - draft
+        - submitted
+        - in_review
+        - changes_requested
+        - approved_for_publish
+        - cancelled
+        - published
+
+    WorkingCopy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        baseRevisionId:
+          type: string
+          format: uuid
+          nullable: true
+        authorId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/WorkingCopyStatus"
+        title:
+          type: string
+          nullable: true
+        structuredFields:
+          type: object
+          nullable: true
+        submitComment:
+          type: string
+          nullable: true
+        reviewComment:
+          type: string
+          nullable: true
+        reviewerId:
+          type: string
+          format: uuid
+          nullable: true
+        publishedRevisionId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - nodeId
+        - authorId
+        - status
+        - createdAt
+        - updatedAt
+
+    UpdateWorkingCopyInput:
+      type: object
+      properties:
+        title:
+          type: string
+        structuredFields:
+          type: object
+
+    SubmitWorkingCopyInput:
+      type: object
+      properties:
+        comment:
+          type: string
+
+    PublishWorkingCopyResult:
+      type: object
+      properties:
+        workingCopy:
+          $ref: "#/components/schemas/WorkingCopy"
+        revision:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            revisionNo:
+              type: integer
+            versionLabel:
+              type: string
+      required:
+        - workingCopy
+        - revision
+
+    WorkingCopyDiff:
+      type: object
+      properties:
+        workingCopyId:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        baseRevisionId:
+          type: string
+          format: uuid
+          nullable: true
+        titleChanged:
+          type: boolean
+        contentChanged:
+          type: boolean
+        metadataChanges:
+          type: object
+        structuredFieldChanges:
+          type: object
+        baseContent:
+          type: object
+          nullable: true
+        newContent:
+          type: object
+          nullable: true
+        baseStructuredFields:
+          type: object
+          nullable: true
+        newStructuredFields:
+          type: object
+          nullable: true
+      required:
+        - workingCopyId
+        - nodeId
+        - titleChanged
+        - contentChanged
+        - metadataChanges
+        - structuredFieldChanges
+
+    WorkingCopyEventType:
+      type: string
+      enum:
+        - created
+        - updated
+        - submitted
+        - returned_for_changes
+        - approved
+        - published
+        - cancelled
+        - unlocked
+
+    WorkingCopyEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workingCopyId:
+          type: string
+          format: uuid
+        eventType:
+          $ref: "#/components/schemas/WorkingCopyEventType"
+        actorId:
+          type: string
+          format: uuid
+        comment:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - workingCopyId
+        - eventType
+        - actorId
         - createdAt
