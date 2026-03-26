@@ -543,6 +543,14 @@ export async function streamPageAssist(
     return;
   }
 
+  if (nodeId) {
+    const canRead = await hasPermission(principalId, "read_page", nodeId);
+    if (!canRead) {
+      res.status(403).json({ error: "No read access to this page" });
+      return;
+    }
+  }
+
   const actionPrompt = ACTION_PROMPTS[action];
   if (!actionPrompt) {
     res.status(400).json({ error: "Invalid action" });
