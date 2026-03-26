@@ -232,7 +232,7 @@ async function searchWikiContent(
     .from(contentNodesTable)
     .leftJoin(
       contentRevisionsTable,
-      eq(contentNodesTable.currentRevisionId, contentRevisionsTable.id),
+      eq(contentNodesTable.publishedRevisionId, contentRevisionsTable.id),
     )
     .where(
       and(
