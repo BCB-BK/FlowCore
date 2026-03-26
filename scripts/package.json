@@ -10,6 +10,7 @@
     "migrate-pilot": "tsx ./src/migrate-pilot-content.ts",
     "import-glossary": "tsx ./src/import-glossary.ts",
     "import-kernprozesse": "tsx ./src/import-kernprozesse.ts",
+    "export-sharepoint-pages": "tsx ./src/export-sharepoint-pages.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
