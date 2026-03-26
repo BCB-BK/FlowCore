@@ -46,6 +46,70 @@ Gib immer Quellenverweise an, wenn du Informationen aus den Wiki-Seiten verwende
 Antworte auf Deutsch, es sei denn, der Benutzer schreibt auf Englisch.
 Formatiere deine Antworten mit Markdown.`;
 
+interface PromptPolicies {
+  sourcePriority?: "wiki_first" | "connector_first" | "equal";
+  responseLanguage?: "auto" | "de" | "en";
+  citationStyle?: "inline" | "footnote" | "none";
+  maxSourcesPerAnswer?: number;
+}
+
+function parsePromptPolicies(raw: unknown): PromptPolicies {
+  if (!raw || typeof raw !== "object") return {};
+  const obj = raw as Record<string, unknown>;
+  return {
+    sourcePriority:
+      obj.sourcePriority === "connector_first" || obj.sourcePriority === "equal"
+        ? obj.sourcePriority
+        : "wiki_first",
+    responseLanguage:
+      obj.responseLanguage === "de" || obj.responseLanguage === "en"
+        ? obj.responseLanguage
+        : "auto",
+    citationStyle:
+      obj.citationStyle === "footnote" || obj.citationStyle === "none"
+        ? obj.citationStyle
+        : "inline",
+    maxSourcesPerAnswer:
+      typeof obj.maxSourcesPerAnswer === "number" &&
+      obj.maxSourcesPerAnswer >= 1 &&
+      obj.maxSourcesPerAnswer <= 20
+        ? obj.maxSourcesPerAnswer
+        : 12,
+  };
+}
+
+function buildPolicyInstructions(policies: PromptPolicies): string {
+  const parts: string[] = [];
+
+  if (policies.sourcePriority === "connector_first") {
+    parts.push(
+      "Priorisiere externe Konnektorquellen gegenüber internen Wiki-Inhalten.",
+    );
+  } else if (policies.sourcePriority === "equal") {
+    parts.push(
+      "Behandle interne Wiki-Inhalte und externe Konnektorquellen gleichwertig.",
+    );
+  } else {
+    parts.push("Priorisiere interne Wiki-Inhalte gegenüber externen Quellen.");
+  }
+
+  if (policies.responseLanguage === "de") {
+    parts.push("Antworte immer auf Deutsch.");
+  } else if (policies.responseLanguage === "en") {
+    parts.push("Antworte immer auf Englisch.");
+  }
+
+  if (policies.citationStyle === "inline") {
+    parts.push("Verwende Inline-Zitate mit Quellennummern wie [1], [2], etc.");
+  } else if (policies.citationStyle === "footnote") {
+    parts.push("Füge Quellenverweise als Fußnoten am Ende der Antwort hinzu.");
+  } else if (policies.citationStyle === "none") {
+    parts.push("Füge keine expliziten Quellenverweise in den Text ein.");
+  }
+
+  return parts.join("\n");
+}
+
 export async function getAiSettings() {
   const rows = await db.select().from(aiSettingsTable).limit(1);
   if (rows.length === 0) {
@@ -252,6 +316,7 @@ async function gatherSources(
   query: string,
   principalId: string,
   sourceMode: string,
+  policies: PromptPolicies = {},
 ): Promise<AiSource[]> {
   const wikiSources = await searchWikiContent(query, principalId);
   let connectorSources: AiSource[] = [];
@@ -263,7 +328,23 @@ async function gatherSources(
     connectorSources = await searchConnectorSources(query, principalId);
   }
 
-  return [...wikiSources, ...connectorSources];
+  let combined: AiSource[];
+  if (policies.sourcePriority === "connector_first") {
+    combined = [...connectorSources, ...wikiSources];
+  } else if (policies.sourcePriority === "equal") {
+    const merged: AiSource[] = [];
+    const maxLen = Math.max(wikiSources.length, connectorSources.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (i < wikiSources.length) merged.push(wikiSources[i]);
+      if (i < connectorSources.length) merged.push(connectorSources[i]);
+    }
+    combined = merged;
+  } else {
+    combined = [...wikiSources, ...connectorSources];
+  }
+
+  const maxSources = policies.maxSourcesPerAnswer ?? 12;
+  return combined.slice(0, maxSources);
 }
 
 function shouldUseWebSearch(
@@ -286,7 +367,13 @@ export async function streamAskAnswer(
     return;
   }
 
-  const sources = await gatherSources(query, principalId, settings.sourceMode);
+  const policies = parsePromptPolicies(settings.promptPolicies);
+  const sources = await gatherSources(
+    query,
+    principalId,
+    settings.sourceMode,
+    policies,
+  );
 
   const useWebSearch = shouldUseWebSearch(
     settings.sourceMode,
@@ -303,8 +390,9 @@ export async function streamAskAnswer(
 
   const contextText = buildContextFromSources(sources);
   const systemPrompt = settings.systemPrompt || DEFAULT_SYSTEM_PROMPT;
+  const policyInstructions = buildPolicyInstructions(policies);
 
-  const instructions = `${systemPrompt}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
+  const instructions = `${systemPrompt}\n\n${policyInstructions}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
 
   let hasError = false;
   let errorMessage: string | undefined;
@@ -357,6 +445,9 @@ export async function streamAskAnswer(
           sourceType: "web",
         };
         sources.push(webSource);
+        res.write(
+          `data: ${JSON.stringify({ type: "sources_update", sources })}\n\n`,
+        );
       }
     }
   } catch (err) {

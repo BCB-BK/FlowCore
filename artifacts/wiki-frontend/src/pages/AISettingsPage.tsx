@@ -42,6 +42,10 @@ export function AISettingsPage() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [maxCompletionTokens, setMaxCompletionTokens] = useState(8192);
   const [systemPrompt, setSystemPrompt] = useState("");
+  const [sourcePriority, setSourcePriority] = useState("wiki_first");
+  const [responseLanguage, setResponseLanguage] = useState("auto");
+  const [citationStyle, setCitationStyle] = useState("inline");
+  const [maxSourcesPerAnswer, setMaxSourcesPerAnswer] = useState(12);
 
   useEffect(() => {
     if (settings) {
@@ -51,6 +55,11 @@ export function AISettingsPage() {
       setWebSearchEnabled(settings.webSearchEnabled);
       setMaxCompletionTokens(settings.maxCompletionTokens);
       setSystemPrompt(settings.systemPrompt || "");
+      const pp = (settings.promptPolicies || {}) as Record<string, unknown>;
+      setSourcePriority((pp.sourcePriority as string) || "wiki_first");
+      setResponseLanguage((pp.responseLanguage as string) || "auto");
+      setCitationStyle((pp.citationStyle as string) || "inline");
+      setMaxSourcesPerAnswer((pp.maxSourcesPerAnswer as number) || 12);
     }
   }, [settings]);
 
@@ -67,6 +76,12 @@ export function AISettingsPage() {
           webSearchEnabled,
           maxCompletionTokens,
           systemPrompt: systemPrompt || null,
+          promptPolicies: {
+            sourcePriority,
+            responseLanguage,
+            citationStyle,
+            maxSourcesPerAnswer,
+          },
         },
       },
       {
@@ -219,6 +234,93 @@ export function AISettingsPage() {
             {updateMutation.isPending
               ? "Speichern..."
               : "Einstellungen speichern"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Antwort-Richtlinien</CardTitle>
+          <CardDescription>
+            Steuere das Verhalten des Assistenten bei Quellenpriorisierung,
+            Sprache und Zitierweise
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="source-priority">Quellen-Priorisierung</Label>
+              <Select value={sourcePriority} onValueChange={setSourcePriority}>
+                <SelectTrigger id="source-priority">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="wiki_first">
+                    Wiki-Inhalte zuerst
+                  </SelectItem>
+                  <SelectItem value="connector_first">
+                    Konnektoren zuerst
+                  </SelectItem>
+                  <SelectItem value="equal">Gleichwertig</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="response-language">Antwortsprache</Label>
+              <Select
+                value={responseLanguage}
+                onValueChange={setResponseLanguage}
+              >
+                <SelectTrigger id="response-language">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">
+                    Automatisch (Sprache der Frage)
+                  </SelectItem>
+                  <SelectItem value="de">Immer Deutsch</SelectItem>
+                  <SelectItem value="en">Immer Englisch</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="citation-style">Zitierweise</Label>
+              <Select value={citationStyle} onValueChange={setCitationStyle}>
+                <SelectTrigger id="citation-style">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="inline">Inline-Zitate [1], [2]</SelectItem>
+                  <SelectItem value="footnote">Fußnoten</SelectItem>
+                  <SelectItem value="none">Keine Zitate im Text</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="max-sources">Max. Quellen pro Antwort</Label>
+              <Input
+                id="max-sources"
+                type="number"
+                min={1}
+                max={20}
+                value={maxSourcesPerAnswer}
+                onChange={(e) =>
+                  setMaxSourcesPerAnswer(parseInt(e.target.value, 10) || 12)
+                }
+              />
+            </div>
+          </div>
+
+          <Button onClick={handleSave} disabled={updateMutation.isPending}>
+            <Save className="h-4 w-4 mr-2" />
+            {updateMutation.isPending
+              ? "Speichern..."
+              : "Richtlinien speichern"}
           </Button>
         </CardContent>
       </Card>

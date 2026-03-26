@@ -10,6 +10,7 @@ import {
   Loader2,
   FileText,
   ExternalLink,
+  Globe,
   Sparkles,
   X,
 } from "lucide-react";
@@ -100,7 +101,7 @@ export function GlobalAssistant() {
           try {
             const data = JSON.parse(jsonStr);
 
-            if (data.type === "sources") {
+            if (data.type === "sources" || data.type === "sources_update") {
               currentSources = data.sources || [];
               setMessages((prev) => {
                 const updated = [...prev];
@@ -212,39 +213,50 @@ export function GlobalAssistant() {
                       <p className="text-xs text-muted-foreground font-medium">
                         Quellen:
                       </p>
-                      {msg.sources.map((src) => (
+                      {msg.sources.map((src, srcIdx) => (
                         <button
-                          key={`${src.nodeId}-${i}`}
+                          key={`${src.nodeId || "web"}-${srcIdx}-${i}`}
                           className="flex items-center gap-2 text-xs text-left w-full rounded border px-2 py-1.5 hover:bg-accent transition-colors"
                           onClick={() => {
+                            if (src.sourceType === "web") {
+                              return;
+                            }
                             if (
                               src.sourceType === "connector" &&
                               src.externalUrl
                             ) {
                               window.open(src.externalUrl, "_blank");
-                            } else {
+                            } else if (src.nodeId) {
                               navigate(`/node/${src.nodeId}`);
                             }
                           }}
                         >
-                          {src.sourceType === "connector" ? (
+                          {src.sourceType === "web" ? (
+                            <Globe className="h-3 w-3 shrink-0 text-blue-500" />
+                          ) : src.sourceType === "connector" ? (
                             <ExternalLink className="h-3 w-3 shrink-0 text-orange-500" />
                           ) : (
                             <FileText className="h-3 w-3 shrink-0 text-primary" />
                           )}
                           <span className="truncate flex-1">
-                            <span className="font-medium">
-                              {src.displayCode}
-                            </span>{" "}
+                            {src.sourceType !== "web" && (
+                              <>
+                                <span className="font-medium">
+                                  {src.displayCode}
+                                </span>{" "}
+                              </>
+                            )}
                             {src.title}
                           </span>
                           <Badge
                             variant="outline"
                             className="text-[10px] shrink-0"
                           >
-                            {src.sourceType === "connector"
-                              ? src.sourceSystemName || "Extern"
-                              : src.templateType.replace(/_/g, " ")}
+                            {src.sourceType === "web"
+                              ? "Web"
+                              : src.sourceType === "connector"
+                                ? src.sourceSystemName || "Extern"
+                                : src.templateType.replace(/_/g, " ")}
                           </Badge>
                         </button>
                       ))}
