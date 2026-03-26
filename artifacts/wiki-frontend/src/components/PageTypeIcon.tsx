@@ -9,6 +9,14 @@ import {
   UserCog,
   LayoutDashboard,
   Server,
+  BookOpen,
+  ClipboardCheck,
+  CheckSquare,
+  HelpCircle,
+  ArrowLeftRight,
+  MessageSquare,
+  GraduationCap,
+  SearchCheck,
   File,
 } from "lucide-react";
 
@@ -23,6 +31,14 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   UserCog,
   LayoutDashboard,
   Server,
+  BookOpen,
+  ClipboardCheck,
+  CheckSquare,
+  HelpCircle,
+  ArrowLeftRight,
+  MessageSquare,
+  GraduationCap,
+  SearchCheck,
 };
 
 interface PageTypeIconProps {

@@ -40,6 +40,13 @@ export const templateTypeEnum = pgEnum("template_type", [
   "dashboard",
   "system_documentation",
   "glossary",
+  "work_instruction",
+  "checklist",
+  "faq",
+  "interface_description",
+  "meeting_protocol",
+  "training_resource",
+  "audit_object",
 ]);
 
 export const reviewStatusEnum = pgEnum("review_status", [

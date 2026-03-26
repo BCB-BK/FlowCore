@@ -44,6 +44,14 @@ export const ContentNodeTemplateType = {
   role_profile: "role_profile",
   dashboard: "dashboard",
   system_documentation: "system_documentation",
+  glossary: "glossary",
+  work_instruction: "work_instruction",
+  checklist: "checklist",
+  faq: "faq",
+  interface_description: "interface_description",
+  meeting_protocol: "meeting_protocol",
+  training_resource: "training_resource",
+  audit_object: "audit_object",
 } as const;
 
 export type ContentNodeStatus =
@@ -91,6 +99,14 @@ export const CreateNodeInputTemplateType = {
   role_profile: "role_profile",
   dashboard: "dashboard",
   system_documentation: "system_documentation",
+  glossary: "glossary",
+  work_instruction: "work_instruction",
+  checklist: "checklist",
+  faq: "faq",
+  interface_description: "interface_description",
+  meeting_protocol: "meeting_protocol",
+  training_resource: "training_resource",
+  audit_object: "audit_object",
 } as const;
 
 export interface CreateNodeInput {
@@ -116,6 +132,14 @@ export const UpdateNodeInputTemplateType = {
   role_profile: "role_profile",
   dashboard: "dashboard",
   system_documentation: "system_documentation",
+  glossary: "glossary",
+  work_instruction: "work_instruction",
+  checklist: "checklist",
+  faq: "faq",
+  interface_description: "interface_description",
+  meeting_protocol: "meeting_protocol",
+  training_resource: "training_resource",
+  audit_object: "audit_object",
 } as const;
 
 export interface UpdateNodeInput {

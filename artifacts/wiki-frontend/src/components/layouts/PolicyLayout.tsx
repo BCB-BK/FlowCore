@@ -1,4 +1,4 @@
-import { Shield, Target, BookOpen, Gavel } from "lucide-react";
+import { Shield, Target, BookOpen, Gavel, BookMarked, FileStack } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 
 interface PolicyLayoutProps {
@@ -20,6 +20,7 @@ export function PolicyLayout({
       <EditableSectionCard
         sectionKey="purpose"
         label="Zweck"
+        description="Warum existiert diese Richtlinie?"
         icon={<Target className="h-4 w-4 text-primary" />}
         value={str(structuredFields.purpose)}
         onSave={onSectionSave}
@@ -29,6 +30,7 @@ export function PolicyLayout({
       <EditableSectionCard
         sectionKey="scope"
         label="Geltungsbereich"
+        description="Für wen und wo gilt die Richtlinie?"
         icon={<BookOpen className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.scope)}
         onSave={onSectionSave}
@@ -36,8 +38,19 @@ export function PolicyLayout({
       />
 
       <EditableSectionCard
+        sectionKey="definitions"
+        label="Begriffe & Definitionen"
+        description="Klärung zentraler Begriffe"
+        icon={<BookMarked className="h-4 w-4 text-indigo-600" />}
+        value={str(structuredFields.definitions)}
+        onSave={onSectionSave}
+        emptyText="Keine Begriffe definiert"
+      />
+
+      <EditableSectionCard
         sectionKey="policy_text"
         label="Richtlinientext"
+        description="Die eigentlichen Regelungen"
         icon={<Shield className="h-4 w-4 text-red-600" />}
         value={str(structuredFields.policy_text)}
         onSave={onSectionSave}
@@ -46,11 +59,22 @@ export function PolicyLayout({
 
       <EditableSectionCard
         sectionKey="enforcement"
-        label="Durchsetzung"
+        label="Durchsetzung & Konsequenzen"
+        description="Maßnahmen bei Nichteinhaltung"
         icon={<Gavel className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.enforcement)}
         onSave={onSectionSave}
         emptyText="Noch keine Durchsetzungsmaßnahmen definiert"
+      />
+
+      <EditableSectionCard
+        sectionKey="references"
+        label="Referenzen & mitgeltende Dokumente"
+        description="Verknüpfte Normen, Gesetze und Dokumente"
+        icon={<FileStack className="h-4 w-4 text-blue-600" />}
+        value={str(structuredFields.references)}
+        onSave={onSectionSave}
+        emptyText="Keine Referenzen angegeben"
       />
     </div>
   );

@@ -1,4 +1,10 @@
-import { UserCog, ClipboardList, GraduationCap, Key } from "lucide-react";
+import {
+  UserCog,
+  ClipboardList,
+  GraduationCap,
+  Key,
+  ArrowLeftRight,
+} from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 
 interface RoleProfileLayoutProps {
@@ -20,7 +26,7 @@ export function RoleProfileLayout({
       <EditableSectionCard
         sectionKey="role_definition"
         label="Rollendefinition"
-        description="Name & Einordnung"
+        description="Name, Einordnung & Stellenziel"
         icon={<UserCog className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.role_definition)}
         onSave={onSectionSave}
@@ -29,7 +35,8 @@ export function RoleProfileLayout({
 
       <EditableSectionCard
         sectionKey="responsibilities"
-        label="Verantwortlichkeiten"
+        label="Aufgaben & Verantwortlichkeiten"
+        description="Kernaufgaben und Verantwortungsbereiche"
         icon={<ClipboardList className="h-4 w-4 text-primary" />}
         value={str(structuredFields.responsibilities)}
         onSave={onSectionSave}
@@ -39,7 +46,8 @@ export function RoleProfileLayout({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <EditableSectionCard
           sectionKey="qualifications"
-          label="Qualifikationen"
+          label="Qualifikationen & Anforderungen"
+          description="Fachliche und persönliche Anforderungen"
           icon={<GraduationCap className="h-4 w-4 text-blue-600" />}
           value={str(structuredFields.qualifications)}
           onSave={onSectionSave}
@@ -49,12 +57,23 @@ export function RoleProfileLayout({
         <EditableSectionCard
           sectionKey="authority"
           label="Befugnisse"
+          description="Entscheidungs- und Handlungsbefugnisse"
           icon={<Key className="h-4 w-4 text-amber-600" />}
           value={str(structuredFields.authority)}
           onSave={onSectionSave}
           emptyText="—"
         />
       </div>
+
+      <EditableSectionCard
+        sectionKey="interfaces"
+        label="Zusammenarbeit & Schnittstellen"
+        description="Interne und externe Kooperationspartner"
+        icon={<ArrowLeftRight className="h-4 w-4 text-cyan-600" />}
+        value={str(structuredFields.interfaces)}
+        onSave={onSectionSave}
+        emptyText="Keine Schnittstellen dokumentiert"
+      />
     </div>
   );
 }

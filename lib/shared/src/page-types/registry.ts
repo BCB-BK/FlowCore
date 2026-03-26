@@ -9,7 +9,14 @@ export type TemplateType =
   | "role_profile"
   | "dashboard"
   | "system_documentation"
-  | "glossary";
+  | "glossary"
+  | "work_instruction"
+  | "checklist"
+  | "faq"
+  | "interface_description"
+  | "meeting_protocol"
+  | "training_resource"
+  | "audit_object";
 
 export type MetadataGroupKey =
   | "identity"
@@ -32,6 +39,8 @@ export interface PageTypeSection {
   key: string;
   label: string;
   description?: string;
+  helpText?: string;
+  guidingQuestions?: string[];
   required: boolean;
 }
 
@@ -41,6 +50,14 @@ export interface TemplateVariant {
   description: string;
   prefilledSections?: string[];
 }
+
+export type PageTypeCategory =
+  | "process"
+  | "documentation"
+  | "governance"
+  | "system"
+  | "quality"
+  | "knowledge";
 
 export interface PageTypeDefinition {
   type: TemplateType;
@@ -53,7 +70,7 @@ export interface PageTypeDefinition {
   allowedChildTypes: TemplateType[];
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
-  category: "process" | "documentation" | "governance" | "system";
+  category: PageTypeCategory;
   helpText?: string;
   variants: TemplateVariant[];
 }
@@ -66,6 +83,34 @@ const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
     required: false,
     group: "identity",
     description: "Mutable display code (e.g. KP-001)",
+  },
+  {
+    key: "document_type",
+    label: "Dokumentenart",
+    type: "enum",
+    required: false,
+    group: "identity",
+    options: [
+      "procedure",
+      "policy",
+      "guideline",
+      "form",
+      "checklist",
+      "report",
+      "specification",
+      "manual",
+      "record",
+    ],
+    description: "Art des Dokuments gemäß Dokumentenklassifikation",
+  },
+  {
+    key: "language",
+    label: "Sprache",
+    type: "enum",
+    required: false,
+    group: "identity",
+    options: ["de", "en", "fr", "es", "it"],
+    description: "Sprache des Dokuments",
   },
 ];
 
@@ -102,6 +147,22 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     group: "governance",
     description: "Freigabe-Verantwortlicher",
   },
+  {
+    key: "status_reason",
+    label: "Statusbegründung",
+    type: "text",
+    required: false,
+    group: "governance",
+    description: "Begründung für den aktuellen Status (z.B. Grund für Archivierung)",
+  },
+  {
+    key: "source_of_truth",
+    label: "Führendes System",
+    type: "text",
+    required: false,
+    group: "governance",
+    description: "System oder Quelle, die als maßgeblich gilt",
+  },
 ];
 
 const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
@@ -121,6 +182,14 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     group: "validity",
   },
   {
+    key: "effective_date",
+    label: "Inkrafttretungsdatum",
+    type: "date",
+    required: false,
+    group: "validity",
+    description: "Datum, ab dem das Dokument verbindlich gilt",
+  },
+  {
     key: "review_cycle_months",
     label: "Prüfzyklus (Monate)",
     type: "number",
@@ -135,6 +204,31 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     required: false,
     group: "validity",
   },
+  {
+    key: "review_required_by",
+    label: "Prüfung erforderlich bis",
+    type: "date",
+    required: false,
+    group: "validity",
+    description: "Deadline für die nächste inhaltliche Prüfung",
+  },
+  {
+    key: "last_verified_at",
+    label: "Letzte Verifizierung",
+    type: "date",
+    required: false,
+    group: "validity",
+    description: "Datum der letzten inhaltlichen Verifizierung",
+  },
+  {
+    key: "verification_result",
+    label: "Verifizierungsergebnis",
+    type: "enum",
+    required: false,
+    group: "validity",
+    options: ["current", "update_needed", "obsolete"],
+    description: "Ergebnis der letzten Verifizierung",
+  },
 ];
 
 const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
@@ -146,6 +240,15 @@ const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
     group: "classification",
     options: ["public", "internal", "confidential", "strictly_confidential"],
     description: "Vertraulichkeitsstufe des Dokuments",
+  },
+  {
+    key: "risk_level",
+    label: "Risikoeinstufung",
+    type: "enum",
+    required: false,
+    group: "classification",
+    options: ["low", "medium", "high", "critical"],
+    description: "Risikoeinstufung bei Nichtbeachtung oder Ausfall",
   },
   {
     key: "tags",
@@ -182,9 +285,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "process_page_text",
       "process_page_graphic",
       "procedure_instruction",
+      "work_instruction",
       "use_case",
       "role_profile",
       "system_documentation",
+      "interface_description",
+      "checklist",
     ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -195,18 +301,71 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     sections: [
       {
         key: "overview",
-        label: "Übersicht",
-        description: "Zweck & Geltungsbereich",
+        label: "Zweck & Geltungsbereich",
+        description: "Warum existiert dieser Prozess und wer ist betroffen?",
+        helpText:
+          "Beschreiben Sie den Zweck des Prozesses, seinen Geltungsbereich und die relevanten Organisationseinheiten.",
+        guidingQuestions: [
+          "Welches Geschäftsziel unterstützt dieser Prozess?",
+          "Für welche Bereiche/Standorte gilt er?",
+          "Welche Ergebnisse liefert der Prozess?",
+        ],
         required: true,
       },
       {
         key: "sipoc",
         label: "SIPOC",
         description: "Suppliers, Inputs, Process, Outputs, Customers",
+        helpText:
+          "Definieren Sie die SIPOC-Elemente, um den Prozess auf oberster Ebene zu beschreiben.",
+        guidingQuestions: [
+          "Wer liefert die Eingaben (Suppliers)?",
+          "Welche Eingaben werden benötigt (Inputs)?",
+          "Was sind die Hauptschritte (Process)?",
+          "Was wird produziert (Outputs)?",
+          "Wer erhält die Ergebnisse (Customers)?",
+        ],
+        required: true,
+      },
+      {
+        key: "kpis",
+        label: "KPIs & Kennzahlen",
+        description: "Messbare Erfolgsindikatoren",
+        helpText:
+          "Definieren Sie die Kennzahlen, mit denen der Prozesserfolg gemessen wird.",
+        guidingQuestions: [
+          "Wie wird die Prozessleistung gemessen?",
+          "Welche Zielwerte gelten?",
+          "Wie häufig wird gemessen?",
+        ],
         required: false,
       },
-      { key: "kpis", label: "KPIs & Kennzahlen", required: false },
-      { key: "compliance", label: "Normbezug & Compliance", required: false },
+      {
+        key: "compliance",
+        label: "Normbezug & Compliance",
+        description: "Regulatorische Anforderungen und Normreferenzen",
+        helpText:
+          "Listen Sie relevante Normen, Gesetze und regulatorische Anforderungen auf.",
+        guidingQuestions: [
+          "Welche Normen (ISO, DIN) sind relevant?",
+          "Welche gesetzlichen Anforderungen bestehen?",
+          "Gibt es branchenspezifische Vorgaben?",
+        ],
+        required: false,
+      },
+      {
+        key: "risks",
+        label: "Prozessrisiken",
+        description: "Identifizierte Risiken und Gegenmaßnahmen",
+        helpText:
+          "Dokumentieren Sie die wesentlichen Risiken des Prozesses und deren Gegenmaßnahmen.",
+        guidingQuestions: [
+          "Was kann bei diesem Prozess schiefgehen?",
+          "Welche Gegenmaßnahmen sind etabliert?",
+          "Wie hoch ist die Eintrittswahrscheinlichkeit?",
+        ],
+        required: false,
+      },
       { key: "children", label: "Untergeordnete Prozesse", required: false },
     ],
     variants: [
@@ -222,6 +381,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description:
           "Übersicht mit vorbereiteten Abschnitten für SIPOC, KPIs und Compliance",
         prefilledSections: ["overview", "sipoc", "kpis", "compliance"],
+      },
+      {
+        key: "full",
+        label: "Vollständig",
+        description:
+          "Alle Abschnitte inkl. Risiken vorausgefüllt",
+        prefilledSections: ["overview", "sipoc", "kpis", "compliance", "risks"],
       },
     ],
   },
@@ -244,6 +410,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "role_profile",
       "dashboard",
       "system_documentation",
+      "faq",
+      "training_resource",
     ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -252,8 +420,44 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       ...COMMON_CLASSIFICATION_FIELDS,
     ],
     sections: [
-      { key: "description", label: "Beschreibung", required: true },
-      { key: "structure", label: "Aufbauorganisation", required: false },
+      {
+        key: "description",
+        label: "Beschreibung",
+        description: "Aufgaben und Zuständigkeiten des Bereichs",
+        helpText:
+          "Beschreiben Sie die Kernaufgaben, den Auftrag und die Zuständigkeiten des Bereichs.",
+        guidingQuestions: [
+          "Was ist der Auftrag des Bereichs?",
+          "Welche Kernaufgaben hat der Bereich?",
+          "Wie ordnet sich der Bereich in die Gesamtorganisation ein?",
+        ],
+        required: true,
+      },
+      {
+        key: "structure",
+        label: "Aufbauorganisation",
+        description: "Organisatorischer Aufbau und Rollenverteilung",
+        helpText:
+          "Beschreiben Sie den organisatorischen Aufbau, Teams und Verantwortlichkeiten.",
+        guidingQuestions: [
+          "Welche Teams/Gruppen gibt es?",
+          "Wer leitet den Bereich?",
+          "Wie viele Mitarbeitende sind zugeordnet?",
+        ],
+        required: false,
+      },
+      {
+        key: "interfaces",
+        label: "Schnittstellen",
+        description: "Zusammenarbeit mit anderen Bereichen",
+        helpText:
+          "Dokumentieren Sie die wichtigsten Schnittstellen zu anderen Bereichen.",
+        guidingQuestions: [
+          "Mit welchen Bereichen wird eng zusammengearbeitet?",
+          "Welche Leistungen werden ausgetauscht?",
+        ],
+        required: false,
+      },
       { key: "children", label: "Zugehörige Seiten", required: false },
     ],
     variants: [
@@ -282,24 +486,73 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     category: "process",
     helpText:
       "Dokumentieren Sie einen Prozessablauf als Textbeschreibung mit Verfahrensschritten, Zuständigkeiten und zugehörigen Dokumenten.",
-    allowedChildTypes: ["procedure_instruction", "use_case"],
+    allowedChildTypes: [
+      "procedure_instruction",
+      "work_instruction",
+      "use_case",
+      "checklist",
+    ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
       ...COMMON_VALIDITY_FIELDS,
       ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "process_type",
+        label: "Prozessart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["core", "support", "management"],
+        description: "Art des Prozesses (Kern-, Unterstützungs- oder Managementprozess)",
+      },
     ],
     sections: [
+      {
+        key: "trigger",
+        label: "Auslöser & Eingaben",
+        description: "Was löst den Prozess aus und welche Eingaben werden benötigt?",
+        helpText:
+          "Beschreiben Sie die Auslöser (Trigger) und die notwendigen Eingaben für den Prozessstart.",
+        guidingQuestions: [
+          "Was startet den Prozess?",
+          "Welche Unterlagen/Daten werden benötigt?",
+          "Gibt es Vorbedingungen?",
+        ],
+        required: false,
+      },
       {
         key: "procedure",
         label: "Ablauf",
         description: "Verfahrensschritte & RACI",
+        helpText:
+          "Beschreiben Sie die einzelnen Schritte des Prozesses mit Verantwortlichkeiten (RACI).",
+        guidingQuestions: [
+          "Welche Schritte werden in welcher Reihenfolge ausgeführt?",
+          "Wer ist für jeden Schritt verantwortlich?",
+          "Welche Entscheidungspunkte gibt es?",
+        ],
         required: true,
+      },
+      {
+        key: "outputs",
+        label: "Ergebnisse & Ausgaben",
+        description: "Was liefert der Prozess als Ergebnis?",
+        helpText:
+          "Beschreiben Sie die Ergebnisse und Dokumente, die der Prozess erzeugt.",
+        guidingQuestions: [
+          "Welche Dokumente/Daten werden erzeugt?",
+          "Wer erhält die Ergebnisse?",
+          "Welche Qualitätskriterien gelten?",
+        ],
+        required: false,
       },
       {
         key: "interfaces",
         label: "Schnittstellen",
         description: "Systeme & Dokumente",
+        helpText:
+          "Listen Sie die IT-Systeme, Formulare und Dokumente auf, die im Prozess verwendet werden.",
         required: false,
       },
     ],
@@ -315,6 +568,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description: "Mit Ablauf und Schnittstellenabschnitt",
         prefilledSections: ["procedure", "interfaces"],
       },
+      {
+        key: "detailed",
+        label: "Detailliert",
+        description: "Alle Abschnitte inkl. Auslöser und Ergebnisse",
+        prefilledSections: ["trigger", "procedure", "outputs", "interfaces"],
+      },
     ],
   },
 
@@ -329,7 +588,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     category: "process",
     helpText:
       "Erstellen Sie eine grafische Prozessdarstellung mit Swimlane-Diagramm. Ideal für Prozesse, die visuell besser verständlich sind als in Textform.",
-    allowedChildTypes: ["procedure_instruction", "use_case"],
+    allowedChildTypes: [
+      "procedure_instruction",
+      "work_instruction",
+      "use_case",
+    ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -341,9 +604,29 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "diagram",
         label: "Diagramm",
         description: "Swimlane-Darstellung",
+        helpText:
+          "Erstellen oder verlinken Sie ein Swimlane-Diagramm. Benennen Sie die Rollen/Bereiche in den Bahnen.",
+        guidingQuestions: [
+          "Welche Rollen/Bereiche sind beteiligt (Swimlanes)?",
+          "Welche Aktivitäten werden in welcher Reihenfolge ausgeführt?",
+          "Wo gibt es Entscheidungspunkte?",
+        ],
         required: true,
       },
-      { key: "description", label: "Erläuterung", required: false },
+      {
+        key: "description",
+        label: "Erläuterung",
+        description: "Textuelle Beschreibung zum Diagramm",
+        helpText:
+          "Ergänzen Sie die grafische Darstellung um textuelle Erläuterungen zu Besonderheiten.",
+        required: false,
+      },
+      {
+        key: "legend",
+        label: "Legende & Symbole",
+        description: "Erklärung der verwendeten Symbole und Farben",
+        required: false,
+      },
     ],
     variants: [
       {
@@ -364,14 +647,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     type: "procedure_instruction",
     label: "Procedure Instruction",
     labelDe: "Verfahrensanweisung",
-    description: "Detailed step-by-step work instruction",
-    descriptionDe: "Detaillierte Schritt-für-Schritt Verfahrensanweisung",
+    description:
+      "Detailed procedure instruction with scope, triggers, responsibilities, risks, and related documents",
+    descriptionDe:
+      "Detaillierte Verfahrensanweisung mit Geltungsbereich, Auslösern, Verantwortlichkeiten, Risiken und mitgeltenden Unterlagen",
     icon: "ListChecks",
     color: "hsl(30, 80%, 50%)",
     category: "process",
     helpText:
-      "Erstellen Sie eine detaillierte Verfahrensanweisung mit Schritt-für-Schritt-Anleitungen, Verantwortlichkeiten und benötigten Ressourcen.",
-    allowedChildTypes: [],
+      "Erstellen Sie eine detaillierte Verfahrensanweisung nach QM-Standard. Definieren Sie Zweck, Geltungsbereich, Auslöser, Ablauf, Verantwortlichkeiten, Schnittstellen, Risiken und mitgeltende Unterlagen.",
+    allowedChildTypes: ["work_instruction", "checklist"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -381,25 +666,172 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "document_number",
         label: "Dokumentennummer",
         type: "text",
-        required: false,
+        required: true,
         group: "identity",
         description: "Formale Dokumentennummer (z.B. VA-001)",
+      },
+      {
+        key: "revision_number",
+        label: "Revisionsnummer",
+        type: "text",
+        required: false,
+        group: "identity",
+        description: "Aktuelle Revisionsnummer des Dokuments",
       },
     ],
     sections: [
       {
-        key: "scope",
-        label: "Geltungsbereich",
-        description: "Zweck & Geltungsbereich",
+        key: "purpose",
+        label: "Zweck",
+        description: "Zweck und Ziel der Verfahrensanweisung",
+        helpText:
+          "Beschreiben Sie, warum diese Verfahrensanweisung existiert und welches Ziel sie verfolgt.",
+        guidingQuestions: [
+          "Was soll mit dieser Verfahrensanweisung sichergestellt werden?",
+          "Welches übergeordnete Ziel wird unterstützt?",
+        ],
         required: true,
       },
       {
-        key: "procedure",
-        label: "Durchführung",
-        description: "Schritte & Verantwortlichkeiten",
+        key: "scope",
+        label: "Geltungsbereich",
+        description: "Für wen und wo gilt diese Anweisung?",
+        helpText:
+          "Definieren Sie, für welche Bereiche, Standorte und Personen diese Anweisung gilt.",
+        guidingQuestions: [
+          "Für welche Organisationseinheiten gilt die Anweisung?",
+          "Gibt es Ausnahmen?",
+          "Gilt sie standortübergreifend?",
+        ],
         required: true,
       },
-      { key: "documents", label: "Mitgeltende Unterlagen", required: false },
+      {
+        key: "trigger",
+        label: "Auslöser & Vorbedingungen",
+        description: "Was löst das Verfahren aus?",
+        helpText:
+          "Beschreiben Sie die Ereignisse oder Bedingungen, die das Verfahren auslösen.",
+        guidingQuestions: [
+          "Welches Ereignis startet das Verfahren?",
+          "Welche Voraussetzungen müssen erfüllt sein?",
+          "Welche Eingaben werden benötigt?",
+        ],
+        required: false,
+      },
+      {
+        key: "inputs",
+        label: "Eingaben & Voraussetzungen",
+        description: "Benötigte Dokumente, Daten und Ressourcen",
+        helpText:
+          "Listen Sie alle Eingaben auf, die für die Durchführung benötigt werden.",
+        guidingQuestions: [
+          "Welche Dokumente werden benötigt?",
+          "Welche Daten müssen vorliegen?",
+          "Welche Ressourcen/Werkzeuge sind erforderlich?",
+        ],
+        required: false,
+      },
+      {
+        key: "procedure",
+        label: "Ablaufbeschreibung",
+        description: "Schrittweise Durchführung mit Verantwortlichkeiten",
+        helpText:
+          "Beschreiben Sie den Ablauf Schritt für Schritt. Geben Sie für jeden Schritt die Verantwortlichkeit an (Wer? Was? Wie? Womit?).",
+        guidingQuestions: [
+          "Welche Schritte werden in welcher Reihenfolge ausgeführt?",
+          "Wer ist für jeden Schritt verantwortlich (R), wer wird informiert (I)?",
+          "Welche Entscheidungen müssen getroffen werden?",
+          "Welche Ergebnisse liefert jeder Schritt?",
+        ],
+        required: true,
+      },
+      {
+        key: "responsibilities",
+        label: "Verantwortlichkeiten (RACI)",
+        description: "Responsible, Accountable, Consulted, Informed",
+        helpText:
+          "Ordnen Sie die Rollen und Verantwortlichkeiten nach dem RACI-Modell zu.",
+        guidingQuestions: [
+          "Wer führt die Tätigkeit aus (Responsible)?",
+          "Wer trägt die Gesamtverantwortung (Accountable)?",
+          "Wer muss konsultiert werden (Consulted)?",
+          "Wer muss informiert werden (Informed)?",
+        ],
+        required: true,
+      },
+      {
+        key: "interfaces",
+        label: "Schnittstellen & Systeme",
+        description: "Beteiligte IT-Systeme und organisatorische Schnittstellen",
+        helpText:
+          "Dokumentieren Sie die IT-Systeme und organisatorischen Schnittstellen, die im Verfahren genutzt werden.",
+        guidingQuestions: [
+          "Welche IT-Systeme werden verwendet?",
+          "Welche Daten werden ausgetauscht?",
+          "Welche anderen Prozesse sind betroffen?",
+        ],
+        required: false,
+      },
+      {
+        key: "outputs",
+        label: "Ergebnisse & Ausgaben",
+        description: "Was wird durch das Verfahren erzeugt?",
+        helpText:
+          "Beschreiben Sie die Ergebnisse und Nachweise, die das Verfahren liefert.",
+        guidingQuestions: [
+          "Welche Dokumente/Nachweise werden erzeugt?",
+          "Wer erhält die Ergebnisse?",
+          "Wie werden die Ergebnisse archiviert?",
+        ],
+        required: false,
+      },
+      {
+        key: "risks",
+        label: "Risiken & Maßnahmen",
+        description: "Identifizierte Risiken und Gegenmaßnahmen",
+        helpText:
+          "Listen Sie Risiken auf, die bei der Durchführung auftreten können, und definieren Sie Gegenmaßnahmen.",
+        guidingQuestions: [
+          "Was kann schiefgehen?",
+          "Welche Gegenmaßnahmen sind etabliert?",
+          "Wie wird das Restrisiko bewertet?",
+        ],
+        required: false,
+      },
+      {
+        key: "kpis",
+        label: "Kennzahlen & Messung",
+        description: "Prozesskennzahlen zur Erfolgsmessung",
+        helpText:
+          "Definieren Sie Kennzahlen, um die Wirksamkeit des Verfahrens zu messen.",
+        guidingQuestions: [
+          "Wie wird die Einhaltung gemessen?",
+          "Welche Zielwerte gelten?",
+          "Wie häufig wird gemessen?",
+        ],
+        required: false,
+      },
+      {
+        key: "documents",
+        label: "Mitgeltende Unterlagen",
+        description: "Referenzierte Dokumente, Normen und Formulare",
+        helpText:
+          "Listen Sie alle Dokumente auf, die für dieses Verfahren relevant sind.",
+        guidingQuestions: [
+          "Welche Normen/Standards sind referenziert?",
+          "Welche Formulare werden verwendet?",
+          "Welche anderen Verfahrensanweisungen sind verknüpft?",
+        ],
+        required: false,
+      },
+      {
+        key: "changelog",
+        label: "Änderungshistorie",
+        description: "Dokumentierte Änderungen mit Datum und Verantwortlichem",
+        helpText:
+          "Führen Sie eine Übersicht der wesentlichen Änderungen an diesem Dokument.",
+        required: false,
+      },
     ],
     variants: [
       {
@@ -408,10 +840,29 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description: "Leere Verfahrensanweisung",
       },
       {
+        key: "standard",
+        label: "Standard",
+        description: "Kernabschnitte: Zweck, Geltungsbereich, Ablauf, Verantwortlichkeiten",
+        prefilledSections: ["purpose", "scope", "procedure", "responsibilities", "documents"],
+      },
+      {
         key: "detailed",
-        label: "Detailliert",
-        description: "Alle Abschnitte vorstrukturiert",
-        prefilledSections: ["scope", "procedure", "documents"],
+        label: "Vollständig (QM)",
+        description: "Alle Abschnitte nach QM-Standard vorstrukturiert",
+        prefilledSections: [
+          "purpose",
+          "scope",
+          "trigger",
+          "inputs",
+          "procedure",
+          "responsibilities",
+          "interfaces",
+          "outputs",
+          "risks",
+          "kpis",
+          "documents",
+          "changelog",
+        ],
       },
     ],
   },
@@ -436,10 +887,46 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     ],
     sections: [
       {
-        key: "main",
-        label: "Use Case",
-        description: "Akteur, Haupt-/Alternativabläufe, Bedingungen",
+        key: "actors",
+        label: "Akteure",
+        description: "Beteiligte Personen und Systeme",
+        helpText: "Wer sind die primären und sekundären Akteure?",
+        guidingQuestions: [
+          "Wer löst den Use Case aus?",
+          "Welche weiteren Akteure sind beteiligt?",
+        ],
         required: true,
+      },
+      {
+        key: "preconditions",
+        label: "Vorbedingungen",
+        description: "Was muss erfüllt sein, bevor der Use Case startet?",
+        required: true,
+      },
+      {
+        key: "main_flow",
+        label: "Normalablauf",
+        description: "Schrittweiser Ablauf im Erfolgsfall",
+        helpText:
+          "Beschreiben Sie den Ablauf Schritt für Schritt, wenn alles wie geplant verläuft.",
+        guidingQuestions: [
+          "Was passiert in welcher Reihenfolge?",
+          "Welche Daten werden verarbeitet?",
+        ],
+        required: true,
+      },
+      {
+        key: "alternative_flows",
+        label: "Alternativabläufe",
+        description: "Abweichungen vom Normalablauf",
+        helpText: "Beschreiben Sie Varianten und Sonderfälle.",
+        required: false,
+      },
+      {
+        key: "postconditions",
+        label: "Nachbedingungen",
+        description: "Was gilt nach erfolgreicher Durchführung?",
+        required: false,
       },
     ],
     variants: [
@@ -447,7 +934,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "standard",
         label: "Standard",
         description: "Use Case mit vorstrukturierten Abschnitten",
-        prefilledSections: ["main"],
+        prefilledSections: [
+          "actors",
+          "preconditions",
+          "main_flow",
+          "alternative_flows",
+          "postconditions",
+        ],
       },
     ],
   },
@@ -464,7 +957,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     category: "governance",
     helpText:
       "Erstellen Sie eine Richtlinie mit klarem Zweck, Geltungsbereich, Richtlinientext und Durchsetzungsmaßnahmen. Verknüpfen Sie bei Bedarf Verfahrensanweisungen.",
-    allowedChildTypes: ["procedure_instruction"],
+    allowedChildTypes: ["procedure_instruction", "work_instruction", "checklist"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -478,12 +971,89 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         group: "classification",
         description: "Referenz auf Norm oder Gesetz (z.B. ISO 9001, DSGVO)",
       },
+      {
+        key: "compliance_category",
+        label: "Compliance-Kategorie",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: [
+          "data_protection",
+          "information_security",
+          "quality_management",
+          "occupational_safety",
+          "environmental",
+          "financial",
+          "general",
+        ],
+        description: "Zuordnung zu einem Compliance-Bereich",
+      },
     ],
     sections: [
-      { key: "purpose", label: "Zweck", required: true },
-      { key: "scope", label: "Geltungsbereich", required: true },
-      { key: "policy_text", label: "Richtlinientext", required: true },
-      { key: "enforcement", label: "Durchsetzung", required: false },
+      {
+        key: "purpose",
+        label: "Zweck",
+        description: "Warum existiert diese Richtlinie?",
+        helpText:
+          "Erklären Sie den Zweck und das Ziel der Richtlinie.",
+        guidingQuestions: [
+          "Welches Problem wird adressiert?",
+          "Was soll die Richtlinie sicherstellen?",
+        ],
+        required: true,
+      },
+      {
+        key: "scope",
+        label: "Geltungsbereich",
+        description: "Für wen und wo gilt die Richtlinie?",
+        helpText:
+          "Definieren Sie, für welche Personen, Bereiche und Standorte die Richtlinie gilt.",
+        guidingQuestions: [
+          "Wer muss die Richtlinie befolgen?",
+          "Gibt es Ausnahmen?",
+        ],
+        required: true,
+      },
+      {
+        key: "definitions",
+        label: "Begriffe & Definitionen",
+        description: "Klärung zentraler Begriffe",
+        helpText:
+          "Definieren Sie Fachbegriffe, die für das Verständnis der Richtlinie wichtig sind.",
+        required: false,
+      },
+      {
+        key: "policy_text",
+        label: "Richtlinientext",
+        description: "Die eigentlichen Regelungen",
+        helpText:
+          "Formulieren Sie die verbindlichen Regelungen klar und eindeutig.",
+        guidingQuestions: [
+          "Was genau wird geregelt?",
+          "Welche Handlungen sind vorgeschrieben oder verboten?",
+          "Welche Ausnahmen sind zulässig?",
+        ],
+        required: true,
+      },
+      {
+        key: "enforcement",
+        label: "Durchsetzung & Konsequenzen",
+        description: "Maßnahmen bei Nichteinhaltung",
+        helpText:
+          "Beschreiben Sie, wie die Einhaltung überwacht wird und welche Konsequenzen bei Verstößen gelten.",
+        guidingQuestions: [
+          "Wie wird die Einhaltung überprüft?",
+          "Welche Konsequenzen drohen bei Verstößen?",
+          "Wer ist für die Durchsetzung verantwortlich?",
+        ],
+        required: false,
+      },
+      {
+        key: "references",
+        label: "Referenzen & mitgeltende Dokumente",
+        description: "Verknüpfte Normen, Gesetze und Dokumente",
+        required: false,
+      },
     ],
     variants: [
       {
@@ -495,7 +1065,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "full",
         label: "Vollständig",
         description: "Alle Pflichtabschnitte vorstrukturiert",
-        prefilledSections: ["purpose", "scope", "policy_text", "enforcement"],
+        prefilledSections: [
+          "purpose",
+          "scope",
+          "definitions",
+          "policy_text",
+          "enforcement",
+          "references",
+        ],
       },
     ],
   },
@@ -523,22 +1100,97 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: true,
         group: "governance",
       },
+      {
+        key: "status_reason",
+        label: "Statusbegründung",
+        type: "text",
+        required: false,
+        group: "governance",
+        description: "Begründung für den aktuellen Status",
+      },
       ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "department",
+        label: "Abteilung / Bereich",
+        type: "text",
+        required: false,
+        group: "classification",
+        description: "Zugehöriger Organisationsbereich",
+      },
+      {
+        key: "reports_to",
+        label: "Berichtet an",
+        type: "person",
+        required: false,
+        group: "governance",
+        description: "Direkte Vorgesetzte / fachliche Leitung",
+      },
     ],
     sections: [
       {
         key: "role_definition",
         label: "Rollendefinition",
-        description: "Name & Einordnung",
+        description: "Name, Einordnung & Stellenziel",
+        helpText:
+          "Beschreiben Sie die Rolle, ihre Einordnung in die Organisation und das Stellenziel.",
+        guidingQuestions: [
+          "Wie lautet die offizielle Bezeichnung?",
+          "Wo ist die Rolle organisatorisch angesiedelt?",
+          "Was ist das Hauptziel der Rolle?",
+        ],
         required: true,
       },
       {
         key: "responsibilities",
-        label: "Verantwortlichkeiten",
+        label: "Aufgaben & Verantwortlichkeiten",
+        description: "Kernaufgaben und Verantwortungsbereiche",
+        helpText:
+          "Listen Sie die Hauptaufgaben und Verantwortungsbereiche der Rolle auf.",
+        guidingQuestions: [
+          "Welche Kernaufgaben hat die Rolle?",
+          "Für welche Ergebnisse ist sie verantwortlich?",
+          "Welche Prozesse werden verantwortet?",
+        ],
         required: true,
       },
-      { key: "qualifications", label: "Qualifikationen", required: false },
-      { key: "authority", label: "Befugnisse", required: false },
+      {
+        key: "qualifications",
+        label: "Qualifikationen & Anforderungen",
+        description: "Fachliche und persönliche Anforderungen",
+        helpText:
+          "Beschreiben Sie die erforderlichen Qualifikationen, Ausbildungen und Erfahrungen.",
+        guidingQuestions: [
+          "Welche Ausbildung wird vorausgesetzt?",
+          "Welche Berufserfahrung ist erforderlich?",
+          "Welche Zertifizierungen sind notwendig?",
+        ],
+        required: false,
+      },
+      {
+        key: "authority",
+        label: "Befugnisse",
+        description: "Entscheidungs- und Handlungsbefugnisse",
+        helpText:
+          "Definieren Sie die Entscheidungs- und Handlungsbefugnisse der Rolle.",
+        guidingQuestions: [
+          "Welche Entscheidungen darf die Rolle treffen?",
+          "Welche Budgetverantwortung besteht?",
+          "Welche Weisungsbefugnisse gibt es?",
+        ],
+        required: false,
+      },
+      {
+        key: "interfaces",
+        label: "Zusammenarbeit & Schnittstellen",
+        description: "Interne und externe Kooperationspartner",
+        helpText:
+          "Dokumentieren Sie die wichtigsten Kooperationsbeziehungen.",
+        guidingQuestions: [
+          "Mit wem arbeitet die Rolle eng zusammen?",
+          "Welche externen Kontakte bestehen?",
+        ],
+        required: false,
+      },
     ],
     variants: [
       {
@@ -555,6 +1207,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "responsibilities",
           "qualifications",
           "authority",
+          "interfaces",
         ],
       },
     ],
@@ -625,6 +1278,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "terms",
         label: "Begriffe",
         description: "Glossarbegriffe und Definitionen",
+        helpText:
+          "Pflegen Sie die Begriffe alphabetisch mit Definition, Kontext und ggf. Synonymen.",
         required: true,
       },
     ],
@@ -650,7 +1305,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     category: "system",
     helpText:
       "Dokumentieren Sie ein IT-System mit Schnittstellen, Datenobjekten, Zugriffsrechten und technischen Details.",
-    allowedChildTypes: [],
+    allowedChildTypes: ["interface_description"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -671,12 +1326,73 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         group: "classification",
         options: ["production", "staging", "development", "test"],
       },
+      {
+        key: "system_criticality",
+        label: "Systemkritikalität",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["mission_critical", "business_critical", "standard", "non_critical"],
+        description: "Einstufung der Geschäftskritikalität des Systems",
+      },
     ],
     sections: [
-      { key: "system_info", label: "Systeminformationen", required: true },
-      { key: "interfaces", label: "Schnittstellen", required: false },
-      { key: "data_objects", label: "Datenobjekte", required: false },
-      { key: "access_rights", label: "Zugriffsrechte", required: false },
+      {
+        key: "system_info",
+        label: "Systeminformationen",
+        description: "Grundlegende Systembeschreibung",
+        helpText:
+          "Beschreiben Sie das System, seinen Zweck, die eingesetzte Technologie und den Betriebsstatus.",
+        guidingQuestions: [
+          "Was ist der Zweck des Systems?",
+          "Welche Technologie wird eingesetzt?",
+          "Wie ist der aktuelle Betriebsstatus?",
+        ],
+        required: true,
+      },
+      {
+        key: "architecture",
+        label: "Architektur & Komponenten",
+        description: "Technische Architektur und Systemkomponenten",
+        helpText:
+          "Beschreiben Sie die Systemarchitektur, wichtige Komponenten und deren Zusammenwirken.",
+        required: false,
+      },
+      {
+        key: "interfaces",
+        label: "Schnittstellen",
+        description: "Ein- und ausgehende Schnittstellen",
+        helpText:
+          "Dokumentieren Sie alle Schnittstellen zu anderen Systemen.",
+        guidingQuestions: [
+          "Welche Systeme sind angebunden?",
+          "Welche Daten werden ausgetauscht?",
+          "Welches Protokoll wird verwendet?",
+        ],
+        required: false,
+      },
+      {
+        key: "data_objects",
+        label: "Datenobjekte",
+        description: "Verwaltete Daten und Datenmodell",
+        required: false,
+      },
+      {
+        key: "access_rights",
+        label: "Zugriffsrechte & Berechtigungen",
+        description: "Rollen- und Berechtigungskonzept",
+        helpText:
+          "Beschreiben Sie das Berechtigungskonzept und die verschiedenen Zugriffsrollen.",
+        required: false,
+      },
+      {
+        key: "operations",
+        label: "Betrieb & Wartung",
+        description: "Betriebskonzept, SLA und Wartungsfenster",
+        helpText:
+          "Dokumentieren Sie SLAs, Wartungsfenster und Betriebsprozeduren.",
+        required: false,
+      },
     ],
     variants: [
       {
@@ -690,10 +1406,875 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description: "Alle Abschnitte vorstrukturiert",
         prefilledSections: [
           "system_info",
+          "architecture",
           "interfaces",
           "data_objects",
           "access_rights",
+          "operations",
         ],
+      },
+    ],
+  },
+
+  work_instruction: {
+    type: "work_instruction",
+    label: "Work Instruction",
+    labelDe: "Arbeitsanweisung",
+    description:
+      "Detailed step-by-step work instruction for specific tasks at the workplace",
+    descriptionDe:
+      "Detaillierte Schritt-für-Schritt-Arbeitsanweisung für konkrete Tätigkeiten am Arbeitsplatz",
+    icon: "ClipboardCheck",
+    color: "hsl(35, 85%, 48%)",
+    category: "process",
+    helpText:
+      "Erstellen Sie eine Arbeitsanweisung für eine konkrete Tätigkeit. Im Unterschied zur Verfahrensanweisung beschreibt die Arbeitsanweisung das ‚Wie' auf Arbeitsplatzebene.",
+    allowedChildTypes: ["checklist"],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "document_number",
+        label: "Dokumentennummer",
+        type: "text",
+        required: false,
+        group: "identity",
+        description: "Formale Dokumentennummer (z.B. AA-001)",
+      },
+      {
+        key: "workplace",
+        label: "Arbeitsplatz / Einsatzort",
+        type: "text",
+        required: false,
+        group: "classification",
+        description: "Konkreter Arbeitsplatz oder Einsatzort",
+      },
+    ],
+    sections: [
+      {
+        key: "purpose",
+        label: "Zweck",
+        description: "Warum existiert diese Arbeitsanweisung?",
+        helpText:
+          "Beschreiben Sie kurz den Zweck und das Ziel dieser Arbeitsanweisung.",
+        required: true,
+      },
+      {
+        key: "scope",
+        label: "Geltungsbereich",
+        description: "Für wen und wo gilt diese Anweisung?",
+        required: true,
+      },
+      {
+        key: "safety",
+        label: "Sicherheitshinweise",
+        description: "Arbeitsschutz und Sicherheitsvorgaben",
+        helpText:
+          "Listen Sie alle relevanten Sicherheitshinweise und Schutzmaßnahmen auf.",
+        guidingQuestions: [
+          "Welche Schutzausrüstung ist erforderlich?",
+          "Welche Gefahren bestehen?",
+          "Welche Notfallmaßnahmen gelten?",
+        ],
+        required: false,
+      },
+      {
+        key: "materials",
+        label: "Werkzeuge & Materialien",
+        description: "Benötigte Werkzeuge, Materialien und Hilfsmittel",
+        helpText:
+          "Listen Sie alle benötigten Werkzeuge und Materialien auf.",
+        required: false,
+      },
+      {
+        key: "steps",
+        label: "Arbeitsschritte",
+        description: "Detaillierte Schritt-für-Schritt-Anleitung",
+        helpText:
+          "Beschreiben Sie jeden Arbeitsschritt klar und verständlich. Verwenden Sie kurze Sätze und aktive Formulierungen.",
+        guidingQuestions: [
+          "Was genau muss in welcher Reihenfolge getan werden?",
+          "Worauf muss besonders geachtet werden?",
+          "Was sind typische Fehlerquellen?",
+        ],
+        required: true,
+      },
+      {
+        key: "quality_criteria",
+        label: "Qualitätskriterien",
+        description: "Prüfmerkmale und Akzeptanzkriterien",
+        helpText:
+          "Definieren Sie, woran erkennbar ist, dass die Arbeit korrekt ausgeführt wurde.",
+        required: false,
+      },
+      {
+        key: "documents",
+        label: "Mitgeltende Unterlagen",
+        description: "Referenzierte Dokumente und Formulare",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Arbeitsanweisung",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Kernabschnitte vorstrukturiert",
+        prefilledSections: ["purpose", "scope", "steps", "quality_criteria"],
+      },
+      {
+        key: "safety",
+        label: "Mit Sicherheitshinweisen",
+        description: "Inkl. Sicherheitshinweise und Materialien",
+        prefilledSections: [
+          "purpose",
+          "scope",
+          "safety",
+          "materials",
+          "steps",
+          "quality_criteria",
+          "documents",
+        ],
+      },
+    ],
+  },
+
+  checklist: {
+    type: "checklist",
+    label: "Checklist / Form Template",
+    labelDe: "Checkliste / Formularvorlage",
+    description:
+      "Structured checklist or form template with checkable items and sections",
+    descriptionDe:
+      "Strukturierte Checkliste oder Formularvorlage mit Prüfpunkten und Abschnitten",
+    icon: "CheckSquare",
+    color: "hsl(160, 60%, 40%)",
+    category: "quality",
+    helpText:
+      "Erstellen Sie eine Checkliste oder Formularvorlage mit strukturierten Prüfpunkten. Ideal für wiederkehrende Prüfungen, Audits und standardisierte Abläufe.",
+    allowedChildTypes: [],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "checklist_type",
+        label: "Checklistenart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["inspection", "audit", "onboarding", "maintenance", "safety", "process", "general"],
+        description: "Art der Checkliste",
+      },
+      {
+        key: "frequency",
+        label: "Durchführungshäufigkeit",
+        type: "enum",
+        required: false,
+        group: "validity",
+        options: ["once", "daily", "weekly", "monthly", "quarterly", "yearly", "as_needed"],
+        description: "Wie häufig muss die Checkliste durchgeführt werden?",
+      },
+    ],
+    sections: [
+      {
+        key: "purpose",
+        label: "Zweck & Anwendung",
+        description: "Wann und wofür wird diese Checkliste eingesetzt?",
+        helpText:
+          "Beschreiben Sie den Einsatzzweck und den Kontext der Checkliste.",
+        required: true,
+      },
+      {
+        key: "instructions",
+        label: "Anleitung",
+        description: "Hinweise zur Durchführung",
+        helpText:
+          "Geben Sie Hinweise zur korrekten Durchführung der Checkliste.",
+        required: false,
+      },
+      {
+        key: "checklist_items",
+        label: "Prüfpunkte",
+        description: "Die eigentlichen Prüf-/Checklisten-Punkte",
+        helpText:
+          "Listen Sie alle Prüfpunkte auf. Jeder Punkt sollte eindeutig und überprüfbar sein.",
+        guidingQuestions: [
+          "Was genau muss geprüft/erledigt werden?",
+          "In welcher Reihenfolge?",
+          "Was ist das erwartete Ergebnis?",
+        ],
+        required: true,
+      },
+      {
+        key: "completion_criteria",
+        label: "Abschlusskriterien",
+        description: "Wann gilt die Checkliste als vollständig abgeschlossen?",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Checkliste",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Checkliste mit Zweck und Prüfpunkten",
+        prefilledSections: ["purpose", "checklist_items"],
+      },
+      {
+        key: "audit",
+        label: "Audit-Checkliste",
+        description: "Vollständige Audit-Checkliste mit Anleitung",
+        prefilledSections: [
+          "purpose",
+          "instructions",
+          "checklist_items",
+          "completion_criteria",
+        ],
+      },
+    ],
+  },
+
+  faq: {
+    type: "faq",
+    label: "FAQ / Knowledge Article",
+    labelDe: "FAQ / Wissensartikel",
+    description:
+      "Frequently asked questions or knowledge article for self-service",
+    descriptionDe:
+      "Häufig gestellte Fragen oder Wissensartikel zur Selbsthilfe",
+    icon: "HelpCircle",
+    color: "hsl(45, 80%, 48%)",
+    category: "knowledge",
+    helpText:
+      "Erstellen Sie einen FAQ- oder Wissensartikel. Ideal für häufig gestellte Fragen, Anleitungen und Erklärungen, die als Selbsthilfe dienen.",
+    allowedChildTypes: [],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "target_audience",
+        label: "Zielgruppe",
+        type: "text",
+        required: false,
+        group: "classification",
+        description: "An wen richtet sich dieser Artikel?",
+      },
+      {
+        key: "article_type",
+        label: "Artikelart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["faq", "how_to", "explanation", "troubleshooting", "best_practice"],
+        description: "Art des Wissensartikels",
+      },
+    ],
+    sections: [
+      {
+        key: "summary",
+        label: "Zusammenfassung",
+        description: "Kurze Zusammenfassung des Themas",
+        helpText:
+          "Beschreiben Sie in 2-3 Sätzen, worum es in diesem Artikel geht.",
+        required: true,
+      },
+      {
+        key: "content",
+        label: "Inhalt / Fragen & Antworten",
+        description: "Hauptinhalt mit Fragen und Antworten oder Erklärungen",
+        helpText:
+          "Bei FAQ: Listen Sie Fragen und Antworten auf. Bei Wissensartikeln: Strukturieren Sie den Inhalt logisch.",
+        guidingQuestions: [
+          "Welche Fragen werden am häufigsten gestellt?",
+          "Was muss der Leser wissen?",
+          "Welche Schritte sind erforderlich?",
+        ],
+        required: true,
+      },
+      {
+        key: "related_topics",
+        label: "Verwandte Themen",
+        description: "Links zu verwandten Artikeln und Prozessen",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "faq",
+        label: "FAQ",
+        description: "Häufig gestellte Fragen",
+        prefilledSections: ["summary", "content"],
+      },
+      {
+        key: "knowledge_article",
+        label: "Wissensartikel",
+        description: "Strukturierter Wissensartikel",
+        prefilledSections: ["summary", "content", "related_topics"],
+      },
+    ],
+  },
+
+  interface_description: {
+    type: "interface_description",
+    label: "Interface Description",
+    labelDe: "Schnittstellenbeschreibung",
+    description:
+      "Technical or organizational interface description between systems or departments",
+    descriptionDe:
+      "Technische oder organisatorische Schnittstellenbeschreibung zwischen Systemen oder Bereichen",
+    icon: "ArrowLeftRight",
+    color: "hsl(210, 55%, 52%)",
+    category: "system",
+    helpText:
+      "Dokumentieren Sie eine Schnittstelle zwischen zwei Systemen oder Organisationseinheiten. Beschreiben Sie Datenflüsse, Protokolle und Verantwortlichkeiten.",
+    allowedChildTypes: [],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "interface_type",
+        label: "Schnittstellenart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["api", "file_transfer", "database", "message_queue", "manual", "organizational"],
+        description: "Art der Schnittstelle",
+      },
+      {
+        key: "source_system",
+        label: "Quellsystem",
+        type: "text",
+        required: false,
+        group: "identity",
+        description: "Lieferndes System / Bereich",
+      },
+      {
+        key: "target_system",
+        label: "Zielsystem",
+        type: "text",
+        required: false,
+        group: "identity",
+        description: "Empfangendes System / Bereich",
+      },
+    ],
+    sections: [
+      {
+        key: "overview",
+        label: "Übersicht",
+        description: "Zweck und Kontext der Schnittstelle",
+        helpText:
+          "Beschreiben Sie den Zweck der Schnittstelle und ihren Kontext im Gesamtsystem.",
+        guidingQuestions: [
+          "Warum existiert diese Schnittstelle?",
+          "Welche Geschäftsprozesse unterstützt sie?",
+        ],
+        required: true,
+      },
+      {
+        key: "data_flow",
+        label: "Datenfluss",
+        description: "Welche Daten werden in welche Richtung übertragen?",
+        helpText:
+          "Beschreiben Sie die Datenobjekte und den Datenfluss detailliert.",
+        guidingQuestions: [
+          "Welche Daten werden übertragen?",
+          "In welche Richtung fließen die Daten?",
+          "Welches Format haben die Daten?",
+        ],
+        required: true,
+      },
+      {
+        key: "protocol",
+        label: "Protokoll & Technik",
+        description: "Technisches Protokoll, Format und Verbindungsdetails",
+        helpText:
+          "Dokumentieren Sie die technischen Details der Schnittstelle.",
+        required: false,
+      },
+      {
+        key: "error_handling",
+        label: "Fehlerbehandlung",
+        description: "Verhalten bei Fehlern und Wiederanlauf",
+        helpText:
+          "Beschreiben Sie, wie Fehler erkannt, protokolliert und behoben werden.",
+        required: false,
+      },
+      {
+        key: "sla",
+        label: "SLA & Verfügbarkeit",
+        description: "Service Level Agreements und Verfügbarkeitsanforderungen",
+        required: false,
+      },
+      {
+        key: "responsibilities",
+        label: "Verantwortlichkeiten",
+        description: "Wer ist für welche Seite der Schnittstelle verantwortlich?",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Schnittstellenbeschreibung",
+      },
+      {
+        key: "technical",
+        label: "Technisch",
+        description: "Technische Schnittstelle mit Protokolldetails",
+        prefilledSections: [
+          "overview",
+          "data_flow",
+          "protocol",
+          "error_handling",
+          "sla",
+        ],
+      },
+      {
+        key: "organizational",
+        label: "Organisatorisch",
+        description: "Organisatorische Schnittstelle zwischen Bereichen",
+        prefilledSections: ["overview", "data_flow", "responsibilities"],
+      },
+    ],
+  },
+
+  meeting_protocol: {
+    type: "meeting_protocol",
+    label: "Meeting / Decision Protocol",
+    labelDe: "Meeting- / Entscheidungsprotokoll",
+    description:
+      "Structured meeting minutes with agenda, decisions, and action items",
+    descriptionDe:
+      "Strukturiertes Besprechungsprotokoll mit Agenda, Entscheidungen und Maßnahmen",
+    icon: "MessageSquare",
+    color: "hsl(270, 50%, 55%)",
+    category: "documentation",
+    helpText:
+      "Erstellen Sie ein Besprechungsprotokoll mit Agenda, Teilnehmern, Ergebnissen, Entscheidungen und Maßnahmen. Ideal für Projekt-, Lenkungs- und Gremiumssitzungen.",
+    allowedChildTypes: [],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      {
+        key: "owner",
+        label: "Protokollführer",
+        type: "person",
+        required: true,
+        group: "governance",
+        description: "Person, die das Protokoll führt",
+      },
+      {
+        key: "meeting_date",
+        label: "Sitzungsdatum",
+        type: "date",
+        required: true,
+        group: "validity",
+        description: "Datum der Besprechung",
+      },
+      {
+        key: "meeting_type",
+        label: "Sitzungsart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: [
+          "project_meeting",
+          "steering_committee",
+          "team_meeting",
+          "board_meeting",
+          "workshop",
+          "review",
+          "retrospective",
+          "other",
+        ],
+        description: "Art der Besprechung",
+      },
+      ...COMMON_CLASSIFICATION_FIELDS,
+    ],
+    sections: [
+      {
+        key: "participants",
+        label: "Teilnehmer",
+        description: "Anwesende und entschuldigte Teilnehmer",
+        helpText:
+          "Listen Sie alle Teilnehmer auf und kennzeichnen Sie entschuldigte Abwesende.",
+        required: true,
+      },
+      {
+        key: "agenda",
+        label: "Tagesordnung",
+        description: "Geplante Tagesordnungspunkte",
+        helpText:
+          "Listen Sie die Tagesordnungspunkte auf.",
+        required: true,
+      },
+      {
+        key: "discussion",
+        label: "Besprechungspunkte",
+        description: "Ergebnisse und Diskussion zu den Tagesordnungspunkten",
+        helpText:
+          "Dokumentieren Sie die Diskussion und Ergebnisse zu jedem Tagesordnungspunkt.",
+        required: true,
+      },
+      {
+        key: "decisions",
+        label: "Entscheidungen",
+        description: "Getroffene Entscheidungen mit Begründung",
+        helpText:
+          "Dokumentieren Sie alle Entscheidungen klar und eindeutig.",
+        guidingQuestions: [
+          "Was wurde entschieden?",
+          "Mit welcher Begründung?",
+          "War die Entscheidung einstimmig?",
+        ],
+        required: false,
+      },
+      {
+        key: "action_items",
+        label: "Maßnahmen / ToDos",
+        description: "Vereinbarte Maßnahmen mit Verantwortlichem und Termin",
+        helpText:
+          "Dokumentieren Sie alle vereinbarten Maßnahmen mit Verantwortlichem und Fälligkeitsdatum.",
+        guidingQuestions: [
+          "Was ist zu tun?",
+          "Wer ist verantwortlich?",
+          "Bis wann?",
+        ],
+        required: false,
+      },
+      {
+        key: "next_meeting",
+        label: "Nächster Termin",
+        description: "Datum und Ort der nächsten Sitzung",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leeres Protokoll",
+      },
+      {
+        key: "standard",
+        label: "Standard",
+        description: "Standardprotokoll mit allen Kernabschnitten",
+        prefilledSections: [
+          "participants",
+          "agenda",
+          "discussion",
+          "decisions",
+          "action_items",
+        ],
+      },
+      {
+        key: "decision",
+        label: "Entscheidungsprotokoll",
+        description: "Fokus auf Entscheidungen und Maßnahmen",
+        prefilledSections: ["participants", "decisions", "action_items"],
+      },
+    ],
+  },
+
+  training_resource: {
+    type: "training_resource",
+    label: "Training Resource",
+    labelDe: "Schulung / Lernressource",
+    description:
+      "Training material, learning resource, or onboarding documentation",
+    descriptionDe:
+      "Schulungsmaterial, Lernressource oder Einarbeitungsunterlage",
+    icon: "GraduationCap",
+    color: "hsl(190, 60%, 45%)",
+    category: "knowledge",
+    helpText:
+      "Erstellen Sie Schulungsmaterial oder Lernressourcen. Ideal für Einarbeitungspläne, Schulungsunterlagen und Wissenstransfer.",
+    allowedChildTypes: ["checklist", "faq"],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "target_audience",
+        label: "Zielgruppe",
+        type: "text",
+        required: true,
+        group: "classification",
+        description: "An wen richtet sich die Schulung?",
+      },
+      {
+        key: "training_type",
+        label: "Schulungsart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: [
+          "onboarding",
+          "skill_training",
+          "compliance_training",
+          "certification",
+          "refresher",
+          "self_study",
+        ],
+        description: "Art der Schulung",
+      },
+      {
+        key: "duration_minutes",
+        label: "Dauer (Minuten)",
+        type: "number",
+        required: false,
+        group: "identity",
+        description: "Geschätzte Dauer in Minuten",
+      },
+      {
+        key: "difficulty_level",
+        label: "Schwierigkeitsgrad",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["beginner", "intermediate", "advanced"],
+        description: "Vorausgesetztes Wissensniveau",
+      },
+    ],
+    sections: [
+      {
+        key: "objectives",
+        label: "Lernziele",
+        description: "Was sollen die Teilnehmer nach der Schulung können?",
+        helpText:
+          "Definieren Sie messbare Lernziele nach dem SMART-Prinzip.",
+        guidingQuestions: [
+          "Was soll der Teilnehmer nach der Schulung wissen?",
+          "Was soll er können?",
+          "Wie wird der Lernerfolg überprüft?",
+        ],
+        required: true,
+      },
+      {
+        key: "prerequisites",
+        label: "Voraussetzungen",
+        description: "Erforderliche Vorkenntnisse und Vorbereitungen",
+        required: false,
+      },
+      {
+        key: "content",
+        label: "Schulungsinhalt",
+        description: "Gliederung und Inhalte der Schulung",
+        helpText:
+          "Strukturieren Sie den Schulungsinhalt in logische Abschnitte.",
+        guidingQuestions: [
+          "Welche Themen werden behandelt?",
+          "In welcher Reihenfolge?",
+          "Welche Methoden werden eingesetzt?",
+        ],
+        required: true,
+      },
+      {
+        key: "exercises",
+        label: "Übungen & Praxisbeispiele",
+        description: "Praktische Übungen und Beispiele zur Vertiefung",
+        required: false,
+      },
+      {
+        key: "assessment",
+        label: "Lernkontrolle",
+        description: "Methoden zur Überprüfung des Lernerfolgs",
+        helpText:
+          "Beschreiben Sie, wie der Lernerfolg überprüft wird (Test, Praxisnachweis, etc.).",
+        required: false,
+      },
+      {
+        key: "materials",
+        label: "Materialien & Ressourcen",
+        description: "Benötigte und ergänzende Materialien",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leere Schulungsressource",
+      },
+      {
+        key: "training",
+        label: "Schulung",
+        description: "Strukturierte Schulungsunterlage",
+        prefilledSections: ["objectives", "content", "exercises", "assessment"],
+      },
+      {
+        key: "onboarding",
+        label: "Einarbeitung",
+        description: "Einarbeitungsplan mit Checkliste",
+        prefilledSections: [
+          "objectives",
+          "prerequisites",
+          "content",
+          "materials",
+        ],
+      },
+    ],
+  },
+
+  audit_object: {
+    type: "audit_object",
+    label: "Audit / Control Object",
+    labelDe: "Kontroll- / Prüfobjekt",
+    description:
+      "Audit finding, control measure, or quality checkpoint documentation",
+    descriptionDe:
+      "Audit-Feststellung, Kontrollmaßnahme oder Qualitätsprüfpunkt-Dokumentation",
+    icon: "SearchCheck",
+    color: "hsl(340, 55%, 50%)",
+    category: "quality",
+    helpText:
+      "Dokumentieren Sie ein Kontroll- oder Prüfobjekt. Verwenden Sie diesen Typ für Audit-Feststellungen, Kontrollmaßnahmen und Qualitätsprüfpunkte.",
+    allowedChildTypes: ["checklist"],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "audit_type",
+        label: "Prüfart",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: [
+          "internal_audit",
+          "external_audit",
+          "management_review",
+          "self_assessment",
+          "spot_check",
+          "routine_check",
+        ],
+        description: "Art der Prüfung / des Audits",
+      },
+      {
+        key: "severity",
+        label: "Schweregrad",
+        type: "enum",
+        required: false,
+        group: "classification",
+        options: ["critical", "major", "minor", "observation", "improvement"],
+        description: "Schweregrad der Feststellung",
+      },
+      {
+        key: "due_date",
+        label: "Fälligkeitsdatum",
+        type: "date",
+        required: false,
+        group: "validity",
+        description: "Frist für die Maßnahmenumsetzung",
+      },
+    ],
+    sections: [
+      {
+        key: "finding",
+        label: "Feststellung",
+        description: "Was wurde festgestellt?",
+        helpText:
+          "Beschreiben Sie die Feststellung sachlich und nachvollziehbar.",
+        guidingQuestions: [
+          "Was genau wurde festgestellt?",
+          "Wo wurde es festgestellt?",
+          "Welche Anforderung ist betroffen?",
+        ],
+        required: true,
+      },
+      {
+        key: "evidence",
+        label: "Nachweise",
+        description: "Belege und Evidenz für die Feststellung",
+        helpText:
+          "Dokumentieren Sie die Nachweise, auf denen die Feststellung basiert.",
+        required: true,
+      },
+      {
+        key: "root_cause",
+        label: "Ursachenanalyse",
+        description: "Warum ist das Problem aufgetreten?",
+        helpText:
+          "Analysieren Sie die Ursache(n) der Feststellung (z.B. mit 5-Why, Ishikawa).",
+        guidingQuestions: [
+          "Was ist die Grundursache?",
+          "Warum konnte es passieren?",
+          "Ist es ein systemisches Problem?",
+        ],
+        required: false,
+      },
+      {
+        key: "corrective_action",
+        label: "Korrekturmaßnahme",
+        description: "Sofortmaßnahme zur Behebung",
+        helpText:
+          "Beschreiben Sie die Maßnahme, mit der das Problem behoben wird.",
+        guidingQuestions: [
+          "Was wird sofort unternommen?",
+          "Wer ist verantwortlich?",
+          "Bis wann wird die Maßnahme umgesetzt?",
+        ],
+        required: false,
+      },
+      {
+        key: "preventive_action",
+        label: "Vorbeugemaßnahme",
+        description: "Maßnahme zur Verhinderung des Wiederauftretens",
+        helpText:
+          "Beschreiben Sie Maßnahmen, die ein Wiederauftreten verhindern sollen.",
+        required: false,
+      },
+      {
+        key: "effectiveness_check",
+        label: "Wirksamkeitsprüfung",
+        description: "Wie wird die Wirksamkeit der Maßnahme überprüft?",
+        helpText:
+          "Definieren Sie, wie und wann die Wirksamkeit der Maßnahmen überprüft wird.",
+        required: false,
+      },
+    ],
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leeres Prüfobjekt",
+      },
+      {
+        key: "audit_finding",
+        label: "Audit-Feststellung",
+        description: "Vollständige Audit-Feststellung mit Maßnahmenplan",
+        prefilledSections: [
+          "finding",
+          "evidence",
+          "root_cause",
+          "corrective_action",
+          "preventive_action",
+          "effectiveness_check",
+        ],
+      },
+      {
+        key: "quality_check",
+        label: "Qualitätsprüfung",
+        description: "Qualitätsprüfpunkt mit Feststellung und Korrektur",
+        prefilledSections: ["finding", "evidence", "corrective_action"],
       },
     ],
   },
@@ -774,22 +2355,59 @@ export function calculateCompleteness(
 
   for (const section of def.sections) {
     if (section.required) {
-      total++;
+      total += 2;
       const val = sectionData[section.key];
       if (val !== undefined && val !== null && val !== "") {
+        const strVal = typeof val === "string" ? val : JSON.stringify(val);
         filled++;
+        if (strVal.length >= 20) {
+          filled++;
+        } else {
+          missing.push(`${section.label} (Inhalt zu kurz)`);
+        }
       } else {
         missing.push(section.label);
       }
     }
   }
 
+  const hasOwner =
+    metadata.owner !== undefined &&
+    metadata.owner !== null &&
+    metadata.owner !== "";
+  const requiredSections = def.sections.filter((s) => s.required);
+  const filledRequiredSections = requiredSections.filter((s) => {
+    const val = sectionData[s.key];
+    return val !== undefined && val !== null && val !== "";
+  });
+
+  if (
+    !hasOwner &&
+    def.metadataFields.some((f) => f.key === "owner" && f.required)
+  ) {
+    if (!missing.includes("Prozesseigner") && !missing.includes("Verantwortlicher") && !missing.includes("Protokollführer")) {
+      missing.push("Prozesseigner");
+      total++;
+    }
+  }
+
+  if (
+    requiredSections.length > 0 &&
+    filledRequiredSections.length === requiredSections.length
+  ) {
+    total++;
+    filled++;
+  }
+
   const percentage = total === 0 ? 100 : Math.round((filled / total) * 100);
   return { total, filled, percentage, missing };
 }
 
-export const PAGE_TYPE_CATEGORIES = {
-  process: { label: "Prozesse", labelDe: "Prozesse", icon: "Workflow" },
+export const PAGE_TYPE_CATEGORIES: Record<
+  PageTypeCategory,
+  { label: string; labelDe: string; icon: string }
+> = {
+  process: { label: "Processes", labelDe: "Prozesse", icon: "Workflow" },
   documentation: {
     label: "Documentation",
     labelDe: "Dokumentation",
@@ -797,4 +2415,14 @@ export const PAGE_TYPE_CATEGORIES = {
   },
   governance: { label: "Governance", labelDe: "Governance", icon: "Shield" },
   system: { label: "Systems", labelDe: "Systeme", icon: "Server" },
-} as const;
+  quality: {
+    label: "Quality & Audit",
+    labelDe: "Qualität & Audit",
+    icon: "SearchCheck",
+  },
+  knowledge: {
+    label: "Knowledge",
+    labelDe: "Wissen & Schulung",
+    icon: "GraduationCap",
+  },
+};

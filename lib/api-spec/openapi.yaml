@@ -2475,6 +2475,14 @@ components:
             - role_profile
             - dashboard
             - system_documentation
+            - glossary
+            - work_instruction
+            - checklist
+            - faq
+            - interface_description
+            - meeting_protocol
+            - training_resource
+            - audit_object
         templateId:
           type: string
           format: uuid
@@ -2541,6 +2549,14 @@ components:
             - role_profile
             - dashboard
             - system_documentation
+            - glossary
+            - work_instruction
+            - checklist
+            - faq
+            - interface_description
+            - meeting_protocol
+            - training_resource
+            - audit_object
         templateId:
           type: string
           format: uuid
@@ -2573,6 +2589,14 @@ components:
             - role_profile
             - dashboard
             - system_documentation
+            - glossary
+            - work_instruction
+            - checklist
+            - faq
+            - interface_description
+            - meeting_protocol
+            - training_resource
+            - audit_object
 
     MoveNodeInput:
       type: object

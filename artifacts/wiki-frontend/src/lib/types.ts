@@ -20,6 +20,7 @@ export {
 export type {
   TemplateType,
   MetadataGroupKey,
+  PageTypeCategory,
 } from "@workspace/shared/page-types";
 
 export const PAGE_TYPE_LABELS: Record<string, string> = {
@@ -33,6 +34,14 @@ export const PAGE_TYPE_LABELS: Record<string, string> = {
   role_profile: "Rollen-/Stellenprofil",
   dashboard: "Dashboard",
   system_documentation: "Systemdokumentation",
+  glossary: "Glossar",
+  work_instruction: "Arbeitsanweisung",
+  checklist: "Checkliste / Formularvorlage",
+  faq: "FAQ / Wissensartikel",
+  interface_description: "Schnittstellenbeschreibung",
+  meeting_protocol: "Meeting- / Entscheidungsprotokoll",
+  training_resource: "Schulung / Lernressource",
+  audit_object: "Kontroll- / Prüfobjekt",
 };
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -62,6 +71,14 @@ export const PAGE_TYPE_ICON_MAP: Record<string, string> = {
   role_profile: "UserCog",
   dashboard: "LayoutDashboard",
   system_documentation: "Server",
+  glossary: "BookOpen",
+  work_instruction: "ClipboardCheck",
+  checklist: "CheckSquare",
+  faq: "HelpCircle",
+  interface_description: "ArrowLeftRight",
+  meeting_protocol: "MessageSquare",
+  training_resource: "GraduationCap",
+  audit_object: "SearchCheck",
 };
 
 export const CONFIDENTIALITY_LABELS: Record<string, string> = {

@@ -4,6 +4,7 @@ import {
   ArrowRightLeft,
   ClipboardList,
   ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 
@@ -112,6 +113,16 @@ export function ProcessOverviewLayout({
           emptyText="Kein Normbezug definiert"
         />
       </div>
+
+      <EditableSectionCard
+        sectionKey="risks"
+        label="Prozessrisiken"
+        description="Identifizierte Risiken und Gegenmaßnahmen"
+        icon={<AlertTriangle className="h-4 w-4 text-amber-600" />}
+        value={str(structuredFields.risks)}
+        onSave={onSectionSave}
+        emptyText="Keine Prozessrisiken dokumentiert"
+      />
     </div>
   );
 }

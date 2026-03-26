@@ -138,7 +138,7 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Tags: TagManager (inline tag assignment with create/assign/remove)
 - Content: RelatedContentSidebar (backlinks + forward-links to current node)
 - Content: GlossaryTermsPanel (linked glossary terms on node detail)
-- Layouts: PageLayout (dispatcher), ProcessOverviewLayout, ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
+- Layouts: PageLayout (dispatcher for 14 specialized + generic fallback), ProcessOverviewLayout, ProcessPageTextLayout, ProcessPageGraphicLayout, ProcedureLayout (12-section QM layout), PolicyLayout, RoleProfileLayout, SystemDocumentationLayout, WorkInstructionLayout, ChecklistLayout, FaqLayout, InterfaceDescriptionLayout, MeetingProtocolLayout, AuditObjectLayout, TrainingResourceLayout, GenericSectionLayout
 - Teams: TeamsProvider (context detection), ShareToTeams (share/copy/open), TeamsTabConfig (channel tab setup)
 - Teams context: `src/lib/teams.ts` (detection, deep links), `src/hooks/useTeamsContext.ts` (React hook)
 - Teams manifest: `public/teams-manifest/manifest.json` (personal + configurable tabs)
@@ -150,8 +150,8 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 Shared types, provider abstractions, and page type registry.
 
 - `src/providers/` — Provider interfaces (IAuthProvider, IStorageProvider, etc.) and ProviderResult<T>
-- `src/page-types/registry.ts` — Comprehensive registry of all 11 page types (incl. glossary) with metadata fields, sections, icons, colors, categories, allowedChildTypes
-- `src/page-types/index.ts` — Exports: PAGE_TYPE_REGISTRY, calculateCompleteness, getAllowedChildTypes, METADATA_GROUP_LABELS, types
+- `src/page-types/registry.ts` — Comprehensive registry of all 18 page types with metadata fields, sections (incl. helpText, guidingQuestions), icons, colors, 6 categories, allowedChildTypes, variants. Types: core_process_overview, area_overview, process_page_text, process_page_graphic, procedure_instruction, use_case, policy, role_profile, dashboard, system_documentation, glossary, work_instruction, checklist, faq, interface_description, meeting_protocol, training_resource, audit_object
+- `src/page-types/index.ts` — Exports: PAGE_TYPE_REGISTRY, calculateCompleteness (content-quality-aware), getAllowedChildTypes, METADATA_GROUP_LABELS, PAGE_TYPE_CATEGORIES, types
 
 ### `lib/db` (`@workspace/db`)
 
