@@ -1,6 +1,8 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import type { WikiPermission } from "../services/rbac.service";
+import type { WorkingCopy } from "@workspace/db/schema";
 import {
   createWorkingCopy,
   getActiveWorkingCopyForNode,
@@ -17,6 +19,10 @@ import {
 } from "../services/working-copy.service";
 import { logger } from "../lib/logger";
 
+interface WorkingCopyRequest extends Request {
+  workingCopy: WorkingCopy;
+}
+
 const router: IRouter = Router();
 
 async function loadWorkingCopy(req: Request, res: Response, next: NextFunction) {
@@ -25,25 +31,25 @@ async function loadWorkingCopy(req: Request, res: Response, next: NextFunction) 
     res.status(404).json({ error: "Working copy not found" });
     return;
   }
-  (req as any).workingCopy = wc;
+  (req as WorkingCopyRequest).workingCopy = wc;
   next();
 }
 
-function requireWcPermission(permission: string) {
+function requireWcPermission(permission: WikiPermission) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const wc = (req as any).workingCopy;
+    const wc = (req as WorkingCopyRequest).workingCopy;
     if (!wc) {
       res.status(404).json({ error: "Working copy not found" });
       return;
     }
-    const middleware = requirePermission(permission as any, () => wc.nodeId);
+    const middleware = requirePermission(permission, () => wc.nodeId);
     await middleware(req, res, next);
   };
 }
 
-function requireWcOwnerOrPermission(permission: string) {
+function requireWcOwnerOrPermission(permission: WikiPermission) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const wc = (req as any).workingCopy;
+    const wc = (req as WorkingCopyRequest).workingCopy;
     if (!wc) {
       res.status(404).json({ error: "Working copy not found" });
       return;
@@ -52,7 +58,7 @@ function requireWcOwnerOrPermission(permission: string) {
       next();
       return;
     }
-    const middleware = requirePermission(permission as any, () => wc.nodeId);
+    const middleware = requirePermission(permission, () => wc.nodeId);
     await middleware(req, res, next);
   };
 }
@@ -96,7 +102,7 @@ router.get(
   loadWorkingCopy,
   requireWcPermission("read_page"),
   async (req, res) => {
-    res.json((req as any).workingCopy);
+    res.json((req as WorkingCopyRequest).workingCopy);
   },
 );
 

@@ -5,9 +5,16 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateWorkingCopyInputChangeType } from "./updateWorkingCopyInputChangeType";
+import type { UpdateWorkingCopyInputContent } from "./updateWorkingCopyInputContent";
+import type { UpdateWorkingCopyInputEditorSnapshot } from "./updateWorkingCopyInputEditorSnapshot";
 import type { UpdateWorkingCopyInputStructuredFields } from "./updateWorkingCopyInputStructuredFields";
 
 export interface UpdateWorkingCopyInput {
   title?: string;
+  content?: UpdateWorkingCopyInputContent;
   structuredFields?: UpdateWorkingCopyInputStructuredFields;
+  editorSnapshot?: UpdateWorkingCopyInputEditorSnapshot;
+  changeType?: UpdateWorkingCopyInputChangeType;
+  changeSummary?: string;
 }

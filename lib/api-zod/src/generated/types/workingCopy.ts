@@ -5,6 +5,10 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { WorkingCopyChangeType } from "./workingCopyChangeType";
+import type { WorkingCopyContent } from "./workingCopyContent";
+import type { WorkingCopyDiffCache } from "./workingCopyDiffCache";
+import type { WorkingCopyEditorSnapshot } from "./workingCopyEditorSnapshot";
 import type { WorkingCopyStatus } from "./workingCopyStatus";
 import type { WorkingCopyStructuredFields } from "./workingCopyStructuredFields";
 
@@ -14,12 +18,19 @@ export interface WorkingCopy {
   baseRevisionId?: string | null;
   authorId: string;
   status: WorkingCopyStatus;
-  title?: string | null;
+  title: string;
+  content?: WorkingCopyContent;
   structuredFields?: WorkingCopyStructuredFields;
-  submitComment?: string | null;
-  reviewComment?: string | null;
+  editorSnapshot?: WorkingCopyEditorSnapshot;
+  changeType: WorkingCopyChangeType;
+  changeSummary?: string | null;
+  lockedBy?: string | null;
+  lastAiSummary?: string | null;
+  lastManualSummary?: string | null;
   reviewerId?: string | null;
-  publishedRevisionId?: string | null;
+  approverId?: string | null;
+  diffCache?: WorkingCopyDiffCache;
+  submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

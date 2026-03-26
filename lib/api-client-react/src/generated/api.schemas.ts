@@ -1626,7 +1626,24 @@ export const WorkingCopyStatus = {
   published: "published",
 } as const;
 
+export type WorkingCopyContent = { [key: string]: unknown } | null;
+
 export type WorkingCopyStructuredFields = { [key: string]: unknown } | null;
+
+export type WorkingCopyEditorSnapshot = { [key: string]: unknown } | null;
+
+export type WorkingCopyChangeType =
+  (typeof WorkingCopyChangeType)[keyof typeof WorkingCopyChangeType];
+
+export const WorkingCopyChangeType = {
+  editorial: "editorial",
+  minor: "minor",
+  major: "major",
+  regulatory: "regulatory",
+  structural: "structural",
+} as const;
+
+export type WorkingCopyDiffCache = { [key: string]: unknown } | null;
 
 export interface WorkingCopy {
   id: string;
@@ -1634,24 +1651,63 @@ export interface WorkingCopy {
   baseRevisionId?: string | null;
   authorId: string;
   status: WorkingCopyStatus;
-  title?: string | null;
+  title: string;
+  content?: WorkingCopyContent;
   structuredFields?: WorkingCopyStructuredFields;
-  submitComment?: string | null;
-  reviewComment?: string | null;
+  editorSnapshot?: WorkingCopyEditorSnapshot;
+  changeType: WorkingCopyChangeType;
+  changeSummary?: string | null;
+  lockedBy?: string | null;
+  lastAiSummary?: string | null;
+  lastManualSummary?: string | null;
   reviewerId?: string | null;
-  publishedRevisionId?: string | null;
+  approverId?: string | null;
+  diffCache?: WorkingCopyDiffCache;
+  submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+export type UpdateWorkingCopyInputContent = { [key: string]: unknown };
+
 export type UpdateWorkingCopyInputStructuredFields = { [key: string]: unknown };
+
+export type UpdateWorkingCopyInputEditorSnapshot = { [key: string]: unknown };
+
+export type UpdateWorkingCopyInputChangeType =
+  (typeof UpdateWorkingCopyInputChangeType)[keyof typeof UpdateWorkingCopyInputChangeType];
+
+export const UpdateWorkingCopyInputChangeType = {
+  editorial: "editorial",
+  minor: "minor",
+  major: "major",
+  regulatory: "regulatory",
+  structural: "structural",
+} as const;
 
 export interface UpdateWorkingCopyInput {
   title?: string;
+  content?: UpdateWorkingCopyInputContent;
   structuredFields?: UpdateWorkingCopyInputStructuredFields;
+  editorSnapshot?: UpdateWorkingCopyInputEditorSnapshot;
+  changeType?: UpdateWorkingCopyInputChangeType;
+  changeSummary?: string;
 }
 
+export type SubmitWorkingCopyInputChangeType =
+  (typeof SubmitWorkingCopyInputChangeType)[keyof typeof SubmitWorkingCopyInputChangeType];
+
+export const SubmitWorkingCopyInputChangeType = {
+  editorial: "editorial",
+  minor: "minor",
+  major: "major",
+  regulatory: "regulatory",
+  structural: "structural",
+} as const;
+
 export interface SubmitWorkingCopyInput {
+  changeType?: SubmitWorkingCopyInputChangeType;
+  changeSummary?: string;
   comment?: string;
 }
 

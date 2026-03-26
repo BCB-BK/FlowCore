@@ -5530,28 +5530,50 @@ components:
           nullable: true
         authorId:
           type: string
-          format: uuid
         status:
           $ref: "#/components/schemas/WorkingCopyStatus"
         title:
           type: string
+        content:
+          type: object
           nullable: true
         structuredFields:
           type: object
           nullable: true
-        submitComment:
+        editorSnapshot:
+          type: object
+          nullable: true
+        changeType:
+          type: string
+          enum:
+            - editorial
+            - minor
+            - major
+            - regulatory
+            - structural
+        changeSummary:
           type: string
           nullable: true
-        reviewComment:
+        lockedBy:
+          type: string
+          nullable: true
+        lastAiSummary:
+          type: string
+          nullable: true
+        lastManualSummary:
           type: string
           nullable: true
         reviewerId:
           type: string
-          format: uuid
           nullable: true
-        publishedRevisionId:
+        approverId:
           type: string
-          format: uuid
+          nullable: true
+        diffCache:
+          type: object
+          nullable: true
+        submittedAt:
+          type: string
           nullable: true
         createdAt:
           type: string
@@ -5562,6 +5584,8 @@ components:
         - nodeId
         - authorId
         - status
+        - title
+        - changeType
         - createdAt
         - updatedAt
 
@@ -5570,12 +5594,36 @@ components:
       properties:
         title:
           type: string
+        content:
+          type: object
         structuredFields:
           type: object
+        editorSnapshot:
+          type: object
+        changeType:
+          type: string
+          enum:
+            - editorial
+            - minor
+            - major
+            - regulatory
+            - structural
+        changeSummary:
+          type: string
 
     SubmitWorkingCopyInput:
       type: object
       properties:
+        changeType:
+          type: string
+          enum:
+            - editorial
+            - minor
+            - major
+            - regulatory
+            - structural
+        changeSummary:
+          type: string
         comment:
           type: string
 

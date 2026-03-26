@@ -5,7 +5,10 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SubmitWorkingCopyInputChangeType } from "./submitWorkingCopyInputChangeType";
 
 export interface SubmitWorkingCopyInput {
+  changeType?: SubmitWorkingCopyInputChangeType;
+  changeSummary?: string;
   comment?: string;
 }

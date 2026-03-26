@@ -353,12 +353,9 @@ export async function publishWorkingCopy(
 ) {
   const wc = await getWorkingCopyById(id);
   if (!wc) throw new Error("Working copy not found");
-  if (
-    wc.status !== "approved_for_publish" &&
-    wc.status !== "submitted"
-  ) {
+  if (wc.status !== "approved_for_publish") {
     throw new Error(
-      `Arbeitskopie kann im Status '${wc.status}' nicht veröffentlicht werden.`,
+      `Arbeitskopie kann im Status '${wc.status}' nicht veröffentlicht werden. Nur freigegebene Arbeitskopien können veröffentlicht werden.`,
     );
   }
 
