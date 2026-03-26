@@ -45,6 +45,7 @@ import { Save, AlertTriangle } from "lucide-react";
 interface BlockEditorProps {
   content: JSONContent | null;
   onSave: (content: JSONContent) => void | Promise<void>;
+  onContentChange?: (content: JSONContent) => void;
   editable?: boolean;
   nodeId?: string;
   lastSavedAt?: Date | null;
@@ -64,6 +65,7 @@ function getDraftKey(nodeId?: string): string {
 export function BlockEditor({
   content,
   onSave,
+  onContentChange,
   editable = true,
   nodeId,
   lastSavedAt,
@@ -153,6 +155,9 @@ export function BlockEditor({
     editable,
     onUpdate: ({ editor: ed }) => {
       setIsDirty(true);
+      if (onContentChange) {
+        onContentChange(ed.getJSON());
+      }
       const json = JSON.stringify(ed.getJSON());
 
       if (json.includes('"/')) {

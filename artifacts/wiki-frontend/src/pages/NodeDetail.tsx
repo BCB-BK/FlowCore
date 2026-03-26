@@ -77,11 +77,13 @@ import { useState, useCallback, useMemo } from "react";
 import { PageAssistant } from "@/components/ai/PageAssistant";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { Bot } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
   const nodeId = params?.id;
   const { data: node, isLoading } = useNode(nodeId);
+  const { data: currentUser } = useAuth();
   const { data: children } = useNodeChildren(nodeId);
   const { data: revisions } = useNodeRevisions(nodeId);
   const deleteNode = useDeleteNode();
@@ -273,21 +275,36 @@ export function NodeDetail() {
             />
           )}
           {nodeId && <WatchButton nodeId={nodeId} />}
-          {!wcLoading && (
-            <Button
-              variant={activeWC ? "default" : "outline"}
-              size="sm"
-              onClick={activeWC ? () => navigate(`/nodes/${nodeId}/edit`) : handleCreateOrResumeWC}
-              disabled={createWorkingCopy.isPending}
-            >
-              {createWorkingCopy.isPending ? (
-                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-              ) : (
-                <FileEdit className="mr-1 h-4 w-4" />
-              )}
-              {activeWC ? "Arbeitskopie fortsetzen" : "Arbeitskopie erstellen"}
-            </Button>
-          )}
+          {!wcLoading && (() => {
+            const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
+            const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
+            if (activeWC && !isOwnWc) {
+              return (
+                <Button variant="outline" size="sm" disabled>
+                  <FileEdit className="mr-1 h-4 w-4" />
+                  Arbeitskopie gesperrt
+                </Button>
+              );
+            }
+            if (activeWC && !wcEditable) {
+              return null;
+            }
+            return (
+              <Button
+                variant={activeWC ? "default" : "outline"}
+                size="sm"
+                onClick={activeWC ? () => navigate(`/nodes/${nodeId}/edit`) : handleCreateOrResumeWC}
+                disabled={createWorkingCopy.isPending}
+              >
+                {createWorkingCopy.isPending ? (
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileEdit className="mr-1 h-4 w-4" />
+                )}
+                {activeWC ? "Arbeitskopie fortsetzen" : "Arbeitskopie erstellen"}
+              </Button>
+            );
+          })()}
           <Button variant="outline" size="sm" onClick={openEditDialog}>
             <Pencil className="mr-1 h-4 w-4" />
             Eigenschaften
@@ -345,6 +362,7 @@ export function NodeDetail() {
             <div className="mb-4 space-y-3">
               <WorkingCopyBanner
                 workingCopy={activeWC}
+                currentUserId={currentUser?.principalId}
                 onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 isCreating={createWorkingCopy.isPending}
               />
@@ -469,6 +487,7 @@ export function NodeDetail() {
               <CardContent className="space-y-3">
                 <WorkingCopyBanner
                   workingCopy={activeWC}
+                  currentUserId={currentUser?.principalId}
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
                 <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} />

@@ -69,18 +69,31 @@ const STATUS_CONFIG: Record<
 
 interface WorkingCopyBannerProps {
   workingCopy: WorkingCopy;
+  currentUserId?: string;
   onNavigateToEditor?: () => void;
   isCreating?: boolean;
 }
 
 export function WorkingCopyBanner({
   workingCopy,
+  currentUserId,
   onNavigateToEditor,
   isCreating,
 }: WorkingCopyBannerProps) {
   const config = STATUS_CONFIG[workingCopy.status] || STATUS_CONFIG.draft;
   const Icon = config.icon;
   const canEdit = workingCopy.status === "draft" || workingCopy.status === "changes_requested";
+  const isOwnWc = !currentUserId || workingCopy.authorId === currentUserId;
+
+  const createdDate = workingCopy.createdAt
+    ? new Date(workingCopy.createdAt).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
 
   return (
     <div
@@ -97,6 +110,14 @@ export function WorkingCopyBanner({
               {config.label}
             </Badge>
           </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {!isOwnWc && (
+              <span>In Bearbeitung durch {workingCopy.authorId?.substring(0, 8)}... </span>
+            )}
+            {createdDate && (
+              <span>{isOwnWc ? `Erstellt am ${createdDate}` : `seit ${createdDate}`}</span>
+            )}
+          </p>
           {workingCopy.changeSummary && (
             <p className="text-xs text-muted-foreground truncate mt-0.5">
               {workingCopy.changeSummary}
@@ -105,7 +126,7 @@ export function WorkingCopyBanner({
         </div>
       </div>
 
-      {canEdit && onNavigateToEditor && (
+      {canEdit && onNavigateToEditor && isOwnWc && (
         <Button
           size="sm"
           onClick={onNavigateToEditor}
@@ -119,6 +140,11 @@ export function WorkingCopyBanner({
           )}
           Weiter bearbeiten
         </Button>
+      )}
+      {canEdit && !isOwnWc && (
+        <Badge variant="secondary" className="text-xs flex-shrink-0">
+          Gesperrt
+        </Badge>
       )}
     </div>
   );

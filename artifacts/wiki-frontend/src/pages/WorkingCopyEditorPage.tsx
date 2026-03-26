@@ -54,6 +54,7 @@ import type { JSONContent } from "@tiptap/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { Bot } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 const AUTOSAVE_DELAY_MS = 2000;
 
@@ -72,6 +73,7 @@ export function WorkingCopyEditorPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: currentUser } = useAuth();
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
     query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
@@ -163,15 +165,18 @@ export function WorkingCopyEditorPage() {
   }, [activeWC]);
 
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingPatchRef = useRef<Record<string, unknown>>({});
+
+  type SavePatch = {
+    title?: string;
+    content?: Record<string, unknown>;
+    structuredFields?: Record<string, unknown>;
+    editorSnapshot?: Record<string, unknown>;
+    changeType?: "editorial" | "minor" | "major" | "regulatory" | "structural";
+  };
 
   const doSave = useCallback(
-    async (patch: {
-      title?: string;
-      content?: Record<string, unknown>;
-      structuredFields?: Record<string, unknown>;
-      editorSnapshot?: Record<string, unknown>;
-      changeType?: "editorial" | "minor" | "major" | "regulatory" | "structural";
-    }) => {
+    async (patch: SavePatch) => {
       const wc = wcRef.current;
       if (!wc || (wc.status !== "draft" && wc.status !== "changes_requested")) return;
       setIsSaving(true);
@@ -189,10 +194,13 @@ export function WorkingCopyEditorPage() {
   );
 
   const scheduleAutosave = useCallback(
-    (patch: Parameters<typeof doSave>[0]) => {
+    (patch: SavePatch) => {
+      pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = setTimeout(() => {
-        doSave(patch).catch(() => {});
+        const merged = { ...pendingPatchRef.current } as SavePatch;
+        pendingPatchRef.current = {};
+        doSave(merged).catch(() => {});
       }, AUTOSAVE_DELAY_MS);
     },
     [doSave],
@@ -200,6 +208,18 @@ export function WorkingCopyEditorPage() {
 
   const handleEditorSave = useCallback(
     async (json: JSONContent) => {
+      const sf = { ...localStructuredFieldsRef.current, _editorContent: json };
+      localStructuredFieldsRef.current = sf;
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+      const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
+      pendingPatchRef.current = {};
+      await doSave(merged);
+    },
+    [doSave],
+  );
+
+  const handleEditorContentChange = useCallback(
+    (json: JSONContent) => {
       const sf = { ...localStructuredFieldsRef.current, _editorContent: json };
       localStructuredFieldsRef.current = sf;
       scheduleAutosave({ structuredFields: sf });
@@ -358,7 +378,8 @@ export function WorkingCopyEditorPage() {
     );
   }
 
-  const canEdit = activeWC.status === "draft" || activeWC.status === "changes_requested";
+  const isOwnWc = !currentUser || activeWC.authorId === currentUser.principalId;
+  const canEdit = isOwnWc && (activeWC.status === "draft" || activeWC.status === "changes_requested");
   const pageDef = getPageType(node.templateType);
   const metadata: Record<string, unknown> = editableMetadata;
 
@@ -420,7 +441,7 @@ export function WorkingCopyEditorPage() {
         </div>
       </div>
 
-      <WorkingCopyBanner workingCopy={activeWC} />
+      <WorkingCopyBanner workingCopy={activeWC} currentUserId={currentUser?.principalId} />
 
       {lastSavedAt && (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -464,6 +485,7 @@ export function WorkingCopyEditorPage() {
               <BlockEditor
                 content={editorContent}
                 onSave={handleEditorSave}
+                onContentChange={handleEditorContentChange}
                 editable={canEdit}
                 nodeId={nodeId}
                 lastSavedAt={lastSavedAt}
