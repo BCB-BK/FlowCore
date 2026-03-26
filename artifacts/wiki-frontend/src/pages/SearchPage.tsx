@@ -81,11 +81,15 @@ export function SearchPage() {
   const handleResultClick = useCallback(
     (nodeId: string, position: number) => {
       trackClick.mutate({
-        data: { nodeId, position },
+        data: {
+          nodeId,
+          position,
+          queryId: searchData?.queryId || undefined,
+        },
       });
       navigate(`/node/${nodeId}`);
     },
-    [trackClick, navigate],
+    [trackClick, navigate, searchData?.queryId],
   );
 
   const hasFilters =

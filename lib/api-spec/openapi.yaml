@@ -2881,6 +2881,10 @@ components:
           type: integer
         offset:
           type: integer
+        queryId:
+          type: string
+          format: uuid
+          nullable: true
         facets:
           type: object
           properties:

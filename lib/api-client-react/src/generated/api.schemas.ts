@@ -705,6 +705,7 @@ export interface SearchResult {
   total: number;
   limit: number;
   offset: number;
+  queryId?: string | null;
   facets: SearchResultFacets;
 }
 

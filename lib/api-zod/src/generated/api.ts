@@ -1458,6 +1458,7 @@ export const SearchContentResponse = zod.object({
   total: zod.number(),
   limit: zod.number(),
   offset: zod.number(),
+  queryId: zod.string().uuid().nullish(),
   facets: zod.object({
     templateType: zod.record(zod.string(), zod.number()).optional(),
     status: zod.record(zod.string(), zod.number()).optional(),

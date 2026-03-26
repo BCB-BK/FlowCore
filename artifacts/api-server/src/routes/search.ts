@@ -220,15 +220,21 @@ router.get(
       tagFacets[row.tagName] = Number(row.count);
     }
 
+    let queryId: string | null = null;
     if (q.trim().length > 0) {
-      await db
-        .insert(searchQueriesTable)
-        .values({
-          query: q.trim(),
-          resultCount: totalCount,
-          userId: req.user?.principalId || null,
-        })
-        .catch(() => {});
+      try {
+        const [inserted] = await db
+          .insert(searchQueriesTable)
+          .values({
+            query: q.trim(),
+            resultCount: totalCount,
+            userId: req.user?.principalId || null,
+          })
+          .returning({ id: searchQueriesTable.id });
+        queryId = inserted?.id || null;
+      } catch {
+        queryId = null;
+      }
     }
 
     res.json({
@@ -236,6 +242,7 @@ router.get(
       total: totalCount,
       limit,
       offset,
+      queryId,
       facets: {
         templateType: typeFacets,
         status: statusFacets,
