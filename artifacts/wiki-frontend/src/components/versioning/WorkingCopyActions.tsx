@@ -145,7 +145,7 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
     (hasApprovePermission || isReviewerOrApprover);
   const showPublish =
     workingCopy.status === "approved_for_publish" &&
-    (hasApprovePermission || isReviewerOrApprover || isOwner);
+    (hasApprovePermission || isReviewerOrApprover);
   const showCancel =
     isOwner &&
     (workingCopy.status === "draft" ||
