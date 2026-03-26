@@ -87,3 +87,39 @@ export const CONFIDENTIALITY_LABELS: Record<string, string> = {
   confidential: "Vertraulich",
   strictly_confidential: "Streng vertraulich",
 };
+
+export const ENUM_LABELS: Record<string, Record<string, string>> = {
+  confidentiality: {
+    public: "Öffentlich",
+    internal: "Intern",
+    confidential: "Vertraulich",
+    strictly_confidential: "Streng vertraulich",
+  },
+  document_type: {
+    procedure: "Verfahrensanweisung",
+    policy: "Richtlinie",
+    guideline: "Leitfaden",
+    form: "Formular",
+    checklist: "Checkliste",
+    report: "Bericht",
+    specification: "Spezifikation",
+    manual: "Handbuch",
+    record: "Aufzeichnung",
+  },
+  risk_level: {
+    low: "Niedrig",
+    medium: "Mittel",
+    high: "Hoch",
+    critical: "Kritisch",
+  },
+  verification_result: {
+    current: "Aktuell",
+    update_needed: "Aktualisierung nötig",
+    obsolete: "Veraltet",
+  },
+  process_type: {
+    core: "Kernprozess",
+    support: "Unterstützungsprozess",
+    management: "Managementprozess",
+  },
+};

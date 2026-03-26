@@ -77,14 +77,6 @@ export interface PageTypeDefinition {
 
 const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
   {
-    key: "display_code",
-    label: "Display Code",
-    type: "text",
-    required: false,
-    group: "identity",
-    description: "Mutable display code (e.g. KP-001)",
-  },
-  {
     key: "document_type",
     label: "Dokumentenart",
     type: "enum",
@@ -102,15 +94,6 @@ const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
       "record",
     ],
     description: "Art des Dokuments gemäß Dokumentenklassifikation",
-  },
-  {
-    key: "language",
-    label: "Sprache",
-    type: "enum",
-    required: false,
-    group: "identity",
-    options: ["de", "en", "fr", "es", "it"],
-    description: "Sprache des Dokuments",
   },
 ];
 
@@ -146,14 +129,6 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     required: false,
     group: "governance",
     description: "Freigabe-Verantwortlicher",
-  },
-  {
-    key: "status_reason",
-    label: "Statusbegründung",
-    type: "text",
-    required: false,
-    group: "governance",
-    description: "Begründung für den aktuellen Status (z.B. Grund für Archivierung)",
   },
   {
     key: "source_of_truth",
@@ -256,14 +231,6 @@ const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
     type: "tags",
     required: false,
     group: "classification",
-  },
-  {
-    key: "scope_area",
-    label: "Geltungsbereich",
-    type: "text",
-    required: false,
-    group: "classification",
-    description: "Organisationseinheit / Bereich",
   },
 ];
 
@@ -1099,14 +1066,6 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         type: "person",
         required: true,
         group: "governance",
-      },
-      {
-        key: "status_reason",
-        label: "Statusbegründung",
-        type: "text",
-        required: false,
-        group: "governance",
-        description: "Begründung für den aktuellen Status",
       },
       ...COMMON_CLASSIFICATION_FIELDS,
       {

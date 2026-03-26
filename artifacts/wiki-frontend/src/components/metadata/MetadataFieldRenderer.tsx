@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { PeoplePicker } from "@/components/PeoplePicker";
 import { X } from "lucide-react";
 import { useState } from "react";
-import { CONFIDENTIALITY_LABELS } from "@/lib/types";
+import { ENUM_LABELS } from "@/lib/types";
 
 interface MetadataFieldRendererProps {
   fieldKey: string;
@@ -54,8 +54,7 @@ export function MetadataFieldRenderer({
   }
 
   if (type === "enum") {
-    const labelMap =
-      fieldKey === "confidentiality" ? CONFIDENTIALITY_LABELS : {};
+    const labelMap = ENUM_LABELS[fieldKey] ?? {};
     return (
       <div className="space-y-1.5">
         <Label className="text-sm">
