@@ -142,7 +142,7 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Teams: TeamsProvider (context detection), ShareToTeams (share/copy/open), TeamsTabConfig (channel tab setup)
 - Teams context: `src/lib/teams.ts` (detection, deep links), `src/hooks/useTeamsContext.ts` (React hook)
 - Teams manifest: `public/teams-manifest/manifest.json` (personal + configurable tabs)
-- Entry: `src/main.tsx` → `src/App.tsx`
+- Entry: `src/main.tsx` → `src/App.tsx` (dev mode uses real principal ID from DB, not synthetic dev users)
 - Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080
 
 ### `lib/shared` (`@workspace/shared`)
