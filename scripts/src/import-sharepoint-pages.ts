@@ -560,7 +560,10 @@ async function main() {
   }
 
   for (const [, page] of pages) {
-    page.title = page.title.replace(/\s*\(b2g\d*(?:-\d+)?\)\s*$/, "").trim();
+    page.title = page.title
+      .replace(/\s*\(BCB-[A-Za-z0-9-]+\)\s*$/, "")
+      .replace(/\s*\(b2g\d*(?:-\d+)?\)\s*$/, "")
+      .trim();
   }
 
   function resolveSlugToFile(slug: string): string | null {
@@ -672,16 +675,16 @@ async function main() {
 
     for (let j = 0; j < bereich.pages.length; j++) {
       const pg = bereich.pages[j];
-      const placeholderContent: TiptapNode = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `${pg.title} (${pg.code}) — Inhalt wird aus dem alten Wiki übernommen.` }] }] };
+      const placeholderContent: TiptapNode = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `${pg.title} — Inhalt wird aus dem alten Wiki übernommen.` }] }] };
       const pageId = await createNodeWithRevision(
-        `${pg.title} (${pg.code})`,
+        pg.title,
         "process_page_text",
         areaId, j + 1,
         placeholderContent,
         { sourceType: "sharepoint_import", originalCode: pg.code, _editorContent: placeholderContent },
       );
       totalPages++;
-      console.log(`    [${totalPages}] "${pg.title} (${pg.code})" -> ${pageId}`);
+      console.log(`    [${totalPages}] "${pg.title}" (${pg.code}) -> ${pageId}`);
     }
   }
 
