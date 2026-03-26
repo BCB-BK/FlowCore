@@ -227,6 +227,24 @@ connectorsRouter.patch(
       }
     }
 
+    if (updates.connectionConfig) {
+      const [existing] = await db
+        .select({ connectionConfig: sourceSystemsTable.connectionConfig })
+        .from(sourceSystemsTable)
+        .where(eq(sourceSystemsTable.id, id));
+
+      const existingConfig =
+        (existing?.connectionConfig as Record<string, unknown>) ?? {};
+      const incoming = updates.connectionConfig as Record<string, unknown>;
+      const merged = { ...existingConfig };
+
+      for (const [k, v] of Object.entries(incoming)) {
+        if (v === "***REDACTED***") continue;
+        merged[k] = v;
+      }
+      updates.connectionConfig = merged;
+    }
+
     updates.updatedAt = new Date();
 
     const [system] = await db
@@ -401,6 +419,24 @@ connectorsRouter.patch(
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
       }
+    }
+
+    if (updates.config) {
+      const [existing] = await db
+        .select({ config: storageProvidersTable.config })
+        .from(storageProvidersTable)
+        .where(eq(storageProvidersTable.id, id));
+
+      const existingConfig =
+        (existing?.config as Record<string, unknown>) ?? {};
+      const incoming = updates.config as Record<string, unknown>;
+      const merged = { ...existingConfig };
+
+      for (const [k, v] of Object.entries(incoming)) {
+        if (v === "***REDACTED***") continue;
+        merged[k] = v;
+      }
+      updates.config = merged;
     }
 
     if (req.body.isDefault === true) {

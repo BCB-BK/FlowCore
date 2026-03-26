@@ -20,6 +20,7 @@ import {
   getDefaultStorageProvider,
   getDefaultProviderId,
   getStorageProviderById,
+  getStorageProvider,
 } from "../services/storage.service";
 
 const router: IRouter = Router();
@@ -313,7 +314,7 @@ router.get("/files/:key", requireAuth, async (req, res) => {
 
     const provider = asset.storageProviderId
       ? await getStorageProviderById(asset.storageProviderId)
-      : await getDefaultStorageProvider();
+      : getStorageProvider();
     const result = await provider.download(key);
     res.setHeader("Content-Type", result.mimeType);
     res.setHeader("Content-Length", result.sizeBytes);
