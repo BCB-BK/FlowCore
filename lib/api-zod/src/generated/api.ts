@@ -2209,3 +2209,107 @@ export const CheckSourceReferenceResponse = zod.object({
   lastCheckedAt: zod.date(),
   externalModifiedAt: zod.date().nullish(),
 });
+
+/**
+ * @summary Get AI assistant settings
+ */
+export const GetAiSettingsResponse = zod.object({
+  id: zod.string().uuid().nullish(),
+  enabled: zod.boolean(),
+  model: zod.string(),
+  sourceMode: zod.string(),
+  webSearchEnabled: zod.boolean(),
+  maxCompletionTokens: zod.number(),
+  systemPrompt: zod.string().nullish(),
+  promptPolicies: zod.object({}).passthrough().nullish(),
+  updatedAt: zod.date().nullish(),
+  updatedBy: zod.string().nullish(),
+});
+
+/**
+ * @summary Update AI assistant settings
+ */
+export const UpdateAiSettingsBody = zod.object({
+  enabled: zod.boolean().optional(),
+  model: zod.string().optional(),
+  sourceMode: zod.string().optional(),
+  webSearchEnabled: zod.boolean().optional(),
+  maxCompletionTokens: zod.number().optional(),
+  systemPrompt: zod.string().nullish(),
+  promptPolicies: zod.object({}).passthrough().nullish(),
+});
+
+export const UpdateAiSettingsResponse = zod.object({
+  id: zod.string().uuid().nullish(),
+  enabled: zod.boolean(),
+  model: zod.string(),
+  sourceMode: zod.string(),
+  webSearchEnabled: zod.boolean(),
+  maxCompletionTokens: zod.number(),
+  systemPrompt: zod.string().nullish(),
+  promptPolicies: zod.object({}).passthrough().nullish(),
+  updatedAt: zod.date().nullish(),
+  updatedBy: zod.string().nullish(),
+});
+
+/**
+ * @summary Ask the AI assistant a question (SSE stream)
+ */
+export const aiAskBodyQueryMax = 2000;
+
+export const AiAskBody = zod.object({
+  query: zod.string().min(1).max(aiAskBodyQueryMax),
+});
+
+/**
+ * @summary AI writing assistant for page content (SSE stream)
+ */
+export const aiPageAssistBodyTextMax = 10000;
+
+export const AiPageAssistBody = zod.object({
+  action: zod.enum([
+    "reformulate",
+    "summarize",
+    "expand",
+    "shorten",
+    "grammar",
+    "gap_analysis",
+  ]),
+  text: zod.string().min(1).max(aiPageAssistBodyTextMax),
+  nodeId: zod.string().uuid().optional(),
+});
+
+/**
+ * @summary Get AI usage statistics
+ */
+export const getAiUsageStatsQueryDaysDefault = 30;
+
+export const GetAiUsageStatsQueryParams = zod.object({
+  days: zod.coerce.number().default(getAiUsageStatsQueryDaysDefault),
+});
+
+export const GetAiUsageStatsResponse = zod.object({
+  period: zod.object({
+    days: zod.number(),
+    since: zod.date(),
+  }),
+  summary: zod.object({
+    totalQueries: zod.number(),
+    errorCount: zod.number(),
+    zeroResultCount: zod.number(),
+    avgLatencyMs: zod.number(),
+    webSearchCount: zod.number(),
+  }),
+  byAction: zod.array(
+    zod.object({
+      action: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  byDay: zod.array(
+    zod.object({
+      date: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+});

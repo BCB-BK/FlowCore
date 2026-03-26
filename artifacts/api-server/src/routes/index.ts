@@ -10,6 +10,7 @@ import { tagsRouter } from "./tags";
 import { glossaryRouter } from "./glossary";
 import { connectorsRouter } from "./connectors";
 import { sourceRefsRouter } from "./source-refs";
+import { aiRouter } from "./ai";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use("/glossary", glossaryRouter);
 router.use("/media", mediaRouter);
 router.use("/connectors", connectorsRouter);
 router.use("/content", sourceRefsRouter);
+router.use("/ai", aiRouter);
 
 export default router;

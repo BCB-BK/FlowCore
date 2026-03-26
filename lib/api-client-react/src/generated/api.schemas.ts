@@ -1022,6 +1022,103 @@ export interface SourceReferenceCheckResult {
   externalModifiedAt?: string | null;
 }
 
+export type AiSettingsPromptPolicies = { [key: string]: unknown } | null;
+
+export interface AiSettings {
+  id?: string | null;
+  enabled: boolean;
+  model: string;
+  sourceMode: string;
+  webSearchEnabled: boolean;
+  maxCompletionTokens: number;
+  systemPrompt?: string | null;
+  promptPolicies?: AiSettingsPromptPolicies;
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+}
+
+export type UpdateAiSettingsBodyPromptPolicies = {
+  [key: string]: unknown;
+} | null;
+
+export interface UpdateAiSettingsBody {
+  enabled?: boolean;
+  model?: string;
+  sourceMode?: string;
+  webSearchEnabled?: boolean;
+  maxCompletionTokens?: number;
+  systemPrompt?: string | null;
+  promptPolicies?: UpdateAiSettingsBodyPromptPolicies;
+}
+
+export interface AiAskBody {
+  /**
+   * @minLength 1
+   * @maxLength 2000
+   */
+  query: string;
+}
+
+export type AiPageAssistBodyAction =
+  (typeof AiPageAssistBodyAction)[keyof typeof AiPageAssistBodyAction];
+
+export const AiPageAssistBodyAction = {
+  reformulate: "reformulate",
+  summarize: "summarize",
+  expand: "expand",
+  shorten: "shorten",
+  grammar: "grammar",
+  gap_analysis: "gap_analysis",
+} as const;
+
+export interface AiPageAssistBody {
+  action: AiPageAssistBodyAction;
+  /**
+   * @minLength 1
+   * @maxLength 10000
+   */
+  text: string;
+  nodeId?: string;
+}
+
+export interface AiSource {
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  snippet: string;
+}
+
+export type AiUsageStatsPeriod = {
+  days: number;
+  since: string;
+};
+
+export type AiUsageStatsSummary = {
+  totalQueries: number;
+  errorCount: number;
+  zeroResultCount: number;
+  avgLatencyMs: number;
+  webSearchCount: number;
+};
+
+export type AiUsageStatsByActionItem = {
+  action: string;
+  count: number;
+};
+
+export type AiUsageStatsByDayItem = {
+  date: string;
+  count: number;
+};
+
+export interface AiUsageStats {
+  period: AiUsageStatsPeriod;
+  summary: AiUsageStatsSummary;
+  byAction: AiUsageStatsByActionItem[];
+  byDay: AiUsageStatsByDayItem[];
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -1192,4 +1289,8 @@ export type ListSharePointSitesParams = {
 
 export type ListSharePointDriveItemsParams = {
   folderId?: string;
+};
+
+export type GetAiUsageStatsParams = {
+  days?: number;
 };

@@ -70,6 +70,8 @@ import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel
 import { ReviewWorkflowPanel } from "@/components/versioning/ReviewWorkflowPanel";
 import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { PageAssistant } from "@/components/ai/PageAssistant";
+import { Bot } from "lucide-react";
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
@@ -97,6 +99,7 @@ export function NodeDetail() {
   >({});
   const [metadataDirty, setMetadataDirty] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPageAssist, setShowPageAssist] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   const latestRevision =
@@ -469,24 +472,50 @@ export function NodeDetail() {
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-base font-semibold">Inhalt</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                <Pencil className="h-3.5 w-3.5 mr-1" />
-                {isEditing ? "Vorschau" : "Bearbeiten"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={showPageAssist ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowPageAssist(!showPageAssist)}
+                >
+                  <Bot className="h-3.5 w-3.5 mr-1" />
+                  KI-Assistent
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(!isEditing)}
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1" />
+                  {isEditing ? "Vorschau" : "Bearbeiten"}
+                </Button>
+              </div>
             </div>
-            <BlockEditor
-              content={editorContent}
-              onSave={handleEditorSave}
-              editable={isEditing}
-              nodeId={nodeId}
-              lastSavedAt={lastSavedAt}
-              conflictWarning={conflictWarning}
-              onTrackMediaUsage={handleTrackMediaUsage}
-            />
+            <div
+              className={
+                showPageAssist ? "grid grid-cols-[1fr_320px] gap-4" : ""
+              }
+            >
+              <BlockEditor
+                content={editorContent}
+                onSave={handleEditorSave}
+                editable={isEditing}
+                nodeId={nodeId}
+                lastSavedAt={lastSavedAt}
+                conflictWarning={conflictWarning}
+                onTrackMediaUsage={handleTrackMediaUsage}
+              />
+              {showPageAssist && (
+                <PageAssistant
+                  nodeId={nodeId}
+                  getSelectedText={() => {
+                    const sel = window.getSelection();
+                    return sel ? sel.toString() : "";
+                  }}
+                  onClose={() => setShowPageAssist(false)}
+                />
+              )}
+            </div>
           </div>
         </TabsContent>
 

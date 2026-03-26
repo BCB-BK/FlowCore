@@ -18,6 +18,10 @@ import type {
 
 import type {
   ActiveSourceSystem,
+  AiAskBody,
+  AiPageAssistBody,
+  AiSettings,
+  AiUsageStats,
   ApproveRevisionBody,
   AssignRole201,
   AssignRoleInput,
@@ -45,6 +49,7 @@ import type {
   EffectivePermissions,
   ErrorResponse,
   ForwardLink,
+  GetAiUsageStatsParams,
   GetPrincipalPermissionsParams,
   GetRolePermissionMatrix200,
   GetSearchAnalyticsParams,
@@ -103,6 +108,7 @@ import type {
   TrackSearchClick201,
   TrackSearchClickBody,
   TreeNode,
+  UpdateAiSettingsBody,
   UpdateNodeInput,
   UpdateSourceSystemInput,
   UpdateStorageProviderInput,
@@ -8728,3 +8734,430 @@ export const useCheckSourceReference = <
 > => {
   return useMutation(getCheckSourceReferenceMutationOptions(options));
 };
+
+/**
+ * @summary Get AI assistant settings
+ */
+export const getGetAiSettingsUrl = () => {
+  return `/api/ai/settings`;
+};
+
+export const getAiSettings = async (
+  options?: RequestInit,
+): Promise<AiSettings> => {
+  return customFetch<AiSettings>(getGetAiSettingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAiSettingsQueryKey = () => {
+  return [`/api/ai/settings`] as const;
+};
+
+export const getGetAiSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAiSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAiSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAiSettingsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiSettings>>> = ({
+    signal,
+  }) => getAiSettings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAiSettings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAiSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAiSettings>>
+>;
+export type GetAiSettingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get AI assistant settings
+ */
+
+export function useGetAiSettings<
+  TData = Awaited<ReturnType<typeof getAiSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAiSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAiSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update AI assistant settings
+ */
+export const getUpdateAiSettingsUrl = () => {
+  return `/api/ai/settings`;
+};
+
+export const updateAiSettings = async (
+  updateAiSettingsBody: UpdateAiSettingsBody,
+  options?: RequestInit,
+): Promise<AiSettings> => {
+  return customFetch<AiSettings>(getUpdateAiSettingsUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateAiSettingsBody),
+  });
+};
+
+export const getUpdateAiSettingsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAiSettings>>,
+    TError,
+    { data: BodyType<UpdateAiSettingsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAiSettings>>,
+  TError,
+  { data: BodyType<UpdateAiSettingsBody> },
+  TContext
+> => {
+  const mutationKey = ["updateAiSettings"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAiSettings>>,
+    { data: BodyType<UpdateAiSettingsBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateAiSettings(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAiSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAiSettings>>
+>;
+export type UpdateAiSettingsMutationBody = BodyType<UpdateAiSettingsBody>;
+export type UpdateAiSettingsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update AI assistant settings
+ */
+export const useUpdateAiSettings = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAiSettings>>,
+    TError,
+    { data: BodyType<UpdateAiSettingsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateAiSettings>>,
+  TError,
+  { data: BodyType<UpdateAiSettingsBody> },
+  TContext
+> => {
+  return useMutation(getUpdateAiSettingsMutationOptions(options));
+};
+
+/**
+ * @summary Ask the AI assistant a question (SSE stream)
+ */
+export const getAiAskUrl = () => {
+  return `/api/ai/ask`;
+};
+
+export const aiAsk = async (
+  aiAskBody: AiAskBody,
+  options?: RequestInit,
+): Promise<string> => {
+  return customFetch<string>(getAiAskUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(aiAskBody),
+  });
+};
+
+export const getAiAskMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aiAsk>>,
+    TError,
+    { data: BodyType<AiAskBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof aiAsk>>,
+  TError,
+  { data: BodyType<AiAskBody> },
+  TContext
+> => {
+  const mutationKey = ["aiAsk"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof aiAsk>>,
+    { data: BodyType<AiAskBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return aiAsk(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AiAskMutationResult = NonNullable<
+  Awaited<ReturnType<typeof aiAsk>>
+>;
+export type AiAskMutationBody = BodyType<AiAskBody>;
+export type AiAskMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Ask the AI assistant a question (SSE stream)
+ */
+export const useAiAsk = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aiAsk>>,
+    TError,
+    { data: BodyType<AiAskBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof aiAsk>>,
+  TError,
+  { data: BodyType<AiAskBody> },
+  TContext
+> => {
+  return useMutation(getAiAskMutationOptions(options));
+};
+
+/**
+ * @summary AI writing assistant for page content (SSE stream)
+ */
+export const getAiPageAssistUrl = () => {
+  return `/api/ai/page-assist`;
+};
+
+export const aiPageAssist = async (
+  aiPageAssistBody: AiPageAssistBody,
+  options?: RequestInit,
+): Promise<string> => {
+  return customFetch<string>(getAiPageAssistUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(aiPageAssistBody),
+  });
+};
+
+export const getAiPageAssistMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aiPageAssist>>,
+    TError,
+    { data: BodyType<AiPageAssistBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof aiPageAssist>>,
+  TError,
+  { data: BodyType<AiPageAssistBody> },
+  TContext
+> => {
+  const mutationKey = ["aiPageAssist"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof aiPageAssist>>,
+    { data: BodyType<AiPageAssistBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return aiPageAssist(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AiPageAssistMutationResult = NonNullable<
+  Awaited<ReturnType<typeof aiPageAssist>>
+>;
+export type AiPageAssistMutationBody = BodyType<AiPageAssistBody>;
+export type AiPageAssistMutationError = ErrorType<unknown>;
+
+/**
+ * @summary AI writing assistant for page content (SSE stream)
+ */
+export const useAiPageAssist = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aiPageAssist>>,
+    TError,
+    { data: BodyType<AiPageAssistBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof aiPageAssist>>,
+  TError,
+  { data: BodyType<AiPageAssistBody> },
+  TContext
+> => {
+  return useMutation(getAiPageAssistMutationOptions(options));
+};
+
+/**
+ * @summary Get AI usage statistics
+ */
+export const getGetAiUsageStatsUrl = (params?: GetAiUsageStatsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/ai/usage-stats?${stringifiedParams}`
+    : `/api/ai/usage-stats`;
+};
+
+export const getAiUsageStats = async (
+  params?: GetAiUsageStatsParams,
+  options?: RequestInit,
+): Promise<AiUsageStats> => {
+  return customFetch<AiUsageStats>(getGetAiUsageStatsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAiUsageStatsQueryKey = (params?: GetAiUsageStatsParams) => {
+  return [`/api/ai/usage-stats`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetAiUsageStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAiUsageStats>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetAiUsageStatsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAiUsageStats>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAiUsageStatsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiUsageStats>>> = ({
+    signal,
+  }) => getAiUsageStats(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAiUsageStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAiUsageStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAiUsageStats>>
+>;
+export type GetAiUsageStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get AI usage statistics
+ */
+
+export function useGetAiUsageStats<
+  TData = Awaited<ReturnType<typeof getAiUsageStats>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetAiUsageStatsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAiUsageStats>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAiUsageStatsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

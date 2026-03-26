@@ -10,6 +10,8 @@ import { SearchPage } from "@/pages/SearchPage";
 import { GlossaryPage } from "@/pages/GlossaryPage";
 import { BrokenLinksPage } from "@/pages/BrokenLinksPage";
 import { ConnectorsPage } from "@/pages/ConnectorsPage";
+import { AISettingsPage } from "@/pages/AISettingsPage";
+import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,8 +24,10 @@ function Router() {
         <Route path="/glossary" component={GlossaryPage} />
         <Route path="/broken-links" component={BrokenLinksPage} />
         <Route path="/connectors" component={ConnectorsPage} />
+        <Route path="/ai-settings" component={AISettingsPage} />
         <Route component={NotFound} />
       </Switch>
+      <GlobalAssistant />
     </AppLayout>
   );
 }

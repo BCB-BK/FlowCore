@@ -101,6 +101,8 @@ Express 5 API server with structured logging, config validation, content managem
 - Routes: `src/routes/review.ts` — Review workflow (submit/approve/reject), revision events, diff, watchers (10 endpoints, all auth+permission-guarded)
 - Routes: `src/routes/connectors.ts` — Source system CRUD, storage provider CRUD, SharePoint browsing (sites/drives/items), sync trigger, sync status dashboard (14 endpoints)
 - Routes: `src/routes/source-refs.ts` — Source reference CRUD per node, freshness check, per-node permission-guarded (4 endpoints)
+- Routes: `src/routes/ai.ts` — AI assistant settings CRUD, knowledge Q&A (SSE streaming), page writing assistant (SSE streaming), usage stats (4 endpoints)
+- Services: `src/services/ai.service.ts` — AI orchestration: settings management, wiki content retrieval (FTS), prompt construction, OpenAI streaming, source citations, usage logging
 - Services: `src/services/storage.service.ts` — LocalStorageProvider + DB-backed default provider resolution + SharePoint provider selection
 - Services: `src/services/sharepoint.service.ts` — SharePoint Graph API integration (sites, drives, items browsing) with dev-mode mock data
 - Services: `src/services/sharepoint-storage.service.ts` — SharePointStorageProvider implementing IStorageProvider (upload/download via Graph API)
@@ -121,7 +123,8 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Routing: Wouter (lightweight client-side router)
 - Data fetching: React Query via `@workspace/api-client-react`
 - Auth: Dev-mode header injection (`X-Dev-Principal-Id`) via `lib/api.ts`
-- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (server-side FTS with facets), GlossaryPage (A-Z term management), BrokenLinksPage (broken relations + orphaned nodes)
+- Pages: Hub (landing), NodeDetail (view/manage nodes with tabs: Inhalt/Metadaten/Versionen/Unterseiten), SearchPage (server-side FTS with facets), GlossaryPage (A-Z term management), BrokenLinksPage (broken relations + orphaned nodes), AISettingsPage (admin KI-Assistent configuration + usage stats)
+- AI Components: GlobalAssistant (floating chat panel with SSE streaming, source citations), PageAssistant (writing aid panel: reformulate, summarize, expand, shorten, grammar, gap analysis)
 - Components: AppLayout (header+sidebar+content), WikiSidebar (lazy-load tree), NodeBreadcrumbs, CreateNodeDialog (multi-step), TreeNode, PeoplePicker, PageTypeIcon
 - Editor: BlockEditor (Tiptap-based rich text editor with 12+ block types, slash commands, edit/preview toggle, autosave to localStorage, draft recovery)
 - Editor Extensions: Callout, FileBlock, VideoBlock, EmbedBlock, DiagramBlock (custom Tiptap node views)
@@ -160,6 +163,9 @@ Database layer using Drizzle ORM with PostgreSQL.
 - `src/schema/media-assets.ts` — File attachments
 - `src/schema/audit-events.ts` — Audit trail
 - `src/schema/principals.ts` — Principals, role assignments, page permissions, node ownership
+- `src/schema/ai-settings.ts` — AI settings (global config) + AI usage logs (query volume, errors, latency)
+- `src/schema/conversations.ts` — AI conversations (OpenAI integration)
+- `src/schema/messages.ts` — AI conversation messages (OpenAI integration)
 - `src/seed.ts` — Example seed data
 - Push: `pnpm --filter @workspace/db run push`
 - Seed: `npx -p tsx tsx lib/db/src/seed.ts`

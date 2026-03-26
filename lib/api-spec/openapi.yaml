@@ -38,6 +38,8 @@ tags:
     description: SharePoint document library browsing
   - name: source-references
     description: External source reference tracking
+  - name: ai
+    description: AI assistant and settings
 paths:
   /healthz:
     get:
@@ -2099,6 +2101,93 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceReferenceCheckResult"
 
+  /ai/settings:
+    get:
+      operationId: getAiSettings
+      tags: [ai]
+      summary: Get AI assistant settings
+      responses:
+        "200":
+          description: Current AI settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiSettings"
+    put:
+      operationId: updateAiSettings
+      tags: [ai]
+      summary: Update AI assistant settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAiSettingsBody"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiSettings"
+
+  /ai/ask:
+    post:
+      operationId: aiAsk
+      tags: [ai]
+      summary: Ask the AI assistant a question (SSE stream)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiAskBody"
+      responses:
+        "200":
+          description: SSE stream with answer chunks and sources
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /ai/page-assist:
+    post:
+      operationId: aiPageAssist
+      tags: [ai]
+      summary: AI writing assistant for page content (SSE stream)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiPageAssistBody"
+      responses:
+        "200":
+          description: SSE stream with rewritten content
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /ai/usage-stats:
+    get:
+      operationId: getAiUsageStats
+      tags: [ai]
+      summary: Get AI usage statistics
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiUsageStats"
+
 components:
   parameters:
     NodeId:
@@ -3980,3 +4069,177 @@ components:
         - id
         - syncStatus
         - lastCheckedAt
+
+    AiSettings:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        enabled:
+          type: boolean
+        model:
+          type: string
+        sourceMode:
+          type: string
+        webSearchEnabled:
+          type: boolean
+        maxCompletionTokens:
+          type: integer
+        systemPrompt:
+          type: string
+          nullable: true
+        promptPolicies:
+          type: object
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedBy:
+          type: string
+          nullable: true
+      required:
+        - enabled
+        - model
+        - sourceMode
+        - webSearchEnabled
+        - maxCompletionTokens
+
+    UpdateAiSettingsBody:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        model:
+          type: string
+        sourceMode:
+          type: string
+        webSearchEnabled:
+          type: boolean
+        maxCompletionTokens:
+          type: integer
+        systemPrompt:
+          type: string
+          nullable: true
+        promptPolicies:
+          type: object
+          nullable: true
+
+    AiAskBody:
+      type: object
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2000
+      required:
+        - query
+
+    AiPageAssistBody:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - reformulate
+            - summarize
+            - expand
+            - shorten
+            - grammar
+            - gap_analysis
+        text:
+          type: string
+          minLength: 1
+          maxLength: 10000
+        nodeId:
+          type: string
+          format: uuid
+      required:
+        - action
+        - text
+
+    AiSource:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        displayCode:
+          type: string
+        templateType:
+          type: string
+        snippet:
+          type: string
+      required:
+        - nodeId
+        - title
+        - displayCode
+        - templateType
+        - snippet
+
+    AiUsageStats:
+      type: object
+      properties:
+        period:
+          type: object
+          properties:
+            days:
+              type: integer
+            since:
+              type: string
+              format: date-time
+          required:
+            - days
+            - since
+        summary:
+          type: object
+          properties:
+            totalQueries:
+              type: integer
+            errorCount:
+              type: integer
+            zeroResultCount:
+              type: integer
+            avgLatencyMs:
+              type: integer
+            webSearchCount:
+              type: integer
+          required:
+            - totalQueries
+            - errorCount
+            - zeroResultCount
+            - avgLatencyMs
+            - webSearchCount
+        byAction:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+              count:
+                type: integer
+            required:
+              - action
+              - count
+        byDay:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              count:
+                type: integer
+            required:
+              - date
+              - count
+      required:
+        - period
+        - summary
+        - byAction
+        - byDay

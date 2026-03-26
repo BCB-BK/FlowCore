@@ -10,7 +10,14 @@ import {
 } from "@/components/ui/sidebar";
 import { useRootNodes } from "@/hooks/use-nodes";
 import { TreeNode } from "./TreeNode";
-import { Home, BookOpen, Search, AlertTriangle, Database } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  Search,
+  AlertTriangle,
+  Database,
+  Bot,
+} from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,6 +90,15 @@ export function WikiSidebar() {
               >
                 <Database className="h-4 w-4" />
                 <span>Konnektoren</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/ai-settings"}
+                onClick={() => navigate("/ai-settings")}
+              >
+                <Bot className="h-4 w-4" />
+                <span>KI-Assistent</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
