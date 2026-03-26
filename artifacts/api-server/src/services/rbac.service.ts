@@ -30,7 +30,13 @@ export type WikiPermission =
   | "manage_permissions"
   | "manage_templates"
   | "manage_settings"
-  | "view_audit_log";
+  | "view_audit_log"
+  | "view_home"
+  | "view_search"
+  | "view_glossary"
+  | "view_dashboard"
+  | "view_tasks"
+  | "view_settings";
 
 const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
   system_admin: [
@@ -47,6 +53,12 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "manage_templates",
     "manage_settings",
     "view_audit_log",
+    "view_home",
+    "view_search",
+    "view_glossary",
+    "view_dashboard",
+    "view_tasks",
+    "view_settings",
   ],
   process_manager: [
     "read_page",
@@ -58,6 +70,12 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "archive_page",
     "manage_permissions",
     "view_audit_log",
+    "view_home",
+    "view_search",
+    "view_glossary",
+    "view_dashboard",
+    "view_tasks",
+    "view_settings",
   ],
   editor: [
     "read_page",
@@ -65,16 +83,45 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "edit_content",
     "manage_relations",
     "submit_for_review",
+    "view_home",
+    "view_search",
+    "view_glossary",
+    "view_dashboard",
+    "view_tasks",
   ],
-  reviewer: ["read_page", "review_page", "view_audit_log"],
-  approver: ["read_page", "review_page", "approve_page", "view_audit_log"],
+  reviewer: [
+    "read_page",
+    "review_page",
+    "view_audit_log",
+    "view_home",
+    "view_search",
+    "view_glossary",
+    "view_dashboard",
+    "view_tasks",
+  ],
+  approver: [
+    "read_page",
+    "review_page",
+    "approve_page",
+    "view_audit_log",
+    "view_home",
+    "view_search",
+    "view_glossary",
+    "view_dashboard",
+    "view_tasks",
+  ],
   compliance_manager: [
     "read_page",
     "review_page",
     "view_audit_log",
     "manage_templates",
+    "view_home",
+    "view_search",
+    "view_glossary",
+    "view_dashboard",
+    "view_tasks",
   ],
-  viewer: ["read_page"],
+  viewer: ["read_page", "view_home", "view_search", "view_glossary"],
 };
 
 export function getPermissionsForRole(role: WikiRole): WikiPermission[] {

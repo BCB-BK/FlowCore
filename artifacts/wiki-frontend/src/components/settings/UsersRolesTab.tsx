@@ -116,6 +116,12 @@ const ALL_ROLE_KEYS = [
 ] as const;
 
 const PERMISSION_LABELS: Record<string, string> = {
+  view_home: "Startseite",
+  view_search: "Suche",
+  view_glossary: "Glossar",
+  view_dashboard: "Dashboard",
+  view_tasks: "Meine Aufgaben",
+  view_settings: "Einstellungen",
   read_page: "Seiten lesen",
   create_page: "Seiten erstellen",
   edit_content: "Inhalte bearbeiten",
@@ -132,6 +138,17 @@ const PERMISSION_LABELS: Record<string, string> = {
 };
 
 const PERMISSION_GROUPS: { label: string; permissions: string[] }[] = [
+  {
+    label: "Ansichten",
+    permissions: [
+      "view_home",
+      "view_search",
+      "view_glossary",
+      "view_dashboard",
+      "view_tasks",
+      "view_settings",
+    ],
+  },
   {
     label: "Inhalte",
     permissions: [
