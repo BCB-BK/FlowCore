@@ -109,13 +109,6 @@ const MOCK_METADATA: Record<string, Record<string, string>> = {
     confidentiality: "Vertraulich",
     tags: "SAP, ERP, Systemdoku",
   },
-  glossary: {
-    display_code: "GL-001",
-    editor: "Redaktionsteam",
-    valid_from: "01.01.2026",
-    confidentiality: "Öffentlich",
-    tags: "Glossar, Begriffe, Definitionen",
-  },
 };
 
 const MOCK_SECTION_CONTENT: Record<string, Record<string, string>> = {

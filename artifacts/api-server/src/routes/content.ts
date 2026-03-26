@@ -127,7 +127,6 @@ router.patch(
       "role_profile",
       "dashboard",
       "system_documentation",
-      "glossary",
     ];
     if (
       templateType !== undefined &&
