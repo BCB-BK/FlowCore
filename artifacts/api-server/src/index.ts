@@ -3,6 +3,7 @@ import { appConfig } from "./lib/config";
 import { logger } from "./lib/logger";
 import { startSyncScheduler } from "./services/sync-scheduler.service";
 import { startBackupScheduler } from "./services/backup.service";
+import { startReviewCycleChecker } from "./services/review-cycle.service";
 
 async function start() {
   app.listen(appConfig.port, (err) => {
@@ -22,6 +23,7 @@ async function start() {
 
     startSyncScheduler();
     startBackupScheduler();
+    startReviewCycleChecker();
   });
 }
 

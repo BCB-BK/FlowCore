@@ -3872,3 +3872,62 @@ export const TransitionReleaseResponse = zod.object({
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
+
+/**
+ * @summary List notifications for the current user
+ */
+export const getNotificationsQueryLimitDefault = 50;
+export const getNotificationsQueryOffsetDefault = 0;
+
+export const GetNotificationsQueryParams = zod.object({
+  limit: zod.coerce.number().default(getNotificationsQueryLimitDefault),
+  offset: zod.coerce.number().default(getNotificationsQueryOffsetDefault),
+  unreadOnly: zod.enum(["true", "false"]).optional(),
+});
+
+export const GetNotificationsResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      recipientId: zod.string().uuid(),
+      channel: zod.enum(["in_app", "email", "teams"]),
+      type: zod.string(),
+      title: zod.string(),
+      body: zod.string(),
+      link: zod.string().nullish(),
+      nodeId: zod.string().uuid().nullish(),
+      actorId: zod.string().uuid().nullish(),
+      status: zod.enum(["unread", "read", "archived"]),
+      metadata: zod.object({}).passthrough().nullish(),
+      createdAt: zod.date(),
+      readAt: zod.date().nullish(),
+    }),
+  ),
+  limit: zod.number(),
+  offset: zod.number(),
+});
+
+/**
+ * @summary Get unread notification count
+ */
+export const GetUnreadNotificationCountResponse = zod.object({
+  count: zod.number(),
+});
+
+/**
+ * @summary Mark a notification as read
+ */
+export const MarkNotificationAsReadParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const MarkNotificationAsReadResponse = zod.object({
+  success: zod.boolean().optional(),
+});
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsAsReadResponse = zod.object({
+  count: zod.number().optional(),
+});

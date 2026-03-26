@@ -21,6 +21,12 @@ import {
 } from "../services/working-copy.service";
 import { generateChangeSummary } from "../services/ai.service";
 import { logger } from "../lib/logger";
+import {
+  notifyWorkingCopySubmitted,
+  notifyWorkingCopyApproved,
+  notifyWorkingCopyReturned,
+  notifyWorkingCopyPublished,
+} from "../services/notification.service";
 
 interface WorkingCopyRequest extends Request {
   workingCopy: WorkingCopy;
@@ -151,6 +157,13 @@ router.post(
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
       const updated = await submitWorkingCopy(id, req.body, actorId);
+      notifyWorkingCopySubmitted(
+        updated.nodeId,
+        updated.title,
+        actorId,
+        req.user!.displayName,
+        id,
+      ).catch((err) => logger.warn({ err }, "Notification failed after submit"));
       res.json(updated);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -168,11 +181,21 @@ router.post(
     try {
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
+      const wc = (req as WorkingCopyRequest).workingCopy;
       const updated = await returnWorkingCopyForChanges(
         id,
         req.body.comment,
         actorId,
       );
+      notifyWorkingCopyReturned(
+        updated.nodeId,
+        updated.title,
+        actorId,
+        req.user!.displayName,
+        id,
+        wc.authorId,
+        req.body.comment,
+      ).catch((err) => logger.warn({ err }, "Notification failed after return"));
       res.json(updated);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -221,6 +244,13 @@ router.post(
       }
 
       const updated = await approveWorkingCopy(id, req.body.comment, actorId);
+      notifyWorkingCopyApproved(
+        updated.nodeId,
+        updated.title,
+        actorId,
+        req.user!.displayName,
+        id,
+      ).catch((err) => logger.warn({ err }, "Notification failed after approve"));
       res.json(updated);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -274,6 +304,13 @@ router.post(
       }
 
       const result = await publishWorkingCopy(id, versionLabel, actorId);
+      notifyWorkingCopyPublished(
+        wc.nodeId,
+        wc.title,
+        actorId,
+        req.user!.displayName,
+        versionLabel,
+      ).catch((err) => logger.warn({ err }, "Notification failed after publish"));
       res.json(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";

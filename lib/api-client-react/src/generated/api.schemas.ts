@@ -373,6 +373,48 @@ export interface PageWatcher {
   createdAt: string;
 }
 
+export type NotificationChannel =
+  (typeof NotificationChannel)[keyof typeof NotificationChannel];
+
+export const NotificationChannel = {
+  in_app: "in_app",
+  email: "email",
+  teams: "teams",
+} as const;
+
+export type NotificationStatus =
+  (typeof NotificationStatus)[keyof typeof NotificationStatus];
+
+export const NotificationStatus = {
+  unread: "unread",
+  read: "read",
+  archived: "archived",
+} as const;
+
+export type NotificationMetadata = { [key: string]: unknown } | null;
+
+export interface Notification {
+  id: string;
+  recipientId: string;
+  channel: NotificationChannel;
+  type: string;
+  title: string;
+  body: string;
+  link?: string | null;
+  nodeId?: string | null;
+  actorId?: string | null;
+  status: NotificationStatus;
+  metadata?: NotificationMetadata;
+  createdAt: string;
+  readAt?: string | null;
+}
+
+export interface NotificationListResponse {
+  items: Notification[];
+  limit: number;
+  offset: number;
+}
+
 export type ContentRelationRelationType =
   (typeof ContentRelationRelationType)[keyof typeof ContentRelationRelationType];
 
@@ -2332,4 +2374,30 @@ export type ValidateBackupTarget200 = {
 
 export type ListReleases200 = {
   releases: Release[];
+};
+
+export type GetNotificationsParams = {
+  limit?: number;
+  offset?: number;
+  unreadOnly?: GetNotificationsUnreadOnly;
+};
+
+export type GetNotificationsUnreadOnly =
+  (typeof GetNotificationsUnreadOnly)[keyof typeof GetNotificationsUnreadOnly];
+
+export const GetNotificationsUnreadOnly = {
+  true: "true",
+  false: "false",
+} as const;
+
+export type GetUnreadNotificationCount200 = {
+  count: number;
+};
+
+export type MarkNotificationAsRead200 = {
+  success?: boolean;
+};
+
+export type MarkAllNotificationsAsRead200 = {
+  count?: number;
 };

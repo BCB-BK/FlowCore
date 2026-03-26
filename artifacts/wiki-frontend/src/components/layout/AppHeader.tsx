@@ -12,6 +12,7 @@ import {
 import { LogOut, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function AppHeader() {
   const { data: user } = useAuth();
@@ -52,6 +53,8 @@ export function AppHeader() {
           />
         </div>
       </div>
+
+      {user && <NotificationBell />}
 
       {user && (
         <DropdownMenu>

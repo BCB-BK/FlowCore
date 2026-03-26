@@ -16,6 +16,7 @@ import { teamsRouter } from "./teams";
 import adminRouter from "./admin";
 import { backupRouter } from "./backup";
 import { workingCopiesRouter } from "./working-copies";
+import { notificationsRouter } from "./notifications";
 
 const router: IRouter = Router();
 
@@ -27,6 +28,7 @@ router.use(principalsRouter);
 router.use("/content", contentRouter);
 router.use("/content", reviewRouter);
 router.use("/content", workingCopiesRouter);
+router.use("/notifications", notificationsRouter);
 router.use("/search", searchRouter);
 router.use("/tags", tagsRouter);
 router.use("/glossary", glossaryRouter);

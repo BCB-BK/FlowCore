@@ -51,5 +51,14 @@ The frontend, `wiki-frontend`, is a React 19 application utilizing Vite, Tailwin
 - **E2E Testing:** Playwright
 - **Logging:** pino
 - **Authentication/Identity:** Microsoft Entra ID (OIDC)
-- **External Services Integration:** Microsoft Graph API (for SharePoint)
+- **External Services Integration:** Microsoft Graph API (for SharePoint, Teams notifications)
 - **AI Services:** OpenAI
+
+## Notifications & Watchers
+
+- **Notification Service** (`api-server/src/services/notification.service.ts`): Creates in-app notifications (stored in `notifications` table) and sends MS Teams chat messages via Graph API to relevant recipients.
+- **Recipients** are determined per event by role: page watchers, node owners, deputies, reviewers, approvers, and process managers (for submissions and escalations).
+- **Event types**: `working_copy_submitted`, `working_copy_approved`, `working_copy_returned`, `working_copy_published`, `review_overdue`, `review_overdue_escalation`, `page_updated`.
+- **Review Cycle Checker** (`api-server/src/services/review-cycle.service.ts`): Scheduled hourly job that checks `nextReviewDate` on published revisions. Sends overdue notifications to owners/deputies; escalates to process managers after 14 days.
+- **Notification Routes** (`/api/notifications`): GET list, GET unread-count, PATCH mark-read, PATCH mark-all-read.
+- **Frontend**: `NotificationBell` component in AppHeader with unread count badge and popover dropdown showing recent notifications with mark-read actions.

@@ -50,6 +50,8 @@ tags:
     description: Working copy lifecycle management
   - name: admin
     description: System administration, consistency checks, and release management
+  - name: notifications
+    description: In-app and Teams notification management
 paths:
   /healthz:
     get:
@@ -3079,6 +3081,94 @@ paths:
         "400":
           description: Invalid transition
 
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: List notifications for the current user
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: unreadOnly
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+      responses:
+        "200":
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+
+  /notifications/unread-count:
+    get:
+      operationId: getUnreadNotificationCount
+      tags: [notifications]
+      summary: Get unread notification count
+      responses:
+        "200":
+          description: Unread count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                required:
+                  - count
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationAsRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Notification not found
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsAsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: All marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+
 components:
   parameters:
     NodeId:
@@ -3643,6 +3733,74 @@ components:
         - principalId
         - watchChildren
         - createdAt
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        channel:
+          type: string
+          enum: [in_app, email, teams]
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        link:
+          type: string
+          nullable: true
+        nodeId:
+          type: string
+          format: uuid
+          nullable: true
+        actorId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          type: string
+          enum: [unread, read, archived]
+        metadata:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - recipientId
+        - channel
+        - type
+        - title
+        - body
+        - status
+        - createdAt
+
+    NotificationListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+        - items
+        - limit
+        - offset
 
     ContentRelation:
       type: object
