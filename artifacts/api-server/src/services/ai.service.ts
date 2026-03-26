@@ -4,34 +4,16 @@ import {
   aiUsageLogsTable,
   contentNodesTable,
   contentRevisionsTable,
-  sourceReferencesTable,
-  sourceSystemsTable,
 } from "@workspace/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import type { Response } from "express";
 import { hasPermission } from "./rbac.service";
+import type { OpenAI } from "@workspace/integrations-openai-ai-server";
 
-interface OpenAIClient {
-  chat: {
-    completions: {
-      create(params: {
-        model: string;
-        max_completion_tokens: number;
-        messages: Array<{ role: string; content: string }>;
-        stream: boolean;
-      }): AsyncIterable<{
-        choices: Array<{
-          delta?: { content?: string };
-        }>;
-      }>;
-    };
-  };
-}
+let _openaiClient: OpenAI | null = null;
 
-let _openaiClient: OpenAIClient | null = null;
-
-async function getOpenAI(): Promise<OpenAIClient> {
+async function getOpenAI(): Promise<OpenAI> {
   if (!_openaiClient) {
     if (
       !process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ||
@@ -40,9 +22,9 @@ async function getOpenAI(): Promise<OpenAIClient> {
       throw new Error("OpenAI integration is not configured");
     }
     const mod = await import("@workspace/integrations-openai-ai-server");
-    _openaiClient = mod.openai as unknown as OpenAIClient;
+    _openaiClient = mod.openai;
   }
-  return _openaiClient;
+  return _openaiClient!;
 }
 
 export type SourceType = "wiki" | "connector" | "web";
@@ -125,6 +107,7 @@ async function searchWikiContent(
   query: string,
   principalId: string,
   limit = 8,
+  overFetchFactor = 3,
 ): Promise<AiSource[]> {
   const tsQuery = query
     .split(/\s+/)
@@ -157,12 +140,12 @@ async function searchWikiContent(
     .orderBy(
       sql`ts_rank(${contentNodesTable.searchVector}, to_tsquery('german', ${tsQuery})) DESC`,
     )
-    .limit(limit);
+    .limit(limit * overFetchFactor);
 
   const permChecks = await Promise.all(
     results.map((r) => hasPermission(principalId, "read_page", r.id)),
   );
-  const filtered = results.filter((_, i) => permChecks[i]);
+  const filtered = results.filter((_, i) => permChecks[i]).slice(0, limit);
 
   return filtered.map((r) => {
     let snippet = "";
@@ -193,52 +176,49 @@ async function searchConnectorSources(
   query: string,
   principalId: string,
   limit = 4,
+  overFetchFactor = 3,
 ): Promise<AiSource[]> {
   const queryLower = `%${query.toLowerCase()}%`;
 
-  const results = await db
-    .select({
-      nodeId: sourceReferencesTable.nodeId,
-      externalTitle: sourceReferencesTable.externalTitle,
-      externalUrl: sourceReferencesTable.externalUrl,
-      systemName: sourceSystemsTable.name,
-      nodeTitle: contentNodesTable.title,
-      nodeDisplayCode: contentNodesTable.displayCode,
-      nodeTemplateType: contentNodesTable.templateType,
-    })
-    .from(sourceReferencesTable)
-    .innerJoin(
-      sourceSystemsTable,
-      eq(sourceReferencesTable.sourceSystemId, sourceSystemsTable.id),
-    )
-    .innerJoin(
-      contentNodesTable,
-      eq(sourceReferencesTable.nodeId, contentNodesTable.id),
-    )
-    .where(
-      and(
-        eq(sourceReferencesTable.syncStatus, "active"),
-        eq(sourceSystemsTable.isActive, true),
-        eq(contentNodesTable.isDeleted, false),
-        sql`(lower(${sourceReferencesTable.externalTitle}) like ${queryLower} OR lower(${contentNodesTable.title}) like ${queryLower})`,
-      ),
-    )
-    .limit(limit);
+  const results = await db.execute<{
+    node_id: string;
+    external_title: string | null;
+    external_url: string | null;
+    system_name: string;
+    node_title: string;
+    node_display_code: string;
+    node_template_type: string;
+  }>(sql`
+    SELECT sr.node_id, sr.external_title, sr.external_url,
+           ss.name as system_name,
+           cn.title as node_title, cn.display_code as node_display_code,
+           cn.template_type as node_template_type
+    FROM source_references sr
+    JOIN source_systems ss ON sr.source_system_id = ss.id
+    JOIN content_nodes cn ON sr.node_id = cn.id
+    WHERE sr.sync_status = 'active'
+      AND ss.is_active = true
+      AND cn.is_deleted = false
+      AND (lower(sr.external_title) LIKE ${queryLower} OR lower(cn.title) LIKE ${queryLower})
+    LIMIT ${sql.raw(String(limit * overFetchFactor))}
+  `);
+
+  const rows = results.rows;
 
   const permChecks = await Promise.all(
-    results.map((r) => hasPermission(principalId, "read_page", r.nodeId)),
+    rows.map((r) => hasPermission(principalId, "read_page", r.node_id)),
   );
-  const filtered = results.filter((_, i) => permChecks[i]);
+  const filtered = rows.filter((_, i) => permChecks[i]).slice(0, limit);
 
   return filtered.map((r) => ({
-    nodeId: r.nodeId,
-    title: r.externalTitle || r.nodeTitle,
-    displayCode: r.nodeDisplayCode,
-    templateType: r.nodeTemplateType,
-    snippet: `Externe Quelle: ${r.systemName}`,
+    nodeId: r.node_id,
+    title: r.external_title || r.node_title,
+    displayCode: r.node_display_code,
+    templateType: r.node_template_type,
+    snippet: `Externe Quelle: ${r.system_name}`,
     sourceType: "connector" as SourceType,
-    externalUrl: r.externalUrl || undefined,
-    sourceSystemName: r.systemName,
+    externalUrl: r.external_url || undefined,
+    sourceSystemName: r.system_name,
   }));
 }
 
@@ -272,10 +252,9 @@ async function gatherSources(
   query: string,
   principalId: string,
   sourceMode: string,
-): Promise<{ sources: AiSource[]; webSearchUsed: boolean }> {
+): Promise<AiSource[]> {
   const wikiSources = await searchWikiContent(query, principalId);
   let connectorSources: AiSource[] = [];
-  const webSearchUsed = false;
 
   if (
     sourceMode === "wiki_and_connectors" ||
@@ -284,9 +263,14 @@ async function gatherSources(
     connectorSources = await searchConnectorSources(query, principalId);
   }
 
-  const sources = [...wikiSources, ...connectorSources];
+  return [...wikiSources, ...connectorSources];
+}
 
-  return { sources, webSearchUsed };
+function shouldUseWebSearch(
+  sourceMode: string,
+  webSearchEnabled: boolean,
+): boolean {
+  return sourceMode === "wiki_connectors_web" && webSearchEnabled;
 }
 
 export async function streamAskAnswer(
@@ -302,10 +286,11 @@ export async function streamAskAnswer(
     return;
   }
 
-  const { sources, webSearchUsed } = await gatherSources(
-    query,
-    principalId,
+  const sources = await gatherSources(query, principalId, settings.sourceMode);
+
+  const useWebSearch = shouldUseWebSearch(
     settings.sourceMode,
+    settings.webSearchEnabled,
   );
 
   res.setHeader("Content-Type", "text/event-stream");
@@ -313,37 +298,65 @@ export async function streamAskAnswer(
   res.setHeader("Connection", "keep-alive");
 
   res.write(
-    `data: ${JSON.stringify({ type: "sources", sources, webSearchUsed })}\n\n`,
+    `data: ${JSON.stringify({ type: "sources", sources, webSearchEnabled: useWebSearch })}\n\n`,
   );
 
   const contextText = buildContextFromSources(sources);
   const systemPrompt = settings.systemPrompt || DEFAULT_SYSTEM_PROMPT;
 
-  const messages: Array<{ role: string; content: string }> = [
-    { role: "system", content: systemPrompt },
-    {
-      role: "system",
-      content: `Relevante Wiki-Inhalte:\n\n${contextText}`,
-    },
-    { role: "user", content: query },
-  ];
+  const instructions = `${systemPrompt}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
 
   let hasError = false;
   let errorMessage: string | undefined;
+  let webSearchUsed = false;
 
   try {
     const client = await getOpenAI();
-    const stream = await client.chat.completions.create({
+
+    const tools: OpenAI.Responses.Tool[] = [];
+    if (useWebSearch) {
+      tools.push({ type: "web_search_preview" });
+    }
+
+    const stream = await client.responses.create({
       model: settings.model,
-      max_completion_tokens: settings.maxCompletionTokens,
-      messages,
+      instructions,
+      input: query,
+      max_output_tokens: settings.maxCompletionTokens,
       stream: true,
+      ...(tools.length > 0 ? { tools } : {}),
     });
 
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        res.write(`data: ${JSON.stringify({ type: "content", content })}\n\n`);
+    for await (const event of stream) {
+      if (event.type === "response.output_text.delta") {
+        res.write(
+          `data: ${JSON.stringify({ type: "content", content: event.delta })}\n\n`,
+        );
+      }
+      if (
+        event.type === "response.output_item.added" &&
+        "type" in event.item &&
+        event.item.type === "web_search_call"
+      ) {
+        webSearchUsed = true;
+        res.write(
+          `data: ${JSON.stringify({ type: "web_search_started" })}\n\n`,
+        );
+      }
+      if (
+        event.type === "response.output_item.done" &&
+        "type" in event.item &&
+        event.item.type === "web_search_call"
+      ) {
+        const webSource: AiSource = {
+          nodeId: "",
+          title: "Web-Suchergebnis",
+          displayCode: "WEB",
+          templateType: "external",
+          snippet: `Websuche wurde durchgeführt für: "${query}"`,
+          sourceType: "web",
+        };
+        sources.push(webSource);
       }
     }
   } catch (err) {
@@ -437,31 +450,26 @@ export async function streamPageAssist(
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  const messages: Array<{ role: string; content: string }> = [
-    {
-      role: "system",
-      content:
-        "Du bist ein Schreibassistent für das Bildungscampus Backnang Enterprise Wiki. Antworte auf Deutsch.",
-    },
-    { role: "user", content: `${actionPrompt}\n\n${text}` },
-  ];
-
   let hasError = false;
   let errorMessage: string | undefined;
 
   try {
     const client = await getOpenAI();
-    const stream = await client.chat.completions.create({
+
+    const stream = await client.responses.create({
       model: settings.model,
-      max_completion_tokens: settings.maxCompletionTokens,
-      messages,
+      instructions:
+        "Du bist ein Schreibassistent für das Bildungscampus Backnang Enterprise Wiki. Antworte auf Deutsch.",
+      input: `${actionPrompt}\n\n${text}`,
+      max_output_tokens: settings.maxCompletionTokens,
       stream: true,
     });
 
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        res.write(`data: ${JSON.stringify({ type: "content", content })}\n\n`);
+    for await (const event of stream) {
+      if (event.type === "response.output_text.delta") {
+        res.write(
+          `data: ${JSON.stringify({ type: "content", content: event.delta })}\n\n`,
+        );
       }
     }
   } catch (err) {

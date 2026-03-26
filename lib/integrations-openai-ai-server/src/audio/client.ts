@@ -25,14 +25,9 @@ export const openai = new OpenAI({
 
 export type AudioFormat = "wav" | "mp3" | "webm" | "mp4" | "ogg" | "unknown";
 
-/**
- * Detect audio format from buffer magic bytes.
- * Supports: WAV, MP3, WebM (Chrome/Firefox), MP4/M4A/MOV (Safari/iOS), OGG
- */
 export function detectAudioFormat(buffer: Buffer): AudioFormat {
   if (buffer.length < 12) return "unknown";
 
-  // WAV: RIFF....WAVE
   if (
     buffer[0] === 0x52 &&
     buffer[1] === 0x49 &&
@@ -41,7 +36,6 @@ export function detectAudioFormat(buffer: Buffer): AudioFormat {
   ) {
     return "wav";
   }
-  // WebM: EBML header
   if (
     buffer[0] === 0x1a &&
     buffer[1] === 0x45 &&
@@ -50,7 +44,6 @@ export function detectAudioFormat(buffer: Buffer): AudioFormat {
   ) {
     return "webm";
   }
-  // MP3: ID3 tag or frame sync
   if (
     (buffer[0] === 0xff &&
       (buffer[1] === 0xfb || buffer[1] === 0xfa || buffer[1] === 0xf3)) ||
@@ -58,7 +51,6 @@ export function detectAudioFormat(buffer: Buffer): AudioFormat {
   ) {
     return "mp3";
   }
-  // MP4/M4A/MOV: ....ftyp (Safari/iOS records in these containers)
   if (
     buffer[4] === 0x66 &&
     buffer[5] === 0x74 &&
@@ -67,7 +59,6 @@ export function detectAudioFormat(buffer: Buffer): AudioFormat {
   ) {
     return "mp4";
   }
-  // OGG: OggS
   if (
     buffer[0] === 0x4f &&
     buffer[1] === 0x67 &&
@@ -79,9 +70,6 @@ export function detectAudioFormat(buffer: Buffer): AudioFormat {
   return "unknown";
 }
 
-/**
- * Convert any audio/video format to WAV using ffmpeg.
- */
 export async function convertToWav(audioBuffer: Buffer): Promise<Buffer> {
   const inputPath = join(tmpdir(), `input-${randomUUID()}`);
   const outputPath = join(tmpdir(), `output-${randomUUID()}.wav`);
@@ -121,9 +109,6 @@ export async function convertToWav(audioBuffer: Buffer): Promise<Buffer> {
   }
 }
 
-/**
- * Auto-detect and convert audio to OpenAI-compatible format.
- */
 export async function ensureCompatibleFormat(
   audioBuffer: Buffer,
 ): Promise<{ buffer: Buffer; format: "wav" | "mp3" }> {
@@ -134,7 +119,15 @@ export async function ensureCompatibleFormat(
   return { buffer: wavBuffer, format: "wav" };
 }
 
-/** Voice Chat: audio-in, audio-out using gpt-audio. */
+interface AudioChatMessage {
+  audio?: { transcript?: string; data?: string };
+  content?: string;
+}
+
+interface AudioStreamDelta {
+  audio?: { transcript?: string; data?: string };
+}
+
 export async function voiceChat(
   audioBuffer: Buffer,
   voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer" = "alloy",
@@ -158,7 +151,7 @@ export async function voiceChat(
       },
     ],
   });
-  const message = response.choices[0]?.message as any;
+  const message = response.choices[0]?.message as unknown as AudioChatMessage;
   const transcript = message?.audio?.transcript || message?.content || "";
   const audioData = message?.audio?.data ?? "";
   return {
@@ -167,7 +160,6 @@ export async function voiceChat(
   };
 }
 
-/** Streaming Voice Chat for real-time audio responses. */
 export async function voiceChatStream(
   audioBuffer: Buffer,
   voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer" = "alloy",
@@ -194,19 +186,21 @@ export async function voiceChatStream(
 
   return (async function* () {
     for await (const chunk of stream) {
-      const delta = chunk.choices?.[0]?.delta as any;
+      const delta = chunk.choices?.[0]?.delta as unknown as AudioStreamDelta;
       if (!delta) continue;
       if (delta?.audio?.transcript) {
-        yield { type: "transcript", data: delta.audio.transcript };
+        yield {
+          type: "transcript" as const,
+          data: delta.audio.transcript,
+        };
       }
       if (delta?.audio?.data) {
-        yield { type: "audio", data: delta.audio.data };
+        yield { type: "audio" as const, data: delta.audio.data };
       }
     }
   })();
 }
 
-/** Text-to-Speech using gpt-audio. */
 export async function textToSpeech(
   text: string,
   voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer" = "alloy",
@@ -224,11 +218,11 @@ export async function textToSpeech(
       { role: "user", content: `Repeat the following text verbatim: ${text}` },
     ],
   });
-  const audioData = (response.choices[0]?.message as any)?.audio?.data ?? "";
+  const message = response.choices[0]?.message as unknown as AudioChatMessage;
+  const audioData = message?.audio?.data ?? "";
   return Buffer.from(audioData, "base64");
 }
 
-/** Streaming Text-to-Speech. */
 export async function textToSpeechStream(
   text: string,
   voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer" = "alloy",
@@ -249,7 +243,7 @@ export async function textToSpeechStream(
 
   return (async function* () {
     for await (const chunk of stream) {
-      const delta = chunk.choices?.[0]?.delta as any;
+      const delta = chunk.choices?.[0]?.delta as unknown as AudioStreamDelta;
       if (!delta) continue;
       if (delta?.audio?.data) {
         yield delta.audio.data;
@@ -258,7 +252,6 @@ export async function textToSpeechStream(
   })();
 }
 
-/** Speech-to-Text using gpt-4o-mini-transcribe. */
 export async function speechToText(
   audioBuffer: Buffer,
   format: "wav" | "mp3" | "webm" = "wav",
@@ -271,7 +264,6 @@ export async function speechToText(
   return response.text;
 }
 
-/** Streaming Speech-to-Text. */
 export async function speechToTextStream(
   audioBuffer: Buffer,
   format: "wav" | "mp3" | "webm" = "wav",

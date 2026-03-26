@@ -14,6 +14,7 @@
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
+    "@workspace/integrations-openai-ai-server": "workspace:*",
     "@workspace/shared": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
@@ -23,7 +24,6 @@
     "jsonwebtoken": "^9.0.3",
     "pino": "^9",
     "pino-http": "^10",
-    "@workspace/integrations-openai-ai-server": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
