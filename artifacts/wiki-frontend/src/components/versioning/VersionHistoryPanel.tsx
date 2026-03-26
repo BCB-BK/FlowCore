@@ -91,7 +91,7 @@ export function VersionHistoryPanel({ nodeId }: VersionHistoryPanelProps) {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
               <History className="h-4 w-4" />
-              Versionshistorie
+              Veröffentlichte Versionen
             </CardTitle>
             {selectedForDiff.length === 2 && (
               <Button

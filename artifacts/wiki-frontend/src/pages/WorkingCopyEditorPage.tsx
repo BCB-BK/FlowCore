@@ -535,13 +535,52 @@ export function WorkingCopyEditorPage() {
       </Tabs>
 
       <Dialog open={submitOpen} onOpenChange={setSubmitOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Zur Prüfung einreichen</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             Ihre Arbeitskopie wird in den Freigabe-Pool der zuständigen Prozessmanager übermittelt.
           </p>
+
+          {submitOpen && (() => {
+            const currentSF = localStructuredFieldsRef.current;
+            const currentContent = editableMetadata;
+
+            const changedSections: string[] = [];
+            for (const [key, val] of Object.entries(currentSF)) {
+              if (key === "_editorContent") continue;
+              if (val && typeof val === "string" && val.trim()) {
+                changedSections.push(key);
+              }
+            }
+            const hasEditorContent = !!currentSF._editorContent && JSON.stringify(currentSF._editorContent) !== '{"type":"doc","content":[{"type":"paragraph"}]}';
+            const hasMetadataChanges = Object.entries(currentContent).some(([k, v]) => !k.endsWith("_display") && v !== null && v !== undefined && v !== "");
+
+            const items: Array<{ label: string; color: string }> = [];
+            if (hasEditorContent) items.push({ label: "Seiteninhalt (Editor)", color: "bg-blue-500" });
+            for (const section of changedSections) items.push({ label: section, color: "bg-green-500" });
+            if (hasMetadataChanges) items.push({ label: "Metadaten", color: "bg-blue-500" });
+
+            return items.length > 0 ? (
+              <div className="rounded-md border p-3 bg-muted/30 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Bearbeitete Bereiche ({items.length})</p>
+                <div className="space-y-1 text-xs">
+                  {items.map((item) => (
+                    <div key={item.label} className="flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                      <span>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-md border p-3 bg-muted/30">
+                <p className="text-xs text-muted-foreground">Keine Änderungen erkannt.</p>
+              </div>
+            );
+          })()}
+
           <div className="space-y-4 py-2">
             <div className="space-y-1">
               <Label>Art der Änderung</Label>
