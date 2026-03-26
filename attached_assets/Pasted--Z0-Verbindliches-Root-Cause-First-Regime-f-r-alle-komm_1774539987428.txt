@@ -1,0 +1,90 @@
+#Z0 - Verbindliches Root-Cause-First-Regime für alle kommenden Arbeitspakete
+
+What & Why
+In den letzten Arbeitspaketen hat Replit wiederholt symptomatische Quick Fixes gebaut:
+- leere Blöcke einfach entfernt
+- Prompts pauschal angepasst
+- Mid-Run-Hotfixes eingebaut
+- falsche Layer angefasst
+- Ursachen nicht sauber bewiesen
+
+Das ist nicht akzeptabel. Ab jetzt gilt ein verbindliches Arbeitsregime, das Root Cause und frühesten wirksamen Fix-Layer erzwingt.
+
+Done looks like
+- Replit baut keine symptomatischen Quick Fixes mehr als Hauptlösung.
+- Vor jeder Codeänderung gibt es einen Root-Cause-Proof.
+- Fixes erfolgen am frühesten sinnvollen Layer.
+- Mid-Run-Fixes sind verboten.
+- Sanitizer bleiben nur als Sicherheitsnetz bestehen, nicht als Primärlösung.
+- Jeder Abschlussbericht trennt sauber:
+  - Symptom
+  - Ursache
+  - Fix-Layer
+  - Sicherheitsnetz
+  - realer Wirksamkeitsnachweis
+
+Out of scope
+- konkrete Inhaltsverbesserung
+- UI-Polish
+- spontane Architektur-Erweiterungen
+- neue Produktfeatures
+
+Verbindliche Regeln
+1. Keine Codeänderung ohne Root-Cause-Proof.
+2. Keine Mid-Run-Codeänderung.
+3. Kein Prompt-Fix als Standardlösung.
+4. Kein Sanitizer-Fix als Primärlösung.
+5. Kein Hotfix im falschen Layer.
+6. Kein Abschluss ohne realen Artefakt- und Audit-Nachweis.
+
+Pflicht vor jeder Codeänderung
+Für jedes Problem muss zuerst eine Root-Cause-Proof-Notiz erstellt werden mit:
+1. Symptom
+2. erster kaputter Zustand
+3. tatsächlicher Ursprungspfad
+4. frühester wirksamer Fix-Layer
+5. warum spätere Layer nicht die Hauptursache sind
+6. welcher Sicherheitsnetz-Layer danach trotzdem bestehen bleibt
+
+Verbindliche Fix-Hierarchie
+1. Prerequisite / State / Orchestrierung
+2. Contract / Schema / Validator / Invarianten
+3. Generierung (Autor / Revision)
+4. Konversion / Transformation
+5. Render / Export / Manifest
+6. Audit / Scoring / PM / Gate
+7. UI
+8. Sanitizer / Post-Processing
+
+Regel für Sanitizer
+Sanitizer dürfen bestehen bleiben, aber nur als Defense-in-Depth.
+Sie dürfen niemals die einzige dokumentierte Lösung sein.
+Wenn ein Sanitizer etwas entfernt oder ersetzt, muss zusätzlich dokumentiert werden:
+- warum das Objekt falsch entstanden ist
+- wo die Ursache behoben wurde
+- warum der Sanitizer trotzdem als Sicherheitsnetz bleibt
+
+Pflicht-Audit für jedes größere Arbeitspaket
+Jedes Arbeitspaket gilt erst als abgeschlossen, wenn ein vollständiger Auditbericht vorliegt mit:
+1. Aufgabenstellung
+2. Interpretation
+3. Beobachtungen und Annahmen
+4. Root-Cause-Proofs
+5. konkrete technische Änderungen
+6. betroffene Dateien/Funktionen/Pfade
+7. realer Wirksamkeitsnachweis
+8. Artefakte
+9. offene Restrisiken
+10. klare Abschlussaussage
+
+Architekturhinweise
+- Keine neuen Quick Fixes im laufenden Run.
+- Wenn während eines Runs neue Probleme auftauchen:
+  - nur dokumentieren
+  - Run beenden
+  - Audit schreiben
+  - danach neue Tasks schneiden
+- Dieses Regime ist ab sofort verpflichtend für alle größeren Pakete.
+
+Relevant files
+ALLE relevanten Dateien der jeweiligen Arbeitspakete
