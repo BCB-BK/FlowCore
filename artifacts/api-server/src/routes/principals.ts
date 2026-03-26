@@ -19,7 +19,11 @@ import {
   getEffectivePermissions,
   type WikiPermission,
 } from "../services/rbac.service";
-import { searchPeople, searchGroups, getPersonPhoto } from "../services/graph-client.service";
+import {
+  searchPeople,
+  searchGroups,
+  getPersonPhoto,
+} from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 
@@ -54,19 +58,26 @@ router.post(
   requireAuth,
   requirePermission("manage_permissions"),
   async (req, res) => {
-    const { externalId, principalType, displayName, email, upn } = req.body ?? {};
+    const { externalId, principalType, displayName, email, upn } =
+      req.body ?? {};
 
     if (
-      typeof externalId !== "string" || externalId.trim().length === 0 ||
-      typeof displayName !== "string" || displayName.trim().length === 0
+      typeof externalId !== "string" ||
+      externalId.trim().length === 0 ||
+      typeof displayName !== "string" ||
+      displayName.trim().length === 0
     ) {
-      res.status(400).json({ error: "Missing required fields: externalId, displayName" });
+      res
+        .status(400)
+        .json({ error: "Missing required fields: externalId, displayName" });
       return;
     }
 
     const validTypes = ["user", "group"] as const;
     if (!validTypes.includes(principalType)) {
-      res.status(400).json({ error: `principalType must be one of: ${validTypes.join(", ")}` });
+      res.status(400).json({
+        error: `principalType must be one of: ${validTypes.join(", ")}`,
+      });
       return;
     }
 
@@ -80,7 +91,8 @@ router.post(
       return;
     }
 
-    const { upsertPrincipal: upsert } = await import("../services/principal.service");
+    const { upsertPrincipal: upsert } =
+      await import("../services/principal.service");
     const principalId = await upsert({
       principalType: principalType as "user" | "group",
       externalProvider: "entra",
@@ -208,19 +220,29 @@ router.get("/graph/photo/:userId", requireAuth, async (req, res) => {
   res.send(photo);
 });
 
-router.get("/graph/people", requireAuth, requirePermission("manage_permissions"), async (req, res) => {
-  const q = (req.query.q as string) ?? "";
-  const accessToken = req.session?.graphAccessToken ?? "";
-  const results = await searchPeople(accessToken, q);
-  res.json(results);
-});
+router.get(
+  "/graph/people",
+  requireAuth,
+  requirePermission("manage_permissions"),
+  async (req, res) => {
+    const q = (req.query.q as string) ?? "";
+    const accessToken = req.session?.graphAccessToken ?? "";
+    const results = await searchPeople(accessToken, q);
+    res.json(results);
+  },
+);
 
-router.get("/graph/groups", requireAuth, requirePermission("manage_permissions"), async (req, res) => {
-  const q = (req.query.q as string) ?? "";
-  const accessToken = req.session?.graphAccessToken ?? "";
-  const results = await searchGroups(accessToken, q);
-  res.json(results);
-});
+router.get(
+  "/graph/groups",
+  requireAuth,
+  requirePermission("manage_permissions"),
+  async (req, res) => {
+    const q = (req.query.q as string) ?? "";
+    const accessToken = req.session?.graphAccessToken ?? "";
+    const results = await searchGroups(accessToken, q);
+    res.json(results);
+  },
+);
 
 router.get(
   "/content/nodes/:nodeId/permissions",

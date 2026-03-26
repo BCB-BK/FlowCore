@@ -175,4 +175,3 @@ export async function revokeRole(assignmentId: string) {
     .set({ isActive: false })
     .where(eq(roleAssignmentsTable.id, assignmentId));
 }
-

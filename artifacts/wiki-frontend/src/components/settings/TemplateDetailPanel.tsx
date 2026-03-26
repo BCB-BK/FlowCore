@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -86,7 +81,10 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{section.label}</span>
                     {section.required && (
-                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                      <Badge
+                        variant="destructive"
+                        className="text-[10px] px-1.5 py-0"
+                      >
                         Pflicht
                       </Badge>
                     )}
@@ -153,7 +151,11 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
               </h4>
               <div className="flex flex-wrap gap-2">
                 {template.allowedChildTypes.map((childType) => (
-                  <Badge key={childType} variant="secondary" className="text-xs">
+                  <Badge
+                    key={childType}
+                    variant="secondary"
+                    className="text-xs"
+                  >
                     <ArrowRight className="h-3 w-3 mr-1" />
                     {PAGE_TYPE_LABELS[childType] || childType}
                   </Badge>
@@ -181,7 +183,10 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                       <span className="text-sm font-medium">
                         {variant.label}
                       </span>
-                      <Badge variant="outline" className="text-[10px] font-mono">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] font-mono"
+                      >
                         {variant.key}
                       </Badge>
                     </div>

@@ -258,7 +258,8 @@ export function NodeDetail() {
         toast({
           variant: "destructive",
           title: "Fehler beim Speichern",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },

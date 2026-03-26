@@ -34,7 +34,8 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
   if (appConfig.authDevMode) {
     res.json({
       devMode: true,
-      message: "Dev mode active — use X-Dev-Principal-Id header with a real principal ID from the database",
+      message:
+        "Dev mode active — use X-Dev-Principal-Id header with a real principal ID from the database",
     });
     return;
   }

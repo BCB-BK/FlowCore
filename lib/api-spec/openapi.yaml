@@ -130,7 +130,6 @@ paths:
         "200":
           description: Logged out
 
-
   /principals:
     get:
       operationId: listPrincipals
@@ -2243,7 +2242,17 @@ paths:
           in: query
           schema:
             type: string
-            enum: [no_owner, overdue_review, orphan, draft, stale, no_tags, broken_refs, incomplete]
+            enum:
+              [
+                no_owner,
+                overdue_review,
+                orphan,
+                draft,
+                stale,
+                no_tags,
+                broken_refs,
+                incomplete,
+              ]
         - name: limit
           in: query
           schema:
@@ -4610,7 +4619,21 @@ components:
       properties:
         type:
           type: string
-          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, missing_mandatory_fields, broken_link, unreferenced_media, stale_policy_reference, missing_tags, violated_review_cycle, contradictory_roles]
+          enum:
+            [
+              missing_owner,
+              overdue_review,
+              stale_content,
+              orphan,
+              no_revision,
+              missing_mandatory_fields,
+              broken_link,
+              unreferenced_media,
+              stale_policy_reference,
+              missing_tags,
+              violated_review_cycle,
+              contradictory_roles,
+            ]
         severity:
           type: string
           enum: [critical, warning, info]
@@ -4639,7 +4662,14 @@ components:
       properties:
         type:
           type: string
-          enum: [my_draft, pending_review, pending_approval, owned_unhealthy, my_page_overdue]
+          enum:
+            [
+              my_draft,
+              pending_review,
+              pending_approval,
+              owned_unhealthy,
+              my_page_overdue,
+            ]
         nodeId:
           type: string
           format: uuid

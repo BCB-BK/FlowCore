@@ -62,7 +62,11 @@ export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
   >("systems");
 
   return (
-    <div className={embedded ? "space-y-6" : "max-w-6xl mx-auto py-6 px-4 space-y-6"}>
+    <div
+      className={
+        embedded ? "space-y-6" : "max-w-6xl mx-auto py-6 px-4 space-y-6"
+      }
+    >
       {!embedded && (
         <div className="flex items-center justify-between">
           <div>

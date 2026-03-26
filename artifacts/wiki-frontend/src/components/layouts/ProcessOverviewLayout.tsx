@@ -40,9 +40,7 @@ export function ProcessOverviewLayout({
         sectionKey="sipoc"
         label="SIPOC"
         icon={<ArrowRightLeft className="h-4 w-4 text-blue-600" />}
-        value={
-          sipocData ? JSON.stringify(sipocData, null, 2) : ""
-        }
+        value={sipocData ? JSON.stringify(sipocData, null, 2) : ""}
         onSave={onSectionSave}
         emptyText="Keine SIPOC-Daten definiert"
       >

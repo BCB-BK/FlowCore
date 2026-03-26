@@ -23,7 +23,8 @@ router.get("/admin/system-info", requireAuth, async (_req, res) => {
   );
   const openaiBaseUrl = process.env["OPENAI_API_KEY"]
     ? "https://api.openai.com/v1"
-    : process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"] || "https://api.openai.com/v1";
+    : process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"] ||
+      "https://api.openai.com/v1";
 
   res.json({
     system: {

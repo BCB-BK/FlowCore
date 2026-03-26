@@ -87,11 +87,13 @@ const ROLE_ICONS: Record<string, typeof Crown> = {
 
 const ROLE_COLORS: Record<string, string> = {
   system_admin: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  process_manager: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  process_manager:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   editor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   reviewer: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
   approver: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  compliance_manager: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  compliance_manager:
+    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   viewer: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
 };
 
@@ -115,7 +117,9 @@ interface GraphSearchResult {
 
 export function UsersRolesTab() {
   const queryClient = useQueryClient();
-  const [selectedPrincipalId, setSelectedPrincipalId] = useState<string | null>(null);
+  const [selectedPrincipalId, setSelectedPrincipalId] = useState<string | null>(
+    null,
+  );
 
   const { data: principals, isLoading } = useListPrincipals(
     { limit: 200 },
@@ -135,7 +139,10 @@ export function UsersRolesTab() {
         }
         return acc;
       },
-      {} as Record<string, { principal: PrincipalWithRoles; assignment: RoleAssignment }[]>,
+      {} as Record<
+        string,
+        { principal: PrincipalWithRoles; assignment: RoleAssignment }[]
+      >,
     );
   }, [principals]);
 
@@ -143,7 +150,9 @@ export function UsersRolesTab() {
     <div className="space-y-6">
       <AddPrincipalSection
         onPrincipalAdded={(id) => {
-          queryClient.invalidateQueries({ queryKey: getListPrincipalsQueryKey() });
+          queryClient.invalidateQueries({
+            queryKey: getListPrincipalsQueryKey(),
+          });
           setSelectedPrincipalId(id);
         }}
       />
@@ -175,7 +184,9 @@ export function UsersRolesTab() {
             <PrincipalDetail
               principalId={selectedPrincipalId}
               onChanged={() => {
-                queryClient.invalidateQueries({ queryKey: getListPrincipalsQueryKey() });
+                queryClient.invalidateQueries({
+                  queryKey: getListPrincipalsQueryKey(),
+                });
               }}
             />
           ) : (
@@ -206,13 +217,17 @@ export function UsersRolesTab() {
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold">{ROLE_LABELS[roleKey]}</h4>
+                    <h4 className="text-sm font-semibold">
+                      {ROLE_LABELS[roleKey]}
+                    </h4>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {ROLE_DESCRIPTIONS[roleKey]}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {members.length === 0 ? (
-                        <span className="text-xs text-muted-foreground italic">Keine Zuweisungen</span>
+                        <span className="text-xs text-muted-foreground italic">
+                          Keine Zuweisungen
+                        </span>
                       ) : (
                         members.map(({ principal }) => (
                           <Badge
@@ -245,7 +260,11 @@ export function UsersRolesTab() {
   );
 }
 
-function AddPrincipalSection({ onPrincipalAdded }: { onPrincipalAdded: (id: string) => void }) {
+function AddPrincipalSection({
+  onPrincipalAdded,
+}: {
+  onPrincipalAdded: (id: string) => void;
+}) {
   const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -307,7 +326,10 @@ function AddPrincipalSection({ onPrincipalAdded }: { onPrincipalAdded: (id: stri
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -363,8 +385,8 @@ function AddPrincipalSection({ onPrincipalAdded }: { onPrincipalAdded: (id: stri
           Person oder Gruppe hinzufügen
         </CardTitle>
         <CardDescription>
-          Suchen Sie nach Personen oder Gruppen aus Microsoft Entra ID und weisen
-          Sie ihnen eine Rolle zu
+          Suchen Sie nach Personen oder Gruppen aus Microsoft Entra ID und
+          weisen Sie ihnen eine Rolle zu
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -406,7 +428,9 @@ function AddPrincipalSection({ onPrincipalAdded }: { onPrincipalAdded: (id: stri
                       <p className="font-medium truncate">
                         {item.displayName}
                         {item.kind === "group" && (
-                          <span className="text-xs text-muted-foreground ml-1">(Gruppe)</span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            (Gruppe)
+                          </span>
                         )}
                       </p>
                       {(item.email || item.jobTitle) && (
@@ -423,7 +447,9 @@ function AddPrincipalSection({ onPrincipalAdded }: { onPrincipalAdded: (id: stri
 
             {isOpen && searchEnabled && results.length === 0 && (
               <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md p-3">
-                <p className="text-sm text-muted-foreground text-center">Keine Ergebnisse</p>
+                <p className="text-sm text-muted-foreground text-center">
+                  Keine Ergebnisse
+                </p>
               </div>
             )}
           </div>
@@ -476,8 +502,8 @@ function PrincipalsList({
         <CardContent className="py-8 text-center">
           <AlertCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
           <p className="text-muted-foreground">
-            Noch keine Benutzer oder Gruppen registriert.
-            Fügen Sie oben Personen oder Gruppen hinzu.
+            Noch keine Benutzer oder Gruppen registriert. Fügen Sie oben
+            Personen oder Gruppen hinzu.
           </p>
         </CardContent>
       </Card>
@@ -542,20 +568,29 @@ function PrincipalRow({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium truncate">{principal.displayName}</span>
+          <span className="text-sm font-medium truncate">
+            {principal.displayName}
+          </span>
           {principal.principalType === "group" && (
-            <Badge variant="outline" className="text-[10px] shrink-0">Gruppe</Badge>
+            <Badge variant="outline" className="text-[10px] shrink-0">
+              Gruppe
+            </Badge>
           )}
         </div>
         {principal.email && (
-          <p className="text-xs text-muted-foreground truncate">{principal.email}</p>
+          <p className="text-xs text-muted-foreground truncate">
+            {principal.email}
+          </p>
         )}
       </div>
       <div className="flex gap-1 shrink-0">
         {activeRoles.map((role) => {
           const roleStr = role.role as string;
           return (
-            <Badge key={role.id} className={`text-[10px] ${ROLE_COLORS[roleStr]}`}>
+            <Badge
+              key={role.id}
+              className={`text-[10px] ${ROLE_COLORS[roleStr]}`}
+            >
               {ROLE_LABELS[roleStr] ?? roleStr}
             </Badge>
           );
@@ -598,7 +633,9 @@ function PrincipalDetail({
         description: `${ROLE_LABELS[newRole]} wurde ${principal.displayName} zugewiesen.`,
       });
       setNewRole("");
-      queryClient.invalidateQueries({ queryKey: getGetPrincipalQueryKey(principalId) });
+      queryClient.invalidateQueries({
+        queryKey: getGetPrincipalQueryKey(principalId),
+      });
       onChanged();
     } catch {
       toast({
@@ -620,7 +657,9 @@ function PrincipalDetail({
         title: "Rolle entfernt",
         description: `${ROLE_LABELS[roleName] ?? roleName} wurde von ${principal.displayName} entfernt.`,
       });
-      queryClient.invalidateQueries({ queryKey: getGetPrincipalQueryKey(principalId) });
+      queryClient.invalidateQueries({
+        queryKey: getGetPrincipalQueryKey(principalId),
+      });
       onChanged();
     } catch {
       toast({
@@ -686,7 +725,9 @@ function PrincipalDetail({
         <div>
           <h4 className="text-sm font-semibold mb-2">Zugewiesene Rollen</h4>
           {activeRoles.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">Keine Rollen zugewiesen</p>
+            <p className="text-sm text-muted-foreground italic">
+              Keine Rollen zugewiesen
+            </p>
           ) : (
             <div className="space-y-2">
               {activeRoles.map((role) => {
@@ -700,9 +741,13 @@ function PrincipalDetail({
                     <div className="flex items-center gap-2">
                       <Icon className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium">{ROLE_LABELS[roleStr] ?? roleStr}</p>
+                        <p className="text-sm font-medium">
+                          {ROLE_LABELS[roleStr] ?? roleStr}
+                        </p>
                         {role.scope && role.scope !== "global" && (
-                          <p className="text-xs text-muted-foreground">Bereich: {role.scope}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Bereich: {role.scope}
+                          </p>
                         )}
                       </div>
                     </div>

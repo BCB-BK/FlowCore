@@ -34,7 +34,9 @@ function sanitizeODataValue(input: string): string {
   return input.replace(/'/g, "''");
 }
 
-async function resolveAccessToken(sessionToken: string): Promise<string | null> {
+async function resolveAccessToken(
+  sessionToken: string,
+): Promise<string | null> {
   if (sessionToken) return sessionToken;
   if (isAuthConfigured()) {
     const appToken = await getAppAccessToken();
@@ -50,7 +52,9 @@ export async function searchPeople(
 ): Promise<GraphPerson[]> {
   const token = await resolveAccessToken(accessToken);
   if (!token) {
-    logger.warn("searchPeople called without access token and no app token available");
+    logger.warn(
+      "searchPeople called without access token and no app token available",
+    );
     return [];
   }
 
@@ -116,7 +120,9 @@ export async function searchGroups(
 ): Promise<GraphGroup[]> {
   const token = await resolveAccessToken(accessToken);
   if (!token) {
-    logger.warn("searchGroups called without access token and no app token available");
+    logger.warn(
+      "searchGroups called without access token and no app token available",
+    );
     return [];
   }
 
@@ -203,6 +209,5 @@ function mapGraphGroup(g: Record<string, string>): GraphGroup {
     mail: g.mail,
   };
 }
-
 
 logger.info("Graph client service initialized");

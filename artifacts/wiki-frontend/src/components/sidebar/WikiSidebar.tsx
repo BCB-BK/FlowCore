@@ -106,7 +106,11 @@ export function WikiSidebar() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={location === "/settings" || location === "/connectors" || location === "/ai-settings"}
+                isActive={
+                  location === "/settings" ||
+                  location === "/connectors" ||
+                  location === "/ai-settings"
+                }
                 onClick={() => navigate("/settings")}
               >
                 <Settings className="h-4 w-4" />

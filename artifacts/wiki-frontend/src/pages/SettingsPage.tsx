@@ -87,10 +87,7 @@ export function SettingsPage() {
             <Server className="h-3.5 w-3.5" />
             Allgemein
           </TabsTrigger>
-          <TabsTrigger
-            value="users"
-            className="flex items-center gap-1.5"
-          >
+          <TabsTrigger value="users" className="flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5" />
             Benutzer & Rollen
           </TabsTrigger>
@@ -109,10 +106,7 @@ export function SettingsPage() {
             <FileText className="h-3.5 w-3.5" />
             Seitentemplates
           </TabsTrigger>
-          <TabsTrigger
-            value="connectors"
-            className="flex items-center gap-1.5"
-          >
+          <TabsTrigger value="connectors" className="flex items-center gap-1.5">
             <Database className="h-3.5 w-3.5" />
             Konnektoren
           </TabsTrigger>
@@ -188,9 +182,15 @@ function GeneralTab() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <InfoItem label="Version" value={`FlowCore v${info.system.version}`} />
+            <InfoItem
+              label="Version"
+              value={`FlowCore v${info.system.version}`}
+            />
             <InfoItem label="Umgebung" value={info.system.environment} />
-            <InfoItem label="Laufzeit" value={formatUptime(info.system.uptime)} />
+            <InfoItem
+              label="Laufzeit"
+              value={formatUptime(info.system.uptime)}
+            />
             <div>
               <p className="text-sm text-muted-foreground">Datenbank</p>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -301,7 +301,9 @@ function ConnectionsTab() {
               <CardTitle className="text-lg">OpenAI API</CardTitle>
               <Badge
                 variant={
-                  info.integrations.openai.configured ? "default" : "destructive"
+                  info.integrations.openai.configured
+                    ? "default"
+                    : "destructive"
                 }
               >
                 {info.integrations.openai.configured ? (
@@ -352,9 +354,7 @@ function ConnectionsTab() {
             <div className="flex items-center gap-3">
               <CardTitle className="text-lg">Microsoft Entra ID</CardTitle>
               <Badge
-                variant={
-                  info.auth.entraConfigured ? "default" : "secondary"
-                }
+                variant={info.auth.entraConfigured ? "default" : "secondary"}
               >
                 {info.auth.entraConfigured ? (
                   <span className="flex items-center gap-1">
@@ -376,15 +376,11 @@ function ConnectionsTab() {
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Tenant-ID</span>
-              <span>
-                {info.auth.entraTenantId || "Nicht konfiguriert"}
-              </span>
+              <span>{info.auth.entraTenantId || "Nicht konfiguriert"}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Client-ID</span>
-              <span>
-                {info.auth.entraClientId || "Nicht konfiguriert"}
-              </span>
+              <span>{info.auth.entraClientId || "Nicht konfiguriert"}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Modus</span>
@@ -483,9 +479,7 @@ function TemplatesTab() {
                 <Card
                   key={tmpl.type}
                   className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedType === tmpl.type
-                      ? "ring-2 ring-primary"
-                      : ""
+                    selectedType === tmpl.type ? "ring-2 ring-primary" : ""
                   }`}
                   onClick={() =>
                     setSelectedType(
@@ -537,11 +531,7 @@ function TemplatesTab() {
             {catTemplates.some((t) => t.type === selectedType) && (
               <div className="mt-3">
                 <TemplateDetailPanel
-                  template={
-                    templates.find(
-                      (t) => t.type === selectedType,
-                    )!
-                  }
+                  template={templates.find((t) => t.type === selectedType)!}
                 />
               </div>
             )}
