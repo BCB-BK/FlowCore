@@ -402,7 +402,7 @@ export function WorkingCopyEditorPage() {
 
   const isOwnWc = !currentUser || activeWC.authorId === currentUser.principalId;
   const isReviewPhase = activeWC.status === "submitted" || activeWC.status === "in_review";
-  const hasApprovePermission = !currentUser?.permissions || currentUser.permissions.includes("approve_page");
+  const hasApprovePermission = currentUser?.permissions?.includes("approve_page") ?? false;
   const canEdit = (isOwnWc && (activeWC.status === "draft" || activeWC.status === "changes_requested")) || (isReviewPhase && hasApprovePermission);
   const pageDef = getPageType(node.templateType);
   const metadata: Record<string, unknown> = editableMetadata;

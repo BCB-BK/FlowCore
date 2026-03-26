@@ -135,7 +135,7 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
   };
 
   const isOwner = !currentUserId || workingCopy.authorId === currentUserId;
-  const hasApprovePermission = !userPermissions || userPermissions.includes("approve_page");
+  const hasApprovePermission = userPermissions?.includes("approve_page") ?? false;
   const isReviewerOrApprover =
     workingCopy.reviewerId === currentUserId ||
     workingCopy.approverId === currentUserId;
