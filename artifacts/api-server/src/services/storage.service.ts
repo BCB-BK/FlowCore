@@ -127,9 +127,9 @@ export function getStorageProvider(): IStorageProvider {
   return localProvider;
 }
 
-export async function getDefaultStorageProvider(): Promise<IStorageProvider> {
+export async function getDefaultProviderId(): Promise<string | null> {
   const [defaultRow] = await db
-    .select()
+    .select({ id: storageProvidersTable.id })
     .from(storageProvidersTable)
     .where(
       and(
@@ -137,12 +137,15 @@ export async function getDefaultStorageProvider(): Promise<IStorageProvider> {
         eq(storageProvidersTable.isActive, true),
       ),
     );
+  return defaultRow?.id ?? null;
+}
 
-  if (!defaultRow) {
+export async function getDefaultStorageProvider(): Promise<IStorageProvider> {
+  const defaultId = await getDefaultProviderId();
+  if (!defaultId) {
     return getStorageProvider();
   }
-
-  return getStorageProviderById(defaultRow.id);
+  return getStorageProviderById(defaultId);
 }
 
 export async function getStorageProviderById(

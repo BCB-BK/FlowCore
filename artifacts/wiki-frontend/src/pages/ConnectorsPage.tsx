@@ -142,8 +142,11 @@ function SourceSystemsTab({
 }) {
   const { data: systems, isLoading } = useListSourceSystems();
   const triggerSync = useTriggerSync();
-  const updateSystem = useUpdateSourceSystem();
   const deleteSystem = useDeleteSourceSystem();
+  const [editingSystem, setEditingSystem] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
   if (isLoading) {
     return (
@@ -214,21 +217,11 @@ function SourceSystemsTab({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    updateSystem.mutate(
-                      {
-                        systemId: system.id!,
-                        data: { isActive: !system.isActive },
-                      },
-                      {
-                        onSuccess: () => {
-                          queryClient.invalidateQueries({
-                            queryKey: getListSourceSystemsQueryKey(),
-                          });
-                        },
-                      },
-                    );
-                  }}
+                  onClick={() =>
+                    setEditingSystem(
+                      system as unknown as Record<string, unknown>,
+                    )
+                  }
                 >
                   <Settings className="w-4 h-4" />
                 </Button>
@@ -287,7 +280,174 @@ function SourceSystemsTab({
           </CardContent>
         </Card>
       ))}
+
+      {editingSystem && (
+        <EditSourceSystemDialog
+          system={editingSystem}
+          onClose={() => setEditingSystem(null)}
+          queryClient={queryClient}
+        />
+      )}
     </div>
+  );
+}
+
+function EditSourceSystemDialog({
+  system,
+  onClose,
+  queryClient,
+}: {
+  system: Record<string, unknown>;
+  onClose: () => void;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const connConfig = (system.connectionConfig ?? {}) as Record<string, string>;
+  const isRedacted = (v: string | undefined) => v === "***REDACTED***" || !v;
+
+  const [name, setName] = useState(system.name as string);
+  const [isActive, setIsActive] = useState(system.isActive as boolean);
+  const [syncEnabled, setSyncEnabled] = useState(system.syncEnabled as boolean);
+  const [syncInterval, setSyncInterval] = useState(
+    String(system.syncIntervalMinutes ?? 60),
+  );
+  const [tenantId, setTenantId] = useState(connConfig.tenantId ?? "");
+  const [clientId, setClientId] = useState(connConfig.clientId ?? "");
+  const [clientSecret, setClientSecret] = useState("");
+  const [driveId, setDriveId] = useState(connConfig.driveId ?? "");
+  const updateSystem = useUpdateSourceSystem();
+
+  const isSharePoint = system.systemType === "sharepoint";
+
+  const handleSave = () => {
+    const data: Record<string, unknown> = {
+      name,
+      isActive,
+      syncEnabled,
+      syncIntervalMinutes: parseInt(syncInterval, 10),
+    };
+
+    if (isSharePoint) {
+      const cc: Record<string, string> = {
+        ...connConfig,
+        tenantId,
+        clientId,
+        driveId,
+      };
+      if (clientSecret && clientSecret !== "***REDACTED***") {
+        cc.clientSecret = clientSecret;
+      }
+      data.connectionConfig = cc;
+    }
+
+    updateSystem.mutate(
+      { systemId: system.id as string, data },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: getListSourceSystemsQueryKey(),
+          });
+          onClose();
+        },
+      },
+    );
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Quellsystem bearbeiten</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label>Name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={isActive} onCheckedChange={setIsActive} />
+            <Label>Aktiv</Label>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={syncEnabled} onCheckedChange={setSyncEnabled} />
+            <Label>Automatische Synchronisation</Label>
+          </div>
+          {syncEnabled && (
+            <div>
+              <Label>Sync-Intervall (Minuten)</Label>
+              <Input
+                type="number"
+                value={syncInterval}
+                onChange={(e) => setSyncInterval(e.target.value)}
+                min={5}
+              />
+            </div>
+          )}
+
+          {isSharePoint && (
+            <>
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-3">
+                  SharePoint-Verbindung
+                </p>
+              </div>
+              <div>
+                <Label>Tenant-ID</Label>
+                <Input
+                  value={tenantId}
+                  onChange={(e) => setTenantId(e.target.value)}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                />
+              </div>
+              <div>
+                <Label>Client-ID (App-Registrierung)</Label>
+                <Input
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                />
+              </div>
+              <div>
+                <Label>Client-Secret</Label>
+                <Input
+                  type="password"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  placeholder={
+                    isRedacted(connConfig.clientSecret)
+                      ? "Neues Secret eingeben"
+                      : "Secret bereits hinterlegt"
+                  }
+                />
+                {!isRedacted(connConfig.clientSecret) && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Secret ist hinterlegt. Leer lassen um beizubehalten.
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label>Drive-ID (optional)</Label>
+                <Input
+                  value={driveId}
+                  onChange={(e) => setDriveId(e.target.value)}
+                  placeholder="Standard-Drive-ID"
+                />
+              </div>
+            </>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Abbrechen
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={!name || updateSystem.isPending}
+          >
+            Speichern
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -554,19 +714,34 @@ function CreateSourceSystemDialog({
   const [systemType, setSystemType] = useState("sharepoint");
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [syncInterval, setSyncInterval] = useState("60");
+  const [tenantId, setTenantId] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [driveId, setDriveId] = useState("");
   const createSystem = useCreateSourceSystem();
 
   const handleCreate = () => {
     if (!name || !slug) return;
+    const data: Record<string, unknown> = {
+      name,
+      slug,
+      systemType,
+      syncEnabled,
+      syncIntervalMinutes: parseInt(syncInterval, 10),
+    };
+    if (systemType === "sharepoint" && (tenantId || clientId)) {
+      const cc: Record<string, string> = {};
+      if (tenantId) cc.tenantId = tenantId;
+      if (clientId) cc.clientId = clientId;
+      if (clientSecret) cc.clientSecret = clientSecret;
+      if (driveId) cc.driveId = driveId;
+      data.connectionConfig = cc;
+    }
     createSystem.mutate(
       {
-        data: {
-          name,
-          slug,
-          systemType,
-          syncEnabled,
-          syncIntervalMinutes: parseInt(syncInterval, 10),
-        },
+        data: data as unknown as Parameters<
+          typeof createSystem.mutate
+        >[0]["data"],
       },
       {
         onSuccess: () => {
@@ -640,6 +815,49 @@ function CreateSourceSystemDialog({
                 min={5}
               />
             </div>
+          )}
+
+          {systemType === "sharepoint" && (
+            <>
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-3">
+                  SharePoint-Verbindung (optional)
+                </p>
+              </div>
+              <div>
+                <Label>Tenant-ID</Label>
+                <Input
+                  value={tenantId}
+                  onChange={(e) => setTenantId(e.target.value)}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                />
+              </div>
+              <div>
+                <Label>Client-ID (App-Registrierung)</Label>
+                <Input
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                />
+              </div>
+              <div>
+                <Label>Client-Secret</Label>
+                <Input
+                  type="password"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  placeholder="App-Secret eingeben"
+                />
+              </div>
+              <div>
+                <Label>Drive-ID (optional)</Label>
+                <Input
+                  value={driveId}
+                  onChange={(e) => setDriveId(e.target.value)}
+                  placeholder="Standard-Drive-ID"
+                />
+              </div>
+            </>
           )}
         </div>
         <DialogFooter>

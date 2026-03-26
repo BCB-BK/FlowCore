@@ -37,10 +37,12 @@ async function filterBySharePointAccess<
     systemType: string;
   },
 >(refs: T[], userGraphToken: string): Promise<T[]> {
-  if (!userGraphToken) return refs;
-
   const spRefs = refs.filter((r) => r.systemType === "sharepoint");
   if (spRefs.length === 0) return refs;
+
+  if (!userGraphToken) {
+    return refs.filter((r) => r.systemType !== "sharepoint");
+  }
 
   const accessible = new Set<string>();
   await Promise.all(

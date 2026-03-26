@@ -16,7 +16,11 @@ import {
 import { eq, and, desc, ilike } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
-import { getDefaultStorageProvider } from "../services/storage.service";
+import {
+  getDefaultStorageProvider,
+  getDefaultProviderId,
+  getStorageProviderById,
+} from "../services/storage.service";
 
 const router: IRouter = Router();
 
@@ -144,6 +148,7 @@ router.post(
       const ext = path.extname(file.originalname).toLowerCase();
       const storageKey = `${randomUUID()}${ext}`;
       const provider = await getDefaultStorageProvider();
+      const defaultProviderId = await getDefaultProviderId();
 
       const result = await provider.upload(storageKey, file.buffer, {
         mimeType: file.mimetype,
@@ -160,6 +165,7 @@ router.post(
           mimeType: file.mimetype,
           sizeBytes: result.sizeBytes,
           storageKey: result.storageKey,
+          storageProviderId: defaultProviderId,
           altText: (req.body.altText as string) || null,
           caption: (req.body.caption as string) || null,
           classification,
@@ -305,7 +311,9 @@ router.get("/files/:key", requireAuth, async (req, res) => {
       return;
     }
 
-    const provider = await getDefaultStorageProvider();
+    const provider = asset.storageProviderId
+      ? await getStorageProviderById(asset.storageProviderId)
+      : await getDefaultStorageProvider();
     const result = await provider.download(key);
     res.setHeader("Content-Type", result.mimeType);
     res.setHeader("Content-Length", result.sizeBytes);
