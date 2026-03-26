@@ -636,7 +636,9 @@ router.get(
   "/broken-links",
   requireAuth,
   requirePermission("read_page"),
-  async (_req, res) => {
+  async (req, res) => {
+    const principalId = req.user!.principalId;
+
     const brokenRelations = await db
       .select({
         relationId: contentRelationsTable.id,
@@ -657,6 +659,13 @@ router.get(
         )`,
       );
 
+    const filteredRelations = [];
+    for (const rel of brokenRelations) {
+      if (await hasPermission(principalId, "read_page", rel.sourceNodeId)) {
+        filteredRelations.push(rel);
+      }
+    }
+
     const orphanedNodes = await db
       .select({
         id: contentNodesTable.id,
@@ -675,7 +684,17 @@ router.get(
         ),
       );
 
-    res.json({ brokenRelations, orphanedNodes });
+    const filteredOrphans = [];
+    for (const node of orphanedNodes) {
+      if (await hasPermission(principalId, "read_page", node.id)) {
+        filteredOrphans.push(node);
+      }
+    }
+
+    res.json({
+      brokenRelations: filteredRelations,
+      orphanedNodes: filteredOrphans,
+    });
   },
 );
 
