@@ -13,6 +13,7 @@ import { ConnectorsPage } from "@/pages/ConnectorsPage";
 import { AISettingsPage } from "@/pages/AISettingsPage";
 import { QualityDashboard } from "@/pages/QualityDashboard";
 import { MyWorkPage } from "@/pages/MyWorkPage";
+import { WorkingCopyEditorPage } from "@/pages/WorkingCopyEditorPage";
 import { TeamsTabConfig } from "@/pages/TeamsTabConfig";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
@@ -24,6 +25,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Hub} />
         <Route path="/node/:id" component={NodeDetail} />
+        <Route path="/nodes/:id/edit" component={WorkingCopyEditorPage} />
         <Route path="/search" component={SearchPage} />
         <Route path="/glossary" component={GlossaryPage} />
         <Route path="/broken-links">

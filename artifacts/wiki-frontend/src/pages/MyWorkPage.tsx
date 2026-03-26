@@ -252,7 +252,11 @@ function WorkSection({
                 <TableRow
                   key={`${item.nodeId}-${item.type}`}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/node/${item.nodeId}`)}
+                  onClick={() =>
+                    item.type === "my_draft"
+                      ? navigate(`/nodes/${item.nodeId}/edit`)
+                      : navigate(`/node/${item.nodeId}`)
+                  }
                 >
                   <TableCell>
                     <PriorityBadge priority={item.priority} />

@@ -5,7 +5,6 @@ import {
   useNodeRevisions,
   useDeleteNode,
   useUpdateNode,
-  useCreateRevision,
 } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
@@ -13,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -50,10 +48,15 @@ import {
   Hash,
   Calendar,
   Pencil,
+  FileEdit,
+  Loader2,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
-import { customFetch } from "@workspace/api-client-react";
+import {
+  useGetActiveWorkingCopy,
+  useCreateWorkingCopy,
+} from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
@@ -67,9 +70,10 @@ import { BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { WatchButton } from "@/components/versioning/WatchButton";
 import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel";
-import { ReviewWorkflowPanel } from "@/components/versioning/ReviewWorkflowPanel";
+import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
+import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
 import type { JSONContent } from "@tiptap/react";
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { PageAssistant } from "@/components/ai/PageAssistant";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { Bot } from "lucide-react";
@@ -82,87 +86,38 @@ export function NodeDetail() {
   const { data: revisions } = useNodeRevisions(nodeId);
   const deleteNode = useDeleteNode();
   const updateNode = useUpdateNode();
-  const createRevision = useCreateRevision();
+  const createWorkingCopy = useCreateWorkingCopy();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showPageAssist, setShowPageAssist] = useState(false);
   const { toast } = useToast();
+
+  const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
+    query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
+  });
+  const activeWC = activeWCQuery.data;
+  const wcLoading = activeWCQuery.isLoading;
 
   const [editTitle, setEditTitle] = useState("");
   const [editTemplateType, setEditTemplateType] = useState<
     NonNullable<UpdateNodeInput["templateType"]>
   >("core_process_overview");
-  const [editableMetadata, setEditableMetadata] = useState<
-    Record<string, unknown>
-  >({});
-  const [metadataDisplayValues, setMetadataDisplayValues] = useState<
-    Record<string, string>
-  >({});
-  const [metadataDirty, setMetadataDirty] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showPageAssist, setShowPageAssist] = useState(false);
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   const latestRevision =
     revisions && revisions.length > 0 ? revisions[0] : null;
   const revisionContent =
     (latestRevision?.content as Record<string, unknown>) ?? {};
 
-  useEffect(() => {
-    setEditableMetadata(revisionContent);
+  const metadataDisplayValues = useMemo(() => {
     const dv: Record<string, string> = {};
     for (const [k, v] of Object.entries(revisionContent)) {
       if (k.endsWith("_display") && typeof v === "string") {
         dv[k.replace(/_display$/, "")] = v;
       }
     }
-    setMetadataDisplayValues(dv);
-    setMetadataDirty(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latestRevision?.id]);
-
-  const handleMetadataChange = useCallback(
-    (key: string, value: unknown, displayValue?: string) => {
-      setEditableMetadata((prev) => {
-        const next = { ...prev, [key]: value };
-        if (displayValue !== undefined) {
-          next[`${key}_display`] = displayValue;
-        }
-        return next;
-      });
-      if (displayValue !== undefined) {
-        setMetadataDisplayValues((prev) => ({ ...prev, [key]: displayValue }));
-      }
-      setMetadataDirty(true);
-    },
-    [],
-  );
-
-  const handleMetadataSave = useCallback(async () => {
-    if (!node || !nodeId) return;
-    try {
-      await createRevision.mutateAsync({
-        nodeId,
-        data: {
-          title: node.title,
-          content: editableMetadata,
-          structuredFields:
-            (latestRevision?.structuredFields as Record<string, unknown>) ?? {},
-          changeType: "editorial",
-          changeSummary: "Metadaten aktualisiert",
-        },
-      });
-      setMetadataDirty(false);
-      toast({ title: "Metadaten gespeichert" });
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Fehler beim Speichern",
-        description: err instanceof Error ? err.message : "Unbekannter Fehler",
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeId, node?.title, editableMetadata, latestRevision?.structuredFields]);
+    return dv;
+  }, [revisionContent]);
 
   const structuredFields: Record<string, unknown> = useMemo(
     () => (latestRevision?.structuredFields as Record<string, unknown>) ?? {},
@@ -179,107 +134,23 @@ export function NodeDetail() {
     return null;
   }, [structuredFields]);
 
-  const editBaseRevisionRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (isEditing && latestRevision?.id && !editBaseRevisionRef.current) {
-      editBaseRevisionRef.current = latestRevision.id;
+  const handleCreateOrResumeWC = useCallback(async () => {
+    if (!nodeId) return;
+    if (activeWC) {
+      navigate(`/nodes/${nodeId}/edit`);
+      return;
     }
-    if (!isEditing) {
-      editBaseRevisionRef.current = null;
-    }
-  }, [isEditing, latestRevision?.id]);
-
-  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
-
-  const handleEditorSave = useCallback(
-    async (json: JSONContent) => {
-      if (!node || !nodeId) return;
-
-      if (
-        editBaseRevisionRef.current &&
-        latestRevision?.id &&
-        editBaseRevisionRef.current !== latestRevision.id
-      ) {
-        setConflictWarning(
-          "Achtung: Ein anderer Benutzer hat diese Seite seit Beginn Ihrer Bearbeitung geändert. Ihre Änderungen werden als neue Revision gespeichert.",
-        );
-      }
-
-      const updatedFields = {
-        ...structuredFields,
-        _editorContent: json,
-      };
-      await createRevision.mutateAsync({
-        nodeId,
-        data: {
-          title: node.title,
-          content: editableMetadata,
-          structuredFields: updatedFields,
-          changeType: "editorial",
-          changeSummary: "Inhalt bearbeitet",
-        },
+    try {
+      await createWorkingCopy.mutateAsync({ nodeId });
+      navigate(`/nodes/${nodeId}/edit`);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Erstellen der Arbeitskopie",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
       });
-      editBaseRevisionRef.current = null;
-      setConflictWarning(null);
-      setLastSavedAt(new Date());
-      toast({ title: "Inhalt gespeichert" });
-    },
-    [
-      nodeId,
-      node,
-      structuredFields,
-      editableMetadata,
-      createRevision,
-      toast,
-      latestRevision?.id,
-    ],
-  );
-
-  const handleSectionSave = useCallback(
-    async (sectionKey: string, value: string) => {
-      if (!node || !nodeId) return;
-      const updatedFields = {
-        ...structuredFields,
-        [sectionKey]: value,
-      };
-      try {
-        await createRevision.mutateAsync({
-          nodeId,
-          data: {
-            title: node.title,
-            content: editableMetadata,
-            structuredFields: updatedFields,
-            changeType: "editorial",
-            changeSummary: `Abschnitt aktualisiert`,
-          },
-        });
-        toast({ title: "Abschnitt gespeichert" });
-      } catch (err) {
-        toast({
-          variant: "destructive",
-          title: "Fehler beim Speichern",
-          description:
-            err instanceof Error ? err.message : "Unbekannter Fehler",
-        });
-      }
-    },
-    [nodeId, node, structuredFields, editableMetadata, createRevision, toast],
-  );
-
-  const handleTrackMediaUsage = useCallback(
-    (assetId: string) => {
-      if (!nodeId) return;
-      customFetch(`/api/media/assets/${assetId}/usages`, {
-        method: "POST",
-        body: JSON.stringify({
-          nodeId,
-          revisionId: latestRevision?.id || null,
-          usageContext: "editor_content",
-        }),
-      }).catch(() => {});
-    },
-    [nodeId, latestRevision?.id],
-  );
+    }
+  }, [nodeId, activeWC, createWorkingCopy, navigate, toast]);
 
   if (isLoading) {
     return (
@@ -307,7 +178,7 @@ export function NodeDetail() {
   }
 
   const pageDef = getPageType(node.templateType);
-  const metadata: Record<string, unknown> = editableMetadata;
+  const metadata: Record<string, unknown> = revisionContent;
 
   const handleDelete = async () => {
     try {
@@ -402,9 +273,24 @@ export function NodeDetail() {
             />
           )}
           {nodeId && <WatchButton nodeId={nodeId} />}
+          {!wcLoading && (
+            <Button
+              variant={activeWC ? "default" : "outline"}
+              size="sm"
+              onClick={activeWC ? () => navigate(`/nodes/${nodeId}/edit`) : handleCreateOrResumeWC}
+              disabled={createWorkingCopy.isPending}
+            >
+              {createWorkingCopy.isPending ? (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <FileEdit className="mr-1 h-4 w-4" />
+              )}
+              {activeWC ? "Arbeitskopie fortsetzen" : "Arbeitskopie erstellen"}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={openEditDialog}>
             <Pencil className="mr-1 h-4 w-4" />
-            Bearbeiten
+            Eigenschaften
           </Button>
           <Button
             variant="outline"
@@ -455,6 +341,17 @@ export function NodeDetail() {
         </TabsList>
 
         <TabsContent value="content" className="mt-4">
+          {activeWC && nodeId && (
+            <div className="mb-4 space-y-3">
+              <WorkingCopyBanner
+                workingCopy={activeWC}
+                onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
+                isCreating={createWorkingCopy.isPending}
+              />
+              <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} />
+            </div>
+          )}
+
           <Card className="mb-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Seitendetails</CardTitle>
@@ -506,7 +403,6 @@ export function NodeDetail() {
           <PageLayout
             templateType={node.templateType}
             structuredFields={structuredFields}
-            onSectionSave={handleSectionSave}
           />
 
           <div className="mt-6">
@@ -521,14 +417,6 @@ export function NodeDetail() {
                   <Bot className="h-3.5 w-3.5 mr-1" />
                   KI-Assistent
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1" />
-                  {isEditing ? "Vorschau" : "Bearbeiten"}
-                </Button>
               </div>
             </div>
             <div
@@ -538,13 +426,9 @@ export function NodeDetail() {
             >
               <BlockEditor
                 content={editorContent}
-                onSave={handleEditorSave}
-                editable={isEditing}
+                onSave={async () => {}}
+                editable={false}
                 nodeId={nodeId}
-                lastSavedAt={lastSavedAt}
-                conflictWarning={conflictWarning}
-                onTrackMediaUsage={handleTrackMediaUsage}
-                onCreateSubpage={() => setShowCreate(true)}
                 parentTemplateType={node?.templateType}
               />
               {showPageAssist && (
@@ -571,29 +455,25 @@ export function NodeDetail() {
             templateType={node.templateType}
             metadata={metadata}
             displayValues={metadataDisplayValues}
-            onChange={handleMetadataChange}
+            onChange={() => {}}
+            readOnly
           />
-          {metadataDirty && (
-            <div className="flex justify-end mt-4">
-              <Button
-                onClick={handleMetadataSave}
-                disabled={createRevision.isPending}
-              >
-                {createRevision.isPending
-                  ? "Wird gespeichert..."
-                  : "Metadaten speichern"}
-              </Button>
-            </div>
-          )}
         </TabsContent>
 
         <TabsContent value="versions" className="mt-4 space-y-4">
-          {nodeId && latestRevision && (
-            <ReviewWorkflowPanel
-              nodeId={nodeId}
-              revisionId={latestRevision.id}
-              revisionStatus={latestRevision.status}
-            />
+          {activeWC && nodeId && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Aktive Arbeitskopie</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <WorkingCopyBanner
+                  workingCopy={activeWC}
+                  onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
+                />
+                <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} />
+              </CardContent>
+            </Card>
           )}
           {nodeId && <VersionHistoryPanel nodeId={nodeId} />}
         </TabsContent>

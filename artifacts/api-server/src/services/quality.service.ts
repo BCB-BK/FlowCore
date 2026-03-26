@@ -785,16 +785,42 @@ export async function getPersonalWorkItems(
 ): Promise<PersonalWorkItem[]> {
   const items: PersonalWorkItem[] = [];
 
-  const myDrafts = await db.execute(sql`
+  const myWcDrafts = await db.execute(sql`
+    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+    FROM content_working_copies wc
+    JOIN content_nodes cn ON wc.node_id = cn.id
+    WHERE wc.author_id = ${principalId}
+      AND wc.status IN ('draft', 'changes_requested')
+      AND NOT cn.is_deleted
+    ORDER BY wc.updated_at DESC
+    LIMIT 20
+  `);
+  for (const raw of myWcDrafts.rows) {
+    const r = raw as R;
+    items.push({
+      type: "my_draft",
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      templateType: str(r, "template_type"),
+      status: str(r, "wc_status"),
+      detail: str(r, "wc_status") === "changes_requested" ? "Änderung zurückgegeben" : "Entwurf wartet auf Fertigstellung",
+      priority: "medium",
+      updatedAt: str(r, "updated_at"),
+    });
+  }
+
+  const myOldDrafts = await db.execute(sql`
     SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type, cn.updated_at::text as updated_at
     FROM content_nodes cn
     WHERE NOT cn.is_deleted
       AND cn.status = 'draft'
       AND cn.owner_id = ${principalId}
+      AND cn.id NOT IN (SELECT wc.node_id FROM content_working_copies wc WHERE wc.status IN ('draft', 'changes_requested'))
     ORDER BY cn.updated_at DESC
     LIMIT 20
   `);
-  for (const raw of myDrafts.rows) {
+  for (const raw of myOldDrafts.rows) {
     const r = raw as R;
     items.push({
       type: "my_draft",
@@ -809,17 +835,17 @@ export async function getPersonalWorkItems(
     });
   }
 
-  const pendingReviews = await db.execute(sql`
-    SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type, cn.status, cn.updated_at::text as updated_at
-    FROM content_nodes cn
-    JOIN content_revisions cr ON cn.current_revision_id = cr.id
-    WHERE NOT cn.is_deleted
-      AND cn.status = 'in_review'
-      AND cr.reviewer_id = ${principalId}
-    ORDER BY cn.updated_at DESC
+  const wcPendingReviews = await db.execute(sql`
+    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+    FROM content_working_copies wc
+    JOIN content_nodes cn ON wc.node_id = cn.id
+    WHERE wc.status = 'submitted'
+      AND wc.reviewer_id = ${principalId}
+      AND NOT cn.is_deleted
+    ORDER BY wc.updated_at DESC
     LIMIT 20
   `);
-  for (const raw of pendingReviews.rows) {
+  for (const raw of wcPendingReviews.rows) {
     const r = raw as R;
     items.push({
       type: "pending_review",
@@ -827,25 +853,24 @@ export async function getPersonalWorkItems(
       title: str(r, "title"),
       displayCode: str(r, "display_code"),
       templateType: str(r, "template_type"),
-      status: str(r, "status"),
+      status: str(r, "wc_status"),
       detail: "Review ausstehend",
       priority: "high",
       updatedAt: str(r, "updated_at"),
     });
   }
 
-  const pendingApprovals = await db.execute(sql`
-    SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type, cn.status, cn.updated_at::text as updated_at
-    FROM content_nodes cn
-    JOIN content_revisions cr ON cn.current_revision_id = cr.id
-    WHERE NOT cn.is_deleted
-      AND cr.approver_id = ${principalId}
-      AND cn.status IN ('in_review', 'approved')
-      AND cn.published_revision_id IS DISTINCT FROM cn.current_revision_id
-    ORDER BY cn.updated_at DESC
+  const wcPendingApprovals = await db.execute(sql`
+    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+    FROM content_working_copies wc
+    JOIN content_nodes cn ON wc.node_id = cn.id
+    WHERE wc.status = 'approved_for_publish'
+      AND wc.approver_id = ${principalId}
+      AND NOT cn.is_deleted
+    ORDER BY wc.updated_at DESC
     LIMIT 20
   `);
-  for (const raw of pendingApprovals.rows) {
+  for (const raw of wcPendingApprovals.rows) {
     const r = raw as R;
     items.push({
       type: "pending_approval",
@@ -853,8 +878,8 @@ export async function getPersonalWorkItems(
       title: str(r, "title"),
       displayCode: str(r, "display_code"),
       templateType: str(r, "template_type"),
-      status: str(r, "status"),
-      detail: "Genehmigung ausstehend",
+      status: str(r, "wc_status"),
+      detail: "Veröffentlichung ausstehend",
       priority: "high",
       updatedAt: str(r, "updated_at"),
     });
@@ -864,14 +889,15 @@ export async function getPersonalWorkItems(
     roles.includes("process_manager") || roles.includes("system_admin");
   if (isProcessManager) {
     const existingNodeIds = new Set(items.map((i) => i.nodeId));
-    const pmReviews = await db.execute(sql`
-      SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type, cn.status, cn.updated_at::text as updated_at
-      FROM content_nodes cn
-      WHERE NOT cn.is_deleted
-        AND cn.status = 'in_review'
-      ORDER BY cn.updated_at DESC
+    const wcSubmitted = await db.execute(sql`
+      SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+      FROM content_working_copies wc
+      JOIN content_nodes cn ON wc.node_id = cn.id
+      WHERE wc.status IN ('submitted', 'approved_for_publish')
+        AND NOT cn.is_deleted
+      ORDER BY wc.updated_at DESC
     `);
-    for (const raw of pmReviews.rows) {
+    for (const raw of wcSubmitted.rows) {
       const r = raw as R;
       const nodeId = str(r, "node_id");
       if (!existingNodeIds.has(nodeId)) {
@@ -881,7 +907,7 @@ export async function getPersonalWorkItems(
           title: str(r, "title"),
           displayCode: str(r, "display_code"),
           templateType: str(r, "template_type"),
-          status: str(r, "status"),
+          status: str(r, "wc_status"),
           detail: "Zur Freigabe eingereicht",
           priority: "high",
           updatedAt: str(r, "updated_at"),

@@ -1,0 +1,125 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  FileEdit,
+  Send,
+  Clock,
+  RotateCcw,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
+import type { WorkingCopy } from "@workspace/api-client-react";
+
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; color: string; bgColor: string; borderColor: string; icon: React.ElementType }
+> = {
+  draft: {
+    label: "Entwurf",
+    color: "text-yellow-800 dark:text-yellow-200",
+    bgColor: "bg-yellow-50 dark:bg-yellow-950/30",
+    borderColor: "border-yellow-200 dark:border-yellow-800",
+    icon: FileEdit,
+  },
+  submitted: {
+    label: "Zur Prüfung eingereicht",
+    color: "text-blue-800 dark:text-blue-200",
+    bgColor: "bg-blue-50 dark:bg-blue-950/30",
+    borderColor: "border-blue-200 dark:border-blue-800",
+    icon: Send,
+  },
+  in_review: {
+    label: "In Prüfung",
+    color: "text-purple-800 dark:text-purple-200",
+    bgColor: "bg-purple-50 dark:bg-purple-950/30",
+    borderColor: "border-purple-200 dark:border-purple-800",
+    icon: Clock,
+  },
+  changes_requested: {
+    label: "Änderung zurückgegeben",
+    color: "text-orange-800 dark:text-orange-200",
+    bgColor: "bg-orange-50 dark:bg-orange-950/30",
+    borderColor: "border-orange-200 dark:border-orange-800",
+    icon: RotateCcw,
+  },
+  approved_for_publish: {
+    label: "Freigegeben",
+    color: "text-green-800 dark:text-green-200",
+    bgColor: "bg-green-50 dark:bg-green-950/30",
+    borderColor: "border-green-200 dark:border-green-800",
+    icon: CheckCircle2,
+  },
+  cancelled: {
+    label: "Abgebrochen",
+    color: "text-gray-800 dark:text-gray-200",
+    bgColor: "bg-gray-50 dark:bg-gray-950/30",
+    borderColor: "border-gray-200 dark:border-gray-800",
+    icon: XCircle,
+  },
+  published: {
+    label: "Veröffentlicht",
+    color: "text-green-800 dark:text-green-200",
+    bgColor: "bg-green-50 dark:bg-green-950/30",
+    borderColor: "border-green-200 dark:border-green-800",
+    icon: CheckCircle2,
+  },
+};
+
+interface WorkingCopyBannerProps {
+  workingCopy: WorkingCopy;
+  onNavigateToEditor?: () => void;
+  isCreating?: boolean;
+}
+
+export function WorkingCopyBanner({
+  workingCopy,
+  onNavigateToEditor,
+  isCreating,
+}: WorkingCopyBannerProps) {
+  const config = STATUS_CONFIG[workingCopy.status] || STATUS_CONFIG.draft;
+  const Icon = config.icon;
+  const canEdit = workingCopy.status === "draft" || workingCopy.status === "changes_requested";
+
+  return (
+    <div
+      className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${config.bgColor} ${config.borderColor}`}
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <Icon className={`h-4 w-4 flex-shrink-0 ${config.color}`} />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-sm font-medium ${config.color}`}>
+              Arbeitskopie
+            </span>
+            <Badge variant="outline" className="text-xs">
+              {config.label}
+            </Badge>
+          </div>
+          {workingCopy.changeSummary && (
+            <p className="text-xs text-muted-foreground truncate mt-0.5">
+              {workingCopy.changeSummary}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {canEdit && onNavigateToEditor && (
+        <Button
+          size="sm"
+          onClick={onNavigateToEditor}
+          disabled={isCreating}
+          className="gap-1.5 flex-shrink-0"
+        >
+          {isCreating ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <ArrowRight className="h-3.5 w-3.5" />
+          )}
+          Weiter bearbeiten
+        </Button>
+      )}
+    </div>
+  );
+}
