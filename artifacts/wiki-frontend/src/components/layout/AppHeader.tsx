@@ -61,11 +61,14 @@ export function AppHeader() {
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium hidden sm:inline">
-              {user.displayName}
-            </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="text-sm font-medium"
+              disabled
+            >
+              {user.displayName}
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="text-muted-foreground text-xs"
               disabled
