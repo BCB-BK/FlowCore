@@ -17,6 +17,15 @@ import {
   getNodeOwnership,
   getRolePermissionMatrix,
   getEffectivePermissions,
+  getSodConfig,
+  updateSodConfig,
+  isValidSodRuleKey,
+  createDelegation,
+  revokeDelegation,
+  getDelegationById,
+  getActiveDelegationsForPrincipal,
+  getActiveDelegationsForDeputy,
+  getAllDelegations,
   type WikiPermission,
 } from "../services/rbac.service";
 import {
@@ -342,6 +351,188 @@ router.put(
     });
 
     res.json({ id });
+  },
+);
+
+router.get(
+  "/rbac/sod-config",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (_req, res) => {
+    const config = await getSodConfig();
+    res.json(config);
+  },
+);
+
+router.put(
+  "/rbac/sod-config/:ruleKey",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (req, res) => {
+    const ruleKey = req.params.ruleKey as string;
+    if (!isValidSodRuleKey(ruleKey)) {
+      res.status(400).json({ error: `Unknown SoD rule key: ${ruleKey}` });
+      return;
+    }
+    const { isEnabled } = req.body;
+    if (typeof isEnabled !== "boolean") {
+      res.status(400).json({ error: "isEnabled must be a boolean" });
+      return;
+    }
+    await updateSodConfig(ruleKey, isEnabled, req.user!.principalId);
+
+    await db.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "sod_config_updated",
+      actorId: req.user!.principalId,
+      resourceType: "sod_config",
+      resourceId: ruleKey,
+      details: { ruleKey, isEnabled },
+    });
+
+    res.json({ ruleKey, isEnabled });
+  },
+);
+
+router.get(
+  "/delegations",
+  requireAuth,
+  requirePermission("manage_permissions"),
+  async (_req, res) => {
+    const delegations = await getAllDelegations();
+    res.json(delegations);
+  },
+);
+
+router.get(
+  "/principals/:id/delegations",
+  requireAuth,
+  async (req, res) => {
+    const id = req.params.id as string;
+    const isSelf = req.user!.principalId === id;
+    if (!isSelf) {
+      const perms = await getEffectivePermissions(req.user!.principalId);
+      if (!perms.has("manage_permissions")) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+    }
+    const outgoing = await getActiveDelegationsForPrincipal(id);
+    const incoming = await getActiveDelegationsForDeputy(id);
+    res.json({ outgoing, incoming });
+  },
+);
+
+router.post(
+  "/principals/:id/delegations",
+  requireAuth,
+  async (req, res) => {
+    const principalId = req.params.id as string;
+    const isSelf = req.user!.principalId === principalId;
+    if (!isSelf) {
+      const perms = await getEffectivePermissions(req.user!.principalId);
+      if (!perms.has("manage_permissions")) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+    }
+
+    const { deputyId, scope, reason, startsAt, endsAt } = req.body;
+    if (!deputyId || !startsAt) {
+      res.status(400).json({ error: "deputyId and startsAt are required" });
+      return;
+    }
+
+    if (deputyId === principalId) {
+      res.status(400).json({ error: "Cannot delegate to yourself" });
+      return;
+    }
+
+    const validScope = scope ?? "global";
+    const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
+    if (!scopePattern.test(validScope)) {
+      res.status(400).json({
+        error: "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
+      });
+      return;
+    }
+
+    const parsedStartsAt = new Date(startsAt);
+    if (isNaN(parsedStartsAt.getTime())) {
+      res.status(400).json({ error: "startsAt must be a valid date" });
+      return;
+    }
+
+    let parsedEndsAt: Date | undefined;
+    if (endsAt) {
+      parsedEndsAt = new Date(endsAt);
+      if (isNaN(parsedEndsAt.getTime())) {
+        res.status(400).json({ error: "endsAt must be a valid date" });
+        return;
+      }
+      if (parsedEndsAt <= parsedStartsAt) {
+        res.status(400).json({ error: "endsAt must be after startsAt" });
+        return;
+      }
+    }
+
+    const delegationId = await createDelegation({
+      principalId,
+      deputyId,
+      scope: validScope,
+      reason,
+      startsAt: parsedStartsAt,
+      endsAt: parsedEndsAt,
+      createdBy: req.user!.principalId,
+    });
+
+    await db.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "delegation_created",
+      actorId: req.user!.principalId,
+      resourceType: "deputy_delegation",
+      resourceId: delegationId,
+      details: { principalId, deputyId, scope, startsAt, endsAt, reason },
+    });
+
+    res.status(201).json({ id: delegationId });
+  },
+);
+
+router.delete(
+  "/delegations/:delegationId",
+  requireAuth,
+  async (req, res) => {
+    const delegationId = req.params.delegationId as string;
+    const actorId = req.user!.principalId;
+
+    const delegation = await getDelegationById(delegationId);
+    if (!delegation) {
+      res.status(404).json({ error: "Delegation not found" });
+      return;
+    }
+
+    const isSelfRevoke =
+      delegation.principalId === actorId || delegation.deputyId === actorId;
+    if (!isSelfRevoke) {
+      const perms = await getEffectivePermissions(actorId);
+      if (!perms.has("manage_permissions")) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+    }
+
+    await revokeDelegation(delegationId);
+
+    await db.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "delegation_revoked",
+      actorId: req.user!.principalId,
+      resourceType: "deputy_delegation",
+      resourceId: delegationId,
+    });
+
+    res.status(204).send();
   },
 );
 

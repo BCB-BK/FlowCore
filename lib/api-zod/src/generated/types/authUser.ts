@@ -14,4 +14,5 @@ export interface AuthUser {
   email?: string;
   roles?: AuthUserRolesItem[];
   permissions?: string[];
+  sodRules?: Record<string, boolean>;
 }

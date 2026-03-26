@@ -4,6 +4,8 @@ import {
   pagePermissionsTable,
   contentNodesTable,
   nodeOwnershipTable,
+  deputyDelegationsTable,
+  sodConfigTable,
 } from "@workspace/db/schema";
 import { eq, and, or, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
@@ -227,6 +229,11 @@ export async function getEffectivePermissions(
     }
   }
 
+  const deputyPerms = await resolveDeputyPermissions(principalId, nodeId);
+  for (const p of deputyPerms) {
+    permissions.add(p);
+  }
+
   return permissions;
 }
 
@@ -301,6 +308,187 @@ async function resolvePagePermissions(
   }
 
   return [];
+}
+
+async function resolveDeputyPermissions(
+  principalId: string,
+  nodeId?: string,
+): Promise<WikiPermission[]> {
+  const activeDelegations = await db
+    .select({
+      delegatorId: deputyDelegationsTable.principalId,
+      scope: deputyDelegationsTable.scope,
+    })
+    .from(deputyDelegationsTable)
+    .where(
+      and(
+        eq(deputyDelegationsTable.deputyId, principalId),
+        eq(deputyDelegationsTable.isActive, true),
+        sql`${deputyDelegationsTable.startsAt} <= NOW()`,
+        or(
+          sql`${deputyDelegationsTable.endsAt} IS NULL`,
+          sql`${deputyDelegationsTable.endsAt} > NOW()`,
+        ),
+      ),
+    );
+
+  if (activeDelegations.length === 0) return [];
+
+  const inheritedPerms: WikiPermission[] = [];
+
+  for (const delegation of activeDelegations) {
+    const delegatorRoles = await db
+      .select({
+        role: roleAssignmentsTable.role,
+        scope: roleAssignmentsTable.scope,
+      })
+      .from(roleAssignmentsTable)
+      .where(
+        and(
+          eq(roleAssignmentsTable.principalId, delegation.delegatorId),
+          eq(roleAssignmentsTable.isActive, true),
+          or(
+            sql`${roleAssignmentsTable.expiresAt} IS NULL`,
+            sql`${roleAssignmentsTable.expiresAt} > NOW()`,
+          ),
+        ),
+      );
+
+    const scopeConditions = nodeId
+      ? await resolveNodeScopes(nodeId)
+      : new Set<string>();
+    scopeConditions.add("global");
+
+    const delegationScopeOk =
+      delegation.scope === "global" ||
+      scopeConditions.has(delegation.scope);
+
+    if (!delegationScopeOk) continue;
+
+    for (const { role, scope } of delegatorRoles) {
+      if (!scopeConditions.has(scope)) continue;
+      const rolePerms = ROLE_PERMISSIONS[role as WikiRole];
+      if (rolePerms) {
+        for (const p of rolePerms) {
+          inheritedPerms.push(p);
+        }
+      }
+    }
+
+    logger.debug(
+      {
+        deputyId: principalId,
+        delegatorId: delegation.delegatorId,
+        permCount: inheritedPerms.length,
+      },
+      "Deputy permissions resolved via active delegation",
+    );
+  }
+
+  return inheritedPerms;
+}
+
+export interface SodCheckResult {
+  allowed: boolean;
+  rule: string;
+  reason?: string;
+}
+
+const SOD_RULES = {
+  four_eyes_review: {
+    description: "Einreicher darf eigene Inhalte nicht prüfen/freigeben (Vier-Augen-Prinzip)",
+  },
+  four_eyes_publish: {
+    description: "Einreicher darf eigene Inhalte nicht veröffentlichen (Vier-Augen-Prinzip)",
+  },
+} as const;
+
+export type SodRuleKey = keyof typeof SOD_RULES;
+
+export async function checkSeparationOfDuties(
+  ruleKey: SodRuleKey,
+  actorId: string,
+  submitterId: string,
+): Promise<SodCheckResult> {
+  if (actorId !== submitterId) {
+    return { allowed: true, rule: ruleKey };
+  }
+
+  const [config] = await db
+    .select({ isEnabled: sodConfigTable.isEnabled })
+    .from(sodConfigTable)
+    .where(eq(sodConfigTable.ruleKey, ruleKey));
+
+  const isEnabled = config ? config.isEnabled : true;
+
+  if (!isEnabled) {
+    logger.warn(
+      { ruleKey, actorId, submitterId },
+      "SoD rule bypassed (disabled by config)",
+    );
+    return { allowed: true, rule: ruleKey, reason: "rule_disabled" };
+  }
+
+  return {
+    allowed: false,
+    rule: ruleKey,
+    reason: SOD_RULES[ruleKey].description,
+  };
+}
+
+export function getSodRules(): Record<string, { description: string }> {
+  return { ...SOD_RULES };
+}
+
+export async function getSodConfig(): Promise<
+  Array<{ ruleKey: string; description: string; isEnabled: boolean }>
+> {
+  const rows = await db.select().from(sodConfigTable);
+  const result: Array<{
+    ruleKey: string;
+    description: string;
+    isEnabled: boolean;
+  }> = [];
+
+  for (const [key, meta] of Object.entries(SOD_RULES)) {
+    const row = rows.find((r) => r.ruleKey === key);
+    result.push({
+      ruleKey: key,
+      description: meta.description,
+      isEnabled: row ? row.isEnabled : true,
+    });
+  }
+
+  return result;
+}
+
+export function isValidSodRuleKey(key: string): key is SodRuleKey {
+  return key in SOD_RULES;
+}
+
+export async function updateSodConfig(
+  ruleKey: SodRuleKey,
+  isEnabled: boolean,
+  updatedBy?: string,
+): Promise<void> {
+  const [existing] = await db
+    .select({ id: sodConfigTable.id })
+    .from(sodConfigTable)
+    .where(eq(sodConfigTable.ruleKey, ruleKey));
+
+  if (existing) {
+    await db
+      .update(sodConfigTable)
+      .set({ isEnabled, updatedBy, updatedAt: new Date() })
+      .where(eq(sodConfigTable.id, existing.id));
+  } else {
+    await db.insert(sodConfigTable).values({
+      ruleKey,
+      description: SOD_RULES[ruleKey].description,
+      isEnabled,
+      updatedBy,
+    });
+  }
 }
 
 export async function grantPagePermission(input: {
@@ -402,4 +590,95 @@ export async function getNodeOwnership(nodeId: string) {
     .from(nodeOwnershipTable)
     .where(eq(nodeOwnershipTable.nodeId, nodeId));
   return ownership ?? null;
+}
+
+export async function getActiveDelegationsForDeputy(deputyId: string) {
+  return db
+    .select()
+    .from(deputyDelegationsTable)
+    .where(
+      and(
+        eq(deputyDelegationsTable.deputyId, deputyId),
+        eq(deputyDelegationsTable.isActive, true),
+        sql`${deputyDelegationsTable.startsAt} <= NOW()`,
+        or(
+          sql`${deputyDelegationsTable.endsAt} IS NULL`,
+          sql`${deputyDelegationsTable.endsAt} > NOW()`,
+        ),
+      ),
+    );
+}
+
+export async function getActiveDelegationsForPrincipal(principalId: string) {
+  return db
+    .select()
+    .from(deputyDelegationsTable)
+    .where(
+      and(
+        eq(deputyDelegationsTable.principalId, principalId),
+        eq(deputyDelegationsTable.isActive, true),
+        sql`${deputyDelegationsTable.startsAt} <= NOW()`,
+        or(
+          sql`${deputyDelegationsTable.endsAt} IS NULL`,
+          sql`${deputyDelegationsTable.endsAt} > NOW()`,
+        ),
+      ),
+    );
+}
+
+export async function createDelegation(input: {
+  principalId: string;
+  deputyId: string;
+  scope?: string;
+  reason?: string;
+  startsAt: Date;
+  endsAt?: Date;
+  createdBy?: string;
+}): Promise<string> {
+  const [delegation] = await db
+    .insert(deputyDelegationsTable)
+    .values({
+      principalId: input.principalId,
+      deputyId: input.deputyId,
+      scope: input.scope ?? "global",
+      reason: input.reason,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      createdBy: input.createdBy,
+    })
+    .returning({ id: deputyDelegationsTable.id });
+
+  logger.info(
+    {
+      delegationId: delegation.id,
+      principalId: input.principalId,
+      deputyId: input.deputyId,
+      scope: input.scope,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+    },
+    "Deputy delegation created",
+  );
+
+  return delegation.id;
+}
+
+export async function revokeDelegation(delegationId: string): Promise<void> {
+  await db
+    .update(deputyDelegationsTable)
+    .set({ isActive: false, updatedAt: new Date() })
+    .where(eq(deputyDelegationsTable.id, delegationId));
+}
+
+export async function getDelegationById(delegationId: string) {
+  const [delegation] = await db
+    .select()
+    .from(deputyDelegationsTable)
+    .where(eq(deputyDelegationsTable.id, delegationId))
+    .limit(1);
+  return delegation ?? null;
+}
+
+export async function getAllDelegations() {
+  return db.select().from(deputyDelegationsTable);
 }

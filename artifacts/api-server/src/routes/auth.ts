@@ -14,6 +14,7 @@ import {
 import { requireAuth } from "../middlewares/require-auth";
 import {
   getEffectivePermissions,
+  getSodConfig,
   type WikiPermission,
 } from "../services/rbac.service";
 import { db } from "@workspace/db";
@@ -131,6 +132,7 @@ router.get("/auth/me", requireAuth, async (req, res) => {
   const user = req.user!;
   const roles = await getRolesForPrincipal(user.principalId);
   const permissions = await getEffectivePermissions(user.principalId);
+  const sodConfig = await getSodConfig();
 
   res.json({
     ...user,
@@ -139,6 +141,13 @@ router.get("/auth/me", requireAuth, async (req, res) => {
       scope: r.scope,
     })),
     permissions: Array.from(permissions) as WikiPermission[],
+    sodRules: sodConfig.reduce(
+      (acc, rule) => {
+        acc[rule.ruleKey] = rule.isEnabled;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    ),
   });
 });
 

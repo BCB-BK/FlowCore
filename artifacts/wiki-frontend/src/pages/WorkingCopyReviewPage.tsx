@@ -381,6 +381,7 @@ export function WorkingCopyReviewPage() {
           nodeId={nodeId!}
           currentUserId={currentUser?.principalId}
           userPermissions={currentUser?.permissions}
+          sodRules={currentUser?.sodRules}
         />
       )}
 

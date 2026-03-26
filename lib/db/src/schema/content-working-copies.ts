@@ -44,6 +44,7 @@ export const contentWorkingCopiesTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    submittedBy: text("submitted_by"),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),
   },
   (table) => [

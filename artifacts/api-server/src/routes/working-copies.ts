@@ -1,8 +1,10 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
-import type { WikiPermission } from "../services/rbac.service";
+import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
 import type { WorkingCopy } from "@workspace/db/schema";
+import { auditEventsTable } from "@workspace/db/schema";
+import { db } from "@workspace/db";
 import {
   createWorkingCopy,
   getActiveWorkingCopyForNode,
@@ -188,6 +190,36 @@ router.post(
     try {
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
+      const wc = (req as WorkingCopyRequest).workingCopy;
+
+      const submitter = wc.submittedBy ?? wc.authorId;
+      const sodResult = await checkSeparationOfDuties(
+        "four_eyes_review",
+        actorId,
+        submitter,
+      );
+      if (!sodResult.allowed) {
+        await db.insert(auditEventsTable).values({
+          eventType: "rbac",
+          action: "sod_violation_blocked",
+          actorId,
+          resourceType: "working_copy",
+          resourceId: id,
+          details: {
+            rule: sodResult.rule,
+            reason: sodResult.reason,
+            submittedBy: submitter,
+            authorId: wc.authorId,
+          },
+        });
+        res.status(403).json({
+          error: "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.",
+          sodRule: sodResult.rule,
+          reason: sodResult.reason,
+        });
+        return;
+      }
+
       const updated = await approveWorkingCopy(id, req.body.comment, actorId);
       res.json(updated);
     } catch (err) {
@@ -206,11 +238,41 @@ router.post(
     try {
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
+      const wc = (req as WorkingCopyRequest).workingCopy;
       const { versionLabel } = req.body;
       if (!versionLabel) {
         res.status(400).json({ error: "versionLabel is required" });
         return;
       }
+
+      const submitter = wc.submittedBy ?? wc.authorId;
+      const sodResult = await checkSeparationOfDuties(
+        "four_eyes_publish",
+        actorId,
+        submitter,
+      );
+      if (!sodResult.allowed) {
+        await db.insert(auditEventsTable).values({
+          eventType: "rbac",
+          action: "sod_violation_blocked",
+          actorId,
+          resourceType: "working_copy",
+          resourceId: id,
+          details: {
+            rule: sodResult.rule,
+            reason: sodResult.reason,
+            submittedBy: submitter,
+            authorId: wc.authorId,
+          },
+        });
+        res.status(403).json({
+          error: "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.",
+          sodRule: sodResult.rule,
+          reason: sodResult.reason,
+        });
+        return;
+      }
+
       const result = await publishWorkingCopy(id, versionLabel, actorId);
       res.json(result);
     } catch (err) {

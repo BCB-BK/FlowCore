@@ -26,6 +26,7 @@ import {
   Upload,
   XCircle,
   Loader2,
+  ShieldAlert,
 } from "lucide-react";
 
 interface WorkingCopyActionsProps {
@@ -33,9 +34,10 @@ interface WorkingCopyActionsProps {
   nodeId: string;
   currentUserId?: string;
   userPermissions?: string[];
+  sodRules?: Record<string, boolean>;
 }
 
-export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPermissions }: WorkingCopyActionsProps) {
+export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPermissions, sodRules }: WorkingCopyActionsProps) {
   const [approveOpen, setApproveOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -134,28 +136,42 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
     }
   };
 
-  const isOwner = !currentUserId || workingCopy.authorId === currentUserId;
+  const isAuthor = !!currentUserId && workingCopy.authorId === currentUserId;
+  const isSubmitter = !!currentUserId && workingCopy.submittedBy === currentUserId;
+  const isSodSubject = isSubmitter || (!workingCopy.submittedBy && isAuthor);
+  const isOwner = !currentUserId || isAuthor;
   const hasReviewPermission = userPermissions?.includes("review_working_copy") ?? false;
   const hasPublishPermission = userPermissions?.includes("publish_working_copy") ?? false;
   const hasCancelPermission = userPermissions?.includes("cancel_working_copy") ?? false;
 
-  const showApproveReturn =
-    (workingCopy.status === "submitted" || workingCopy.status === "in_review") &&
-    hasReviewPermission;
+  const sodReviewEnabled = sodRules?.four_eyes_review !== false;
+  const sodPublishEnabled = sodRules?.four_eyes_publish !== false;
+  const authorBlockedFromReview = isSodSubject && sodReviewEnabled;
+  const authorBlockedFromPublish = isSodSubject && sodPublishEnabled;
+
+  const isReviewPhase =
+    workingCopy.status === "submitted" || workingCopy.status === "in_review";
+  const showApproveReturn = isReviewPhase && hasReviewPermission && !authorBlockedFromReview;
+  const showSodBlockedHint = isReviewPhase && hasReviewPermission && authorBlockedFromReview;
   const showPublish =
     workingCopy.status === "approved_for_publish" &&
-    hasPublishPermission;
+    hasPublishPermission &&
+    !authorBlockedFromPublish;
+  const showPublishSodHint =
+    workingCopy.status === "approved_for_publish" &&
+    hasPublishPermission &&
+    authorBlockedFromPublish;
   const showCancel =
     (isOwner || hasCancelPermission) &&
     (workingCopy.status === "draft" ||
     workingCopy.status === "submitted" ||
     workingCopy.status === "changes_requested");
 
-  if (!showApproveReturn && !showPublish && !showCancel) return null;
+  if (!showApproveReturn && !showPublish && !showCancel && !showSodBlockedHint && !showPublishSodHint) return null;
 
   return (
     <>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         {showApproveReturn && (
           <>
             <Button
@@ -177,6 +193,12 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
             </Button>
           </>
         )}
+        {showSodBlockedHint && (
+          <div className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-1.5">
+            <ShieldAlert className="h-4 w-4 shrink-0" />
+            <span>Vier-Augen-Prinzip: Eigene Arbeitskopien können nicht selbst freigegeben werden.</span>
+          </div>
+        )}
         {showPublish && (
           <Button
             size="sm"
@@ -186,6 +208,12 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
             <Upload className="h-3.5 w-3.5" />
             Veröffentlichen
           </Button>
+        )}
+        {showPublishSodHint && (
+          <div className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-1.5">
+            <ShieldAlert className="h-4 w-4 shrink-0" />
+            <span>Vier-Augen-Prinzip: Eigene Arbeitskopien können nicht selbst veröffentlicht werden.</span>
+          </div>
         )}
         {showCancel && (
           <Button

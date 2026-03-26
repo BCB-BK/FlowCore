@@ -254,6 +254,7 @@ export async function submitWorkingCopy(
 
   const updateData: Record<string, unknown> = {
     status: "submitted",
+    submittedBy: actorId,
     submittedAt: new Date(),
     updatedAt: new Date(),
   };

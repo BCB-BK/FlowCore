@@ -525,6 +525,7 @@ export interface AuthUser {
   email?: string;
   roles?: AuthUserRolesItem[];
   permissions?: string[];
+  sodRules?: Record<string, boolean>;
 }
 
 export type PrincipalPrincipalType =
@@ -1666,6 +1667,7 @@ export interface WorkingCopy {
   reviewerId?: string | null;
   approverId?: string | null;
   diffCache?: WorkingCopyDiffCache;
+  submittedBy?: string | null;
   submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;

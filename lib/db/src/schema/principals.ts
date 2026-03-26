@@ -90,6 +90,39 @@ export const nodeOwnershipTable = pgTable("node_ownership", {
     .defaultNow(),
 });
 
+export const deputyDelegationsTable = pgTable("deputy_delegations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  principalId: uuid("principal_id")
+    .notNull()
+    .references(() => principalsTable.id),
+  deputyId: uuid("deputy_id")
+    .notNull()
+    .references(() => principalsTable.id),
+  scope: text("scope").notNull().default("global"),
+  reason: text("reason"),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+  isActive: boolean("is_active").notNull().default(true),
+  createdBy: uuid("created_by").references(() => principalsTable.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const sodConfigTable = pgTable("sod_config", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  ruleKey: text("rule_key").notNull().unique(),
+  description: text("description"),
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  updatedBy: uuid("updated_by").references(() => principalsTable.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const insertPrincipalSchema = createInsertSchema(principalsTable).omit({
   id: true,
   createdAt: true,
@@ -116,3 +149,18 @@ export const insertNodeOwnershipSchema = createInsertSchema(
 ).omit({ id: true, updatedAt: true });
 export type InsertNodeOwnership = z.infer<typeof insertNodeOwnershipSchema>;
 export type NodeOwnership = typeof nodeOwnershipTable.$inferSelect;
+
+export const insertDeputyDelegationSchema = createInsertSchema(
+  deputyDelegationsTable,
+).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertDeputyDelegation = z.infer<
+  typeof insertDeputyDelegationSchema
+>;
+export type DeputyDelegation = typeof deputyDelegationsTable.$inferSelect;
+
+export const insertSodConfigSchema = createInsertSchema(sodConfigTable).omit({
+  id: true,
+  updatedAt: true,
+});
+export type InsertSodConfig = z.infer<typeof insertSodConfigSchema>;
+export type SodConfig = typeof sodConfigTable.$inferSelect;

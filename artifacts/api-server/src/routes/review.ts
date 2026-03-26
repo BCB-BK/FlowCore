@@ -23,7 +23,7 @@ import { eq, and, desc } from "drizzle-orm";
 import type { Request } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
-import type { WikiPermission } from "../services/rbac.service";
+import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
 
 const router: IRouter = Router();
 
@@ -166,6 +166,55 @@ router.post(
           error: `Revision must be in 'in_review' status to approve (current: ${currentStatus})`,
         });
         return;
+      }
+
+      const [activeWorkflow] = await db
+        .select({ initiatedBy: reviewWorkflowsTable.initiatedBy })
+        .from(reviewWorkflowsTable)
+        .where(
+          and(
+            eq(reviewWorkflowsTable.revisionId, revisionId),
+            eq(reviewWorkflowsTable.status, "pending"),
+          ),
+        )
+        .orderBy(desc(reviewWorkflowsTable.createdAt))
+        .limit(1);
+
+      let sodSubject = activeWorkflow?.initiatedBy;
+      if (!sodSubject) {
+        const [revision] = await db
+          .select({ authorId: contentRevisionsTable.authorId })
+          .from(contentRevisionsTable)
+          .where(eq(contentRevisionsTable.id, revisionId))
+          .limit(1);
+        sodSubject = revision?.authorId ?? null;
+      }
+
+      if (sodSubject) {
+        const sodResult = await checkSeparationOfDuties(
+          "four_eyes_review",
+          req.user!.principalId,
+          sodSubject,
+        );
+        if (!sodResult.allowed) {
+          await db.insert(auditEventsTable).values({
+            eventType: "rbac",
+            action: "sod_violation_blocked",
+            actorId: req.user!.principalId,
+            resourceType: "content_revision",
+            resourceId: revisionId,
+            details: {
+              rule: sodResult.rule,
+              reason: sodResult.reason,
+              submitterId: sodSubject,
+            },
+          });
+          res.status(403).json({
+            error: "Vier-Augen-Prinzip: Sie können Ihre eigene Einreichung nicht genehmigen.",
+            sodRule: sodResult.rule,
+          });
+          return;
+        }
       }
 
       const [workflow] = await db
