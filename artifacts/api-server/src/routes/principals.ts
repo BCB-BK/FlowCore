@@ -19,7 +19,7 @@ import {
   getEffectivePermissions,
   type WikiPermission,
 } from "../services/rbac.service";
-import { searchPeople, searchGroups } from "../services/graph-client.service";
+import { searchPeople, searchGroups, getPersonPhoto } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 
@@ -191,6 +191,21 @@ router.delete(
 
 router.get("/rbac/matrix", requireAuth, (_req, res) => {
   res.json(getRolePermissionMatrix());
+});
+
+router.get("/graph/photo/:userId", requireAuth, async (req, res) => {
+  const userId = req.params.userId as string;
+  const sizeParam = req.query.size;
+  const size = typeof sizeParam === "string" ? sizeParam : "48x48";
+  const accessToken = (req.session?.graphAccessToken as string) ?? "";
+  const photo = await getPersonPhoto(accessToken, userId, size);
+  if (!photo) {
+    res.status(404).json({ error: "Photo not found" });
+    return;
+  }
+  res.set("Content-Type", "image/jpeg");
+  res.set("Cache-Control", "public, max-age=3600");
+  res.send(photo);
 });
 
 router.get("/graph/people", requireAuth, requirePermission("manage_permissions"), async (req, res) => {

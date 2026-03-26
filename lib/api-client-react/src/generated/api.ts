@@ -52,6 +52,7 @@ import type {
   ErrorResponse,
   ForwardLink,
   GetAiUsageStatsParams,
+  GetPersonPhotoParams,
   GetPrincipalPermissionsParams,
   GetQualityPagesParams,
   GetRolePermissionMatrix200,
@@ -1228,6 +1229,115 @@ export function useGetRolePermissionMatrix<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetRolePermissionMatrixQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get profile photo for a user from Microsoft Graph
+ */
+export const getGetPersonPhotoUrl = (
+  userId: string,
+  params?: GetPersonPhotoParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/graph/photo/${userId}?${stringifiedParams}`
+    : `/api/graph/photo/${userId}`;
+};
+
+export const getPersonPhoto = async (
+  userId: string,
+  params?: GetPersonPhotoParams,
+  options?: RequestInit,
+): Promise<Blob> => {
+  return customFetch<Blob>(getGetPersonPhotoUrl(userId, params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPersonPhotoQueryKey = (
+  userId: string,
+  params?: GetPersonPhotoParams,
+) => {
+  return [`/api/graph/photo/${userId}`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetPersonPhotoQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPersonPhoto>>,
+  TError = ErrorType<void>,
+>(
+  userId: string,
+  params?: GetPersonPhotoParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPersonPhoto>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPersonPhotoQueryKey(userId, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPersonPhoto>>> = ({
+    signal,
+  }) => getPersonPhoto(userId, params, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!userId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPersonPhoto>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPersonPhotoQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPersonPhoto>>
+>;
+export type GetPersonPhotoQueryError = ErrorType<void>;
+
+/**
+ * @summary Get profile photo for a user from Microsoft Graph
+ */
+
+export function useGetPersonPhoto<
+  TData = Awaited<ReturnType<typeof getPersonPhoto>>,
+  TError = ErrorType<void>,
+>(
+  userId: string,
+  params?: GetPersonPhotoParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPersonPhoto>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPersonPhotoQueryOptions(userId, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

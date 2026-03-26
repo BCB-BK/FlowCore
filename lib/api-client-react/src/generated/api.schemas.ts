@@ -1378,6 +1378,10 @@ export type AssignRole201 = {
 
 export type GetRolePermissionMatrix200 = { [key: string]: string[] };
 
+export type GetPersonPhotoParams = {
+  size?: string;
+};
+
 export type SearchPeopleParams = {
   q: string;
 };

@@ -225,6 +225,19 @@ export const GetRolePermissionMatrixResponse = zod.record(
 );
 
 /**
+ * @summary Get profile photo for a user from Microsoft Graph
+ */
+export const GetPersonPhotoParams = zod.object({
+  userId: zod.coerce.string(),
+});
+
+export const getPersonPhotoQuerySizeDefault = `48x48`;
+
+export const GetPersonPhotoQueryParams = zod.object({
+  size: zod.coerce.string().default(getPersonPhotoQuerySizeDefault),
+});
+
+/**
  * @summary Search people via Microsoft Graph
  */
 export const SearchPeopleQueryParams = zod.object({

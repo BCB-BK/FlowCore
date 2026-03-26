@@ -292,6 +292,33 @@ paths:
                   items:
                     type: string
 
+  /graph/photo/{userId}:
+    get:
+      operationId: getPersonPhoto
+      tags: [principals]
+      summary: Get profile photo for a user from Microsoft Graph
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: query
+          schema:
+            type: string
+            default: "48x48"
+      responses:
+        "200":
+          description: Profile photo (JPEG)
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Photo not found
+
   /graph/people:
     get:
       operationId: searchPeople

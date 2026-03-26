@@ -170,6 +170,26 @@ export async function getGroupMembers(
     .map(mapGraphUser);
 }
 
+export async function getPersonPhoto(
+  accessToken: string,
+  userId: string,
+  size: string = "48x48",
+): Promise<Buffer | null> {
+  const token = await resolveAccessToken(accessToken);
+  if (!token) return null;
+
+  try {
+    const client = getGraphClient(token);
+    const photo = await client
+      .api(`/users/${userId}/photos/${size}/$value`)
+      .responseType("arraybuffer" as any)
+      .get();
+    return Buffer.from(photo);
+  } catch {
+    return null;
+  }
+}
+
 function mapGraphUser(u: Record<string, string>): GraphPerson {
   return {
     id: u.id,
