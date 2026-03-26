@@ -15,11 +15,11 @@ let _openaiClient: OpenAI | null = null;
 
 async function getOpenAI(): Promise<OpenAI> {
   if (!_openaiClient) {
-    if (
-      !process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ||
-      !process.env.AI_INTEGRATIONS_OPENAI_API_KEY
-    ) {
-      throw new Error("OpenAI integration is not configured");
+    const hasKey =
+      process.env.OPENAI_API_KEY ||
+      process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+    if (!hasKey) {
+      throw new Error("OpenAI integration is not configured. Set OPENAI_API_KEY.");
     }
     const mod = await import("@workspace/integrations-openai-ai-server");
     _openaiClient = mod.openai;
