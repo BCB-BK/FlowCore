@@ -151,6 +151,22 @@ export function getDevUserByExternalId(
   return DEV_USERS.find((u) => u.externalId === externalId);
 }
 
+export async function getAppAccessToken(): Promise<string | null> {
+  if (!isAuthConfigured()) {
+    return null;
+  }
+  try {
+    const client = getMsalClient();
+    const result = await client.acquireTokenByClientCredential({
+      scopes: ["https://graph.microsoft.com/.default"],
+    });
+    return result?.accessToken ?? null;
+  } catch (err) {
+    logger.error({ err }, "Failed to acquire app access token");
+    return null;
+  }
+}
+
 logger.info(
   { authDevMode: appConfig.authDevMode, entraConfigured: isAuthConfigured() },
   "Auth service initialized",

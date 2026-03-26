@@ -1,6 +1,7 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { appConfig } from "../lib/config";
 import { logger } from "../lib/logger";
+import { getAppAccessToken, isAuthConfigured } from "./auth.service";
 
 export interface GraphPerson {
   id: string;
@@ -33,23 +34,30 @@ function sanitizeODataValue(input: string): string {
   return input.replace(/'/g, "''");
 }
 
+async function resolveAccessToken(sessionToken: string): Promise<string | null> {
+  if (sessionToken) return sessionToken;
+  if (isAuthConfigured()) {
+    const appToken = await getAppAccessToken();
+    if (appToken) return appToken;
+  }
+  return null;
+}
+
 export async function searchPeople(
   accessToken: string,
   query: string,
   top = 10,
 ): Promise<GraphPerson[]> {
-  if (appConfig.authDevMode) {
-    return getDevPeople(query);
-  }
-
-  if (!accessToken) {
-    logger.warn("searchPeople called without access token");
+  const token = await resolveAccessToken(accessToken);
+  if (!token) {
+    if (appConfig.authDevMode) return getDevPeople(query);
+    logger.warn("searchPeople called without access token and no app token available");
     return [];
   }
 
   try {
     const safe = sanitizeODataValue(query);
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const result = await client
       .api("/users")
       .filter(`startswith(displayName,'${safe}') or startswith(mail,'${safe}')`)
@@ -65,6 +73,7 @@ export async function searchPeople(
     } else {
       logger.error({ err }, "Graph searchPeople failed");
     }
+    if (appConfig.authDevMode) return getDevPeople(query);
     return [];
   }
 }
@@ -73,17 +82,19 @@ export async function getPersonById(
   accessToken: string,
   userId: string,
 ): Promise<GraphPerson | null> {
-  if (appConfig.authDevMode) {
-    return getDevPersonById(userId);
-  }
-
   const cached = personCache.get(userId);
   if (cached && cached.expires > Date.now()) {
     return cached.data;
   }
 
+  const token = await resolveAccessToken(accessToken);
+  if (!token) {
+    if (appConfig.authDevMode) return getDevPersonById(userId);
+    return null;
+  }
+
   try {
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const user = await client
       .api(`/users/${userId}`)
       .select("id,displayName,mail,userPrincipalName,jobTitle,department")
@@ -97,6 +108,7 @@ export async function getPersonById(
     return person;
   } catch (err) {
     logger.warn({ userId, err }, "Failed to fetch person from Graph");
+    if (appConfig.authDevMode) return getDevPersonById(userId);
     return null;
   }
 }
@@ -106,18 +118,16 @@ export async function searchGroups(
   query: string,
   top = 10,
 ): Promise<GraphGroup[]> {
-  if (appConfig.authDevMode) {
-    return getDevGroups(query);
-  }
-
-  if (!accessToken) {
-    logger.warn("searchGroups called without access token");
+  const token = await resolveAccessToken(accessToken);
+  if (!token) {
+    if (appConfig.authDevMode) return getDevGroups(query);
+    logger.warn("searchGroups called without access token and no app token available");
     return [];
   }
 
   try {
     const safe = sanitizeODataValue(query);
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const result = await client
       .api("/groups")
       .filter(`startswith(displayName,'${safe}')`)
@@ -133,6 +143,7 @@ export async function searchGroups(
     } else {
       logger.error({ err }, "Graph searchGroups failed");
     }
+    if (appConfig.authDevMode) return getDevGroups(query);
     return [];
   }
 }
