@@ -2896,6 +2896,10 @@ components:
               type: object
               additionalProperties:
                 type: integer
+            tags:
+              type: object
+              additionalProperties:
+                type: integer
       required:
         - results
         - total

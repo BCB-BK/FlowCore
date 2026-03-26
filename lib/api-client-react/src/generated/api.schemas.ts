@@ -691,10 +691,13 @@ export type SearchResultFacetsStatus = { [key: string]: number };
 
 export type SearchResultFacetsOwner = { [key: string]: number };
 
+export type SearchResultFacetsTags = { [key: string]: number };
+
 export type SearchResultFacets = {
   templateType?: SearchResultFacetsTemplateType;
   status?: SearchResultFacetsStatus;
   owner?: SearchResultFacetsOwner;
+  tags?: SearchResultFacetsTags;
 };
 
 export interface SearchResult {

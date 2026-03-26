@@ -7,10 +7,12 @@
  */
 import type { SearchResultFacetsOwner } from "./searchResultFacetsOwner";
 import type { SearchResultFacetsStatus } from "./searchResultFacetsStatus";
+import type { SearchResultFacetsTags } from "./searchResultFacetsTags";
 import type { SearchResultFacetsTemplateType } from "./searchResultFacetsTemplateType";
 
 export type SearchResultFacets = {
   templateType?: SearchResultFacetsTemplateType;
   status?: SearchResultFacetsStatus;
   owner?: SearchResultFacetsOwner;
+  tags?: SearchResultFacetsTags;
 };

@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import {
   contentNodesTable,
   contentNodeTagsTable,
+  contentTagsTable,
   contentAliasesTable,
   searchQueriesTable,
   searchClicksTable,
@@ -149,6 +150,24 @@ router.get(
         .offset(offset);
     }
 
+    const baseConditions = [eq(contentNodesTable.isDeleted, false)];
+    if (q.trim().length > 0 && tsQuery) {
+      baseConditions.push(
+        or(
+          sql`search_vector @@ to_tsquery('german', ${tsQuery})`,
+          ilike(contentNodesTable.title, `%${q}%`),
+          ilike(contentNodesTable.displayCode, `%${q}%`),
+        )!,
+      );
+    } else if (q.trim().length > 0) {
+      baseConditions.push(
+        or(
+          ilike(contentNodesTable.title, `%${q}%`),
+          ilike(contentNodesTable.displayCode, `%${q}%`),
+        )!,
+      );
+    }
+
     const facetResults = await db
       .select({
         templateType: contentNodesTable.templateType,
@@ -157,7 +176,7 @@ router.get(
         count: sql<number>`count(*)`,
       })
       .from(contentNodesTable)
-      .where(eq(contentNodesTable.isDeleted, false))
+      .where(and(...baseConditions))
       .groupBy(
         contentNodesTable.templateType,
         contentNodesTable.status,
@@ -176,6 +195,29 @@ router.get(
         ownerFacets[row.ownerId] =
           (ownerFacets[row.ownerId] || 0) + Number(row.count);
       }
+    }
+
+    const tagFacetResults = await db
+      .select({
+        tagId: contentNodeTagsTable.tagId,
+        tagName: contentTagsTable.name,
+        count: sql<number>`count(*)`,
+      })
+      .from(contentNodeTagsTable)
+      .innerJoin(
+        contentTagsTable,
+        eq(contentNodeTagsTable.tagId, contentTagsTable.id),
+      )
+      .innerJoin(
+        contentNodesTable,
+        eq(contentNodeTagsTable.nodeId, contentNodesTable.id),
+      )
+      .where(and(...baseConditions))
+      .groupBy(contentNodeTagsTable.tagId, contentTagsTable.name);
+
+    const tagFacets: Record<string, number> = {};
+    for (const row of tagFacetResults) {
+      tagFacets[row.tagName] = Number(row.count);
     }
 
     if (q.trim().length > 0) {
@@ -198,6 +240,7 @@ router.get(
         templateType: typeFacets,
         status: statusFacets,
         owner: ownerFacets,
+        tags: tagFacets,
       },
     });
   },
