@@ -22,7 +22,7 @@ export function securityHeaders(
       "Strict-Transport-Security",
       "max-age=31536000; includeSubDomains",
     );
-    res.setHeader("X-Frame-Options", "ALLOW-FROM https://teams.microsoft.com");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
     res.setHeader(
       "Content-Security-Policy",
       [
