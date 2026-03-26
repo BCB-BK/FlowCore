@@ -36,11 +36,14 @@ qualityRouter.get(
   async (req, res) => {
     try {
       const filter = req.query.filter as string | undefined;
-      const limit = Math.min(
-        parseInt(req.query.limit as string, 10) || 50,
-        200,
+      const limit = Math.max(
+        1,
+        Math.min(parseInt(req.query.limit as string, 10) || 50, 200),
       );
-      const offset = parseInt(req.query.offset as string, 10) || 0;
+      const offset = Math.max(
+        0,
+        parseInt(req.query.offset as string, 10) || 0,
+      );
       const result = await getPageQualityList(filter, limit, offset);
       res.json(result);
     } catch (err) {
@@ -95,15 +98,20 @@ qualityRouter.get(
   },
 );
 
-qualityRouter.get("/my-work", requireAuth, async (req, res) => {
-  try {
-    const items = await getPersonalWorkItems(req.user!.principalId);
-    res.json(items);
-  } catch (err) {
-    logger.error({ err }, "Failed to get personal work items");
-    res.status(500).json({ error: "Failed to get personal work items" });
-  }
-});
+qualityRouter.get(
+  "/my-work",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    try {
+      const items = await getPersonalWorkItems(req.user!.principalId);
+      res.json(items);
+    } catch (err) {
+      logger.error({ err }, "Failed to get personal work items");
+      res.status(500).json({ error: "Failed to get personal work items" });
+    }
+  },
+);
 
 qualityRouter.get(
   "/search-insights",
@@ -111,7 +119,7 @@ qualityRouter.get(
   requirePermission("read_page"),
   async (req, res) => {
     try {
-      const days = parseInt(req.query.days as string, 10) || 30;
+      const days = Math.max(1, Math.min(parseInt(req.query.days as string, 10) || 30, 365));
       const insights = await getSearchInsights(days);
       res.json(insights);
     } catch (err) {
