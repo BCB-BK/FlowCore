@@ -1309,6 +1309,26 @@ export interface SearchInsights {
   topClickedNodes: SearchInsightsTopClickedNodesItem[];
 }
 
+export type TeamsSsoResponseRolesItem = {
+  role?: string;
+  scope?: string | null;
+};
+
+export interface TeamsSsoResponse {
+  principalId: string;
+  displayName: string;
+  email: string;
+  roles: TeamsSsoResponseRolesItem[];
+  permissions: string[];
+}
+
+export interface TeamsContextResponse {
+  appId?: string | null;
+  configured: boolean;
+  entraConfigured: boolean;
+  tenantId?: string | null;
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -1507,4 +1527,8 @@ export const GetQualityPagesFilter = {
 
 export type GetSearchInsightsParams = {
   days?: number;
+};
+
+export type TeamsSsoBody = {
+  ssoToken: string;
 };

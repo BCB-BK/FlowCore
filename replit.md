@@ -136,6 +136,9 @@ React+Vite frontend for the Enterprise Wiki Knowledge Hub.
 - Content: RelatedContentSidebar (backlinks + forward-links to current node)
 - Content: GlossaryTermsPanel (linked glossary terms on node detail)
 - Layouts: PageLayout (dispatcher), ProcessOverviewLayout, ProcedureLayout, PolicyLayout, RoleProfileLayout, GenericSectionLayout
+- Teams: TeamsProvider (context detection), ShareToTeams (share/copy/open), TeamsTabConfig (channel tab setup)
+- Teams context: `src/lib/teams.ts` (detection, deep links), `src/hooks/useTeamsContext.ts` (React hook)
+- Teams manifest: `public/teams-manifest/manifest.json` (personal + configurable tabs)
 - Entry: `src/main.tsx` → `src/App.tsx`
 - Config: `vite.config.ts` — reads PORT env, proxies `/api` to api-server at port 8080
 

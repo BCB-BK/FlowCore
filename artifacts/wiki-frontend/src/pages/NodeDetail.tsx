@@ -71,6 +71,7 @@ import { ReviewWorkflowPanel } from "@/components/versioning/ReviewWorkflowPanel
 import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { PageAssistant } from "@/components/ai/PageAssistant";
+import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { Bot } from "lucide-react";
 
 export function NodeDetail() {
@@ -362,6 +363,13 @@ export function NodeDetail() {
         </div>
 
         <div className="flex items-center gap-2">
+          {nodeId && (
+            <ShareToTeams
+              nodeId={nodeId}
+              pageTitle={node.title}
+              displayCode={node.displayCode ?? undefined}
+            />
+          )}
           {nodeId && <WatchButton nodeId={nodeId} />}
           <Button variant="outline" size="sm" onClick={openEditDialog}>
             <Pencil className="mr-1 h-4 w-4" />

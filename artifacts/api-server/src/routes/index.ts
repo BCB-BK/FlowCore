@@ -12,6 +12,7 @@ import { connectorsRouter } from "./connectors";
 import { sourceRefsRouter } from "./source-refs";
 import { aiRouter } from "./ai";
 import { qualityRouter } from "./quality";
+import { teamsRouter } from "./teams";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use("/connectors", connectorsRouter);
 router.use("/content", sourceRefsRouter);
 router.use("/ai", aiRouter);
 router.use("/quality", qualityRouter);
+router.use(teamsRouter);
 
 export default router;

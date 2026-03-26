@@ -40,10 +40,7 @@ qualityRouter.get(
         1,
         Math.min(parseInt(req.query.limit as string, 10) || 50, 200),
       );
-      const offset = Math.max(
-        0,
-        parseInt(req.query.offset as string, 10) || 0,
-      );
+      const offset = Math.max(0, parseInt(req.query.offset as string, 10) || 0);
       const result = await getPageQualityList(filter, limit, offset);
       res.json(result);
     } catch (err) {
@@ -119,7 +116,10 @@ qualityRouter.get(
   requirePermission("read_page"),
   async (req, res) => {
     try {
-      const days = Math.max(1, Math.min(parseInt(req.query.days as string, 10) || 30, 365));
+      const days = Math.max(
+        1,
+        Math.min(parseInt(req.query.days as string, 10) || 30, 365),
+      );
       const insights = await getSearchInsights(days);
       res.json(insights);
     } catch (err) {

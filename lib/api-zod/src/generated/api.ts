@@ -2508,3 +2508,33 @@ export const GetSearchInsightsResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary Exchange Teams SSO token for session
+ */
+export const TeamsSsoBody = zod.object({
+  ssoToken: zod.string(),
+});
+
+export const TeamsSsoResponse = zod.object({
+  principalId: zod.string().uuid(),
+  displayName: zod.string(),
+  email: zod.string(),
+  roles: zod.array(
+    zod.object({
+      role: zod.string().optional(),
+      scope: zod.string().nullish(),
+    }),
+  ),
+  permissions: zod.array(zod.string()),
+});
+
+/**
+ * @summary Get Teams app configuration
+ */
+export const TeamsContextResponse = zod.object({
+  appId: zod.string().nullish(),
+  configured: zod.boolean(),
+  entraConfigured: zod.boolean(),
+  tenantId: zod.string().nullish(),
+});

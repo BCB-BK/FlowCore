@@ -1,0 +1,81 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "{{TEAMS_APP_ID}}",
+  "developer": {
+    "name": "Bildungscampus Backnang",
+    "websiteUrl": "{{APP_BASE_URL}}",
+    "privacyUrl": "{{APP_BASE_URL}}/privacy",
+    "termsOfUseUrl": "{{APP_BASE_URL}}/terms"
+  },
+  "name": {
+    "short": "BC Wiki",
+    "full": "Bildungscampus Wiki – Wissensmanagement"
+  },
+  "description": {
+    "short": "Zentrales Wissensmanagement für den Bildungscampus Backnang",
+    "full": "Das Bildungscampus Wiki ist die zentrale Wissensplattform für Prozessdokumentation, Richtlinien, Formulare und Arbeitsanweisungen. Durchsuchen, erstellen und verwalten Sie Inhalte direkt in Microsoft Teams."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#22AA48",
+  "staticTabs": [
+    {
+      "entityId": "wiki-home",
+      "name": "Wiki",
+      "contentUrl": "{{APP_BASE_URL}}?context=teams&theme={theme}",
+      "websiteUrl": "{{APP_BASE_URL}}",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "wiki-my-work",
+      "name": "Meine Aufgaben",
+      "contentUrl": "{{APP_BASE_URL}}/my-work?context=teams&theme={theme}",
+      "websiteUrl": "{{APP_BASE_URL}}/my-work",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "wiki-search",
+      "name": "Suche",
+      "contentUrl": "{{APP_BASE_URL}}/search?context=teams&theme={theme}",
+      "websiteUrl": "{{APP_BASE_URL}}/search",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "wiki-dashboard",
+      "name": "Dashboard",
+      "contentUrl": "{{APP_BASE_URL}}/dashboard?context=teams&theme={theme}",
+      "websiteUrl": "{{APP_BASE_URL}}/dashboard",
+      "scopes": ["personal"]
+    }
+  ],
+  "configurableTabs": [
+    {
+      "configurationUrl": "{{APP_BASE_URL}}/teams/tab-config?context=teams&theme={theme}",
+      "canUpdateConfiguration": true,
+      "scopes": ["team", "groupChat"],
+      "context": ["channelTab", "privateChatTab", "meetingChatTab"],
+      "sharePointPreviewImage": "color.png",
+      "supportedSharePointHosts": []
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": ["{{APP_DOMAIN}}"],
+  "webApplicationInfo": {
+    "id": "{{ENTRA_CLIENT_ID}}",
+    "resource": "api://{{APP_DOMAIN}}/{{ENTRA_CLIENT_ID}}"
+  },
+  "authorization": {
+    "permissions": {
+      "resourceSpecific": [
+        {
+          "name": "TeamSettings.Read.Group",
+          "type": "Application"
+        }
+      ]
+    }
+  }
+}

@@ -113,6 +113,9 @@ import type {
   SyncResult,
   SyncStatusEntry,
   Tag,
+  TeamsContextResponse,
+  TeamsSsoBody,
+  TeamsSsoResponse,
   TrackMediaUsageBody,
   TrackSearchClick201,
   TrackSearchClickBody,
@@ -9721,6 +9724,167 @@ export function useGetSearchInsights<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetSearchInsightsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Exchange Teams SSO token for session
+ */
+export const getTeamsSsoUrl = () => {
+  return `/api/teams/sso`;
+};
+
+export const teamsSso = async (
+  teamsSsoBody: TeamsSsoBody,
+  options?: RequestInit,
+): Promise<TeamsSsoResponse> => {
+  return customFetch<TeamsSsoResponse>(getTeamsSsoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(teamsSsoBody),
+  });
+};
+
+export const getTeamsSsoMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof teamsSso>>,
+    TError,
+    { data: BodyType<TeamsSsoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof teamsSso>>,
+  TError,
+  { data: BodyType<TeamsSsoBody> },
+  TContext
+> => {
+  const mutationKey = ["teamsSso"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof teamsSso>>,
+    { data: BodyType<TeamsSsoBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return teamsSso(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TeamsSsoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof teamsSso>>
+>;
+export type TeamsSsoMutationBody = BodyType<TeamsSsoBody>;
+export type TeamsSsoMutationError = ErrorType<void>;
+
+/**
+ * @summary Exchange Teams SSO token for session
+ */
+export const useTeamsSso = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof teamsSso>>,
+    TError,
+    { data: BodyType<TeamsSsoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof teamsSso>>,
+  TError,
+  { data: BodyType<TeamsSsoBody> },
+  TContext
+> => {
+  return useMutation(getTeamsSsoMutationOptions(options));
+};
+
+/**
+ * @summary Get Teams app configuration
+ */
+export const getTeamsContextUrl = () => {
+  return `/api/teams/context`;
+};
+
+export const teamsContext = async (
+  options?: RequestInit,
+): Promise<TeamsContextResponse> => {
+  return customFetch<TeamsContextResponse>(getTeamsContextUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getTeamsContextQueryKey = () => {
+  return [`/api/teams/context`] as const;
+};
+
+export const getTeamsContextQueryOptions = <
+  TData = Awaited<ReturnType<typeof teamsContext>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof teamsContext>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getTeamsContextQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof teamsContext>>> = ({
+    signal,
+  }) => teamsContext({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof teamsContext>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type TeamsContextQueryResult = NonNullable<
+  Awaited<ReturnType<typeof teamsContext>>
+>;
+export type TeamsContextQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get Teams app configuration
+ */
+
+export function useTeamsContext<
+  TData = Awaited<ReturnType<typeof teamsContext>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof teamsContext>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getTeamsContextQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

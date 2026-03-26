@@ -46,6 +46,31 @@ export interface TokenResult {
   tenantId: string;
 }
 
+export async function exchangeTeamsSsoToken(
+  ssoToken: string,
+): Promise<TokenResult> {
+  const client = getMsalClient();
+  const result = await client.acquireTokenOnBehalfOf({
+    oboAssertion: ssoToken,
+    scopes: ["User.Read"],
+  });
+
+  if (!result) {
+    throw new Error("OBO token exchange returned no result");
+  }
+
+  const claims = result.idTokenClaims as Record<string, string> | undefined;
+
+  return {
+    accessToken: result.accessToken,
+    externalId: claims?.["oid"] ?? result.uniqueId,
+    displayName: claims?.["name"] ?? "Teams User",
+    email: claims?.["email"] ?? claims?.["preferred_username"] ?? "",
+    upn: claims?.["preferred_username"] ?? claims?.["upn"] ?? "",
+    tenantId: claims?.["tid"] ?? appConfig.entraTenantId,
+  };
+}
+
 export async function exchangeCodeForToken(code: string): Promise<TokenResult> {
   const client = getMsalClient();
   const result = await client.acquireTokenByCode({

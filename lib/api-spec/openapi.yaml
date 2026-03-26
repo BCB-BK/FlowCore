@@ -42,6 +42,8 @@ tags:
     description: AI assistant and settings
   - name: quality
     description: Quality metrics and process management
+  - name: teams
+    description: Microsoft Teams integration
 paths:
   /healthz:
     get:
@@ -2310,6 +2312,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchInsights"
+
+  /teams/sso:
+    post:
+      operationId: teamsSso
+      tags: [teams]
+      summary: Exchange Teams SSO token for session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ssoToken]
+              properties:
+                ssoToken:
+                  type: string
+      responses:
+        "200":
+          description: SSO authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamsSsoResponse"
+        "401":
+          description: SSO authentication failed
+        "403":
+          description: Tenant not authorized
+
+  /teams/context:
+    get:
+      operationId: teamsContext
+      tags: [teams]
+      summary: Get Teams app configuration
+      responses:
+        "200":
+          description: Teams context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamsContextResponse"
 
 components:
   parameters:
@@ -4657,3 +4699,51 @@ components:
         - zeroResultSearches
         - topQueries
         - topClickedNodes
+
+    TeamsSsoResponse:
+      type: object
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              scope:
+                type: string
+                nullable: true
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
+        - principalId
+        - displayName
+        - email
+        - roles
+        - permissions
+
+    TeamsContextResponse:
+      type: object
+      properties:
+        appId:
+          type: string
+          nullable: true
+        configured:
+          type: boolean
+        entraConfigured:
+          type: boolean
+        tenantId:
+          type: string
+          nullable: true
+      required:
+        - configured
+        - entraConfigured
