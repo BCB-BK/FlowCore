@@ -157,12 +157,7 @@ export async function getStorageProviderById(
   const [row] = await db
     .select()
     .from(storageProvidersTable)
-    .where(
-      and(
-        eq(storageProvidersTable.id, providerId),
-        eq(storageProvidersTable.isActive, true),
-      ),
-    );
+    .where(eq(storageProvidersTable.id, providerId));
 
   if (!row) {
     logger.warn({ providerId }, "Storage provider not found, using local");
