@@ -5,12 +5,16 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateSourceSystemInputAccessMode } from "./createSourceSystemInputAccessMode";
 import type { CreateSourceSystemInputConnectionConfig } from "./createSourceSystemInputConnectionConfig";
+import type { CreateSourceSystemInputPurpose } from "./createSourceSystemInputPurpose";
 
 export interface CreateSourceSystemInput {
   name: string;
   slug: string;
   systemType: string;
+  purpose?: CreateSourceSystemInputPurpose;
+  accessMode?: CreateSourceSystemInputAccessMode;
   connectionConfig?: CreateSourceSystemInputConnectionConfig;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number;

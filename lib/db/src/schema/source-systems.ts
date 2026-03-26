@@ -10,7 +10,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
-import { syncStatusEnum } from "./enums";
+import { syncStatusEnum, connectorPurposeEnum, accessModeEnum, assetOriginEnum } from "./enums";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -21,6 +21,8 @@ export const sourceSystemsTable = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     systemType: text("system_type").notNull(),
+    purpose: connectorPurposeEnum("purpose").default("knowledge_source"),
+    accessMode: accessModeEnum("access_mode").default("read_only"),
     connectionConfig: jsonb("connection_config"),
     syncEnabled: boolean("sync_enabled").notNull().default(false),
     syncIntervalMinutes: integer("sync_interval_minutes").default(60),
@@ -44,6 +46,8 @@ export const storageProvidersTable = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     providerType: text("provider_type").notNull(),
+    purpose: connectorPurposeEnum("purpose").default("media_archive"),
+    accessMode: accessModeEnum("access_mode").default("read_write"),
     config: jsonb("config"),
     isDefault: boolean("is_default").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
@@ -74,6 +78,7 @@ export const sourceReferencesTable = pgTable(
     externalModifiedAt: timestamp("external_modified_at", {
       withTimezone: true,
     }),
+    originType: assetOriginEnum("origin_type").default("sharepoint_reference"),
     syncStatus: syncStatusEnum("sync_status").notNull().default("active"),
     lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
     lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),

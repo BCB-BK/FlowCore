@@ -35,6 +35,7 @@ import type {
   BackupConfigUpdate,
   BackupRun,
   BrokenLinksReport,
+  ConnectorValidationResult,
   ContentAlias,
   ContentNode,
   ContentRelation,
@@ -8113,6 +8114,93 @@ export function useGetSyncStatus<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Validate connector configuration (token, drive, permissions)
+ */
+export const getValidateSourceSystemUrl = (systemId: string) => {
+  return `/api/connectors/source-systems/${systemId}/validate`;
+};
+
+export const validateSourceSystem = async (
+  systemId: string,
+  options?: RequestInit,
+): Promise<ConnectorValidationResult> => {
+  return customFetch<ConnectorValidationResult>(
+    getValidateSourceSystemUrl(systemId),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getValidateSourceSystemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof validateSourceSystem>>,
+    TError,
+    { systemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof validateSourceSystem>>,
+  TError,
+  { systemId: string },
+  TContext
+> => {
+  const mutationKey = ["validateSourceSystem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof validateSourceSystem>>,
+    { systemId: string }
+  > = (props) => {
+    const { systemId } = props ?? {};
+
+    return validateSourceSystem(systemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ValidateSourceSystemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof validateSourceSystem>>
+>;
+
+export type ValidateSourceSystemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Validate connector configuration (token, drive, permissions)
+ */
+export const useValidateSourceSystem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof validateSourceSystem>>,
+    TError,
+    { systemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof validateSourceSystem>>,
+  TError,
+  { systemId: string },
+  TContext
+> => {
+  return useMutation(getValidateSourceSystemMutationOptions(options));
+};
 
 /**
  * @summary List SharePoint sites

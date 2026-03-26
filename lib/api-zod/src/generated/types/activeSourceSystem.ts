@@ -5,11 +5,15 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ActiveSourceSystemAccessMode } from "./activeSourceSystemAccessMode";
+import type { ActiveSourceSystemPurpose } from "./activeSourceSystemPurpose";
 
 export interface ActiveSourceSystem {
   id: string;
   name: string;
   slug: string;
   systemType: string;
+  purpose?: ActiveSourceSystemPurpose;
+  accessMode?: ActiveSourceSystemAccessMode;
   isActive: boolean;
 }

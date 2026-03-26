@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
 import { storageProvidersTable } from "./source-systems";
-import { mediaClassificationEnum } from "./enums";
+import { mediaClassificationEnum, assetOriginEnum } from "./enums";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -27,6 +27,7 @@ export const mediaAssetsTable = pgTable("media_assets", {
   altText: text("alt_text"),
   caption: text("caption"),
   classification: mediaClassificationEnum("classification").default("other"),
+  originType: assetOriginEnum("origin_type").default("local_upload"),
   sourceUrl: text("source_url"),
   sourceLibrary: text("source_library"),
   sourcePath: text("source_path"),

@@ -5,10 +5,14 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateSourceSystemInputAccessMode } from "./updateSourceSystemInputAccessMode";
 import type { UpdateSourceSystemInputConnectionConfig } from "./updateSourceSystemInputConnectionConfig";
+import type { UpdateSourceSystemInputPurpose } from "./updateSourceSystemInputPurpose";
 
 export interface UpdateSourceSystemInput {
   name?: string;
+  purpose?: UpdateSourceSystemInputPurpose;
+  accessMode?: UpdateSourceSystemInputAccessMode;
   connectionConfig?: UpdateSourceSystemInputConnectionConfig;
   isActive?: boolean;
   syncEnabled?: boolean;

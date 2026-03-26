@@ -5,13 +5,17 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SourceSystemAccessMode } from "./sourceSystemAccessMode";
 import type { SourceSystemConnectionConfig } from "./sourceSystemConnectionConfig";
+import type { SourceSystemPurpose } from "./sourceSystemPurpose";
 
 export interface SourceSystem {
   id: string;
   name: string;
   slug: string;
   systemType: string;
+  purpose?: SourceSystemPurpose;
+  accessMode?: SourceSystemAccessMode;
   connectionConfig?: SourceSystemConnectionConfig;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number | null;

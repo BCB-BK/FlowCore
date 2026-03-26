@@ -23,7 +23,7 @@ The frontend, `wiki-frontend`, is a React 19 application built with Vite, styled
 
 **Technical Implementations:**
 - **API Server (`api-server`):** An Express 5 server providing a RESTful API. It includes structured logging (pino), configuration validation (Zod), security headers, rate limiting, and correlation ID middleware. Authentication is handled via Microsoft Entra ID OIDC with a development mode. Authorization is managed through a 7-role to 17-permission RBAC matrix, supporting page-level permissions and ownership.
-- **Database:** PostgreSQL with Drizzle ORM, utilizing Zod for schema validation. The database schema includes enums, content nodes (with dual IDs and tsvector search index), revisions, aliases, relations, tags, glossary terms, search analytics, media assets, audit events, principals, AI settings, and backup configurations.
+- **Database:** PostgreSQL with Drizzle ORM, utilizing Zod for schema validation. The database schema includes enums, content nodes (with dual IDs and tsvector search index), revisions, aliases, relations, tags, glossary terms, search analytics, media assets, audit events, principals, AI settings, backup configurations, and connector enums (connector_purpose, access_mode, asset_origin).
 - **API Specification and Codegen:** An OpenAPI 3.1 specification is used for API definition, with Orval generating client-side code, including React Query hooks and Zod schemas.
 - **Monorepo Structure:** The workspace is organized into `artifacts/` for deployable applications (API server, frontend), `lib/` for shared libraries (API spec, client, DB, shared types), `scripts/` for utilities, and `e2e/` for Playwright tests.
 - **TypeScript Configuration:** All packages extend a base `tsconfig.base.json` with `composite: true`, and the root `tsconfig.json` manages project references for efficient type-checking and declaration emission.
@@ -32,7 +32,7 @@ The frontend, `wiki-frontend`, is a React 19 application built with Vite, styled
     - **Search:** Full-text search (FTS with `tsvector`), suggestions, and analytics.
     - **AI Assistant:** AI orchestration services for knowledge Q&A (SSE streaming), page writing assistance (SSE streaming), and usage logging.
     - **Workflow:** Review workflow (submit/approve/reject), revision events, diff, and watchers.
-    - **Connectors:** Source system CRUD, storage provider management (SharePoint), and sync scheduling.
+    - **Connectors:** Source system CRUD, storage provider management (SharePoint), sync scheduling, connector validation (token/drive/folder/permissions checks), purpose/access mode configuration, and asset origin tracking.
     - **Backup:** Orchestration for `pg_dump`, manifest generation, SharePoint upload, retention rules, and restore.
     - **Quality Dashboard:** Overview, page quality analysis, duplicate detection, maintenance hints, and personal work items.
     - **Page Types:** A comprehensive registry of 18 page types with metadata fields, sections, icons, colors, categories, and allowed child types, supporting content quality calculation.
@@ -55,14 +55,7 @@ The frontend, `wiki-frontend`, is a React 19 application built with Vite, styled
 
 ## Scripts
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build`
-- `pnpm run typecheck` — runs `tsc --build` using project references
-- `pnpm run lint` — Prettier format check
-- `pnpm run lint:fix` — auto-format with Prettier
-- `pnpm run no-hardcode-check` — scan for hardcoded secrets/URIs
-- `pnpm run docs:check` — verify required documentation exists
-- `pnpm run test` — unit tests (placeholder)
-- `pnpm run e2e` — Playwright E2E tests
+## External Dependencies
 
 ## Quality Gates (run before every delivery)
 
@@ -99,7 +92,7 @@ Express 5 API server with structured logging, config validation, content managem
 - Routes: `src/routes/tags.ts` — Tag CRUD + node tag assignment/removal (6 endpoints)
 - Routes: `src/routes/glossary.ts` — Glossary term CRUD, manual linking/unlinking to nodes, by-node lookup (8 endpoints)
 - Routes: `src/routes/review.ts` — Review workflow (submit/approve/reject), revision events, diff, watchers (10 endpoints, all auth+permission-guarded)
-- Routes: `src/routes/connectors.ts` — Source system CRUD, storage provider CRUD, SharePoint browsing (sites/drives/items), sync trigger, sync status dashboard (14 endpoints)
+- Routes: `src/routes/connectors.ts` — Source system CRUD, storage provider CRUD, SharePoint browsing (sites/drives/items), sync trigger, sync status dashboard, connector validation (15 endpoints)
 - Routes: `src/routes/source-refs.ts` — Source reference CRUD per node, freshness check, per-node permission-guarded (4 endpoints)
 - Routes: `src/routes/ai.ts` — AI assistant settings CRUD, knowledge Q&A (SSE streaming), page writing assistant (SSE streaming), usage stats (4 endpoints)
 - Routes: `src/routes/admin.ts` — System info endpoint (auth-guarded, returns version/env/DB/auth/integrations status)
@@ -158,7 +151,7 @@ Shared types, provider abstractions, and page type registry.
 Database layer using Drizzle ORM with PostgreSQL.
 
 - `src/index.ts` — Pool + Drizzle instance
-- `src/schema/enums.ts` — PostgreSQL enums (node_status, change_type, relation_type, principal_type, wiki_role, wiki_permission, etc.)
+- `src/schema/enums.ts` — PostgreSQL enums (node_status, change_type, relation_type, principal_type, wiki_role, wiki_permission, connector_purpose, access_mode, asset_origin, etc.)
 - `src/schema/content-templates.ts` — 10 page type definitions
 - `src/schema/content-nodes.ts` — Stable content objects with dual IDs, tsvector search index
 - `src/schema/content-revisions.ts` — Immutable content snapshots + lifecycle events
@@ -167,10 +160,11 @@ Database layer using Drizzle ORM with PostgreSQL.
 - `src/schema/content-tags.ts` — Tags + junction table
 - `src/schema/glossary.ts` — Glossary terms with synonyms, abbreviation, nodeId link
 - `src/schema/search-analytics.ts` — Search query analytics tracking + click-through tracking
-- `src/schema/media-assets.ts` — File attachments
+- `src/schema/media-assets.ts` — File attachments (with originType column)
 - `src/schema/audit-events.ts` — Audit trail
 - `src/schema/principals.ts` — Principals, role assignments, page permissions, node ownership
 - `src/schema/ai-settings.ts` — AI settings (global config) + AI usage logs (metadata-only: action, model, latency, errors)
+- `src/schema/source-systems.ts` — Source systems (with purpose, accessMode columns) and storage providers (with purpose, accessMode columns)
 - `src/seed.ts` — Example seed data
 - Push: `pnpm --filter @workspace/db run push`
 - Seed: `npx -p tsx tsx lib/db/src/seed.ts`

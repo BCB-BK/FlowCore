@@ -104,6 +104,8 @@ connectorsRouter.get(
         name: sourceSystemsTable.name,
         slug: sourceSystemsTable.slug,
         systemType: sourceSystemsTable.systemType,
+        purpose: sourceSystemsTable.purpose,
+        accessMode: sourceSystemsTable.accessMode,
         isActive: sourceSystemsTable.isActive,
       })
       .from(sourceSystemsTable)
@@ -152,6 +154,8 @@ connectorsRouter.post(
       name,
       slug,
       systemType,
+      purpose,
+      accessMode,
       connectionConfig,
       syncEnabled,
       syncIntervalMinutes,
@@ -161,6 +165,18 @@ connectorsRouter.post(
       res
         .status(400)
         .json({ error: "name, slug, and systemType are required" });
+      return;
+    }
+
+    const validPurposes = ["knowledge_source", "media_archive", "backup_target"];
+    if (purpose && !validPurposes.includes(purpose)) {
+      res.status(400).json({ error: `Invalid purpose. Must be one of: ${validPurposes.join(", ")}` });
+      return;
+    }
+
+    const validAccessModes = ["read_only", "read_write"];
+    if (accessMode && !validAccessModes.includes(accessMode)) {
+      res.status(400).json({ error: `Invalid accessMode. Must be one of: ${validAccessModes.join(", ")}` });
       return;
     }
 
@@ -182,6 +198,8 @@ connectorsRouter.post(
         name,
         slug,
         systemType,
+        purpose: purpose || "knowledge_source",
+        accessMode: accessMode || "read_only",
         connectionConfig: connectionConfig || null,
         syncEnabled: syncEnabled ?? false,
         syncIntervalMinutes: syncIntervalMinutes ?? 60,
@@ -215,6 +233,8 @@ connectorsRouter.patch(
     const updates: Record<string, unknown> = {};
     const allowed = [
       "name",
+      "purpose",
+      "accessMode",
       "connectionConfig",
       "isActive",
       "syncEnabled",
@@ -225,6 +245,18 @@ connectorsRouter.patch(
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
       }
+    }
+
+    const validPurposes = ["knowledge_source", "media_archive", "backup_target"];
+    if (updates.purpose && !validPurposes.includes(updates.purpose as string)) {
+      res.status(400).json({ error: `Invalid purpose. Must be one of: ${validPurposes.join(", ")}` });
+      return;
+    }
+
+    const validAccessModes = ["read_only", "read_write"];
+    if (updates.accessMode && !validAccessModes.includes(updates.accessMode as string)) {
+      res.status(400).json({ error: `Invalid accessMode. Must be one of: ${validAccessModes.join(", ")}` });
+      return;
     }
 
     if (updates.connectionConfig) {
@@ -357,12 +389,24 @@ connectorsRouter.post(
   requireAuth,
   requirePermission("manage_connectors"),
   async (req, res) => {
-    const { name, slug, providerType, config, isDefault } = req.body;
+    const { name, slug, providerType, purpose, accessMode, config, isDefault } = req.body;
 
     if (!name || !slug || !providerType) {
       res
         .status(400)
         .json({ error: "name, slug, and providerType are required" });
+      return;
+    }
+
+    const validPurposes = ["knowledge_source", "media_archive", "backup_target"];
+    if (purpose && !validPurposes.includes(purpose)) {
+      res.status(400).json({ error: `Invalid purpose. Must be one of: ${validPurposes.join(", ")}` });
+      return;
+    }
+
+    const validAccessModes = ["read_only", "read_write"];
+    if (accessMode && !validAccessModes.includes(accessMode)) {
+      res.status(400).json({ error: `Invalid accessMode. Must be one of: ${validAccessModes.join(", ")}` });
       return;
     }
 
@@ -379,6 +423,8 @@ connectorsRouter.post(
         name,
         slug,
         providerType,
+        purpose: purpose || "media_archive",
+        accessMode: accessMode || "read_write",
         config: config || null,
         isDefault: isDefault ?? false,
       })
@@ -414,11 +460,23 @@ connectorsRouter.patch(
     }
 
     const updates: Record<string, unknown> = {};
-    const allowed = ["name", "config", "isActive", "isDefault"];
+    const allowed = ["name", "purpose", "accessMode", "config", "isActive", "isDefault"];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         updates[key] = req.body[key];
       }
+    }
+
+    const validPurposes = ["knowledge_source", "media_archive", "backup_target"];
+    if (updates.purpose && !validPurposes.includes(updates.purpose as string)) {
+      res.status(400).json({ error: `Invalid purpose. Must be one of: ${validPurposes.join(", ")}` });
+      return;
+    }
+
+    const validAccessModes = ["read_only", "read_write"];
+    if (updates.accessMode && !validAccessModes.includes(updates.accessMode as string)) {
+      res.status(400).json({ error: `Invalid accessMode. Must be one of: ${validAccessModes.join(", ")}` });
+      return;
     }
 
     if (updates.config) {
@@ -467,6 +525,101 @@ connectorsRouter.patch(
         provider.config as Record<string, unknown> | null,
       ),
     });
+  },
+);
+
+connectorsRouter.post(
+  "/source-systems/:id/validate",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (req, res) => {
+    const id = req.params.id as string;
+    if (!UUID_RE.test(id)) {
+      res.status(400).json({ error: "Invalid ID format" });
+      return;
+    }
+
+    const [system] = await db
+      .select()
+      .from(sourceSystemsTable)
+      .where(eq(sourceSystemsTable.id, id));
+
+    if (!system) {
+      res.status(404).json({ error: "Source system not found" });
+      return;
+    }
+
+    const checks: Array<{ check: string; status: "ok" | "warning" | "error"; message: string }> = [];
+
+    const connConfig = system.connectionConfig as Record<string, string> | null;
+
+    if (!connConfig) {
+      checks.push({ check: "connection_config", status: "error", message: "Keine Verbindungskonfiguration hinterlegt" });
+      res.json({ valid: false, checks });
+      return;
+    }
+
+    if (system.systemType === "sharepoint") {
+      if (!connConfig.siteId) {
+        checks.push({ check: "site_id", status: "error", message: "Keine SharePoint-Site konfiguriert" });
+      } else {
+        checks.push({ check: "site_id", status: "ok", message: `Site konfiguriert: ${connConfig.siteName || connConfig.siteId}` });
+      }
+
+      if (!connConfig.driveId) {
+        checks.push({ check: "drive_id", status: "error", message: "Keine Dokumentbibliothek (Drive) konfiguriert" });
+      } else {
+        checks.push({ check: "drive_id", status: "ok", message: `Bibliothek konfiguriert: ${connConfig.driveName || connConfig.driveId}` });
+      }
+
+      let accessToken = "";
+      try {
+        accessToken = await acquireSystemToken(connConfig);
+        checks.push({ check: "token", status: "ok", message: "Token erfolgreich bezogen" });
+      } catch (err) {
+        const internalMsg = err instanceof Error ? err.message : "Unbekannter Fehler";
+        console.error(`[validate] Token acquisition failed for system ${system.id}:`, internalMsg);
+        checks.push({ check: "token", status: "error", message: "Token konnte nicht bezogen werden – prüfen Sie die Verbindungskonfiguration." });
+        res.json({ valid: false, checks });
+        return;
+      }
+
+      if (connConfig.driveId && accessToken) {
+        try {
+          const drives = await listDrives(accessToken, connConfig.siteId);
+          const driveExists = drives.some((d) => d.id === connConfig.driveId);
+          if (driveExists) {
+            checks.push({ check: "drive_access", status: "ok", message: "Zugriff auf Bibliothek erfolgreich" });
+          } else {
+            checks.push({ check: "drive_access", status: "error", message: "Bibliothek nicht gefunden oder kein Zugriff – wurde sie verschoben oder gelöscht?" });
+          }
+        } catch {
+          checks.push({ check: "drive_access", status: "error", message: "Zugriff auf Bibliothek fehlgeschlagen – Berechtigungen prüfen" });
+        }
+      }
+
+      if (connConfig.folderId && accessToken && connConfig.driveId) {
+        try {
+          const folderMeta = await getDriveItemMeta(accessToken, connConfig.driveId, connConfig.folderId);
+          if (folderMeta) {
+            checks.push({ check: "folder_access", status: "ok", message: `Zielordner erreichbar: ${folderMeta.name}` });
+          } else {
+            checks.push({ check: "folder_access", status: "error", message: "Zielordner nicht gefunden – wurde er verschoben oder gelöscht?" });
+          }
+        } catch {
+          checks.push({ check: "folder_access", status: "error", message: "Zugriff auf Zielordner fehlgeschlagen" });
+        }
+      }
+
+      if (system.accessMode === "read_write" || system.purpose === "backup_target") {
+        checks.push({ check: "write_permission", status: "warning", message: "Schreibberechtigung kann erst beim ersten Schreibvorgang verifiziert werden" });
+      }
+    } else {
+      checks.push({ check: "system_type", status: "ok", message: `Systemtyp: ${system.systemType}` });
+    }
+
+    const valid = checks.every((c) => c.status !== "error");
+    res.json({ valid, checks });
   },
 );
 
@@ -709,6 +862,8 @@ connectorsRouter.get(
           systemId: s.id,
           systemName: s.name,
           systemType: s.systemType,
+          purpose: s.purpose,
+          accessMode: s.accessMode,
           syncEnabled: s.syncEnabled,
           syncIntervalMinutes: s.syncIntervalMinutes,
           lastSyncAt: s.lastSyncAt,

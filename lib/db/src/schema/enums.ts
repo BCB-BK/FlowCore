@@ -163,3 +163,21 @@ export const verificationStatusEnum = pgEnum("verification_status", [
   "expired",
   "overdue",
 ]);
+
+export const connectorPurposeEnum = pgEnum("connector_purpose", [
+  "knowledge_source",
+  "media_archive",
+  "backup_target",
+]);
+
+export const accessModeEnum = pgEnum("access_mode", [
+  "read_only",
+  "read_write",
+]);
+
+export const assetOriginEnum = pgEnum("asset_origin", [
+  "sharepoint_reference",
+  "managed_copy",
+  "external_embed",
+  "local_upload",
+]);

@@ -5,11 +5,15 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SyncStatusEntryAccessMode } from "./syncStatusEntryAccessMode";
+import type { SyncStatusEntryPurpose } from "./syncStatusEntryPurpose";
 
 export interface SyncStatusEntry {
   systemId: string;
   systemName: string;
   systemType: string;
+  purpose?: SyncStatusEntryPurpose;
+  accessMode?: SyncStatusEntryAccessMode;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number | null;
   lastSyncAt?: Date | null;

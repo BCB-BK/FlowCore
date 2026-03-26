@@ -5,12 +5,16 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateStorageProviderInputAccessMode } from "./createStorageProviderInputAccessMode";
 import type { CreateStorageProviderInputConfig } from "./createStorageProviderInputConfig";
+import type { CreateStorageProviderInputPurpose } from "./createStorageProviderInputPurpose";
 
 export interface CreateStorageProviderInput {
   name: string;
   slug: string;
   providerType: string;
+  purpose?: CreateStorageProviderInputPurpose;
+  accessMode?: CreateStorageProviderInputAccessMode;
   config?: CreateStorageProviderInputConfig;
   isDefault?: boolean;
 }

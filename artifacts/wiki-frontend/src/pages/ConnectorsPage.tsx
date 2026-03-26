@@ -42,6 +42,15 @@ import {
   HardDrive,
   Activity,
   Library,
+  ShieldCheck,
+  BookOpen,
+  Image,
+  Archive,
+  Lock,
+  Unlock,
+  Loader2,
+  XCircle,
+  Info,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -50,6 +59,7 @@ import {
   useUpdateSourceSystem,
   useDeleteSourceSystem,
   useTriggerSync,
+  useValidateSourceSystem,
   useListStorageProviders,
   useCreateStorageProvider,
   useUpdateStorageProvider,
@@ -58,6 +68,17 @@ import {
   getListStorageProvidersQueryKey,
   getGetSyncStatusQueryKey,
 } from "@workspace/api-client-react";
+
+const PURPOSE_LABELS: Record<string, { label: string; icon: typeof BookOpen; color: string }> = {
+  knowledge_source: { label: "Wissensquelle", icon: BookOpen, color: "text-blue-600" },
+  media_archive: { label: "Medienarchiv", icon: Image, color: "text-purple-600" },
+  backup_target: { label: "Backup-Ziel", icon: Archive, color: "text-amber-600" },
+};
+
+const ACCESS_MODE_LABELS: Record<string, { label: string; icon: typeof Lock }> = {
+  read_only: { label: "Nur Lesen", icon: Lock },
+  read_write: { label: "Lesen & Schreiben", icon: Unlock },
+};
 
 export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
   const queryClient = useQueryClient();
@@ -163,11 +184,17 @@ function SourceSystemsTab({
 }) {
   const { data: systems, isLoading } = useListSourceSystems();
   const triggerSync = useTriggerSync();
+  const validateSystem = useValidateSourceSystem();
   const deleteSystem = useDeleteSourceSystem();
   const [editingSystem, setEditingSystem] = useState<Record<
     string,
     unknown
   > | null>(null);
+  const [validationResult, setValidationResult] = useState<{
+    systemId: string;
+    valid: boolean;
+    checks: Array<{ check: string; status: "ok" | "warning" | "error"; message: string }>;
+  } | null>(null);
 
   if (isLoading) {
     return (
@@ -198,109 +225,199 @@ function SourceSystemsTab({
         </Card>
       )}
 
-      {systems?.map((system) => (
-        <Card key={system.id}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CardTitle className="text-lg">{system.name}</CardTitle>
-                <Badge variant={system.isActive ? "default" : "secondary"}>
-                  {system.isActive ? "Aktiv" : "Inaktiv"}
-                </Badge>
-                <Badge variant="outline">{system.systemType}</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    triggerSync.mutate(
-                      { systemId: system.id! },
-                      {
-                        onSuccess: () => {
-                          queryClient.invalidateQueries({
-                            queryKey: getListSourceSystemsQueryKey(),
-                          });
-                          queryClient.invalidateQueries({
-                            queryKey: getGetSyncStatusQueryKey(),
-                          });
+      {systems?.map((system) => {
+        const purposeInfo = PURPOSE_LABELS[system.purpose ?? "knowledge_source"];
+        const accessInfo = ACCESS_MODE_LABELS[system.accessMode ?? "read_only"];
+        const PurposeIcon = purposeInfo?.icon ?? BookOpen;
+        const AccessIcon = accessInfo?.icon ?? Lock;
+        const connConfig = (system as unknown as Record<string, unknown>).connectionConfig as Record<string, string> | null;
+
+        return (
+          <Card key={system.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-lg">{system.name}</CardTitle>
+                  <Badge variant={system.isActive ? "default" : "secondary"}>
+                    {system.isActive ? "Aktiv" : "Inaktiv"}
+                  </Badge>
+                  <Badge variant="outline">{system.systemType}</Badge>
+                  {purposeInfo && (
+                    <Badge variant="outline" className={purposeInfo.color}>
+                      <PurposeIcon className="w-3 h-3 mr-1" />
+                      {purposeInfo.label}
+                    </Badge>
+                  )}
+                  {accessInfo && (
+                    <Badge variant="outline">
+                      <AccessIcon className="w-3 h-3 mr-1" />
+                      {accessInfo.label}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      validateSystem.mutate(
+                        { systemId: system.id! },
+                        {
+                          onSuccess: (data) => {
+                            const result = data as { valid: boolean; checks: Array<{ check: string; status: "ok" | "warning" | "error"; message: string }> };
+                            setValidationResult({
+                              systemId: system.id!,
+                              valid: result.valid,
+                              checks: result.checks,
+                            });
+                          },
+                          onError: () => {
+                            setValidationResult({
+                              systemId: system.id!,
+                              valid: false,
+                              checks: [{ check: "connection", status: "error" as const, message: "Validierung fehlgeschlagen – bitte versuchen Sie es erneut." }],
+                            });
+                          },
                         },
-                      },
-                    );
-                  }}
-                  disabled={triggerSync.isPending}
-                >
-                  <RefreshCw
-                    className={`w-4 h-4 mr-1 ${triggerSync.isPending ? "animate-spin" : ""}`}
-                  />
-                  Sync
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setEditingSystem(
-                      system as unknown as Record<string, unknown>,
-                    )
-                  }
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (confirm("Quellsystem wirklich löschen?")) {
-                      deleteSystem.mutate(
+                      );
+                    }}
+                    disabled={validateSystem.isPending}
+                  >
+                    {validateSystem.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="w-4 h-4 mr-1" />
+                    )}
+                    Prüfen
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      triggerSync.mutate(
                         { systemId: system.id! },
                         {
                           onSuccess: () => {
                             queryClient.invalidateQueries({
                               queryKey: getListSourceSystemsQueryKey(),
                             });
+                            queryClient.invalidateQueries({
+                              queryKey: getGetSyncStatusQueryKey(),
+                            });
                           },
                         },
                       );
+                    }}
+                    disabled={triggerSync.isPending}
+                  >
+                    <RefreshCw
+                      className={`w-4 h-4 mr-1 ${triggerSync.isPending ? "animate-spin" : ""}`}
+                    />
+                    Sync
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setEditingSystem(
+                        system as unknown as Record<string, unknown>,
+                      )
                     }
-                  }}
-                >
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm("Quellsystem wirklich löschen?")) {
+                        deleteSystem.mutate(
+                          { systemId: system.id! },
+                          {
+                            onSuccess: () => {
+                              queryClient.invalidateQueries({
+                                queryKey: getListSourceSystemsQueryKey(),
+                              });
+                            },
+                          },
+                        );
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
-            </div>
-            <CardDescription>
-              Slug: {system.slug} | Referenzen:{" "}
-              {String(
-                (system as unknown as Record<string, unknown>).referenceCount ??
-                  0,
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                Letzte Sync:{" "}
-                {system.lastSyncAt
-                  ? new Date(system.lastSyncAt).toLocaleString("de-DE")
-                  : "Nie"}
-              </span>
-              {system.syncEnabled && (
+              <CardDescription>
+                Slug: {system.slug} | Referenzen:{" "}
+                {String(
+                  (system as unknown as Record<string, unknown>).referenceCount ??
+                    0,
+                )}
+                {connConfig?.siteName && ` | Site: ${connConfig.siteName}`}
+                {connConfig?.driveName && ` | Bibliothek: ${connConfig.driveName}`}
+                {connConfig?.folderName && ` | Ordner: ${connConfig.folderName}`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Alle {system.syncIntervalMinutes} Minuten
+                  <Clock className="w-3.5 h-3.5" />
+                  Letzte Sync:{" "}
+                  {system.lastSyncAt
+                    ? new Date(system.lastSyncAt).toLocaleString("de-DE")
+                    : "Nie"}
                 </span>
+                {system.syncEnabled && (
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Alle {system.syncIntervalMinutes} Minuten
+                  </span>
+                )}
+                {system.lastSyncError && (
+                  <span className="flex items-center gap-1 text-destructive">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {system.lastSyncError}
+                  </span>
+                )}
+              </div>
+              {validationResult && validationResult.systemId === system.id && (
+                <div className="mt-3 border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {validationResult.valid ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-600" />
+                      )}
+                      <span className="text-sm font-medium">
+                        {validationResult.valid ? "Konfiguration gültig" : "Konfigurationsprobleme gefunden"}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setValidationResult(null)}
+                    >
+                      Schließen
+                    </Button>
+                  </div>
+                  {validationResult.checks.map((check, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      {check.status === "ok" && <CheckCircle className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />}
+                      {check.status === "error" && <XCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />}
+                      {check.status === "warning" && <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />}
+                      <span className={check.status === "error" ? "text-destructive" : check.status === "warning" ? "text-amber-600" : "text-muted-foreground"}>
+                        {check.message}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               )}
-              {system.lastSyncError && (
-                <span className="flex items-center gap-1 text-destructive">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  {system.lastSyncError}
-                </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
 
       {editingSystem && (
         <EditSourceSystemDialog
@@ -325,6 +442,8 @@ function EditSourceSystemDialog({
   const connConfig = (system.connectionConfig ?? {}) as Record<string, string>;
 
   const [name, setName] = useState(system.name as string);
+  const [purpose, setPurpose] = useState((system.purpose as string) || "knowledge_source");
+  const [accessMode, setAccessMode] = useState((system.accessMode as string) || "read_only");
   const [isActive, setIsActive] = useState(system.isActive as boolean);
   const [syncEnabled, setSyncEnabled] = useState(system.syncEnabled as boolean);
   const [syncInterval, setSyncInterval] = useState(
@@ -355,6 +474,8 @@ function EditSourceSystemDialog({
   const handleSave = () => {
     const data: Record<string, unknown> = {
       name,
+      purpose,
+      accessMode,
       isActive,
       syncEnabled,
       syncIntervalMinutes: parseInt(syncInterval, 10),
@@ -398,6 +519,31 @@ function EditSourceSystemDialog({
           <div>
             <Label>Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Zweck</Label>
+            <Select value={purpose} onValueChange={setPurpose}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="knowledge_source">Wissensquelle</SelectItem>
+                <SelectItem value="media_archive">Medienarchiv</SelectItem>
+                <SelectItem value="backup_target">Backup-Ziel</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Zugriffsmodus</Label>
+            <Select value={accessMode} onValueChange={setAccessMode}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="read_only">Nur Lesen</SelectItem>
+                <SelectItem value="read_write">Lesen & Schreiben</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center gap-3">
             <Switch checked={isActive} onCheckedChange={setIsActive} />
@@ -487,25 +633,43 @@ function StorageProvidersTab({
         </Card>
       )}
 
-      {providers?.map((provider) => (
-        <Card key={provider.id}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CardTitle className="text-lg">{provider.name}</CardTitle>
-                <Badge variant={provider.isActive ? "default" : "secondary"}>
-                  {provider.isActive ? "Aktiv" : "Inaktiv"}
-                </Badge>
-                <Badge variant="outline">{provider.providerType}</Badge>
-                {provider.isDefault && (
-                  <Badge
-                    variant="default"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Standard
+      {providers?.map((provider) => {
+        const purposeInfo = PURPOSE_LABELS[provider.purpose ?? "media_archive"];
+        const accessInfo = ACCESS_MODE_LABELS[provider.accessMode ?? "read_write"];
+        const PurposeIcon = purposeInfo?.icon ?? Image;
+        const AccessIcon = accessInfo?.icon ?? Unlock;
+
+        return (
+          <Card key={provider.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-lg">{provider.name}</CardTitle>
+                  <Badge variant={provider.isActive ? "default" : "secondary"}>
+                    {provider.isActive ? "Aktiv" : "Inaktiv"}
                   </Badge>
-                )}
-              </div>
+                  <Badge variant="outline">{provider.providerType}</Badge>
+                  {purposeInfo && (
+                    <Badge variant="outline" className={purposeInfo.color}>
+                      <PurposeIcon className="w-3 h-3 mr-1" />
+                      {purposeInfo.label}
+                    </Badge>
+                  )}
+                  {accessInfo && (
+                    <Badge variant="outline">
+                      <AccessIcon className="w-3 h-3 mr-1" />
+                      {accessInfo.label}
+                    </Badge>
+                  )}
+                  {provider.isDefault && (
+                    <Badge
+                      variant="default"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Standard
+                    </Badge>
+                  )}
+                </div>
               <div className="flex items-center gap-2">
                 {!provider.isDefault && (
                   <Button
@@ -535,7 +699,8 @@ function StorageProvidersTab({
             <CardDescription>Slug: {provider.slug}</CardDescription>
           </CardHeader>
         </Card>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -595,6 +760,11 @@ function SyncStatusTab({
                 <div className="flex items-center gap-3">
                   <CardTitle className="text-lg">{entry.systemName}</CardTitle>
                   <Badge variant="outline">{entry.systemType}</Badge>
+                  {entry.purpose && PURPOSE_LABELS[entry.purpose] && (
+                    <Badge variant="outline" className={PURPOSE_LABELS[entry.purpose].color}>
+                      {PURPOSE_LABELS[entry.purpose].label}
+                    </Badge>
+                  )}
                   {hasIssues ? (
                     <Badge variant="destructive">
                       <AlertTriangle className="w-3 h-3 mr-1" />
@@ -709,6 +879,8 @@ function CreateSourceSystemDialog({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [systemType, setSystemType] = useState("sharepoint");
+  const [purpose, setPurpose] = useState("knowledge_source");
+  const [accessMode, setAccessMode] = useState("read_only");
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [syncInterval, setSyncInterval] = useState("60");
   const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
@@ -736,6 +908,8 @@ function CreateSourceSystemDialog({
       name,
       slug,
       systemType,
+      purpose,
+      accessMode,
       syncEnabled,
       syncIntervalMinutes: parseInt(syncInterval, 10),
     };
@@ -788,6 +962,33 @@ function CreateSourceSystemDialog({
                 <SelectItem value="confluence">Confluence</SelectItem>
                 <SelectItem value="file_share">Dateifreigabe</SelectItem>
                 <SelectItem value="custom">Benutzerdefiniert</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Zweck</Label>
+            <Select value={purpose} onValueChange={setPurpose}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="knowledge_source">Wissensquelle</SelectItem>
+                <SelectItem value="media_archive">Medienarchiv</SelectItem>
+                <SelectItem value="backup_target">Backup-Ziel</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Zugriffsmodus</Label>
+            <Select value={accessMode} onValueChange={setAccessMode}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="read_only">Nur Lesen</SelectItem>
+                <SelectItem value="read_write">Lesen & Schreiben</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -874,6 +1075,8 @@ function CreateStorageProviderDialog({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [providerType, setProviderType] = useState("local");
+  const [purpose, setPurpose] = useState("media_archive");
+  const [accessMode, setAccessMode] = useState("read_write");
   const [isDefault, setIsDefault] = useState(false);
   const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
     null,
@@ -915,6 +1118,8 @@ function CreateStorageProviderDialog({
           name,
           slug,
           providerType,
+          purpose: purpose as "knowledge_source" | "media_archive" | "backup_target",
+          accessMode: accessMode as "read_only" | "read_write",
           isDefault,
           config: config as Record<string, unknown> | undefined,
         },
@@ -947,6 +1152,33 @@ function CreateStorageProviderDialog({
                 <SelectItem value="local">Lokal</SelectItem>
                 <SelectItem value="sharepoint">SharePoint</SelectItem>
                 <SelectItem value="azure_blob">Azure Blob Storage</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Zweck</Label>
+            <Select value={purpose} onValueChange={setPurpose}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="knowledge_source">Wissensquelle</SelectItem>
+                <SelectItem value="media_archive">Medienarchiv</SelectItem>
+                <SelectItem value="backup_target">Backup-Ziel</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Zugriffsmodus</Label>
+            <Select value={accessMode} onValueChange={setAccessMode}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="read_only">Nur Lesen</SelectItem>
+                <SelectItem value="read_write">Lesen & Schreiben</SelectItem>
               </SelectContent>
             </Select>
           </div>

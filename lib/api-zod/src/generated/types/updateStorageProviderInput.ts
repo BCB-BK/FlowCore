@@ -5,10 +5,14 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateStorageProviderInputAccessMode } from "./updateStorageProviderInputAccessMode";
 import type { UpdateStorageProviderInputConfig } from "./updateStorageProviderInputConfig";
+import type { UpdateStorageProviderInputPurpose } from "./updateStorageProviderInputPurpose";
 
 export interface UpdateStorageProviderInput {
   name?: string;
+  purpose?: UpdateStorageProviderInputPurpose;
+  accessMode?: UpdateStorageProviderInputAccessMode;
   config?: UpdateStorageProviderInputConfig;
   isActive?: boolean;
   isDefault?: boolean;

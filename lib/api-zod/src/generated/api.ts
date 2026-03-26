@@ -1973,6 +1973,10 @@ export const ListSourceSystemsResponseItem = zod
     name: zod.string(),
     slug: zod.string(),
     systemType: zod.string(),
+    purpose: zod
+      .enum(["knowledge_source", "media_archive", "backup_target"])
+      .nullish(),
+    accessMode: zod.enum(["read_only", "read_write"]).nullish(),
     connectionConfig: zod.object({}).passthrough().nullish(),
     syncEnabled: zod.boolean().optional(),
     syncIntervalMinutes: zod.number().nullish(),
@@ -1998,6 +2002,10 @@ export const CreateSourceSystemBody = zod.object({
   name: zod.string(),
   slug: zod.string(),
   systemType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .optional(),
+  accessMode: zod.enum(["read_only", "read_write"]).optional(),
   connectionConfig: zod.object({}).passthrough().nullish(),
   syncEnabled: zod.boolean().optional(),
   syncIntervalMinutes: zod.number().optional(),
@@ -2011,6 +2019,10 @@ export const ListActiveSourceSystemsResponseItem = zod.object({
   name: zod.string(),
   slug: zod.string(),
   systemType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .nullish(),
+  accessMode: zod.enum(["read_only", "read_write"]).nullish(),
   isActive: zod.boolean(),
 });
 export const ListActiveSourceSystemsResponse = zod.array(
@@ -2030,6 +2042,10 @@ export const GetSourceSystemResponse = zod
     name: zod.string(),
     slug: zod.string(),
     systemType: zod.string(),
+    purpose: zod
+      .enum(["knowledge_source", "media_archive", "backup_target"])
+      .nullish(),
+    accessMode: zod.enum(["read_only", "read_write"]).nullish(),
     connectionConfig: zod.object({}).passthrough().nullish(),
     syncEnabled: zod.boolean().optional(),
     syncIntervalMinutes: zod.number().nullish(),
@@ -2054,6 +2070,10 @@ export const UpdateSourceSystemParams = zod.object({
 
 export const UpdateSourceSystemBody = zod.object({
   name: zod.string().optional(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .optional(),
+  accessMode: zod.enum(["read_only", "read_write"]).optional(),
   connectionConfig: zod.object({}).passthrough().nullish(),
   isActive: zod.boolean().optional(),
   syncEnabled: zod.boolean().optional(),
@@ -2065,6 +2085,10 @@ export const UpdateSourceSystemResponse = zod.object({
   name: zod.string(),
   slug: zod.string(),
   systemType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .nullish(),
+  accessMode: zod.enum(["read_only", "read_write"]).nullish(),
   connectionConfig: zod.object({}).passthrough().nullish(),
   syncEnabled: zod.boolean().optional(),
   syncIntervalMinutes: zod.number().nullish(),
@@ -2105,6 +2129,10 @@ export const ListStorageProvidersResponseItem = zod.object({
   name: zod.string(),
   slug: zod.string(),
   providerType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .nullish(),
+  accessMode: zod.enum(["read_only", "read_write"]).nullish(),
   config: zod.object({}).passthrough().nullish(),
   isDefault: zod.boolean().optional(),
   isActive: zod.boolean().optional(),
@@ -2122,6 +2150,10 @@ export const CreateStorageProviderBody = zod.object({
   name: zod.string(),
   slug: zod.string(),
   providerType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .optional(),
+  accessMode: zod.enum(["read_only", "read_write"]).optional(),
   config: zod.object({}).passthrough().nullish(),
   isDefault: zod.boolean().optional(),
 });
@@ -2135,6 +2167,10 @@ export const UpdateStorageProviderParams = zod.object({
 
 export const UpdateStorageProviderBody = zod.object({
   name: zod.string().optional(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .optional(),
+  accessMode: zod.enum(["read_only", "read_write"]).optional(),
   config: zod.object({}).passthrough().nullish(),
   isActive: zod.boolean().optional(),
   isDefault: zod.boolean().optional(),
@@ -2145,6 +2181,10 @@ export const UpdateStorageProviderResponse = zod.object({
   name: zod.string(),
   slug: zod.string(),
   providerType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .nullish(),
+  accessMode: zod.enum(["read_only", "read_write"]).nullish(),
   config: zod.object({}).passthrough().nullish(),
   isDefault: zod.boolean().optional(),
   isActive: zod.boolean().optional(),
@@ -2159,6 +2199,10 @@ export const GetSyncStatusResponseItem = zod.object({
   systemId: zod.string().uuid(),
   systemName: zod.string(),
   systemType: zod.string(),
+  purpose: zod
+    .enum(["knowledge_source", "media_archive", "backup_target"])
+    .nullish(),
+  accessMode: zod.enum(["read_only", "read_write"]).nullish(),
   syncEnabled: zod.boolean().optional(),
   syncIntervalMinutes: zod.number().nullish(),
   lastSyncAt: zod.date().nullish(),
@@ -2169,6 +2213,24 @@ export const GetSyncStatusResponseItem = zod.object({
   notFoundReferences: zod.number().optional(),
 });
 export const GetSyncStatusResponse = zod.array(GetSyncStatusResponseItem);
+
+/**
+ * @summary Validate connector configuration (token, drive, permissions)
+ */
+export const ValidateSourceSystemParams = zod.object({
+  systemId: zod.coerce.string().uuid(),
+});
+
+export const ValidateSourceSystemResponse = zod.object({
+  valid: zod.boolean(),
+  checks: zod.array(
+    zod.object({
+      check: zod.string(),
+      status: zod.enum(["ok", "warning", "error"]),
+      message: zod.string(),
+    }),
+  ),
+});
 
 /**
  * @summary List SharePoint sites

@@ -1968,6 +1968,26 @@ paths:
                 items:
                   $ref: "#/components/schemas/SyncStatusEntry"
 
+  /connectors/source-systems/{systemId}/validate:
+    post:
+      operationId: validateSourceSystem
+      tags: [connectors]
+      summary: Validate connector configuration (token, drive, permissions)
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectorValidationResult"
+
   /connectors/sharepoint/sites:
     get:
       operationId: listSharePointSites
@@ -4077,6 +4097,14 @@ components:
           type: string
         systemType:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+          nullable: true
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
+          nullable: true
         connectionConfig:
           type: object
           nullable: true
@@ -4126,6 +4154,14 @@ components:
           type: string
         systemType:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+          nullable: true
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
+          nullable: true
         isActive:
           type: boolean
       required:
@@ -4144,6 +4180,12 @@ components:
           type: string
         systemType:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
         connectionConfig:
           type: object
           nullable: true
@@ -4161,6 +4203,12 @@ components:
       properties:
         name:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
         connectionConfig:
           type: object
           nullable: true
@@ -4183,6 +4231,14 @@ components:
           type: string
         providerType:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+          nullable: true
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
+          nullable: true
         config:
           type: object
           nullable: true
@@ -4211,6 +4267,12 @@ components:
           type: string
         providerType:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
         config:
           type: object
           nullable: true
@@ -4226,6 +4288,12 @@ components:
       properties:
         name:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
         config:
           type: object
           nullable: true
@@ -4266,6 +4334,14 @@ components:
           type: string
         systemType:
           type: string
+        purpose:
+          type: string
+          enum: [knowledge_source, media_archive, backup_target]
+          nullable: true
+        accessMode:
+          type: string
+          enum: [read_only, read_write]
+          nullable: true
         syncEnabled:
           type: boolean
         syncIntervalMinutes:
@@ -4290,6 +4366,31 @@ components:
         - systemId
         - systemName
         - systemType
+
+    ConnectorValidationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              check:
+                type: string
+              status:
+                type: string
+                enum: [ok, warning, error]
+              message:
+                type: string
+            required:
+              - check
+              - status
+              - message
+      required:
+        - valid
+        - checks
 
     SharePointSite:
       type: object

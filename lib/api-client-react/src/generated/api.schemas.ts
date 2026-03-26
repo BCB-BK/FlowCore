@@ -863,6 +863,25 @@ export interface BrokenLinksReport {
   orphanedNodes?: BrokenLinksReportOrphanedNodesItem[];
 }
 
+export type SourceSystemPurpose =
+  | (typeof SourceSystemPurpose)[keyof typeof SourceSystemPurpose]
+  | null;
+
+export const SourceSystemPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type SourceSystemAccessMode =
+  | (typeof SourceSystemAccessMode)[keyof typeof SourceSystemAccessMode]
+  | null;
+
+export const SourceSystemAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
+
 export type SourceSystemConnectionConfig = { [key: string]: unknown } | null;
 
 export interface SourceSystem {
@@ -870,6 +889,8 @@ export interface SourceSystem {
   name: string;
   slug: string;
   systemType: string;
+  purpose?: SourceSystemPurpose;
+  accessMode?: SourceSystemAccessMode;
   connectionConfig?: SourceSystemConnectionConfig;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number | null;
@@ -884,13 +905,51 @@ export type SourceSystemWithCount = SourceSystem & {
   referenceCount?: number;
 };
 
+export type ActiveSourceSystemPurpose =
+  | (typeof ActiveSourceSystemPurpose)[keyof typeof ActiveSourceSystemPurpose]
+  | null;
+
+export const ActiveSourceSystemPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type ActiveSourceSystemAccessMode =
+  | (typeof ActiveSourceSystemAccessMode)[keyof typeof ActiveSourceSystemAccessMode]
+  | null;
+
+export const ActiveSourceSystemAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
+
 export interface ActiveSourceSystem {
   id: string;
   name: string;
   slug: string;
   systemType: string;
+  purpose?: ActiveSourceSystemPurpose;
+  accessMode?: ActiveSourceSystemAccessMode;
   isActive: boolean;
 }
+
+export type CreateSourceSystemInputPurpose =
+  (typeof CreateSourceSystemInputPurpose)[keyof typeof CreateSourceSystemInputPurpose];
+
+export const CreateSourceSystemInputPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type CreateSourceSystemInputAccessMode =
+  (typeof CreateSourceSystemInputAccessMode)[keyof typeof CreateSourceSystemInputAccessMode];
+
+export const CreateSourceSystemInputAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
 
 export type CreateSourceSystemInputConnectionConfig = {
   [key: string]: unknown;
@@ -900,10 +959,29 @@ export interface CreateSourceSystemInput {
   name: string;
   slug: string;
   systemType: string;
+  purpose?: CreateSourceSystemInputPurpose;
+  accessMode?: CreateSourceSystemInputAccessMode;
   connectionConfig?: CreateSourceSystemInputConnectionConfig;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number;
 }
+
+export type UpdateSourceSystemInputPurpose =
+  (typeof UpdateSourceSystemInputPurpose)[keyof typeof UpdateSourceSystemInputPurpose];
+
+export const UpdateSourceSystemInputPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type UpdateSourceSystemInputAccessMode =
+  (typeof UpdateSourceSystemInputAccessMode)[keyof typeof UpdateSourceSystemInputAccessMode];
+
+export const UpdateSourceSystemInputAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
 
 export type UpdateSourceSystemInputConnectionConfig = {
   [key: string]: unknown;
@@ -911,11 +989,32 @@ export type UpdateSourceSystemInputConnectionConfig = {
 
 export interface UpdateSourceSystemInput {
   name?: string;
+  purpose?: UpdateSourceSystemInputPurpose;
+  accessMode?: UpdateSourceSystemInputAccessMode;
   connectionConfig?: UpdateSourceSystemInputConnectionConfig;
   isActive?: boolean;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number;
 }
+
+export type StorageProviderPurpose =
+  | (typeof StorageProviderPurpose)[keyof typeof StorageProviderPurpose]
+  | null;
+
+export const StorageProviderPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type StorageProviderAccessMode =
+  | (typeof StorageProviderAccessMode)[keyof typeof StorageProviderAccessMode]
+  | null;
+
+export const StorageProviderAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
 
 export type StorageProviderConfig = { [key: string]: unknown } | null;
 
@@ -924,12 +1023,31 @@ export interface StorageProvider {
   name: string;
   slug: string;
   providerType: string;
+  purpose?: StorageProviderPurpose;
+  accessMode?: StorageProviderAccessMode;
   config?: StorageProviderConfig;
   isDefault?: boolean;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
+
+export type CreateStorageProviderInputPurpose =
+  (typeof CreateStorageProviderInputPurpose)[keyof typeof CreateStorageProviderInputPurpose];
+
+export const CreateStorageProviderInputPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type CreateStorageProviderInputAccessMode =
+  (typeof CreateStorageProviderInputAccessMode)[keyof typeof CreateStorageProviderInputAccessMode];
+
+export const CreateStorageProviderInputAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
 
 export type CreateStorageProviderInputConfig = {
   [key: string]: unknown;
@@ -939,9 +1057,28 @@ export interface CreateStorageProviderInput {
   name: string;
   slug: string;
   providerType: string;
+  purpose?: CreateStorageProviderInputPurpose;
+  accessMode?: CreateStorageProviderInputAccessMode;
   config?: CreateStorageProviderInputConfig;
   isDefault?: boolean;
 }
+
+export type UpdateStorageProviderInputPurpose =
+  (typeof UpdateStorageProviderInputPurpose)[keyof typeof UpdateStorageProviderInputPurpose];
+
+export const UpdateStorageProviderInputPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type UpdateStorageProviderInputAccessMode =
+  (typeof UpdateStorageProviderInputAccessMode)[keyof typeof UpdateStorageProviderInputAccessMode];
+
+export const UpdateStorageProviderInputAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
 
 export type UpdateStorageProviderInputConfig = {
   [key: string]: unknown;
@@ -949,6 +1086,8 @@ export type UpdateStorageProviderInputConfig = {
 
 export interface UpdateStorageProviderInput {
   name?: string;
+  purpose?: UpdateStorageProviderInputPurpose;
+  accessMode?: UpdateStorageProviderInputAccessMode;
   config?: UpdateStorageProviderInputConfig;
   isActive?: boolean;
   isDefault?: boolean;
@@ -962,10 +1101,31 @@ export interface SyncResult {
   syncedAt: string;
 }
 
+export type SyncStatusEntryPurpose =
+  | (typeof SyncStatusEntryPurpose)[keyof typeof SyncStatusEntryPurpose]
+  | null;
+
+export const SyncStatusEntryPurpose = {
+  knowledge_source: "knowledge_source",
+  media_archive: "media_archive",
+  backup_target: "backup_target",
+} as const;
+
+export type SyncStatusEntryAccessMode =
+  | (typeof SyncStatusEntryAccessMode)[keyof typeof SyncStatusEntryAccessMode]
+  | null;
+
+export const SyncStatusEntryAccessMode = {
+  read_only: "read_only",
+  read_write: "read_write",
+} as const;
+
 export interface SyncStatusEntry {
   systemId: string;
   systemName: string;
   systemType: string;
+  purpose?: SyncStatusEntryPurpose;
+  accessMode?: SyncStatusEntryAccessMode;
   syncEnabled?: boolean;
   syncIntervalMinutes?: number | null;
   lastSyncAt?: string | null;
@@ -974,6 +1134,26 @@ export interface SyncStatusEntry {
   staleReferences?: number;
   errorReferences?: number;
   notFoundReferences?: number;
+}
+
+export type ConnectorValidationResultChecksItemStatus =
+  (typeof ConnectorValidationResultChecksItemStatus)[keyof typeof ConnectorValidationResultChecksItemStatus];
+
+export const ConnectorValidationResultChecksItemStatus = {
+  ok: "ok",
+  warning: "warning",
+  error: "error",
+} as const;
+
+export type ConnectorValidationResultChecksItem = {
+  check: string;
+  status: ConnectorValidationResultChecksItemStatus;
+  message: string;
+};
+
+export interface ConnectorValidationResult {
+  valid: boolean;
+  checks: ConnectorValidationResultChecksItem[];
 }
 
 export interface SharePointSite {

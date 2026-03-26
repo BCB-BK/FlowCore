@@ -5,13 +5,17 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { StorageProviderAccessMode } from "./storageProviderAccessMode";
 import type { StorageProviderConfig } from "./storageProviderConfig";
+import type { StorageProviderPurpose } from "./storageProviderPurpose";
 
 export interface StorageProvider {
   id: string;
   name: string;
   slug: string;
   providerType: string;
+  purpose?: StorageProviderPurpose;
+  accessMode?: StorageProviderAccessMode;
   config?: StorageProviderConfig;
   isDefault?: boolean;
   isActive?: boolean;
