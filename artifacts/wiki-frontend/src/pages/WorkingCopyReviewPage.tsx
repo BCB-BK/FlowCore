@@ -265,8 +265,10 @@ export function WorkingCopyReviewPage() {
     );
   }
 
-  const canReview =
-    activeWC.status === "submitted" || activeWC.status === "in_review";
+  const isReviewPhase = activeWC.status === "submitted" || activeWC.status === "in_review";
+  const isApprovedPhase = activeWC.status === "approved_for_publish";
+  const canReview = isReviewPhase;
+  const showActions = isReviewPhase || isApprovedPhase;
   const pageDef = getPageType(node.templateType);
   const isFirstVersion = !publishedRevision;
 
@@ -288,7 +290,7 @@ export function WorkingCopyReviewPage() {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <PageTypeIcon iconName={node.templateType} />
             <Badge variant="outline">{statusLabel}</Badge>
-            {!canReview && (
+            {!showActions && (
               <Badge variant="secondary">Nur Ansicht</Badge>
             )}
           </div>
@@ -327,7 +329,7 @@ export function WorkingCopyReviewPage() {
         authorName={wcAuthor?.displayName ?? undefined}
       />
 
-      {canReview && (
+      {showActions && (
         <WorkingCopyActions
           workingCopy={activeWC}
           nodeId={nodeId!}
@@ -363,7 +365,7 @@ export function WorkingCopyReviewPage() {
               </div>
             )}
 
-            {hasReviewPermission && canReview && (
+            {hasReviewPermission && showActions && (
               <div className="pt-2 border-t">
                 <p className="text-xs font-medium text-muted-foreground mb-1">
                   Finale Zusammenfassung (wird mit der Version veröffentlicht)

@@ -201,11 +201,40 @@ export async function updateWorkingCopy(
   if (input.changeSummary !== undefined)
     updateData.changeSummary = input.changeSummary;
 
+  const isReviewPhase = wc.status === "submitted" || wc.status === "in_review";
+  const isReviewerEdit = isReviewPhase && wc.authorId !== actorId;
+
+  if (isReviewPhase && wc.status === "submitted") {
+    updateData.status = "in_review";
+  }
+
   const [updated] = await db
     .update(contentWorkingCopiesTable)
     .set(updateData)
     .where(eq(contentWorkingCopiesTable.id, id))
     .returning();
+
+  if (isReviewPhase && wc.status === "submitted") {
+    await db.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "review_started",
+      actorId,
+    });
+  }
+
+  if (isReviewerEdit) {
+    await db.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "amended_by_reviewer",
+      actorId,
+    });
+  } else if (!isReviewPhase) {
+    await db.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "updated",
+      actorId,
+    });
+  }
 
   return updated;
 }
