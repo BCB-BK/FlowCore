@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
@@ -28,6 +27,7 @@ import {
   useDeleteGlossaryTerm,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { SimpleEditor } from "@/components/editor/SimpleEditor";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -217,9 +217,10 @@ export function GlossaryPage() {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {t.definition}
-                          </p>
+                          <div
+                            className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5"
+                            dangerouslySetInnerHTML={{ __html: t.definition }}
+                          />
                           {t.synonyms && t.synonyms.length > 0 && (
                             <p className="text-xs text-muted-foreground mt-1">
                               Synonyme: {t.synonyms.join(", ")}
@@ -271,32 +272,44 @@ export function GlossaryPage() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingId ? "Begriff bearbeiten" : "Neuer Glossarbegriff"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>Begriff</Label>
-              <Input
-                value={form.term}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, term: e.target.value }))
-                }
-                placeholder="z.B. PDCA-Zyklus"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Begriff</Label>
+                <Input
+                  value={form.term}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, term: e.target.value }))
+                  }
+                  placeholder="z.B. PDCA-Zyklus"
+                />
+              </div>
+              <div>
+                <Label>Abkürzung</Label>
+                <Input
+                  value={form.abbreviation}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, abbreviation: e.target.value }))
+                  }
+                  placeholder="z.B. PDCA"
+                />
+              </div>
             </div>
             <div>
-              <Label>Definition</Label>
-              <Textarea
-                value={form.definition}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, definition: e.target.value }))
+              <Label className="mb-1.5 block">Definition</Label>
+              <SimpleEditor
+                content={form.definition}
+                onChange={(html) =>
+                  setForm((f) => ({ ...f, definition: html }))
                 }
-                placeholder="Kurze, klare Definition..."
-                rows={3}
+                placeholder="Definition eingeben — Bilder, Videos und Formatierungen möglich..."
+                minHeight="180px"
               />
             </div>
             <div>
@@ -307,16 +320,6 @@ export function GlossaryPage() {
                   setForm((f) => ({ ...f, synonyms: e.target.value }))
                 }
                 placeholder="z.B. Deming-Kreis, Plan-Do-Check-Act"
-              />
-            </div>
-            <div>
-              <Label>Abkürzung</Label>
-              <Input
-                value={form.abbreviation}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, abbreviation: e.target.value }))
-                }
-                placeholder="z.B. PDCA"
               />
             </div>
           </div>
