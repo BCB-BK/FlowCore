@@ -14,6 +14,7 @@ import {
   listDrives,
   listDriveItems,
   getDriveItemMeta,
+  acquireSystemToken,
 } from "../services/sharepoint.service";
 import { invalidateProviderCache } from "../services/storage.service";
 
@@ -33,6 +34,41 @@ function resolveGraphToken(req: {
   );
 }
 
+function redactConnectionConfig(
+  config: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  if (!config) return null;
+  const redacted = { ...config };
+  const sensitiveKeys = [
+    "clientSecret",
+    "client_secret",
+    "secret",
+    "password",
+    "apiKey",
+    "api_key",
+    "token",
+    "accessToken",
+    "refreshToken",
+  ];
+  for (const key of sensitiveKeys) {
+    if (key in redacted) {
+      redacted[key] = "***REDACTED***";
+    }
+  }
+  return redacted;
+}
+
+function redactSystem<T extends { connectionConfig: unknown }>(
+  system: T,
+): T & { connectionConfig: Record<string, unknown> | null } {
+  return {
+    ...system,
+    connectionConfig: redactConnectionConfig(
+      system.connectionConfig as Record<string, unknown> | null,
+    ),
+  };
+}
+
 connectorsRouter.get(
   "/source-systems",
   requireAuth,
@@ -49,7 +85,7 @@ connectorsRouter.get(
           .select({ value: count() })
           .from(sourceReferencesTable)
           .where(eq(sourceReferencesTable.sourceSystemId, s.id));
-        return { ...s, referenceCount: refCount?.value ?? 0 };
+        return redactSystem({ ...s, referenceCount: refCount?.value ?? 0 });
       }),
     );
 
@@ -103,7 +139,7 @@ connectorsRouter.get(
       .from(sourceReferencesTable)
       .where(eq(sourceReferencesTable.sourceSystemId, id));
 
-    res.json({ ...system, referenceCount: refCount?.value ?? 0 });
+    res.json(redactSystem({ ...system, referenceCount: refCount?.value ?? 0 }));
   },
 );
 
@@ -161,7 +197,7 @@ connectorsRouter.post(
       details: { name, systemType },
     });
 
-    res.status(201).json(system);
+    res.status(201).json(redactSystem(system));
   },
 );
 
@@ -213,7 +249,7 @@ connectorsRouter.patch(
       details: { updatedFields: Object.keys(updates) },
     });
 
-    res.json(system);
+    res.json(redactSystem(system));
   },
 );
 
@@ -473,6 +509,25 @@ connectorsRouter.post(
       return;
     }
 
+    let accessToken = "";
+    if (system.systemType === "sharepoint") {
+      const connConfig = system.connectionConfig as Record<
+        string,
+        string
+      > | null;
+      if (connConfig) {
+        try {
+          accessToken = await acquireSystemToken(connConfig);
+        } catch {
+          res.status(500).json({
+            error:
+              "Failed to acquire system token – check connector credentials",
+          });
+          return;
+        }
+      }
+    }
+
     const refs = await db
       .select()
       .from(sourceReferencesTable)
@@ -488,7 +543,6 @@ connectorsRouter.post(
         if (system.systemType === "sharepoint" && ref.metadata) {
           const meta = ref.metadata as { driveId?: string };
           if (meta.driveId) {
-            const accessToken = resolveGraphToken(req);
             const itemMeta = await getDriveItemMeta(
               accessToken,
               meta.driveId,

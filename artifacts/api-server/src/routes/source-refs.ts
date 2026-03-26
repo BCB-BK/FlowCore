@@ -9,7 +9,10 @@ import { eq, and, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
-import { getDriveItemMeta } from "../services/sharepoint.service";
+import {
+  getDriveItemMeta,
+  acquireSystemToken,
+} from "../services/sharepoint.service";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,6 +29,44 @@ function resolveGraphToken(req: {
 }
 
 export const sourceRefsRouter: IRouter = Router();
+
+async function filterBySharePointAccess<
+  T extends {
+    externalId: string;
+    metadata: unknown;
+    systemType: string;
+  },
+>(refs: T[], userGraphToken: string): Promise<T[]> {
+  if (!userGraphToken) return refs;
+
+  const spRefs = refs.filter((r) => r.systemType === "sharepoint");
+  if (spRefs.length === 0) return refs;
+
+  const accessible = new Set<string>();
+  await Promise.all(
+    spRefs.map(async (r) => {
+      const meta = r.metadata as { driveId?: string } | null;
+      if (!meta?.driveId) {
+        accessible.add(r.externalId);
+        return;
+      }
+      try {
+        const item = await getDriveItemMeta(
+          userGraphToken,
+          meta.driveId,
+          r.externalId,
+        );
+        if (item) accessible.add(r.externalId);
+      } catch {
+        // noop
+      }
+    }),
+  );
+
+  return refs.filter(
+    (r) => r.systemType !== "sharepoint" || accessible.has(r.externalId),
+  );
+}
 
 sourceRefsRouter.get(
   "/nodes/:nodeId/source-references",
@@ -62,7 +103,10 @@ sourceRefsRouter.get(
       .where(eq(sourceReferencesTable.nodeId, nodeId))
       .orderBy(desc(sourceReferencesTable.createdAt));
 
-    res.json(refs);
+    const userToken = resolveGraphToken(req);
+    const filtered = await filterBySharePointAccess(refs, userToken);
+
+    res.json(filtered);
   },
 );
 
@@ -247,7 +291,16 @@ sourceRefsRouter.post(
       const meta = ref.metadata as { driveId?: string } | null;
       if (meta?.driveId) {
         try {
-          const accessToken = resolveGraphToken(req);
+          let accessToken = "";
+          const connConfig = system.connectionConfig as Record<
+            string,
+            string
+          > | null;
+          if (connConfig) {
+            accessToken = await acquireSystemToken(connConfig);
+          } else {
+            accessToken = resolveGraphToken(req);
+          }
           const itemMeta = await getDriveItemMeta(
             accessToken,
             meta.driveId,
