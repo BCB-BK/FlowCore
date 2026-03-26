@@ -73,7 +73,6 @@ export function ReviewWorkflowPanel({
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [comment, setComment] = useState("");
-  const [reviewerId, setReviewerId] = useState("");
   const [nextReviewDate, setNextReviewDate] = useState("");
   const [rejectDecision, setRejectDecision] = useState("rejected");
   const [submitting, setSubmitting] = useState(false);
@@ -115,15 +114,13 @@ export function ReviewWorkflowPanel({
         {
           method: "POST",
           body: JSON.stringify({
-            reviewerId: reviewerId || undefined,
             comment: comment || undefined,
           }),
         },
       );
-      toast({ title: "Zur Prüfung eingereicht" });
+      toast({ title: "Zur Prüfung eingereicht", description: "Die Revision wurde in den Freigabe-Pool der Prozessmanager übermittelt." });
       setSubmitDialogOpen(false);
       setComment("");
-      setReviewerId("");
       fetchWorkflow();
       invalidate();
     } catch (err) {
@@ -137,7 +134,6 @@ export function ReviewWorkflowPanel({
   }, [
     apiBase,
     revisionId,
-    reviewerId,
     comment,
     toast,
     fetchWorkflow,
@@ -331,15 +327,10 @@ export function ReviewWorkflowPanel({
           <DialogHeader>
             <DialogTitle>Zur Prüfung einreichen</DialogTitle>
           </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Die Revision wird automatisch in den Freigabe-Pool aller zuständigen Prozessmanager übermittelt.
+          </p>
           <div className="space-y-3">
-            <div className="space-y-1">
-              <Label>Prüfer-ID (optional)</Label>
-              <Input
-                placeholder="ID des zugewiesenen Prüfers"
-                value={reviewerId}
-                onChange={(e) => setReviewerId(e.target.value)}
-              />
-            </div>
             <div className="space-y-1">
               <Label>Kommentar (optional)</Label>
               <Textarea
