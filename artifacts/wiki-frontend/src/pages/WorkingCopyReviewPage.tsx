@@ -1,7 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { useState, useMemo } from "react";
 import { useNode, useNodeRevisions } from "@/hooks/use-nodes";
-import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,7 @@ import {
   Eye,
   ArrowLeftRight,
   FileText,
-  Loader2,
+  Pencil,
 } from "lucide-react";
 import { getPageType } from "@/lib/types";
 import {
@@ -29,12 +28,51 @@ import type { JSONContent } from "@tiptap/react";
 
 type ReviewMode = "changes" | "before_after" | "full";
 
+interface RevisionRecord {
+  versionLabel?: string | null;
+  structuredFields?: Record<string, unknown> | null;
+  content?: Record<string, unknown> | null;
+  title?: string | null;
+}
+
+function extractEditorContent(sf: Record<string, unknown>): JSONContent | null {
+  if (sf._editorContent && typeof sf._editorContent === "object") {
+    return sf._editorContent as JSONContent;
+  }
+  return null;
+}
+
+function extractSections(
+  sf: Record<string, unknown>,
+): Array<{ key: string; value: unknown }> {
+  const result: Array<{ key: string; value: unknown }> = [];
+  for (const [key, val] of Object.entries(sf)) {
+    if (key === "_editorContent") continue;
+    if (val && typeof val === "string" && val.trim()) {
+      result.push({ key, value: val });
+    }
+  }
+  return result;
+}
+
+function extractMetadata(
+  content: Record<string, unknown>,
+): Array<{ key: string; value: unknown }> {
+  const result: Array<{ key: string; value: unknown }> = [];
+  for (const [key, val] of Object.entries(content)) {
+    if (key.endsWith("_display")) continue;
+    if (val !== null && val !== undefined && val !== "") {
+      result.push({ key, value: val });
+    }
+  }
+  return result;
+}
+
 export function WorkingCopyReviewPage() {
   const [, params] = useRoute("/nodes/:id/review");
   const nodeId = params?.id;
   const { data: node, isLoading: nodeLoading } = useNode(nodeId);
   const [, navigate] = useLocation();
-  const { toast } = useToast();
   const { data: currentUser } = useAuth();
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
@@ -59,25 +97,81 @@ export function WorkingCopyReviewPage() {
 
   const [reviewMode, setReviewMode] = useState<ReviewMode>("changes");
 
+  const publishedRevision = useMemo<RevisionRecord | null>(() => {
+    if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
+      return null;
+    return revisions[0] as RevisionRecord;
+  }, [revisions]);
+
+  const publishedSF = useMemo<Record<string, unknown>>(() => {
+    return (publishedRevision?.structuredFields as Record<string, unknown>) ?? {};
+  }, [publishedRevision]);
+
+  const publishedEditorContent = useMemo(
+    () => extractEditorContent(publishedSF),
+    [publishedSF],
+  );
+
+  const publishedSections = useMemo(
+    () => extractSections(publishedSF),
+    [publishedSF],
+  );
+
+  const publishedMetadata = useMemo(
+    () =>
+      extractMetadata(
+        (publishedRevision?.content as Record<string, unknown>) ?? {},
+      ),
+    [publishedRevision],
+  );
+
   const wcStructuredFields = useMemo(() => {
     if (!activeWC) return {};
     return (activeWC.structuredFields as Record<string, unknown>) ?? {};
   }, [activeWC]);
 
-  const wcEditorContent = useMemo(() => {
-    if (
-      wcStructuredFields._editorContent &&
-      typeof wcStructuredFields._editorContent === "object"
-    ) {
-      return wcStructuredFields._editorContent as JSONContent;
-    }
-    return null;
-  }, [wcStructuredFields]);
+  const wcEditorContent = useMemo(
+    () => extractEditorContent(wcStructuredFields),
+    [wcStructuredFields],
+  );
 
-  const wcMetadata = useMemo(() => {
-    if (!activeWC) return {};
-    return (activeWC.content as Record<string, unknown>) ?? {};
-  }, [activeWC]);
+  const wcSections = useMemo(
+    () => extractSections(wcStructuredFields),
+    [wcStructuredFields],
+  );
+
+  const wcMetadata = useMemo(
+    () =>
+      extractMetadata((activeWC?.content as Record<string, unknown>) ?? {}),
+    [activeWC],
+  );
+
+  const diffSections = useMemo(() => {
+    const allKeys = new Set([
+      ...Object.keys(publishedSF).filter((k) => k !== "_editorContent"),
+      ...Object.keys(wcStructuredFields).filter((k) => k !== "_editorContent"),
+    ]);
+    const changed: Array<{
+      key: string;
+      oldVal: unknown;
+      newVal: unknown;
+    }> = [];
+    for (const key of allKeys) {
+      const oldVal = publishedSF[key];
+      const newVal = wcStructuredFields[key];
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        changed.push({ key, oldVal, newVal });
+      }
+    }
+    return changed;
+  }, [publishedSF, wcStructuredFields]);
+
+  const editorChanged = useMemo(() => {
+    return (
+      JSON.stringify(publishedEditorContent) !==
+      JSON.stringify(wcEditorContent)
+    );
+  }, [publishedEditorContent, wcEditorContent]);
 
   if (nodeLoading || wcLoading) {
     return (
@@ -124,22 +218,16 @@ export function WorkingCopyReviewPage() {
   const canReview =
     activeWC.status === "submitted" || activeWC.status === "in_review";
   const pageDef = getPageType(node.templateType);
+  const isFirstVersion = !publishedRevision;
 
-  const changedSections: Array<{ key: string; value: unknown }> = [];
-  for (const [key, val] of Object.entries(wcStructuredFields)) {
-    if (key === "_editorContent") continue;
-    if (val && typeof val === "string" && val.trim()) {
-      changedSections.push({ key, value: val });
-    }
-  }
-
-  const changedMetadata: Array<{ key: string; value: unknown }> = [];
-  for (const [key, val] of Object.entries(wcMetadata)) {
-    if (key.endsWith("_display")) continue;
-    if (val !== null && val !== undefined && val !== "") {
-      changedMetadata.push({ key, value: val });
-    }
-  }
+  const statusLabel =
+    activeWC.status === "submitted"
+      ? "Eingereicht"
+      : activeWC.status === "in_review"
+        ? "In Prüfung"
+        : activeWC.status === "approved_for_publish"
+          ? "Freigegeben"
+          : activeWC.status;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -149,7 +237,7 @@ export function WorkingCopyReviewPage() {
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <PageTypeIcon iconName={node.templateType} />
-            <Badge variant="outline">{activeWC.status === "submitted" ? "Eingereicht" : activeWC.status === "in_review" ? "In Prüfung" : activeWC.status}</Badge>
+            <Badge variant="outline">{statusLabel}</Badge>
             {!canReview && (
               <Badge variant="secondary">Nur Ansicht</Badge>
             )}
@@ -162,6 +250,16 @@ export function WorkingCopyReviewPage() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
+          {canReview && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/nodes/${nodeId}/edit`)}
+            >
+              <Pencil className="h-4 w-4 mr-1" />
+              Arbeitskopie bearbeiten
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -214,65 +312,57 @@ export function WorkingCopyReviewPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {wcEditorContent && (
+              {editorChanged && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-blue-500" />
                     <span className="text-sm font-medium">
                       Seiteninhalt (Editor)
                     </span>
+                    <Badge variant="secondary" className="text-xs">
+                      geändert
+                    </Badge>
                   </div>
-                  <div className="rounded-md border p-3 bg-muted/20">
-                    <BlockEditor
-                      content={wcEditorContent}
-                      onSave={async () => {}}
-                      editable={false}
-                      nodeId={nodeId}
-                    />
-                  </div>
+                  {wcEditorContent && (
+                    <div className="rounded-md border p-3 bg-muted/20">
+                      <BlockEditor
+                        content={wcEditorContent}
+                        onSave={async () => {}}
+                        editable={false}
+                        nodeId={nodeId}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
-              {changedSections.map((section) => (
-                <div key={section.key} className="space-y-2">
+              {diffSections.map((diff) => (
+                <div key={diff.key} className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-sm font-medium">
-                      {section.key}
-                    </span>
+                    <span className="text-sm font-medium">{diff.key}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {diff.oldVal ? "geändert" : "neu"}
+                    </Badge>
                   </div>
-                  <div className="rounded-md border p-3 bg-muted/20 text-sm whitespace-pre-wrap">
-                    {String(section.value)}
+                  {diff.oldVal != null && (
+                    <div className="rounded-md border p-3 bg-red-50 dark:bg-red-950/20 text-sm whitespace-pre-wrap line-through text-muted-foreground">
+                      {String(diff.oldVal)}
+                    </div>
+                  )}
+                  <div className="rounded-md border p-3 bg-green-50 dark:bg-green-950/20 text-sm whitespace-pre-wrap">
+                    {String(diff.newVal ?? "")}
                   </div>
                 </div>
               ))}
 
-              {changedMetadata.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span className="text-sm font-medium">Metadaten</span>
-                  </div>
-                  <div className="rounded-md border p-3 bg-muted/20">
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {changedMetadata.map((m) => (
-                        <div key={m.key}>
-                          <span className="text-muted-foreground">
-                            {m.key}:
-                          </span>{" "}
-                          <span>{String(m.value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {!wcEditorContent &&
-                changedSections.length === 0 &&
-                changedMetadata.length === 0 && (
+              {!editorChanged &&
+                diffSections.length === 0 &&
+                wcMetadata.length === 0 && (
                   <p className="text-sm text-muted-foreground py-4 text-center">
-                    Keine Änderungen erkannt.
+                    {isFirstVersion
+                      ? "Erste Version — kein Vergleich verfügbar."
+                      : "Keine Änderungen erkannt."}
                   </p>
                 )}
             </CardContent>
@@ -298,64 +388,139 @@ export function WorkingCopyReviewPage() {
         </TabsContent>
 
         <TabsContent value="before_after" className="mt-4 space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {isFirstVersion && (
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Badge variant="outline">Vorher</Badge>
-                  Veröffentlichte Version
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {revisions && (revisions as Array<{ versionLabel?: string | null }>).length > 0
-                    ? `Version ${(revisions as Array<{ versionLabel?: string | null }>)[0]?.versionLabel || "1"}`
-                    : "Erste Version"}
-                </p>
-                <div className="mt-3 text-sm text-muted-foreground italic">
-                  Veröffentlichter Inhalt wird hier angezeigt
-                </div>
+              <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                Erste Version — es gibt keine veröffentlichte Version zum
+                Vergleich. Wechseln Sie zu "Komplette Arbeitskopie" um den
+                gesamten Inhalt zu sehen.
               </CardContent>
             </Card>
+          )}
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Badge variant="default">Nachher</Badge>
-                  Arbeitskopie
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {wcEditorContent ? (
-                  <BlockEditor
-                    content={wcEditorContent}
-                    onSave={async () => {}}
-                    editable={false}
-                    nodeId={nodeId}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    Kein Editor-Inhalt
-                  </p>
-                )}
-
-                {changedSections.length > 0 && (
-                  <div className="mt-4 space-y-2 border-t pt-3">
-                    {changedSections.map((s) => (
-                      <div key={s.key}>
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {s.key}
-                        </span>
-                        <p className="text-sm whitespace-pre-wrap">
-                          {String(s.value)}
+          {!isFirstVersion && (
+            <>
+              {(editorChanged ||
+                publishedEditorContent ||
+                wcEditorContent) && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      Seiteninhalt (Editor)
+                      {editorChanged && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 text-xs"
+                        >
+                          geändert
+                        </Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">
+                          Vorher (Version{" "}
+                          {publishedRevision?.versionLabel || "1"})
                         </p>
+                        <div className="rounded-md border p-3 min-h-[60px] bg-muted/10">
+                          {publishedEditorContent ? (
+                            <BlockEditor
+                              content={publishedEditorContent}
+                              onSave={async () => {}}
+                              editable={false}
+                              nodeId={nodeId}
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">
+                              Kein Editor-Inhalt
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">
+                          Nachher (Arbeitskopie)
+                        </p>
+                        <div className="rounded-md border p-3 min-h-[60px] bg-muted/10">
+                          {wcEditorContent ? (
+                            <BlockEditor
+                              content={wcEditorContent}
+                              onSave={async () => {}}
+                              editable={false}
+                              nodeId={nodeId}
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">
+                              Kein Editor-Inhalt
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {diffSections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      Strukturierte Felder
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {diffSections.map((diff) => (
+                      <div key={diff.key}>
+                        <p className="text-sm font-medium mb-2">
+                          {diff.key}
+                        </p>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Vorher
+                            </p>
+                            <div className="rounded-md border p-3 bg-muted/10 text-sm whitespace-pre-wrap min-h-[40px]">
+                              {diff.oldVal ? (
+                                String(diff.oldVal)
+                              ) : (
+                                <span className="text-muted-foreground italic">
+                                  Leer
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                              Nachher
+                            </p>
+                            <div className="rounded-md border p-3 bg-muted/10 text-sm whitespace-pre-wrap min-h-[40px]">
+                              {diff.newVal ? (
+                                String(diff.newVal)
+                              ) : (
+                                <span className="text-muted-foreground italic">
+                                  Leer
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!editorChanged && diffSections.length === 0 && (
+                <Card>
+                  <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                    Keine Unterschiede zur veröffentlichten Version erkannt.
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="full" className="mt-4 space-y-4">
@@ -406,12 +571,12 @@ export function WorkingCopyReviewPage() {
                 </div>
               )}
 
-              {changedMetadata.length > 0 && (
+              {wcMetadata.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium mb-2">Metadaten</h3>
                   <div className="border rounded-md p-3 bg-muted/20">
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      {changedMetadata.map((m) => (
+                      {wcMetadata.map((m) => (
                         <div key={m.key}>
                           <span className="text-muted-foreground">
                             {m.key}:
