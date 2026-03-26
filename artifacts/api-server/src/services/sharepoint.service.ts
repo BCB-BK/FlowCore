@@ -2,6 +2,47 @@ import { Client } from "@microsoft/microsoft-graph-client";
 import { appConfig } from "../lib/config";
 import { logger } from "../lib/logger";
 
+interface ConnectorConfig {
+  tenantId?: string;
+  clientId?: string;
+  clientSecret?: string;
+}
+
+export async function acquireSystemToken(
+  connectionConfig: unknown,
+): Promise<string> {
+  if (appConfig.authDevMode) return "";
+
+  const cfg = connectionConfig as ConnectorConfig | null;
+  if (!cfg?.tenantId || !cfg?.clientId || !cfg?.clientSecret) {
+    throw new Error(
+      "Missing SharePoint connector credentials (tenantId, clientId, clientSecret)",
+    );
+  }
+
+  const tokenUrl = `https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/token`;
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: cfg.clientId,
+    client_secret: cfg.clientSecret,
+    scope: "https://graph.microsoft.com/.default",
+  });
+
+  const resp = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Token acquisition failed (${resp.status}): ${text}`);
+  }
+
+  const data = (await resp.json()) as { access_token: string };
+  return data.access_token;
+}
+
 export interface SharePointSite {
   id: string;
   displayName: string;

@@ -177,3 +177,11 @@ export async function getStorageProviderById(
   providerCache.set(providerId, provider);
   return provider;
 }
+
+export function invalidateProviderCache(providerId?: string): void {
+  if (providerId) {
+    providerCache.delete(providerId);
+  } else {
+    providerCache.clear();
+  }
+}

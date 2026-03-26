@@ -15,6 +15,7 @@ import {
   listDriveItems,
   getDriveItemMeta,
 } from "../services/sharepoint.service";
+import { invalidateProviderCache } from "../services/storage.service";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -338,7 +339,12 @@ connectorsRouter.post(
       details: { name, providerType },
     });
 
-    res.status(201).json(provider);
+    res.status(201).json({
+      ...provider,
+      config: redactProviderConfig(
+        provider.config as Record<string, unknown> | null,
+      ),
+    });
   },
 );
 
@@ -381,7 +387,14 @@ connectorsRouter.patch(
       return;
     }
 
-    res.json(provider);
+    invalidateProviderCache(id);
+
+    res.json({
+      ...provider,
+      config: redactProviderConfig(
+        provider.config as Record<string, unknown> | null,
+      ),
+    });
   },
 );
 

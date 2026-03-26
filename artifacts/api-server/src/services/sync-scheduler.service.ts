@@ -4,7 +4,7 @@ import {
   sourceReferencesTable,
 } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
-import { getDriveItemMeta } from "./sharepoint.service";
+import { getDriveItemMeta, acquireSystemToken } from "./sharepoint.service";
 import { logger } from "../lib/logger";
 
 const POLL_INTERVAL_MS = 60_000;
@@ -13,7 +13,36 @@ let schedulerTimer: ReturnType<typeof setInterval> | null = null;
 async function syncSourceSystem(system: {
   id: string;
   systemType: string;
+  connectionConfig: unknown;
 }): Promise<{ checked: number; stale: number; errors: number }> {
+  let accessToken = "";
+  if (system.systemType === "sharepoint") {
+    try {
+      accessToken = await acquireSystemToken(system.connectionConfig);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Token acquisition failed";
+      logger.error(
+        { systemId: system.id, err },
+        "Failed to acquire system token for sync",
+      );
+      const now = new Date();
+      await db
+        .update(sourceReferencesTable)
+        .set({
+          syncStatus: "error",
+          lastCheckedAt: now,
+          syncError: msg,
+        })
+        .where(eq(sourceReferencesTable.sourceSystemId, system.id));
+      const refs = await db
+        .select({ id: sourceReferencesTable.id })
+        .from(sourceReferencesTable)
+        .where(eq(sourceReferencesTable.sourceSystemId, system.id));
+      return { checked: refs.length, stale: 0, errors: refs.length };
+    }
+  }
+
   const refs = await db
     .select()
     .from(sourceReferencesTable)
@@ -30,7 +59,7 @@ async function syncSourceSystem(system: {
         const meta = ref.metadata as { driveId?: string };
         if (meta.driveId) {
           const itemMeta = await getDriveItemMeta(
-            "",
+            accessToken,
             meta.driveId,
             ref.externalId,
           );
