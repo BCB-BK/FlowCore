@@ -20,7 +20,13 @@ declare module "express-session" {
   }
 }
 
+const isProduction = appConfig.nodeEnv === "production";
+
 const app: Express = express();
+
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
 
 app.use(correlationId);
 app.use(
@@ -52,10 +58,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: appConfig.nodeEnv === "production",
+      secure: isProduction,
       httpOnly: true,
       maxAge: 8 * 60 * 60 * 1000,
-      sameSite: "lax",
+      sameSite: isProduction ? "none" : "lax",
     },
   }),
 );
