@@ -2277,6 +2277,21 @@ paths:
                 items:
                   $ref: "#/components/schemas/PersonalWorkItem"
 
+  /quality/by-process:
+    get:
+      operationId: getQualityByProcess
+      tags: [quality]
+      summary: Get quality metrics aggregated by template/process type
+      responses:
+        "200":
+          description: Quality metrics per template type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProcessQualityRow"
+
   /quality/search-insights:
     get:
       operationId: getSearchInsights
@@ -4518,7 +4533,7 @@ components:
       properties:
         type:
           type: string
-          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, archived_reference, missing_mandatory_fields, broken_link, unreferenced_media, stale_policy_reference, missing_tags, violated_review_cycle]
+          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, archived_reference, missing_mandatory_fields, broken_link, unreferenced_media, stale_policy_reference, missing_tags, violated_review_cycle, contradictory_roles]
         severity:
           type: string
           enum: [critical, warning, info]
@@ -4531,6 +4546,9 @@ components:
           type: string
         detail:
           type: string
+        targetType:
+          type: string
+          enum: [page, media]
       required:
         - type
         - severity
@@ -4573,6 +4591,35 @@ components:
         - detail
         - priority
         - updatedAt
+
+    ProcessQualityRow:
+      type: object
+      properties:
+        templateType:
+          type: string
+        totalPages:
+          type: integer
+        publishedPages:
+          type: integer
+        draftPages:
+          type: integer
+        avgCompleteness:
+          type: number
+        pagesWithoutOwner:
+          type: integer
+        overdueReviews:
+          type: integer
+        pagesWithoutTags:
+          type: integer
+      required:
+        - templateType
+        - totalPages
+        - publishedPages
+        - draftPages
+        - avgCompleteness
+        - pagesWithoutOwner
+        - overdueReviews
+        - pagesWithoutTags
 
     SearchInsights:
       type: object

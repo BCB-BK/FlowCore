@@ -83,6 +83,7 @@ import type {
   PersonalWorkItem,
   Principal,
   PrincipalWithRoles,
+  ProcessQualityRow,
   PublishRevisionInput,
   QualityOverview,
   RejectRevisionBody,
@@ -9548,6 +9549,81 @@ export function useGetMyWork<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetMyWorkQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get quality metrics aggregated by template/process type
+ */
+export const getGetQualityByProcessUrl = () => {
+  return `/api/quality/by-process`;
+};
+
+export const getQualityByProcess = async (
+  options?: RequestInit,
+): Promise<ProcessQualityRow[]> => {
+  return customFetch<ProcessQualityRow[]>(getGetQualityByProcessUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetQualityByProcessQueryKey = () => {
+  return [`/api/quality/by-process`] as const;
+};
+
+export const getGetQualityByProcessQueryOptions = <
+  TData = Awaited<ReturnType<typeof getQualityByProcess>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityByProcess>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetQualityByProcessQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getQualityByProcess>>
+  > = ({ signal }) => getQualityByProcess({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityByProcess>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetQualityByProcessQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getQualityByProcess>>
+>;
+export type GetQualityByProcessQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get quality metrics aggregated by template/process type
+ */
+
+export function useGetQualityByProcess<
+  TData = Awaited<ReturnType<typeof getQualityByProcess>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityByProcess>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetQualityByProcessQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

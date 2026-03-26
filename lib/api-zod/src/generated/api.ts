@@ -2432,12 +2432,14 @@ export const GetMaintenanceHintsResponseItem = zod.object({
     "stale_policy_reference",
     "missing_tags",
     "violated_review_cycle",
+    "contradictory_roles",
   ]),
   severity: zod.enum(["critical", "warning", "info"]),
   nodeId: zod.string().uuid(),
   title: zod.string(),
   displayCode: zod.string(),
   detail: zod.string(),
+  targetType: zod.enum(["page", "media"]).optional(),
 });
 export const GetMaintenanceHintsResponse = zod.array(
   GetMaintenanceHintsResponseItem,
@@ -2464,6 +2466,23 @@ export const GetMyWorkResponseItem = zod.object({
   updatedAt: zod.string(),
 });
 export const GetMyWorkResponse = zod.array(GetMyWorkResponseItem);
+
+/**
+ * @summary Get quality metrics aggregated by template/process type
+ */
+export const GetQualityByProcessResponseItem = zod.object({
+  templateType: zod.string(),
+  totalPages: zod.number(),
+  publishedPages: zod.number(),
+  draftPages: zod.number(),
+  avgCompleteness: zod.number(),
+  pagesWithoutOwner: zod.number(),
+  overdueReviews: zod.number(),
+  pagesWithoutTags: zod.number(),
+});
+export const GetQualityByProcessResponse = zod.array(
+  GetQualityByProcessResponseItem,
+);
 
 /**
  * @summary Get search analytics insights

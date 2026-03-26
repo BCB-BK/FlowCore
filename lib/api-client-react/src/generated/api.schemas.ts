@@ -1220,6 +1220,7 @@ export const MaintenanceHintType = {
   stale_policy_reference: "stale_policy_reference",
   missing_tags: "missing_tags",
   violated_review_cycle: "violated_review_cycle",
+  contradictory_roles: "contradictory_roles",
 } as const;
 
 export type MaintenanceHintSeverity =
@@ -1231,6 +1232,14 @@ export const MaintenanceHintSeverity = {
   info: "info",
 } as const;
 
+export type MaintenanceHintTargetType =
+  (typeof MaintenanceHintTargetType)[keyof typeof MaintenanceHintTargetType];
+
+export const MaintenanceHintTargetType = {
+  page: "page",
+  media: "media",
+} as const;
+
 export interface MaintenanceHint {
   type: MaintenanceHintType;
   severity: MaintenanceHintSeverity;
@@ -1238,6 +1247,7 @@ export interface MaintenanceHint {
   title: string;
   displayCode: string;
   detail: string;
+  targetType?: MaintenanceHintTargetType;
 }
 
 export type PersonalWorkItemType =
@@ -1270,6 +1280,17 @@ export interface PersonalWorkItem {
   detail: string;
   priority: PersonalWorkItemPriority;
   updatedAt: string;
+}
+
+export interface ProcessQualityRow {
+  templateType: string;
+  totalPages: number;
+  publishedPages: number;
+  draftPages: number;
+  avgCompleteness: number;
+  pagesWithoutOwner: number;
+  overdueReviews: number;
+  pagesWithoutTags: number;
 }
 
 export type SearchInsightsTopQueriesItem = {

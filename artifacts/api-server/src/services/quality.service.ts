@@ -62,12 +62,25 @@ export interface MaintenanceHint {
     | "unreferenced_media"
     | "stale_policy_reference"
     | "missing_tags"
-    | "violated_review_cycle";
+    | "violated_review_cycle"
+    | "contradictory_roles";
   severity: "critical" | "warning" | "info";
   nodeId: string;
   title: string;
   displayCode: string;
   detail: string;
+  targetType?: "page" | "media";
+}
+
+export interface ProcessQualityRow {
+  templateType: string;
+  totalPages: number;
+  publishedPages: number;
+  draftPages: number;
+  avgCompleteness: number;
+  pagesWithoutOwner: number;
+  overdueReviews: number;
+  pagesWithoutTags: number;
 }
 
 export interface PersonalWorkItem {
@@ -369,40 +382,53 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
         a.template_type as type_a, a.status as status_a, a.updated_at::text as updated_a,
         b.id as node_id_b, b.title as title_b, b.display_code as code_b,
         b.template_type as type_b, b.status as status_b, b.updated_at::text as updated_b,
-        similarity(LOWER(a.title), LOWER(b.title)) as sim_score
+        similarity(LOWER(a.title), LOWER(b.title)) as title_sim,
+        CASE WHEN a.template_type = b.template_type THEN 0.15 ELSE 0.0 END as type_bonus,
+        COALESCE((
+          SELECT COUNT(*)::float / GREATEST(
+            (SELECT COUNT(*) FROM content_node_tags WHERE node_id = a.id) +
+            (SELECT COUNT(*) FROM content_node_tags WHERE node_id = b.id) -
+            COUNT(*), 1
+          )
+          FROM content_node_tags ta
+          JOIN content_node_tags tb ON ta.tag_id = tb.tag_id
+          WHERE ta.node_id = a.id AND tb.node_id = b.id
+        ), 0) * 0.15 as tag_overlap
       FROM content_nodes a
       JOIN content_nodes b ON a.id < b.id
       WHERE NOT a.is_deleted AND NOT b.is_deleted
         AND a.title != b.title
-        AND similarity(LOWER(a.title), LOWER(b.title)) > 0.4
-      ORDER BY sim_score DESC
+        AND similarity(LOWER(a.title), LOWER(b.title)) > 0.3
+      ORDER BY (similarity(LOWER(a.title), LOWER(b.title)) * 0.7 +
+        CASE WHEN a.template_type = b.template_type THEN 0.15 ELSE 0.0 END) DESC
       LIMIT 50
     `);
 
     const exactTitles = new Set(exactGroups.keys());
+    const seenPairs = new Set<string>();
     for (const raw of similarResult.rows) {
       const r = raw as R;
       const titleA = str(r, "title_a");
       const titleB = str(r, "title_b");
       if (exactTitles.has(titleA) && exactTitles.has(titleB)) continue;
 
-      const key = [titleA, titleB].sort().join("|||");
-      const existing = groups.find(
-        (g) =>
-          g.matchType === "similar" &&
-          g.nodes.some(
-            (n) =>
-              n.nodeId === str(r, "node_id_a") ||
-              n.nodeId === str(r, "node_id_b"),
-          ),
-      );
-      if (existing) continue;
+      const pairKey = [str(r, "node_id_a"), str(r, "node_id_b")]
+        .sort()
+        .join("|");
+      if (seenPairs.has(pairKey)) continue;
+      seenPairs.add(pairKey);
 
-      const score = parseFloat(String(r.sim_score ?? "0"));
+      const titleSim = parseFloat(String(r.title_sim ?? "0"));
+      const typeBonus = parseFloat(String(r.type_bonus ?? "0"));
+      const tagOverlap = parseFloat(String(r.tag_overlap ?? "0"));
+      const compositeScore = titleSim * 0.7 + typeBonus + tagOverlap;
+
+      if (compositeScore < 0.3) continue;
+
       groups.push({
         title: `${titleA} / ${titleB}`,
         matchType: "similar",
-        similarityScore: Math.round(score * 100) / 100,
+        similarityScore: Math.round(compositeScore * 100) / 100,
         nodes: [
           {
             nodeId: str(r, "node_id_a"),
@@ -573,6 +599,7 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
       title: str(r, "original_filename"),
       displayCode: str(r, "filename"),
       detail: "Medien-Datei wird von keiner Seite referenziert",
+      targetType: "media",
     });
   }
 
@@ -641,6 +668,76 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
       title: str(r, "title"),
       displayCode: str(r, "display_code"),
       detail: `Review-Zyklus massiv verletzt — fällig seit ${str(r, "next_review_date")}`,
+    });
+  }
+
+  const contradictoryRoles = await db.execute(sql`
+    SELECT cn.id as node_id, cn.title, cn.display_code,
+           cr.reviewer_id, cr.approver_id, cn.owner_id
+    FROM content_nodes cn
+    JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+      AND (
+        (cn.owner_id IS NOT NULL AND cr.reviewer_id IS NOT NULL AND cn.owner_id = cr.reviewer_id)
+        OR (cr.reviewer_id IS NOT NULL AND cr.approver_id IS NOT NULL AND cr.reviewer_id = cr.approver_id)
+      )
+    LIMIT 30
+  `);
+  for (const raw of contradictoryRoles.rows) {
+    const r = raw as R;
+    let detail = "";
+    if (
+      r.owner_id &&
+      r.reviewer_id &&
+      String(r.owner_id) === String(r.reviewer_id)
+    ) {
+      detail =
+        "Verantwortlicher ist gleichzeitig Reviewer (Vier-Augen-Prinzip verletzt)";
+    } else if (
+      r.reviewer_id &&
+      r.approver_id &&
+      String(r.reviewer_id) === String(r.approver_id)
+    ) {
+      detail =
+        "Reviewer ist gleichzeitig Genehmiger (Rollen-Trennung verletzt)";
+    }
+    if (detail) {
+      hints.push({
+        type: "contradictory_roles",
+        severity: "warning",
+        nodeId: str(r, "node_id"),
+        title: str(r, "title"),
+        displayCode: str(r, "display_code"),
+        detail,
+      });
+    }
+  }
+
+  const missingMandatory = await db.execute(sql`
+    SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type
+    FROM content_nodes cn
+    WHERE NOT cn.is_deleted
+      AND cn.status IN ('published', 'approved')
+      AND (
+        cn.owner_id IS NULL
+        OR cn.current_revision_id IS NULL
+        OR cn.published_revision_id IS NULL
+      )
+    LIMIT 30
+  `);
+  for (const raw of missingMandatory.rows) {
+    const r = raw as R;
+    const missing: string[] = [];
+    if (!r.owner_id) missing.push("Verantwortlicher");
+    if (!r.current_revision_id) missing.push("aktuelle Revision");
+    if (!r.published_revision_id) missing.push("veröffentlichte Revision");
+    hints.push({
+      type: "missing_mandatory_fields",
+      severity: "warning",
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      detail: `Pflichtfelder fehlen: ${missing.join(", ")}`,
     });
   }
 
@@ -828,4 +925,45 @@ export async function getSearchInsights(days = 30): Promise<SearchInsights> {
       return { nodeId: str(r, "node_id"), clicks: num(r, "clicks") };
     }),
   };
+}
+
+export async function getQualityByProcess(): Promise<ProcessQualityRow[]> {
+  const result = await db.execute(sql`
+    SELECT
+      cn.template_type,
+      COUNT(*) as total_pages,
+      COUNT(*) FILTER (WHERE cn.status = 'published') as published_pages,
+      COUNT(*) FILTER (WHERE cn.status = 'draft') as draft_pages,
+      COUNT(*) FILTER (WHERE cn.owner_id IS NULL) as pages_without_owner,
+      COUNT(*) FILTER (WHERE NOT EXISTS (
+        SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id
+      )) as pages_without_tags,
+      COUNT(DISTINCT cn.id) FILTER (WHERE cr.next_review_date IS NOT NULL AND cr.next_review_date < NOW()) as overdue_reviews,
+      ROUND(AVG(
+        CASE WHEN cn.owner_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN cn.current_revision_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN cn.published_revision_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id) THEN 20 ELSE 0 END +
+        CASE WHEN cr.next_review_date IS NULL OR cr.next_review_date >= NOW() THEN 20 ELSE 0 END
+      )) as avg_completeness
+    FROM content_nodes cn
+    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+    GROUP BY cn.template_type
+    ORDER BY total_pages DESC
+  `);
+
+  return result.rows.map((raw) => {
+    const r = raw as R;
+    return {
+      templateType: str(r, "template_type"),
+      totalPages: num(r, "total_pages"),
+      publishedPages: num(r, "published_pages"),
+      draftPages: num(r, "draft_pages"),
+      avgCompleteness: num(r, "avg_completeness"),
+      pagesWithoutOwner: num(r, "pages_without_owner"),
+      overdueReviews: num(r, "overdue_reviews"),
+      pagesWithoutTags: num(r, "pages_without_tags"),
+    };
+  });
 }

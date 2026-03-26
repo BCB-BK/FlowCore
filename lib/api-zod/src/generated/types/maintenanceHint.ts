@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { MaintenanceHintSeverity } from "./maintenanceHintSeverity";
+import type { MaintenanceHintTargetType } from "./maintenanceHintTargetType";
 import type { MaintenanceHintType } from "./maintenanceHintType";
 
 export interface MaintenanceHint {
@@ -15,4 +16,5 @@ export interface MaintenanceHint {
   title: string;
   displayCode: string;
   detail: string;
+  targetType?: MaintenanceHintTargetType;
 }

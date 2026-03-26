@@ -8,6 +8,7 @@ import {
   getMaintenanceHints,
   getPersonalWorkItems,
   getSearchInsights,
+  getQualityByProcess,
 } from "../services/quality.service";
 import { logger } from "../lib/logger";
 
@@ -75,6 +76,21 @@ qualityRouter.get(
     } catch (err) {
       logger.error({ err }, "Failed to get maintenance hints");
       res.status(500).json({ error: "Failed to get maintenance hints" });
+    }
+  },
+);
+
+qualityRouter.get(
+  "/by-process",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    try {
+      const data = await getQualityByProcess();
+      res.json(data);
+    } catch (err) {
+      logger.error({ err }, "Failed to get quality by process");
+      res.status(500).json({ error: "Failed to get quality by process" });
     }
   },
 );

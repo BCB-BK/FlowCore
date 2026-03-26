@@ -22,4 +22,5 @@ export const MaintenanceHintType = {
   stale_policy_reference: "stale_policy_reference",
   missing_tags: "missing_tags",
   violated_review_cycle: "violated_review_cycle",
+  contradictory_roles: "contradictory_roles",
 } as const;

@@ -55,6 +55,7 @@ import {
   useGetQualityDuplicates,
   useGetMaintenanceHints,
   useGetSearchInsights,
+  useGetQualityByProcess,
 } from "@workspace/api-client-react";
 import type {
   GetQualityPagesFilter,
@@ -144,6 +145,7 @@ function HintTypeLabel({ type }: { type: string }) {
     stale_policy_reference: "Veraltete Richtlinie",
     missing_tags: "Fehlende Tags",
     violated_review_cycle: "Review-Zyklus verletzt",
+    contradictory_roles: "Widersprüchliche Rollen",
   };
   return <span className="text-xs">{labels[type] || type}</span>;
 }
@@ -181,6 +183,8 @@ export function QualityDashboard() {
   const { data: hints, isLoading: hintsLoading } = useGetMaintenanceHints();
   const { data: searchInsights, isLoading: searchLoading } =
     useGetSearchInsights();
+  const { data: processByType, isLoading: processLoading } =
+    useGetQualityByProcess();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -416,6 +420,71 @@ export function QualityDashboard() {
               )}
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                Qualität nach Prozess-/Seitentyp
+              </CardTitle>
+              <CardDescription>
+                Aufschlüsselung der Metriken pro Template-Typ
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {processLoading ? (
+                <div className="p-4 space-y-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10" />
+                  ))}
+                </div>
+              ) : processByType && processByType.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Typ</TableHead>
+                      <TableHead className="text-right">Gesamt</TableHead>
+                      <TableHead className="text-right">Veröff.</TableHead>
+                      <TableHead className="text-right">Entwurf</TableHead>
+                      <TableHead className="text-right">Ohne Owner</TableHead>
+                      <TableHead className="text-right">Ohne Tags</TableHead>
+                      <TableHead className="text-right">Ø Vollst.</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {processByType.map((row) => (
+                      <TableRow key={row.templateType}>
+                        <TableCell className="font-medium text-sm">
+                          {row.templateType.replace(/_/g, " ")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.totalPages}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.publishedPages}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.draftPages}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.pagesWithoutOwner}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.pagesWithoutTags}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <CompletenessBar value={row.avgCompleteness} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                  Keine Daten verfügbar
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="pages" className="space-y-4">
@@ -586,8 +655,16 @@ export function QualityDashboard() {
                     {hints.map((hint, idx) => (
                       <TableRow
                         key={`${hint.nodeId}-${hint.type}-${idx}`}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => navigate(`/node/${hint.nodeId}`)}
+                        className={
+                          hint.targetType === "media"
+                            ? ""
+                            : "cursor-pointer hover:bg-muted/50"
+                        }
+                        onClick={() => {
+                          if (hint.targetType !== "media") {
+                            navigate(`/node/${hint.nodeId}`);
+                          }
+                        }}
                       >
                         <TableCell>
                           <SeverityBadge severity={hint.severity} />
