@@ -2217,7 +2217,11 @@ export const GetAiSettingsResponse = zod.object({
   id: zod.string().uuid().nullish(),
   enabled: zod.boolean(),
   model: zod.string(),
-  sourceMode: zod.string(),
+  sourceMode: zod.enum([
+    "wiki_only",
+    "wiki_and_connectors",
+    "wiki_connectors_web",
+  ]),
   webSearchEnabled: zod.boolean(),
   maxCompletionTokens: zod.number(),
   systemPrompt: zod.string().nullish(),
@@ -2232,7 +2236,9 @@ export const GetAiSettingsResponse = zod.object({
 export const UpdateAiSettingsBody = zod.object({
   enabled: zod.boolean().optional(),
   model: zod.string().optional(),
-  sourceMode: zod.string().optional(),
+  sourceMode: zod
+    .enum(["wiki_only", "wiki_and_connectors", "wiki_connectors_web"])
+    .optional(),
   webSearchEnabled: zod.boolean().optional(),
   maxCompletionTokens: zod.number().optional(),
   systemPrompt: zod.string().nullish(),
@@ -2243,7 +2249,11 @@ export const UpdateAiSettingsResponse = zod.object({
   id: zod.string().uuid().nullish(),
   enabled: zod.boolean(),
   model: zod.string(),
-  sourceMode: zod.string(),
+  sourceMode: zod.enum([
+    "wiki_only",
+    "wiki_and_connectors",
+    "wiki_connectors_web",
+  ]),
   webSearchEnabled: zod.boolean(),
   maxCompletionTokens: zod.number(),
   systemPrompt: zod.string().nullish(),
@@ -2274,6 +2284,10 @@ export const AiPageAssistBody = zod.object({
     "shorten",
     "grammar",
     "gap_analysis",
+    "professionalize",
+    "adjust_tone",
+    "restructure",
+    "template_completeness",
   ]),
   text: zod.string().min(1).max(aiPageAssistBodyTextMax),
   nodeId: zod.string().uuid().optional(),

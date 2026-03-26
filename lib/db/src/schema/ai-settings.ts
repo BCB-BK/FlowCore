@@ -32,7 +32,6 @@ export const aiUsageLogsTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     principalId: text("principal_id").notNull(),
     action: text("action").notNull(),
-    query: text("query"),
     model: text("model").notNull(),
     sourceMode: text("source_mode").notNull(),
     webSearchUsed: boolean("web_search_used").notNull().default(false),

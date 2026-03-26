@@ -163,9 +163,7 @@ Database layer using Drizzle ORM with PostgreSQL.
 - `src/schema/media-assets.ts` — File attachments
 - `src/schema/audit-events.ts` — Audit trail
 - `src/schema/principals.ts` — Principals, role assignments, page permissions, node ownership
-- `src/schema/ai-settings.ts` — AI settings (global config) + AI usage logs (query volume, errors, latency)
-- `src/schema/conversations.ts` — AI conversations (OpenAI integration)
-- `src/schema/messages.ts` — AI conversation messages (OpenAI integration)
+- `src/schema/ai-settings.ts` — AI settings (global config) + AI usage logs (metadata-only: action, model, latency, errors)
 - `src/seed.ts` — Example seed data
 - Push: `pnpm --filter @workspace/db run push`
 - Seed: `npx -p tsx tsx lib/db/src/seed.ts`

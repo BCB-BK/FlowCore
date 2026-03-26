@@ -16,12 +16,17 @@ import {
 import { customFetch } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 
+type SourceType = "wiki" | "connector" | "web";
+
 interface AiSource {
   nodeId: string;
   title: string;
   displayCode: string;
   templateType: string;
   snippet: string;
+  sourceType: SourceType;
+  externalUrl?: string;
+  sourceSystemName?: string;
 }
 
 interface Message {
@@ -209,11 +214,24 @@ export function GlobalAssistant() {
                       </p>
                       {msg.sources.map((src) => (
                         <button
-                          key={src.nodeId}
+                          key={`${src.nodeId}-${i}`}
                           className="flex items-center gap-2 text-xs text-left w-full rounded border px-2 py-1.5 hover:bg-accent transition-colors"
-                          onClick={() => navigate(`/node/${src.nodeId}`)}
+                          onClick={() => {
+                            if (
+                              src.sourceType === "connector" &&
+                              src.externalUrl
+                            ) {
+                              window.open(src.externalUrl, "_blank");
+                            } else {
+                              navigate(`/node/${src.nodeId}`);
+                            }
+                          }}
                         >
-                          <FileText className="h-3 w-3 shrink-0 text-primary" />
+                          {src.sourceType === "connector" ? (
+                            <ExternalLink className="h-3 w-3 shrink-0 text-orange-500" />
+                          ) : (
+                            <FileText className="h-3 w-3 shrink-0 text-primary" />
+                          )}
                           <span className="truncate flex-1">
                             <span className="font-medium">
                               {src.displayCode}
@@ -224,7 +242,9 @@ export function GlobalAssistant() {
                             variant="outline"
                             className="text-[10px] shrink-0"
                           >
-                            {src.templateType.replace(/_/g, " ")}
+                            {src.sourceType === "connector"
+                              ? src.sourceSystemName || "Extern"
+                              : src.templateType.replace(/_/g, " ")}
                           </Badge>
                         </button>
                       ))}

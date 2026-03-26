@@ -6,7 +6,6 @@ import {
   Bot,
   Loader2,
   RefreshCw,
-  FileEdit,
   AlignLeft,
   Expand,
   Shrink,
@@ -15,6 +14,10 @@ import {
   Copy,
   Check,
   X,
+  Briefcase,
+  MessageSquare,
+  LayoutList,
+  ClipboardCheck,
 } from "lucide-react";
 import {
   Tooltip,
@@ -28,7 +31,11 @@ type Action =
   | "expand"
   | "shorten"
   | "grammar"
-  | "gap_analysis";
+  | "gap_analysis"
+  | "professionalize"
+  | "adjust_tone"
+  | "restructure"
+  | "template_completeness";
 
 interface ActionDef {
   key: Action;
@@ -73,6 +80,30 @@ const ACTIONS: ActionDef[] = [
     label: "Lückenanalyse",
     icon: <Search className="h-4 w-4" />,
     description: "Fehlende Informationen identifizieren",
+  },
+  {
+    key: "professionalize",
+    label: "Professionalisieren",
+    icon: <Briefcase className="h-4 w-4" />,
+    description: "In professionellen Unternehmens-Ton überführen",
+  },
+  {
+    key: "adjust_tone",
+    label: "Ton anpassen",
+    icon: <MessageSquare className="h-4 w-4" />,
+    description: "Sachlich, klar und neutral formulieren",
+  },
+  {
+    key: "restructure",
+    label: "Umstrukturieren",
+    icon: <LayoutList className="h-4 w-4" />,
+    description: "Mit Überschriften und Aufzählungen neu gliedern",
+  },
+  {
+    key: "template_completeness",
+    label: "Vollständigkeit",
+    icon: <ClipboardCheck className="h-4 w-4" />,
+    description: "Fehlende Felder und Lücken im Seitentemplate prüfen",
   },
 ];
 
@@ -199,7 +230,7 @@ export function PageAssistant({
           Wählen Sie Text im Editor aus und klicken Sie eine Aktion:
         </p>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {ACTIONS.map((a) => (
             <Tooltip key={a.key}>
               <TooltipTrigger asChild>

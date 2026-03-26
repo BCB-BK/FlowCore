@@ -4083,6 +4083,10 @@ components:
           type: string
         sourceMode:
           type: string
+          enum:
+            - wiki_only
+            - wiki_and_connectors
+            - wiki_connectors_web
         webSearchEnabled:
           type: boolean
         maxCompletionTokens:
@@ -4116,6 +4120,10 @@ components:
           type: string
         sourceMode:
           type: string
+          enum:
+            - wiki_only
+            - wiki_and_connectors
+            - wiki_connectors_web
         webSearchEnabled:
           type: boolean
         maxCompletionTokens:
@@ -4149,6 +4157,10 @@ components:
             - shorten
             - grammar
             - gap_analysis
+            - professionalize
+            - adjust_tone
+            - restructure
+            - template_completeness
         text:
           type: string
           minLength: 1

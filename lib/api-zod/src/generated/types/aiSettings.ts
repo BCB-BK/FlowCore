@@ -6,12 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AiSettingsPromptPolicies } from "./aiSettingsPromptPolicies";
+import type { AiSettingsSourceMode } from "./aiSettingsSourceMode";
 
 export interface AiSettings {
   id?: string | null;
   enabled: boolean;
   model: string;
-  sourceMode: string;
+  sourceMode: AiSettingsSourceMode;
   webSearchEnabled: boolean;
   maxCompletionTokens: number;
   systemPrompt?: string | null;

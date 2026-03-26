@@ -60,7 +60,10 @@ export function AISettingsPage() {
         data: {
           enabled,
           model,
-          sourceMode,
+          sourceMode: sourceMode as
+            | "wiki_only"
+            | "wiki_and_connectors"
+            | "wiki_connectors_web",
           webSearchEnabled,
           maxCompletionTokens,
           systemPrompt: systemPrompt || null,
@@ -161,7 +164,12 @@ export function AISettingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="wiki_only">Nur Wiki-Inhalte</SelectItem>
-                  <SelectItem value="wiki_and_web">Wiki + Web-Suche</SelectItem>
+                  <SelectItem value="wiki_and_connectors">
+                    Wiki + Konnektoren
+                  </SelectItem>
+                  <SelectItem value="wiki_connectors_web">
+                    Wiki + Konnektoren + Web
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

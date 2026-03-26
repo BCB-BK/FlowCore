@@ -16,4 +16,8 @@ export const AiPageAssistBodyAction = {
   shorten: "shorten",
   grammar: "grammar",
   gap_analysis: "gap_analysis",
+  professionalize: "professionalize",
+  adjust_tone: "adjust_tone",
+  restructure: "restructure",
+  template_completeness: "template_completeness",
 } as const;

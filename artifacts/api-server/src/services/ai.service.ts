@@ -4,15 +4,34 @@ import {
   aiUsageLogsTable,
   contentNodesTable,
   contentRevisionsTable,
+  sourceReferencesTable,
+  sourceSystemsTable,
 } from "@workspace/db/schema";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import type { Response } from "express";
 import { hasPermission } from "./rbac.service";
 
-let _openaiClient: any = null;
+interface OpenAIClient {
+  chat: {
+    completions: {
+      create(params: {
+        model: string;
+        max_completion_tokens: number;
+        messages: Array<{ role: string; content: string }>;
+        stream: boolean;
+      }): AsyncIterable<{
+        choices: Array<{
+          delta?: { content?: string };
+        }>;
+      }>;
+    };
+  };
+}
 
-async function getOpenAI() {
+let _openaiClient: OpenAIClient | null = null;
+
+async function getOpenAI(): Promise<OpenAIClient> {
   if (!_openaiClient) {
     if (
       !process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ||
@@ -21,10 +40,12 @@ async function getOpenAI() {
       throw new Error("OpenAI integration is not configured");
     }
     const mod = await import("@workspace/integrations-openai-ai-server");
-    _openaiClient = mod.openai;
+    _openaiClient = mod.openai as unknown as OpenAIClient;
   }
   return _openaiClient;
 }
+
+export type SourceType = "wiki" | "connector" | "web";
 
 export interface AiSource {
   nodeId: string;
@@ -32,12 +53,9 @@ export interface AiSource {
   displayCode: string;
   templateType: string;
   snippet: string;
-}
-
-export interface AskResult {
-  answer: string;
-  sources: AiSource[];
-  webSearchUsed: boolean;
+  sourceType: SourceType;
+  externalUrl?: string;
+  sourceSystemName?: string;
 }
 
 const DEFAULT_SYSTEM_PROMPT = `Du bist ein hilfreicher Wissensassistent für das Bildungscampus Backnang Enterprise Wiki.
@@ -53,7 +71,7 @@ export async function getAiSettings() {
       id: null,
       enabled: false,
       model: "gpt-5.2",
-      sourceMode: "wiki_only",
+      sourceMode: "wiki_only" as const,
       webSearchEnabled: false,
       maxCompletionTokens: 8192,
       systemPrompt: DEFAULT_SYSTEM_PROMPT,
@@ -123,9 +141,7 @@ async function searchWikiContent(
       title: contentNodesTable.title,
       displayCode: contentNodesTable.displayCode,
       templateType: contentNodesTable.templateType,
-      content: contentRevisionsTable.content,
       structuredFields: contentRevisionsTable.structuredFields,
-      rank: sql<number>`ts_rank(${contentNodesTable.searchVector}, to_tsquery('german', ${tsQuery}))`,
     })
     .from(contentNodesTable)
     .leftJoin(
@@ -168,8 +184,62 @@ async function searchWikiContent(
       displayCode: r.displayCode,
       templateType: r.templateType,
       snippet,
+      sourceType: "wiki" as SourceType,
     };
   });
+}
+
+async function searchConnectorSources(
+  query: string,
+  principalId: string,
+  limit = 4,
+): Promise<AiSource[]> {
+  const queryLower = `%${query.toLowerCase()}%`;
+
+  const results = await db
+    .select({
+      nodeId: sourceReferencesTable.nodeId,
+      externalTitle: sourceReferencesTable.externalTitle,
+      externalUrl: sourceReferencesTable.externalUrl,
+      systemName: sourceSystemsTable.name,
+      nodeTitle: contentNodesTable.title,
+      nodeDisplayCode: contentNodesTable.displayCode,
+      nodeTemplateType: contentNodesTable.templateType,
+    })
+    .from(sourceReferencesTable)
+    .innerJoin(
+      sourceSystemsTable,
+      eq(sourceReferencesTable.sourceSystemId, sourceSystemsTable.id),
+    )
+    .innerJoin(
+      contentNodesTable,
+      eq(sourceReferencesTable.nodeId, contentNodesTable.id),
+    )
+    .where(
+      and(
+        eq(sourceReferencesTable.syncStatus, "active"),
+        eq(sourceSystemsTable.isActive, true),
+        eq(contentNodesTable.isDeleted, false),
+        sql`(lower(${sourceReferencesTable.externalTitle}) like ${queryLower} OR lower(${contentNodesTable.title}) like ${queryLower})`,
+      ),
+    )
+    .limit(limit);
+
+  const permChecks = await Promise.all(
+    results.map((r) => hasPermission(principalId, "read_page", r.nodeId)),
+  );
+  const filtered = results.filter((_, i) => permChecks[i]);
+
+  return filtered.map((r) => ({
+    nodeId: r.nodeId,
+    title: r.externalTitle || r.nodeTitle,
+    displayCode: r.nodeDisplayCode,
+    templateType: r.nodeTemplateType,
+    snippet: `Externe Quelle: ${r.systemName}`,
+    sourceType: "connector" as SourceType,
+    externalUrl: r.externalUrl || undefined,
+    sourceSystemName: r.systemName,
+  }));
 }
 
 function extractTextFromBlocks(content: unknown): string {
@@ -186,11 +256,37 @@ function extractTextFromBlocks(content: unknown): string {
 function buildContextFromSources(sources: AiSource[]): string {
   if (sources.length === 0) return "Keine relevanten Wiki-Inhalte gefunden.";
   return sources
-    .map(
-      (s, i) =>
-        `[Quelle ${i + 1}] ${s.displayCode} – ${s.title} (${s.templateType})\n${s.snippet}`,
-    )
+    .map((s, i) => {
+      const typeLabel =
+        s.sourceType === "wiki"
+          ? "Wiki"
+          : s.sourceType === "connector"
+            ? `Connector: ${s.sourceSystemName || "extern"}`
+            : "Web";
+      return `[Quelle ${i + 1} – ${typeLabel}] ${s.displayCode} – ${s.title} (${s.templateType})\n${s.snippet}`;
+    })
     .join("\n\n");
+}
+
+async function gatherSources(
+  query: string,
+  principalId: string,
+  sourceMode: string,
+): Promise<{ sources: AiSource[]; webSearchUsed: boolean }> {
+  const wikiSources = await searchWikiContent(query, principalId);
+  let connectorSources: AiSource[] = [];
+  const webSearchUsed = false;
+
+  if (
+    sourceMode === "wiki_and_connectors" ||
+    sourceMode === "wiki_connectors_web"
+  ) {
+    connectorSources = await searchConnectorSources(query, principalId);
+  }
+
+  const sources = [...wikiSources, ...connectorSources];
+
+  return { sources, webSearchUsed };
 }
 
 export async function streamAskAnswer(
@@ -206,18 +302,24 @@ export async function streamAskAnswer(
     return;
   }
 
-  const sources = await searchWikiContent(query, principalId);
+  const { sources, webSearchUsed } = await gatherSources(
+    query,
+    principalId,
+    settings.sourceMode,
+  );
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  res.write(`data: ${JSON.stringify({ type: "sources", sources })}\n\n`);
+  res.write(
+    `data: ${JSON.stringify({ type: "sources", sources, webSearchUsed })}\n\n`,
+  );
 
   const contextText = buildContextFromSources(sources);
   const systemPrompt = settings.systemPrompt || DEFAULT_SYSTEM_PROMPT;
 
-  const messages: Array<{ role: "system" | "user"; content: string }> = [
+  const messages: Array<{ role: string; content: string }> = [
     { role: "system", content: systemPrompt },
     {
       role: "system",
@@ -226,7 +328,6 @@ export async function streamAskAnswer(
     { role: "user", content: query },
   ];
 
-  let fullResponse = "";
   let hasError = false;
   let errorMessage: string | undefined;
 
@@ -242,7 +343,6 @@ export async function streamAskAnswer(
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content;
       if (content) {
-        fullResponse += content;
         res.write(`data: ${JSON.stringify({ type: "content", content })}\n\n`);
       }
     }
@@ -262,14 +362,13 @@ export async function streamAskAnswer(
     .values({
       principalId,
       action: "ask",
-      query,
       model: settings.model,
       sourceMode: settings.sourceMode,
-      webSearchUsed: false,
+      webSearchUsed,
       sourcesCount: sources.length,
       latencyMs,
       hasError,
-      errorMessage,
+      errorMessage: hasError ? errorMessage : undefined,
       zeroResults: sources.length === 0,
     })
     .catch((e) => logger.error({ err: e }, "Failed to log AI usage"));
@@ -284,7 +383,11 @@ export type PageAssistAction =
   | "expand"
   | "shorten"
   | "grammar"
-  | "gap_analysis";
+  | "gap_analysis"
+  | "professionalize"
+  | "adjust_tone"
+  | "restructure"
+  | "template_completeness";
 
 const ACTION_PROMPTS: Record<PageAssistAction, string> = {
   reformulate:
@@ -299,6 +402,14 @@ const ACTION_PROMPTS: Record<PageAssistAction, string> = {
     "Korrigiere Grammatik, Rechtschreibung und Stil im folgenden Text. Gib den korrigierten Text zurück:",
   gap_analysis:
     "Analysiere den folgenden Text und identifiziere fehlende Informationen, Lücken oder Verbesserungsmöglichkeiten:",
+  professionalize:
+    "Überarbeite den folgenden Text in einen professionellen, formellen Ton, passend für eine Unternehmensdokumentation:",
+  adjust_tone:
+    "Passe den Ton des folgenden Textes an: Mache ihn sachlich, klar und neutral, geeignet für ein internes Wiki:",
+  restructure:
+    "Strukturiere den folgenden Text neu. Verwende Überschriften, Aufzählungen und Absätze für bessere Lesbarkeit:",
+  template_completeness:
+    "Analysiere den folgenden Seiteninhalt und identifiziere fehlende oder unvollständige Felder. Schlage konkrete Ergänzungen vor, die den Inhalt vervollständigen würden:",
 };
 
 export async function streamPageAssist(
@@ -326,7 +437,7 @@ export async function streamPageAssist(
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  const messages: Array<{ role: "system" | "user"; content: string }> = [
+  const messages: Array<{ role: string; content: string }> = [
     {
       role: "system",
       content:
@@ -335,7 +446,6 @@ export async function streamPageAssist(
     { role: "user", content: `${actionPrompt}\n\n${text}` },
   ];
 
-  let fullResponse = "";
   let hasError = false;
   let errorMessage: string | undefined;
 
@@ -351,7 +461,6 @@ export async function streamPageAssist(
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content;
       if (content) {
-        fullResponse += content;
         res.write(`data: ${JSON.stringify({ type: "content", content })}\n\n`);
       }
     }
@@ -371,14 +480,13 @@ export async function streamPageAssist(
     .values({
       principalId,
       action,
-      query: text.slice(0, 500),
       model: settings.model,
       sourceMode: settings.sourceMode,
       webSearchUsed: false,
       sourcesCount: 0,
       latencyMs,
       hasError,
-      errorMessage,
+      errorMessage: hasError ? errorMessage : undefined,
       zeroResults: false,
       nodeId,
     })

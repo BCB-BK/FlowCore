@@ -6,11 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { UpdateAiSettingsBodyPromptPolicies } from "./updateAiSettingsBodyPromptPolicies";
+import type { UpdateAiSettingsBodySourceMode } from "./updateAiSettingsBodySourceMode";
 
 export interface UpdateAiSettingsBody {
   enabled?: boolean;
   model?: string;
-  sourceMode?: string;
+  sourceMode?: UpdateAiSettingsBodySourceMode;
   webSearchEnabled?: boolean;
   maxCompletionTokens?: number;
   systemPrompt?: string | null;

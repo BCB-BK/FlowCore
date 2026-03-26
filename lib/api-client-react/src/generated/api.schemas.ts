@@ -1022,13 +1022,22 @@ export interface SourceReferenceCheckResult {
   externalModifiedAt?: string | null;
 }
 
+export type AiSettingsSourceMode =
+  (typeof AiSettingsSourceMode)[keyof typeof AiSettingsSourceMode];
+
+export const AiSettingsSourceMode = {
+  wiki_only: "wiki_only",
+  wiki_and_connectors: "wiki_and_connectors",
+  wiki_connectors_web: "wiki_connectors_web",
+} as const;
+
 export type AiSettingsPromptPolicies = { [key: string]: unknown } | null;
 
 export interface AiSettings {
   id?: string | null;
   enabled: boolean;
   model: string;
-  sourceMode: string;
+  sourceMode: AiSettingsSourceMode;
   webSearchEnabled: boolean;
   maxCompletionTokens: number;
   systemPrompt?: string | null;
@@ -1037,6 +1046,15 @@ export interface AiSettings {
   updatedBy?: string | null;
 }
 
+export type UpdateAiSettingsBodySourceMode =
+  (typeof UpdateAiSettingsBodySourceMode)[keyof typeof UpdateAiSettingsBodySourceMode];
+
+export const UpdateAiSettingsBodySourceMode = {
+  wiki_only: "wiki_only",
+  wiki_and_connectors: "wiki_and_connectors",
+  wiki_connectors_web: "wiki_connectors_web",
+} as const;
+
 export type UpdateAiSettingsBodyPromptPolicies = {
   [key: string]: unknown;
 } | null;
@@ -1044,7 +1062,7 @@ export type UpdateAiSettingsBodyPromptPolicies = {
 export interface UpdateAiSettingsBody {
   enabled?: boolean;
   model?: string;
-  sourceMode?: string;
+  sourceMode?: UpdateAiSettingsBodySourceMode;
   webSearchEnabled?: boolean;
   maxCompletionTokens?: number;
   systemPrompt?: string | null;
@@ -1069,6 +1087,10 @@ export const AiPageAssistBodyAction = {
   shorten: "shorten",
   grammar: "grammar",
   gap_analysis: "gap_analysis",
+  professionalize: "professionalize",
+  adjust_tone: "adjust_tone",
+  restructure: "restructure",
+  template_completeness: "template_completeness",
 } as const;
 
 export interface AiPageAssistBody {
