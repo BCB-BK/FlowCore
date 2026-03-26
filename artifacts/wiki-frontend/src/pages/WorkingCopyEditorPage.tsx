@@ -199,7 +199,8 @@ export function WorkingCopyEditorPage() {
   const doSave = useCallback(
     async (patch: SavePatch) => {
       const wc = wcRef.current;
-      if (!wc || (wc.status !== "draft" && wc.status !== "changes_requested")) return;
+      const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+      if (!wc || !editableStatuses.includes(wc.status)) return;
       setIsSaving(true);
       try {
         await updateWorkingCopy.mutateAsync({

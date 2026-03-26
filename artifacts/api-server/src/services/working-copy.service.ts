@@ -183,7 +183,8 @@ export async function updateWorkingCopy(
 ) {
   const wc = await getWorkingCopyById(id);
   if (!wc) throw new Error("Working copy not found");
-  if (wc.status !== "draft" && wc.status !== "changes_requested") {
+  const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+  if (!editableStatuses.includes(wc.status)) {
     throw new Error(
       `Arbeitskopie kann im Status '${wc.status}' nicht bearbeitet werden.`,
     );
