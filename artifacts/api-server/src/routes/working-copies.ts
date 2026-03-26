@@ -117,9 +117,13 @@ router.patch(
       return;
     }
     const isReviewPhase = wc.status === "submitted" || wc.status === "in_review";
-    const permission = isReviewPhase ? "approve_page" : "edit_content";
-    const guard = requireWcOwnerOrPermission(permission);
-    await guard(req, res, next);
+    if (isReviewPhase) {
+      const guard = requireWcPermission("approve_page");
+      await guard(req, res, next);
+    } else {
+      const guard = requireWcOwnerOrPermission("edit_content");
+      await guard(req, res, next);
+    }
   },
   async (req, res) => {
     try {
