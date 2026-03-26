@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PrincipalPrincipalType =
-  (typeof PrincipalPrincipalType)[keyof typeof PrincipalPrincipalType];
+export type CreatePrincipalInputPrincipalType =
+  (typeof CreatePrincipalInputPrincipalType)[keyof typeof CreatePrincipalInputPrincipalType];
 
-export const PrincipalPrincipalType = {
+export const CreatePrincipalInputPrincipalType = {
   user: "user",
   group: "group",
   service_account: "service_account",

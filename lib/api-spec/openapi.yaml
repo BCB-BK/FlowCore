@@ -151,7 +151,7 @@ paths:
     get:
       operationId: listPrincipals
       tags: [principals]
-      summary: List or search principals
+      summary: List or search principals (includes role assignments)
       parameters:
         - name: q
           in: query
@@ -170,13 +170,30 @@ paths:
             default: 0
       responses:
         "200":
-          description: List of principals
+          description: List of principals with roles
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Principal"
+                  $ref: "#/components/schemas/PrincipalWithRoles"
+    post:
+      operationId: createPrincipal
+      tags: [principals]
+      summary: Register a new principal from external identity (Entra ID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePrincipalInput"
+      responses:
+        "201":
+          description: Created principal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Principal"
 
   /principals/{principalId}:
     get:
@@ -3259,6 +3276,31 @@ components:
       required:
         - principalId
         - permissions
+
+    CreatePrincipalInput:
+      type: object
+      properties:
+        externalId:
+          type: string
+          description: External ID from identity provider (e.g. Entra Object ID)
+        principalType:
+          type: string
+          enum:
+            - user
+            - group
+            - service_account
+        displayName:
+          type: string
+        email:
+          type: string
+          nullable: true
+        upn:
+          type: string
+          nullable: true
+      required:
+        - externalId
+        - principalType
+        - displayName
 
     AssignRoleInput:
       type: object

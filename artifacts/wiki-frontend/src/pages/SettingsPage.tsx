@@ -23,6 +23,7 @@ import {
   Cpu,
   ChevronDown,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -31,6 +32,7 @@ import type { PageTypeDefinition } from "@workspace/shared/page-types";
 import { AISettingsTab } from "@/components/settings/AISettingsTab";
 import { ConnectorsTab } from "@/components/settings/ConnectorsTab";
 import { TemplateDetailPanel } from "@/components/settings/TemplateDetailPanel";
+import { UsersRolesTab } from "@/components/settings/UsersRolesTab";
 
 interface SystemInfo {
   system: { version: string; environment: string; uptime: number };
@@ -80,10 +82,17 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="general" className="flex items-center gap-1.5">
             <Server className="h-3.5 w-3.5" />
             Allgemein
+          </TabsTrigger>
+          <TabsTrigger
+            value="users"
+            className="flex items-center gap-1.5"
+          >
+            <Users className="h-3.5 w-3.5" />
+            Benutzer & Rollen
           </TabsTrigger>
           <TabsTrigger
             value="connections"
@@ -111,6 +120,10 @@ export function SettingsPage() {
 
         <TabsContent value="general" className="mt-6">
           <GeneralTab />
+        </TabsContent>
+
+        <TabsContent value="users" className="mt-6">
+          <UsersRolesTab />
         </TabsContent>
 
         <TabsContent value="connections" className="mt-6">
