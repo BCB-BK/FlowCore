@@ -689,9 +689,12 @@ export type SearchResultFacetsTemplateType = { [key: string]: number };
 
 export type SearchResultFacetsStatus = { [key: string]: number };
 
+export type SearchResultFacetsOwner = { [key: string]: number };
+
 export type SearchResultFacets = {
   templateType?: SearchResultFacetsTemplateType;
   status?: SearchResultFacetsStatus;
+  owner?: SearchResultFacetsOwner;
 };
 
 export interface SearchResult {

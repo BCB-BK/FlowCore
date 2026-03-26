@@ -150,6 +150,14 @@ export function SearchPage() {
           </SelectContent>
         </Select>
 
+        <Input
+          type="text"
+          className="w-[160px] h-9 text-xs"
+          value={ownerId}
+          onChange={(e) => setOwnerId(e.target.value)}
+          placeholder="Eigentümer-ID"
+        />
+
         <div className="flex items-center gap-1">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <Input

@@ -2892,6 +2892,10 @@ components:
               type: object
               additionalProperties:
                 type: integer
+            owner:
+              type: object
+              additionalProperties:
+                type: integer
       required:
         - results
         - total

@@ -29,30 +29,35 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
-router.get("/", requireAuth, async (req, res) => {
-  const q = req.query.q as string | undefined;
-  let query = db
-    .select({
-      id: contentTagsTable.id,
-      name: contentTagsTable.name,
-      slug: contentTagsTable.slug,
-      color: contentTagsTable.color,
-      createdAt: contentTagsTable.createdAt,
-      nodeCount: sql<number>`(
+router.get(
+  "/",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    const q = req.query.q as string | undefined;
+    let query = db
+      .select({
+        id: contentTagsTable.id,
+        name: contentTagsTable.name,
+        slug: contentTagsTable.slug,
+        color: contentTagsTable.color,
+        createdAt: contentTagsTable.createdAt,
+        nodeCount: sql<number>`(
         SELECT count(*) FROM content_node_tags
         WHERE content_node_tags.tag_id = ${contentTagsTable.id}
       )`,
-    })
-    .from(contentTagsTable)
-    .$dynamic();
+      })
+      .from(contentTagsTable)
+      .$dynamic();
 
-  if (q) {
-    query = query.where(ilike(contentTagsTable.name, `%${q}%`));
-  }
+    if (q) {
+      query = query.where(ilike(contentTagsTable.name, `%${q}%`));
+    }
 
-  const tags = await query.orderBy(contentTagsTable.name);
-  res.json(tags);
-});
+    const tags = await query.orderBy(contentTagsTable.name);
+    res.json(tags);
+  },
+);
 
 router.post(
   "/",

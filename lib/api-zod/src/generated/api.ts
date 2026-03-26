@@ -1461,6 +1461,7 @@ export const SearchContentResponse = zod.object({
   facets: zod.object({
     templateType: zod.record(zod.string(), zod.number()).optional(),
     status: zod.record(zod.string(), zod.number()).optional(),
+    owner: zod.record(zod.string(), zod.number()).optional(),
   }),
 });
 

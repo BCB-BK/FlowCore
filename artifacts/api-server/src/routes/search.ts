@@ -63,12 +63,17 @@ router.get(
         .filter((w) => w.length > 2)
         .join(" & ");
 
+      const aliasMatch = sql`${contentNodesTable.id} IN (
+        SELECT node_id FROM content_aliases WHERE ${ilike(contentAliasesTable.previousDisplayCode, `%${q}%`)}
+      )`;
+
       if (tsQuery) {
         searchConditions.push(
           or(
             sql`search_vector @@ to_tsquery('german', ${tsQuery})`,
             ilike(contentNodesTable.title, `%${q}%`),
             ilike(contentNodesTable.displayCode, `%${q}%`),
+            aliasMatch,
           )!,
         );
       } else {
@@ -76,6 +81,7 @@ router.get(
           or(
             ilike(contentNodesTable.title, `%${q}%`),
             ilike(contentNodesTable.displayCode, `%${q}%`),
+            aliasMatch,
           )!,
         );
       }
@@ -147,19 +153,29 @@ router.get(
       .select({
         templateType: contentNodesTable.templateType,
         status: contentNodesTable.status,
+        ownerId: contentNodesTable.ownerId,
         count: sql<number>`count(*)`,
       })
       .from(contentNodesTable)
       .where(eq(contentNodesTable.isDeleted, false))
-      .groupBy(contentNodesTable.templateType, contentNodesTable.status);
+      .groupBy(
+        contentNodesTable.templateType,
+        contentNodesTable.status,
+        contentNodesTable.ownerId,
+      );
 
     const typeFacets: Record<string, number> = {};
     const statusFacets: Record<string, number> = {};
+    const ownerFacets: Record<string, number> = {};
     for (const row of facetResults) {
       typeFacets[row.templateType] =
         (typeFacets[row.templateType] || 0) + Number(row.count);
       statusFacets[row.status] =
         (statusFacets[row.status] || 0) + Number(row.count);
+      if (row.ownerId) {
+        ownerFacets[row.ownerId] =
+          (ownerFacets[row.ownerId] || 0) + Number(row.count);
+      }
     }
 
     if (q.trim().length > 0) {
@@ -181,6 +197,7 @@ router.get(
       facets: {
         templateType: typeFacets,
         status: statusFacets,
+        owner: ownerFacets,
       },
     });
   },

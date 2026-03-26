@@ -24,39 +24,49 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
-router.get("/", requireAuth, async (req, res) => {
-  const q = req.query.q as string | undefined;
-  const letter = req.query.letter as string | undefined;
+router.get(
+  "/",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    const q = req.query.q as string | undefined;
+    const letter = req.query.letter as string | undefined;
 
-  let query = db.select().from(glossaryTermsTable).$dynamic();
+    let query = db.select().from(glossaryTermsTable).$dynamic();
 
-  if (q) {
-    query = query.where(
-      sql`${ilike(glossaryTermsTable.term, `%${q}%`)} OR ${ilike(glossaryTermsTable.definition, `%${q}%`)} OR ${q} = ANY(${glossaryTermsTable.synonyms})`,
-    );
-  } else if (letter) {
-    query = query.where(
-      ilike(glossaryTermsTable.term, `${letter.toUpperCase()}%`),
-    );
-  }
+    if (q) {
+      query = query.where(
+        sql`${ilike(glossaryTermsTable.term, `%${q}%`)} OR ${ilike(glossaryTermsTable.definition, `%${q}%`)} OR ${q} = ANY(${glossaryTermsTable.synonyms})`,
+      );
+    } else if (letter) {
+      query = query.where(
+        ilike(glossaryTermsTable.term, `${letter.toUpperCase()}%`),
+      );
+    }
 
-  const terms = await query.orderBy(glossaryTermsTable.term);
-  res.json(terms);
-});
+    const terms = await query.orderBy(glossaryTermsTable.term);
+    res.json(terms);
+  },
+);
 
-router.get("/:id", requireAuth, async (req, res) => {
-  const id = req.params.id as string;
-  const [term] = await db
-    .select()
-    .from(glossaryTermsTable)
-    .where(eq(glossaryTermsTable.id, id));
+router.get(
+  "/:id",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const [term] = await db
+      .select()
+      .from(glossaryTermsTable)
+      .where(eq(glossaryTermsTable.id, id));
 
-  if (!term) {
-    res.status(404).json({ error: "Term not found" });
-    return;
-  }
-  res.json(term);
-});
+    if (!term) {
+      res.status(404).json({ error: "Term not found" });
+      return;
+    }
+    res.json(term);
+  },
+);
 
 router.post(
   "/",

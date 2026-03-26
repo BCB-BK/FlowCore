@@ -5,10 +5,12 @@
  * Enterprise Wiki API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SearchResultFacetsOwner } from "./searchResultFacetsOwner";
 import type { SearchResultFacetsStatus } from "./searchResultFacetsStatus";
 import type { SearchResultFacetsTemplateType } from "./searchResultFacetsTemplateType";
 
 export type SearchResultFacets = {
   templateType?: SearchResultFacetsTemplateType;
   status?: SearchResultFacetsStatus;
+  owner?: SearchResultFacetsOwner;
 };
