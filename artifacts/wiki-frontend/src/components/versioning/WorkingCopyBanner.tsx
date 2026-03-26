@@ -70,6 +70,7 @@ const STATUS_CONFIG: Record<
 interface WorkingCopyBannerProps {
   workingCopy: WorkingCopy;
   currentUserId?: string;
+  authorName?: string;
   onNavigateToEditor?: () => void;
   isCreating?: boolean;
 }
@@ -77,6 +78,7 @@ interface WorkingCopyBannerProps {
 export function WorkingCopyBanner({
   workingCopy,
   currentUserId,
+  authorName,
   onNavigateToEditor,
   isCreating,
 }: WorkingCopyBannerProps) {
@@ -112,10 +114,10 @@ export function WorkingCopyBanner({
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             {!isOwnWc && (
-              <span>In Bearbeitung durch {workingCopy.authorId?.substring(0, 8)}... </span>
+              <span>Geöffnet von {authorName || "anderem Benutzer"} </span>
             )}
             {createdDate && (
-              <span>{isOwnWc ? `Erstellt am ${createdDate}` : `seit ${createdDate}`}</span>
+              <span>{isOwnWc ? `Erstellt am ${createdDate}` : `am ${createdDate}`}</span>
             )}
           </p>
           {workingCopy.changeSummary && (

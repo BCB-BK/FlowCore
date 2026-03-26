@@ -56,6 +56,7 @@ import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
   useGetActiveWorkingCopy,
   useCreateWorkingCopy,
+  useGetPrincipal,
 } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
@@ -100,6 +101,12 @@ export function NodeDetail() {
   });
   const activeWC = activeWCQuery.data;
   const wcLoading = activeWCQuery.isLoading;
+
+  const wcAuthorId = activeWC?.authorId;
+  const isOwnWc = !currentUser || wcAuthorId === currentUser?.principalId;
+  const { data: wcAuthor } = useGetPrincipal(wcAuthorId || "", {
+    query: { queryKey: [`/api/principals/${wcAuthorId || ""}`], enabled: !!wcAuthorId && !isOwnWc },
+  });
 
   const [editTitle, setEditTitle] = useState("");
   const [editTemplateType, setEditTemplateType] = useState<
@@ -363,6 +370,7 @@ export function NodeDetail() {
               <WorkingCopyBanner
                 workingCopy={activeWC}
                 currentUserId={currentUser?.principalId}
+                authorName={wcAuthor?.displayName ?? undefined}
                 onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 isCreating={createWorkingCopy.isPending}
               />
@@ -488,6 +496,7 @@ export function NodeDetail() {
                 <WorkingCopyBanner
                   workingCopy={activeWC}
                   currentUserId={currentUser?.principalId}
+                  authorName={wcAuthor?.displayName ?? undefined}
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
                 <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} />

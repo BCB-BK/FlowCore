@@ -212,8 +212,10 @@ export function BlockEditor({
     }
   }, [editor, editable]);
 
+  const useLocalDraft = !onContentChange;
+
   useEffect(() => {
-    if (!editable || !nodeId) return;
+    if (!useLocalDraft || !editable || !nodeId) return;
     const draftKey = getDraftKey(nodeId);
     const draft = localStorage.getItem(draftKey);
     if (draft) {
@@ -228,25 +230,25 @@ export function BlockEditor({
         localStorage.removeItem(draftKey);
       }
     }
-  }, [nodeId, editable, content]);
+  }, [nodeId, editable, content, useLocalDraft]);
 
   const saveDraft = useCallback(() => {
-    if (!editor || !nodeId || !isDirty) return;
+    if (!useLocalDraft || !editor || !nodeId || !isDirty) return;
     const draftKey = getDraftKey(nodeId);
     const draftData = {
       content: editor.getJSON(),
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(draftKey, JSON.stringify(draftData));
-  }, [editor, nodeId, isDirty]);
+  }, [editor, nodeId, isDirty, useLocalDraft]);
 
   useEffect(() => {
-    if (!editable) return;
+    if (!editable || !useLocalDraft) return;
     autosaveTimer.current = setInterval(saveDraft, AUTOSAVE_INTERVAL);
     return () => {
       if (autosaveTimer.current) clearInterval(autosaveTimer.current);
     };
-  }, [editable, saveDraft]);
+  }, [editable, saveDraft, useLocalDraft]);
 
   const handleSave = useCallback(async () => {
     if (!editor) return;
@@ -254,14 +256,14 @@ export function BlockEditor({
     try {
       await onSave(json);
       setIsDirty(false);
-      if (nodeId) {
+      if (useLocalDraft && nodeId) {
         localStorage.removeItem(getDraftKey(nodeId));
       }
       setHasDraft(false);
     } catch {
-      saveDraft();
+      if (useLocalDraft) saveDraft();
     }
-  }, [editor, onSave, nodeId]);
+  }, [editor, onSave, nodeId, useLocalDraft, saveDraft]);
 
   const restoreDraft = useCallback(() => {
     if (!editor || !nodeId) return;

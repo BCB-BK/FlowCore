@@ -38,6 +38,7 @@ import {
   useUpdateWorkingCopy,
   useSubmitWorkingCopy,
   useCancelWorkingCopy,
+  useGetPrincipal,
   getGetActiveWorkingCopyQueryKey,
 } from "@workspace/api-client-react";
 import type { WorkingCopy } from "@workspace/api-client-react";
@@ -80,6 +81,12 @@ export function WorkingCopyEditorPage() {
   });
   const activeWC = activeWCQuery.data;
   const wcLoading = activeWCQuery.isLoading;
+
+  const wcAuthorId = activeWC?.authorId;
+  const wcIsOwn = !currentUser || wcAuthorId === currentUser?.principalId;
+  const { data: wcAuthor } = useGetPrincipal(wcAuthorId || "", {
+    query: { queryKey: [`/api/principals/${wcAuthorId || ""}`], enabled: !!wcAuthorId && !wcIsOwn },
+  });
 
   const createWorkingCopy = useCreateWorkingCopy();
   const updateWorkingCopy = useUpdateWorkingCopy();
@@ -441,7 +448,11 @@ export function WorkingCopyEditorPage() {
         </div>
       </div>
 
-      <WorkingCopyBanner workingCopy={activeWC} currentUserId={currentUser?.principalId} />
+      <WorkingCopyBanner
+        workingCopy={activeWC}
+        currentUserId={currentUser?.principalId}
+        authorName={wcAuthor?.displayName ?? undefined}
+      />
 
       {lastSavedAt && (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
