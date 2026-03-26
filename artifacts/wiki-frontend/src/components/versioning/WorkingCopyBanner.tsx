@@ -9,6 +9,7 @@ import {
   XCircle,
   Loader2,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
 import type { WorkingCopy } from "@workspace/api-client-react";
 
@@ -73,6 +74,7 @@ interface WorkingCopyBannerProps {
   authorName?: string;
   onNavigateToEditor?: () => void;
   isCreating?: boolean;
+  lastReturnComment?: string | null;
 }
 
 export function WorkingCopyBanner({
@@ -81,11 +83,13 @@ export function WorkingCopyBanner({
   authorName,
   onNavigateToEditor,
   isCreating,
+  lastReturnComment,
 }: WorkingCopyBannerProps) {
   const config = STATUS_CONFIG[workingCopy.status] || STATUS_CONFIG.draft;
   const Icon = config.icon;
   const canEdit = workingCopy.status === "draft" || workingCopy.status === "changes_requested";
   const isOwnWc = !currentUserId || workingCopy.authorId === currentUserId;
+  const showReturnComment = workingCopy.status === "changes_requested" && lastReturnComment;
 
   const createdDate = workingCopy.createdAt
     ? new Date(workingCopy.createdAt).toLocaleDateString("de-DE", {
@@ -98,55 +102,73 @@ export function WorkingCopyBanner({
     : null;
 
   return (
-    <div
-      className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${config.bgColor} ${config.borderColor}`}
-    >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <Icon className={`h-4 w-4 flex-shrink-0 ${config.color}`} />
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-sm font-medium ${config.color}`}>
-              Arbeitskopie
-            </span>
-            <Badge variant="outline" className="text-xs">
-              {config.label}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {!isOwnWc && (
-              <span>Geöffnet von {authorName || "anderem Benutzer"} </span>
-            )}
-            {createdDate && (
-              <span>{isOwnWc ? `Erstellt am ${createdDate}` : `am ${createdDate}`}</span>
-            )}
-          </p>
-          {workingCopy.changeSummary && (
-            <p className="text-xs text-muted-foreground truncate mt-0.5">
-              {workingCopy.changeSummary}
+    <div className="space-y-0">
+      <div
+        className={`flex items-center justify-between gap-3 p-3 rounded-lg border ${showReturnComment ? "rounded-b-none" : ""} ${config.bgColor} ${config.borderColor}`}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Icon className={`h-4 w-4 flex-shrink-0 ${config.color}`} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-sm font-medium ${config.color}`}>
+                Arbeitskopie
+              </span>
+              <Badge variant="outline" className="text-xs">
+                {config.label}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {!isOwnWc && (
+                <span>Geöffnet von {authorName || "anderem Benutzer"} </span>
+              )}
+              {createdDate && (
+                <span>{isOwnWc ? `Erstellt am ${createdDate}` : `am ${createdDate}`}</span>
+              )}
             </p>
-          )}
+            {workingCopy.changeSummary && (
+              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                {workingCopy.changeSummary}
+              </p>
+            )}
+          </div>
         </div>
+
+        {canEdit && onNavigateToEditor && isOwnWc && (
+          <Button
+            size="sm"
+            onClick={onNavigateToEditor}
+            disabled={isCreating}
+            className="gap-1.5 flex-shrink-0"
+          >
+            {isCreating ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ArrowRight className="h-3.5 w-3.5" />
+            )}
+            Weiter bearbeiten
+          </Button>
+        )}
+        {canEdit && !isOwnWc && (
+          <Badge variant="secondary" className="text-xs flex-shrink-0">
+            Gesperrt
+          </Badge>
+        )}
       </div>
 
-      {canEdit && onNavigateToEditor && isOwnWc && (
-        <Button
-          size="sm"
-          onClick={onNavigateToEditor}
-          disabled={isCreating}
-          className="gap-1.5 flex-shrink-0"
-        >
-          {isCreating ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <ArrowRight className="h-3.5 w-3.5" />
-          )}
-          Weiter bearbeiten
-        </Button>
-      )}
-      {canEdit && !isOwnWc && (
-        <Badge variant="secondary" className="text-xs flex-shrink-0">
-          Gesperrt
-        </Badge>
+      {showReturnComment && (
+        <div className="border border-t-0 border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/20 rounded-b-lg p-3">
+          <div className="flex items-start gap-2">
+            <MessageSquare className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-orange-800 dark:text-orange-200">
+                Rückmeldung vom Prüfer
+              </p>
+              <p className="text-sm text-orange-700 dark:text-orange-300 mt-0.5 whitespace-pre-wrap">
+                {lastReturnComment}
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

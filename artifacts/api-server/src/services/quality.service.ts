@@ -98,6 +98,9 @@ export interface PersonalWorkItem {
   detail: string;
   priority: "high" | "medium" | "low";
   updatedAt: string;
+  authorId?: string;
+  reviewerId?: string;
+  submittedAt?: string;
 }
 
 type R = Record<string, unknown>;
@@ -836,7 +839,8 @@ export async function getPersonalWorkItems(
   }
 
   const wcPendingReviews = await db.execute(sql`
-    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status,
+           wc.updated_at::text as updated_at, wc.author_id, wc.reviewer_id, wc.submitted_at::text as submitted_at
     FROM content_working_copies wc
     JOIN content_nodes cn ON wc.node_id = cn.id
     WHERE wc.status = 'submitted'
@@ -857,11 +861,15 @@ export async function getPersonalWorkItems(
       detail: "Review ausstehend",
       priority: "high",
       updatedAt: str(r, "updated_at"),
+      authorId: str(r, "author_id") || undefined,
+      reviewerId: str(r, "reviewer_id") || undefined,
+      submittedAt: str(r, "submitted_at") || undefined,
     });
   }
 
   const wcPendingApprovals = await db.execute(sql`
-    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+    SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status,
+           wc.updated_at::text as updated_at, wc.author_id, wc.reviewer_id, wc.submitted_at::text as submitted_at
     FROM content_working_copies wc
     JOIN content_nodes cn ON wc.node_id = cn.id
     WHERE wc.status = 'approved_for_publish'
@@ -882,6 +890,9 @@ export async function getPersonalWorkItems(
       detail: "Veröffentlichung ausstehend",
       priority: "high",
       updatedAt: str(r, "updated_at"),
+      authorId: str(r, "author_id") || undefined,
+      reviewerId: str(r, "reviewer_id") || undefined,
+      submittedAt: str(r, "submitted_at") || undefined,
     });
   }
 
@@ -890,7 +901,8 @@ export async function getPersonalWorkItems(
   if (isProcessManager) {
     const existingNodeIds = new Set(items.map((i) => i.nodeId));
     const wcSubmitted = await db.execute(sql`
-      SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status, wc.updated_at::text as updated_at
+      SELECT wc.node_id, wc.title, cn.display_code, cn.template_type, wc.status as wc_status,
+             wc.updated_at::text as updated_at, wc.author_id, wc.reviewer_id, wc.submitted_at::text as submitted_at
       FROM content_working_copies wc
       JOIN content_nodes cn ON wc.node_id = cn.id
       WHERE wc.status IN ('submitted', 'approved_for_publish')
@@ -911,6 +923,9 @@ export async function getPersonalWorkItems(
           detail: "Zur Freigabe eingereicht",
           priority: "high",
           updatedAt: str(r, "updated_at"),
+          authorId: str(r, "author_id") || undefined,
+          reviewerId: str(r, "reviewer_id") || undefined,
+          submittedAt: str(r, "submitted_at") || undefined,
         });
       }
     }

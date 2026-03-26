@@ -13,6 +13,7 @@ import { ConnectorsPage } from "@/pages/ConnectorsPage";
 import { AISettingsPage } from "@/pages/AISettingsPage";
 import { QualityDashboard } from "@/pages/QualityDashboard";
 import { MyWorkPage } from "@/pages/MyWorkPage";
+import { ReviewInboxPage } from "@/pages/ReviewInboxPage";
 import { WorkingCopyEditorPage } from "@/pages/WorkingCopyEditorPage";
 import { WorkingCopyReviewPage } from "@/pages/WorkingCopyReviewPage";
 import { TeamsTabConfig } from "@/pages/TeamsTabConfig";
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/ai-settings" component={AISettingsPage} />
         <Route path="/dashboard" component={QualityDashboard} />
         <Route path="/my-work" component={MyWorkPage} />
+        <Route path="/review-inbox" component={ReviewInboxPage} />
         <Route path="/teams/tab-config" component={TeamsTabConfig} />
         <Route component={NotFound} />
       </Switch>

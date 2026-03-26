@@ -1,5 +1,5 @@
 import { useRoute, useLocation } from "wouter";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNode, useNodeRevisions } from "@/hooks/use-nodes";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,8 @@ import {
   ChevronDown,
   Save,
   Loader2,
+  Sparkles,
+  Wand2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -35,9 +37,10 @@ import { BlockEditor } from "@/components/editor";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
 import { WorkingCopyTimeline } from "@/components/versioning/WorkingCopyTimeline";
+import { InlineTextDiff } from "@/components/versioning/InlineTextDiff";
 import { useAuth } from "@/hooks/use-auth";
 import type { JSONContent } from "@tiptap/react";
-import { Sparkles } from "lucide-react";
+import { formatFieldLabel, formatValueForDisplay } from "@/lib/text-diff";
 
 type ReviewMode = "changes" | "before_after" | "full";
 
@@ -111,10 +114,52 @@ export function WorkingCopyReviewPage() {
   const [reviewMode, setReviewMode] = useState<ReviewMode>("changes");
   const [editableSummary, setEditableSummary] = useState<string | null>(null);
   const [savingSummary, setSavingSummary] = useState(false);
+  const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
+  const [lastReturnComment, setLastReturnComment] = useState<string | null>(null);
   const { toast } = useToast();
   const apiBase = import.meta.env.BASE_URL + "api";
 
   const hasReviewPermission = currentUser?.permissions?.includes("review_working_copy") ?? false;
+
+  useEffect(() => {
+    if (!activeWC?.id) return;
+    if (activeWC.status !== "changes_requested") {
+      setLastReturnComment(null);
+      return;
+    }
+    customFetch<Array<{ eventType: string; comment?: string | null }>>(
+      `${apiBase}/content/working-copies/${activeWC.id}/events`,
+    )
+      .then((events) => {
+        const returnEvents = events.filter(
+          (e) => e.eventType === "returned_for_changes" && e.comment,
+        );
+        const lastReturn = returnEvents.length > 0 ? returnEvents[returnEvents.length - 1] : null;
+        setLastReturnComment(lastReturn?.comment ?? null);
+      })
+      .catch(() => setLastReturnComment(null));
+  }, [activeWC?.id, activeWC?.status, apiBase]);
+
+  const handleGenerateAiSummary = async () => {
+    if (!activeWC) return;
+    setGeneratingAiSummary(true);
+    try {
+      const result = await customFetch<{ summary: string }>(
+        `${apiBase}/content/working-copies/${activeWC.id}/generate-summary`,
+        { method: "POST" },
+      );
+      toast({ title: "KI-Zusammenfassung generiert" });
+      activeWCQuery.refetch();
+      if (result.summary) {
+        setEditableSummary(result.summary);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Fehler";
+      toast({ variant: "destructive", title: message });
+    } finally {
+      setGeneratingAiSummary(false);
+    }
+  };
 
   const publishedRevision = useMemo<RevisionRecord | null>(() => {
     if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
@@ -327,6 +372,7 @@ export function WorkingCopyReviewPage() {
         workingCopy={activeWC}
         currentUserId={currentUser?.principalId}
         authorName={wcAuthor?.displayName ?? undefined}
+        lastReturnComment={lastReturnComment}
       />
 
       {showActions && (
@@ -358,9 +404,27 @@ export function WorkingCopyReviewPage() {
             )}
             {activeWC.lastAiSummary && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" /> KI-Zusammenfassung
-                </p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> KI-Zusammenfassung
+                  </p>
+                  {showActions && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 text-xs gap-1 text-muted-foreground"
+                      disabled={generatingAiSummary}
+                      onClick={handleGenerateAiSummary}
+                    >
+                      {generatingAiSummary ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-3 w-3" />
+                      )}
+                      Neu generieren
+                    </Button>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">{activeWC.lastAiSummary}</p>
               </div>
             )}
@@ -402,6 +466,25 @@ export function WorkingCopyReviewPage() {
                 >
                   {savingSummary ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                   Zusammenfassung speichern
+                </Button>
+              </div>
+            )}
+
+            {showActions && !activeWC.lastAiSummary && (
+              <div className="pt-2 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  disabled={generatingAiSummary}
+                  onClick={handleGenerateAiSummary}
+                >
+                  {generatingAiSummary ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Wand2 className="h-3 w-3" />
+                  )}
+                  KI-Zusammenfassung generieren
                 </Button>
               </div>
             )}
@@ -467,25 +550,38 @@ export function WorkingCopyReviewPage() {
                 </div>
               )}
 
-              {diffSections.map((diff) => (
-                <div key={diff.key} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-sm font-medium">{diff.key}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {diff.oldVal ? "geändert" : "neu"}
-                    </Badge>
-                  </div>
-                  {diff.oldVal != null && (
-                    <div className="rounded-md border p-3 bg-red-50 dark:bg-red-950/20 text-sm whitespace-pre-wrap line-through text-muted-foreground">
-                      {String(diff.oldVal)}
+              {diffSections.map((diff) => {
+                const oldStr = formatValueForDisplay(diff.oldVal);
+                const newStr = formatValueForDisplay(diff.newVal);
+                const isTextual = typeof diff.oldVal === "string" || typeof diff.newVal === "string";
+                return (
+                  <div key={diff.key} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="text-sm font-medium">{formatFieldLabel(diff.key)}</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {diff.oldVal ? "geändert" : "neu"}
+                      </Badge>
                     </div>
-                  )}
-                  <div className="rounded-md border p-3 bg-green-50 dark:bg-green-950/20 text-sm whitespace-pre-wrap">
-                    {String(diff.newVal ?? "")}
+                    {isTextual && diff.oldVal != null && diff.newVal != null ? (
+                      <div className="rounded-md border p-3 bg-muted/20">
+                        <InlineTextDiff oldText={oldStr} newText={newStr} />
+                      </div>
+                    ) : (
+                      <>
+                        {diff.oldVal != null && (
+                          <div className="rounded-md border p-3 bg-red-50 dark:bg-red-950/20 text-sm whitespace-pre-wrap line-through text-muted-foreground">
+                            {oldStr}
+                          </div>
+                        )}
+                        <div className="rounded-md border p-3 bg-green-50 dark:bg-green-950/20 text-sm whitespace-pre-wrap">
+                          {newStr}
+                        </div>
+                      </>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {diffMetadata.length > 0 && (
                 <div className="space-y-2">
@@ -496,19 +592,30 @@ export function WorkingCopyReviewPage() {
                     </span>
                   </div>
                   <div className="rounded-md border bg-muted/20 divide-y">
-                    {diffMetadata.map((m) => (
-                      <div key={m.key} className="px-3 py-2 text-sm">
-                        <span className="font-medium">{m.key}</span>
-                        <div className="grid grid-cols-2 gap-2 mt-1">
-                          <div className="text-muted-foreground line-through">
-                            {m.oldVal != null ? String(m.oldVal) : "—"}
-                          </div>
-                          <div>
-                            {m.newVal != null ? String(m.newVal) : "—"}
-                          </div>
+                    {diffMetadata.map((m) => {
+                      const oldStr = formatValueForDisplay(m.oldVal);
+                      const newStr = formatValueForDisplay(m.newVal);
+                      const isTextual = typeof m.oldVal === "string" && typeof m.newVal === "string";
+                      return (
+                        <div key={m.key} className="px-3 py-2 text-sm">
+                          <span className="font-medium">{formatFieldLabel(m.key)}</span>
+                          {isTextual && m.oldVal != null && m.newVal != null ? (
+                            <div className="mt-1">
+                              <InlineTextDiff oldText={oldStr} newText={newStr} />
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2 mt-1">
+                              <div className="text-red-600 dark:text-red-400 line-through">
+                                {m.oldVal != null ? oldStr : "—"}
+                              </div>
+                              <div className="text-green-600 dark:text-green-400">
+                                {m.newVal != null ? newStr : "—"}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -643,43 +750,47 @@ export function WorkingCopyReviewPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {diffSections.map((diff) => (
-                      <div key={diff.key}>
-                        <p className="text-sm font-medium mb-2">
-                          {diff.key}
-                        </p>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">
-                              Vorher
-                            </p>
-                            <div className="rounded-md border p-3 bg-muted/10 text-sm whitespace-pre-wrap min-h-[40px]">
-                              {diff.oldVal ? (
-                                String(diff.oldVal)
-                              ) : (
-                                <span className="text-muted-foreground italic">
-                                  Leer
-                                </span>
-                              )}
+                    {diffSections.map((diff) => {
+                      const oldStr = formatValueForDisplay(diff.oldVal);
+                      const newStr = formatValueForDisplay(diff.newVal);
+                      return (
+                        <div key={diff.key}>
+                          <p className="text-sm font-medium mb-2">
+                            {formatFieldLabel(diff.key)}
+                          </p>
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">
+                                Vorher
+                              </p>
+                              <div className="rounded-md border p-3 bg-red-50/30 dark:bg-red-950/10 text-sm whitespace-pre-wrap min-h-[40px]">
+                                {diff.oldVal ? (
+                                  oldStr
+                                ) : (
+                                  <span className="text-muted-foreground italic">
+                                    Leer
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">
-                              Nachher
-                            </p>
-                            <div className="rounded-md border p-3 bg-muted/10 text-sm whitespace-pre-wrap min-h-[40px]">
-                              {diff.newVal ? (
-                                String(diff.newVal)
-                              ) : (
-                                <span className="text-muted-foreground italic">
-                                  Leer
-                                </span>
-                              )}
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">
+                                Nachher
+                              </p>
+                              <div className="rounded-md border p-3 bg-green-50/30 dark:bg-green-950/10 text-sm whitespace-pre-wrap min-h-[40px]">
+                                {diff.newVal ? (
+                                  newStr
+                                ) : (
+                                  <span className="text-muted-foreground italic">
+                                    Leer
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
               )}

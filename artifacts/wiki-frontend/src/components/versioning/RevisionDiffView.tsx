@@ -21,6 +21,8 @@ import {
   Link2,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
+import { InlineTextDiff } from "./InlineTextDiff";
+import { formatFieldLabel, formatValueForDisplay } from "@/lib/text-diff";
 
 interface RevisionDiffViewProps {
   revisionIdA: string;
@@ -67,26 +69,6 @@ interface DiffResult {
   };
 }
 
-const FIELD_LABELS: Record<string, string> = {
-  title: "Titel",
-  status: "Status",
-  changeType: "Änderungstyp",
-  versionLabel: "Version",
-  reviewerId: "Prüfer",
-  approverId: "Genehmiger",
-  changeSummary: "Zusammenfassung",
-};
-
-function formatValue(val: unknown): string {
-  if (val === null || val === undefined) return "(leer)";
-  if (typeof val === "object") {
-    const str = JSON.stringify(val, null, 2);
-    if (str.length > 500) return str.substring(0, 500) + "…";
-    return str;
-  }
-  return String(val);
-}
-
 function DiffFieldRow({
   label,
   oldVal,
@@ -96,15 +78,16 @@ function DiffFieldRow({
   oldVal: unknown;
   newVal: unknown;
 }) {
-  const oldStr = formatValue(oldVal);
-  const newStr = formatValue(newVal);
+  const oldStr = formatValueForDisplay(oldVal);
+  const newStr = formatValueForDisplay(newVal);
   const isAdded = oldVal === null || oldVal === undefined;
   const isRemoved = newVal === null || newVal === undefined;
+  const isTextual = typeof oldVal === "string" && typeof newVal === "string";
 
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="px-3 py-1.5 bg-muted/50 border-b">
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-medium">{formatFieldLabel(label)}</span>
         {isAdded && (
           <Badge variant="outline" className="ml-2 text-[10px] h-4 text-green-600 border-green-300">
             Hinzugefügt
@@ -116,24 +99,30 @@ function DiffFieldRow({
           </Badge>
         )}
       </div>
-      <div className="grid grid-cols-2 divide-x">
-        <div className="p-2 bg-red-50/40 dark:bg-red-950/10">
-          <div className="flex items-start gap-1">
-            <Minus className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
-            <span className="text-xs text-red-700 dark:text-red-300 whitespace-pre-wrap break-all">
-              {oldStr}
-            </span>
+      {isTextual && !isAdded && !isRemoved ? (
+        <div className="p-3">
+          <InlineTextDiff oldText={oldStr} newText={newStr} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 divide-x">
+          <div className="p-2 bg-red-50/40 dark:bg-red-950/10">
+            <div className="flex items-start gap-1">
+              <Minus className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
+              <span className="text-xs text-red-700 dark:text-red-300 whitespace-pre-wrap break-all">
+                {oldStr}
+              </span>
+            </div>
+          </div>
+          <div className="p-2 bg-green-50/40 dark:bg-green-950/10">
+            <div className="flex items-start gap-1">
+              <Plus className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+              <span className="text-xs text-green-700 dark:text-green-300 whitespace-pre-wrap break-all">
+                {newStr}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="p-2 bg-green-50/40 dark:bg-green-950/10">
-          <div className="flex items-start gap-1">
-            <Plus className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-            <span className="text-xs text-green-700 dark:text-green-300 whitespace-pre-wrap break-all">
-              {newStr}
-            </span>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -271,7 +260,7 @@ export function RevisionDiffView({
                     {Object.entries(diff.metadataChanges).map(([field, change]) => (
                       <DiffFieldRow
                         key={field}
-                        label={FIELD_LABELS[field] || field}
+                        label={field}
                         oldVal={change.old}
                         newVal={change.new}
                       />
@@ -291,7 +280,7 @@ export function RevisionDiffView({
                     {Object.entries(diff.structuredFieldChanges).map(([field, change]) => (
                       <DiffFieldRow
                         key={field}
-                        label={field === "_editorContent" ? "Seiteninhalt (Editor)" : field}
+                        label={field}
                         oldVal={change.old}
                         newVal={change.new}
                       />

@@ -20,6 +20,7 @@ import {
   BarChart3,
   ClipboardList,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
@@ -95,6 +96,17 @@ export function WikiSidebar() {
                 >
                   <ClipboardList className="h-4 w-4" />
                   <span>Meine Aufgaben</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+            {permissions.has("review_working_copy") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={location === "/review-inbox"}
+                  onClick={() => navigate("/review-inbox")}
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Review-Inbox</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}

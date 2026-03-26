@@ -5379,6 +5379,14 @@ components:
           enum: [high, medium, low]
         updatedAt:
           type: string
+        authorId:
+          type: string
+          format: uuid
+        reviewerId:
+          type: string
+          format: uuid
+        submittedAt:
+          type: string
       required:
         - type
         - nodeId

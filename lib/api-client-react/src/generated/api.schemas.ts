@@ -1502,6 +1502,9 @@ export interface PersonalWorkItem {
   detail: string;
   priority: PersonalWorkItemPriority;
   updatedAt: string;
+  authorId?: string;
+  reviewerId?: string;
+  submittedAt?: string;
 }
 
 export interface ProcessQualityRow {

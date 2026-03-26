@@ -3182,6 +3182,9 @@ export const GetMyWorkResponseItem = zod.object({
   detail: zod.string(),
   priority: zod.enum(["high", "medium", "low"]),
   updatedAt: zod.string(),
+  authorId: zod.string().uuid().optional(),
+  reviewerId: zod.string().uuid().optional(),
+  submittedAt: zod.string().optional(),
 });
 export const GetMyWorkResponse = zod.array(GetMyWorkResponseItem);
 
