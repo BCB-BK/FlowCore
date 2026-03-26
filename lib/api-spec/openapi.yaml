@@ -3354,6 +3354,19 @@ components:
           type: string
         email:
           type: string
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              scope:
+                type: string
+        permissions:
+          type: array
+          items:
+            type: string
       required:
         - principalId
         - displayName

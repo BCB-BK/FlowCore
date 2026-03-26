@@ -31,6 +31,12 @@ export type WikiPermission =
   | "manage_templates"
   | "manage_settings"
   | "view_audit_log"
+  | "manage_connectors"
+  | "manage_backup"
+  | "run_backup"
+  | "restore_backup"
+  | "view_backups"
+  | "manage_media"
   | "view_home"
   | "view_search"
   | "view_glossary"
@@ -57,6 +63,12 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "manage_templates",
     "manage_settings",
     "view_audit_log",
+    "manage_connectors",
+    "manage_backup",
+    "run_backup",
+    "restore_backup",
+    "view_backups",
+    "manage_media",
     "view_home",
     "view_search",
     "view_glossary",
@@ -77,6 +89,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "submit_for_review",
     "archive_page",
     "manage_permissions",
+    "manage_templates",
     "view_audit_log",
     "view_home",
     "view_search",
@@ -123,11 +136,13 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "review_page",
     "view_audit_log",
     "manage_templates",
+    "view_backups",
     "view_home",
     "view_search",
     "view_glossary",
     "view_dashboard",
     "view_tasks",
+    "view_settings",
   ],
   viewer: ["read_page", "view_home", "view_search", "view_glossary"],
 };

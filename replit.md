@@ -115,7 +115,7 @@ Express 5 API server with structured logging, config validation, content managem
 - Services: `src/services/auth.service.ts` — Microsoft Entra ID OIDC + dev mode with 5 dev users
 - Services: `src/services/graph-client.service.ts` — Microsoft Graph API wrapper with caching + dev mock
 - Services: `src/services/principal.service.ts` — Principal upsert, search, role assignment
-- Services: `src/services/rbac.service.ts` — 7-role→13-permission matrix, page-level permissions, ownership
+- Services: `src/services/rbac.service.ts` — 7-role→25-permission matrix (incl. manage_connectors, manage_backup, run_backup, restore_backup, view_backups, manage_media), page-level permissions, ownership
 
 ### `artifacts/wiki-frontend` (`@workspace/wiki-frontend`)
 

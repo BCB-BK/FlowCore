@@ -99,6 +99,12 @@ export const wikiPermissionEnum = pgEnum("wiki_permission", [
   "manage_templates",
   "manage_settings",
   "view_audit_log",
+  "manage_connectors",
+  "manage_backup",
+  "run_backup",
+  "restore_backup",
+  "view_backups",
+  "manage_media",
 ]);
 
 export const revisionEventTypeEnum = pgEnum("revision_event_type", [

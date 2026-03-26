@@ -3,10 +3,11 @@ import { pool } from "@workspace/db";
 import { appConfig } from "../lib/config";
 import { isAuthConfigured } from "../services/auth.service";
 import { requireAuth } from "../middlewares/require-auth";
+import { requirePermission } from "../middlewares/require-permission";
 
 const router: IRouter = Router();
 
-router.get("/admin/system-info", requireAuth, async (_req, res) => {
+router.get("/admin/system-info", requireAuth, requirePermission("manage_settings"), async (_req, res) => {
   let dbStatus = "disconnected";
   let dbVersion = "";
   try {

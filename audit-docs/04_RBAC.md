@@ -5,7 +5,7 @@
 FlowCore implementiert ein mehrstufiges rollenbasiertes Zugriffskontrollsystem (RBAC) mit:
 
 - **7 vordefinierte Rollen** mit jeweils festgelegten Berechtigungen
-- **19 granulare Berechtigungen** in 4 Kategorien
+- **25 granulare Berechtigungen** in 4 Kategorien
 - **3 Zuweisungsebenen:** Global, bereichsbezogen und seitenspezifisch
 - **Vererbung:** Berechtigungen werden entlang der Knotenhierarchie vererbt
 
@@ -14,8 +14,8 @@ FlowCore implementiert ein mehrstufiges rollenbasiertes Zugriffskontrollsystem (
 | Rolle | Schlüssel | Beschreibung |
 |:------|:----------|:-------------|
 | **System-Administrator** | `system_admin` | Vollzugriff auf alle Funktionen, Einstellungen und Berechtigungen |
-| **Prozessmanager** | `process_manager` | Verwaltet Inhaltsstruktur, Beziehungen und Berechtigungen; kann nicht genehmigen |
-| **Compliance-Manager** | `compliance_manager` | Überwachung von Vorlagen und Audit-Logs; Fokus auf Prüfprozesse |
+| **Prozessmanager** | `process_manager` | Verwaltet Inhaltsstruktur, Beziehungen, Berechtigungen und Templates; kann nicht genehmigen |
+| **Compliance-Manager** | `compliance_manager` | Überwachung von Vorlagen, Audit-Logs und Backups; Fokus auf Prüfprozesse |
 | **Editor** | `editor` | Erstellt und bearbeitet Inhalte; reicht zur Prüfung ein |
 | **Prüfer** | `reviewer` | Prüft eingereichte Inhalte; Einsicht in Audit-Logs |
 | **Genehmiger** | `approver` | Kann prüfen und final genehmigen/veröffentlichen |
@@ -61,6 +61,12 @@ FlowCore implementiert ein mehrstufiges rollenbasiertes Zugriffskontrollsystem (
 | `manage_templates` | Seitenvorlagen verwalten |
 | `manage_settings` | Systemeinstellungen verwalten |
 | `view_audit_log` | Audit-Protokoll einsehen |
+| `manage_connectors` | Konnektoren und Quellsysteme verwalten |
+| `manage_backup` | Backup-Konfiguration verwalten |
+| `run_backup` | Backup manuell starten |
+| `restore_backup` | Backup wiederherstellen |
+| `view_backups` | Backup-Übersicht und -Status einsehen |
+| `manage_media` | Medien-Assets global verwalten (löschen, bearbeiten) |
 
 ## 4.4 Rollen-Berechtigungs-Matrix
 
@@ -82,9 +88,15 @@ FlowCore implementiert ein mehrstufiges rollenbasiertes Zugriffskontrollsystem (
 | `approve_page` | X | — | — | — | — | X | — |
 | `archive_page` | X | X | — | — | — | — | — |
 | `manage_permissions` | X | X | — | — | — | — | — |
-| `manage_templates` | X | — | X | — | — | — | — |
-| `manage_settings` | X | X | — | — | — | — | — |
-| `view_audit_log` | X | — | X | — | X | X | — |
+| `manage_templates` | X | X | X | — | — | — | — |
+| `manage_settings` | X | — | — | — | — | — | — |
+| `view_audit_log` | X | X | X | — | X | X | — |
+| `manage_connectors` | X | — | — | — | — | — | — |
+| `manage_backup` | X | — | — | — | — | — | — |
+| `run_backup` | X | — | — | — | — | — | — |
+| `restore_backup` | X | — | — | — | — | — | — |
+| `view_backups` | X | — | X | — | — | — | — |
+| `manage_media` | X | — | — | — | — | — | — |
 
 ## 4.5 Zuweisungsebenen
 
@@ -143,9 +155,32 @@ Die effektiven Berechtigungen eines Benutzers werden wie folgt berechnet:
 
 - **`useAuth` Hook:** Stellt `permissions`-Array des aktuellen Benutzers bereit
 - **Bedingte Darstellung:** UI-Elemente (Buttons, Menüeinträge, Tabs) werden basierend auf Berechtigungen ein-/ausgeblendet
-- **Navigation:** Sidebar-Einträge und Einstellungs-Tabs prüfen die entsprechenden `view_*`-Berechtigungen
+- **Navigation:** Sidebar-Einträge und Einstellungs-Tabs prüfen die entsprechenden `view_*`- und `manage_*`-Berechtigungen
 
-## 4.8 Schlüsseldateien
+## 4.8 Audit-Log Event-Typen (Governance)
+
+Alle governance-relevanten Aktionen werden im Audit-Log protokolliert:
+
+| Event-Typ | Aktion | Beschreibung |
+|:----------|:-------|:-------------|
+| `rbac` | `role_assigned` | Rolle einem Principal zugewiesen |
+| `rbac` | `role_revoked` | Rolle von einem Principal entfernt |
+| `rbac` | `principal_created` | Neuer Principal (Benutzer/Gruppe) angelegt |
+| `rbac` | `page_permission_granted` | Seitenspezifische Berechtigung erteilt |
+| `rbac` | `page_permission_revoked` | Seitenspezifische Berechtigung entzogen |
+| `rbac` | `ownership_updated` | Seitenverantwortlichkeit geändert |
+| `connector` | `source_system_created` | Neues Quellsystem angelegt |
+| `connector` | `source_system_updated` | Quellsystem geändert |
+| `connector` | `source_system_deleted` | Quellsystem gelöscht |
+| `connector` | `storage_provider_created` | Neuer Speicheranbieter angelegt |
+| `content` | `media_uploaded` | Medien-Asset hochgeladen |
+| `content` | `media_deleted` | Medien-Asset gelöscht |
+| `backup` | `backup_config_changed` | Backup-Konfiguration geändert |
+| `backup` | `backup_started` | Backup manuell gestartet |
+| `backup` | `backup_restored` | Backup wiederhergestellt |
+| `template` | `template_changed` | Seitentemplate geändert |
+
+## 4.9 Schlüsseldateien
 
 | Datei | Zweck |
 |:------|:------|

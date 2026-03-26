@@ -11,4 +11,6 @@ export interface AuthUser {
   externalId?: string;
   displayName: string;
   email?: string;
+  roles?: { role: string; scope: string }[];
+  permissions?: string[];
 }

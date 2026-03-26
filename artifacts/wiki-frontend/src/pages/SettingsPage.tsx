@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -37,6 +37,7 @@ import { TemplateDetailPanel } from "@/components/settings/TemplateDetailPanel";
 import { TemplatePreviewDialog } from "@/components/settings/TemplatePreviewDialog";
 import { UsersRolesTab } from "@/components/settings/UsersRolesTab";
 import { BackupTab } from "@/components/settings/BackupTab";
+import { useAuth } from "@/hooks/use-auth";
 
 interface SystemInfo {
   system: { version: string; environment: string; uptime: number };
@@ -71,7 +72,48 @@ function StatusDot({ ok }: { ok: boolean }) {
 }
 
 export function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("general");
+  const { data: user } = useAuth();
+  const perms = useMemo(() => new Set(user?.permissions ?? []), [user]);
+
+  const tabs = useMemo(() => {
+    const t: { value: string; label: string; icon: typeof Server }[] = [];
+    if (perms.has("manage_settings")) {
+      t.push({ value: "general", label: "Allgemein", icon: Server });
+    }
+    if (perms.has("manage_permissions")) {
+      t.push({ value: "users", label: "Benutzer & Rollen", icon: Users });
+    }
+    if (perms.has("manage_settings")) {
+      t.push({ value: "connections", label: "Verbindungen", icon: Link2 });
+      t.push({ value: "ai", label: "KI-Assistent", icon: Bot });
+    }
+    if (perms.has("manage_templates")) {
+      t.push({ value: "templates", label: "Seitentemplates", icon: FileText });
+    }
+    if (perms.has("manage_connectors")) {
+      t.push({ value: "connectors", label: "Konnektoren", icon: Database });
+    }
+    if (perms.has("view_backups") || perms.has("manage_backup")) {
+      t.push({ value: "backups", label: "Backup", icon: HardDrive });
+    }
+    return t;
+  }, [perms]);
+
+  const [activeTab, setActiveTab] = useState("");
+
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.find((t) => t.value === activeTab)) {
+      setActiveTab(tabs[0].value);
+    }
+  }, [tabs, activeTab]);
+
+  if (tabs.length === 0) {
+    return (
+      <div className="max-w-5xl mx-auto py-12 text-center text-muted-foreground">
+        Sie haben keine Berechtigung, die Einstellungen zu sehen.
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -86,38 +128,16 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-7 w-full">
-          <TabsTrigger value="general" className="flex items-center gap-1.5">
-            <Server className="h-3.5 w-3.5" />
-            Allgemein
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5" />
-            Benutzer & Rollen
-          </TabsTrigger>
-          <TabsTrigger
-            value="connections"
-            className="flex items-center gap-1.5"
-          >
-            <Link2 className="h-3.5 w-3.5" />
-            Verbindungen
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-1.5">
-            <Bot className="h-3.5 w-3.5" />
-            KI-Assistent
-          </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5" />
-            Seitentemplates
-          </TabsTrigger>
-          <TabsTrigger value="connectors" className="flex items-center gap-1.5">
-            <Database className="h-3.5 w-3.5" />
-            Konnektoren
-          </TabsTrigger>
-          <TabsTrigger value="backups" className="flex items-center gap-1.5">
-            <HardDrive className="h-3.5 w-3.5" />
-            Backup
-          </TabsTrigger>
+        <TabsList className={`grid w-full`} style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-1.5">
+                <Icon className="h-3.5 w-3.5" />
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="general" className="mt-6">

@@ -9,6 +9,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useRootNodes } from "@/hooks/use-nodes";
+import { useAuth } from "@/hooks/use-auth";
 import { TreeNode } from "./TreeNode";
 import {
   Home,
@@ -26,7 +27,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function WikiSidebar() {
   const { data: roots, isLoading } = useRootNodes();
+  const { data: user } = useAuth();
   const [location, navigate] = useLocation();
+  const permissions = new Set(user?.permissions ?? []);
 
   return (
     <Sidebar>
@@ -73,37 +76,43 @@ export function WikiSidebar() {
                 <span>Glossar</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/dashboard"}
-                onClick={() => navigate("/dashboard")}
-              >
-                <BarChart3 className="h-4 w-4" />
-                <span>Dashboard</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/my-work"}
-                onClick={() => navigate("/my-work")}
-              >
-                <ClipboardList className="h-4 w-4" />
-                <span>Meine Aufgaben</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={
-                  location === "/settings" ||
-                  location === "/connectors" ||
-                  location === "/ai-settings"
-                }
-                onClick={() => navigate("/settings")}
-              >
-                <Settings className="h-4 w-4" />
-                <span>Einstellungen</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {permissions.has("view_dashboard") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={location === "/dashboard"}
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+            {permissions.has("view_tasks") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={location === "/my-work"}
+                  onClick={() => navigate("/my-work")}
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span>Meine Aufgaben</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+            {permissions.has("view_settings") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={
+                    location === "/settings" ||
+                    location === "/connectors" ||
+                    location === "/ai-settings"
+                  }
+                  onClick={() => navigate("/settings")}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Einstellungen</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 

@@ -72,7 +72,7 @@ function redactSystem<T extends { connectionConfig: unknown }>(
 connectorsRouter.get(
   "/source-systems",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (_req, res) => {
     const systems = await db
       .select()
@@ -116,7 +116,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/source-systems/:id",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const id = req.params.id as string;
     if (!UUID_RE.test(id)) {
@@ -146,7 +146,7 @@ connectorsRouter.get(
 connectorsRouter.post(
   "/source-systems",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const {
       name,
@@ -189,7 +189,7 @@ connectorsRouter.post(
       .returning();
 
     await db.insert(auditEventsTable).values({
-      eventType: "settings",
+      eventType: "connector",
       action: "source_system_created",
       actorId: req.user!.principalId,
       resourceType: "source_system",
@@ -204,7 +204,7 @@ connectorsRouter.post(
 connectorsRouter.patch(
   "/source-systems/:id",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const id = req.params.id as string;
     if (!UUID_RE.test(id)) {
@@ -259,7 +259,7 @@ connectorsRouter.patch(
     }
 
     await db.insert(auditEventsTable).values({
-      eventType: "settings",
+      eventType: "connector",
       action: "source_system_updated",
       actorId: req.user!.principalId,
       resourceType: "source_system",
@@ -274,7 +274,7 @@ connectorsRouter.patch(
 connectorsRouter.delete(
   "/source-systems/:id",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const id = req.params.id as string;
     if (!UUID_RE.test(id)) {
@@ -297,7 +297,7 @@ connectorsRouter.delete(
     await db.delete(sourceSystemsTable).where(eq(sourceSystemsTable.id, id));
 
     await db.insert(auditEventsTable).values({
-      eventType: "settings",
+      eventType: "connector",
       action: "source_system_deleted",
       actorId: req.user!.principalId,
       resourceType: "source_system",
@@ -335,7 +335,7 @@ function redactProviderConfig(
 connectorsRouter.get(
   "/storage-providers",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (_req, res) => {
     const providers = await db
       .select()
@@ -355,7 +355,7 @@ connectorsRouter.get(
 connectorsRouter.post(
   "/storage-providers",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const { name, slug, providerType, config, isDefault } = req.body;
 
@@ -385,7 +385,7 @@ connectorsRouter.post(
       .returning();
 
     await db.insert(auditEventsTable).values({
-      eventType: "settings",
+      eventType: "connector",
       action: "storage_provider_created",
       actorId: req.user!.principalId,
       resourceType: "storage_provider",
@@ -405,7 +405,7 @@ connectorsRouter.post(
 connectorsRouter.patch(
   "/storage-providers/:id",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const id = req.params.id as string;
     if (!UUID_RE.test(id)) {
@@ -473,7 +473,7 @@ connectorsRouter.patch(
 connectorsRouter.get(
   "/sharepoint/sites",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const query = req.query.q as string | undefined;
     const accessToken = resolveGraphToken(req);
@@ -485,7 +485,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/sharepoint/sites/:siteId/drives",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const siteId = req.params.siteId as string;
     const accessToken = resolveGraphToken(req);
@@ -497,7 +497,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/sharepoint/drives/:driveId/items",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const driveId = req.params.driveId as string;
     const folderId = req.query.folderId as string | undefined;
@@ -510,7 +510,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/sharepoint/drives/:driveId/items/:itemId",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const driveId = req.params.driveId as string;
     const itemId = req.params.itemId as string;
@@ -527,7 +527,7 @@ connectorsRouter.get(
 connectorsRouter.post(
   "/source-systems/:id/sync",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (req, res) => {
     const id = req.params.id as string;
     if (!UUID_RE.test(id)) {
@@ -661,7 +661,7 @@ connectorsRouter.post(
 connectorsRouter.get(
   "/sync/status",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("manage_connectors"),
   async (_req, res) => {
     const systems = await db
       .select()

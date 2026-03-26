@@ -34,10 +34,12 @@ export function Hub() {
               : "Bildungscampus Backnang – Wissens- und Prozessplattform"}
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Neu anlegen
-        </Button>
+        {(user?.permissions ?? []).includes("create_page") && (
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Neu anlegen
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -56,6 +58,7 @@ export function Hub() {
           </CardContent>
         </Card>
 
+        {(user?.permissions ?? []).includes("view_dashboard") && (
         <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => navigate("/dashboard")}
@@ -72,6 +75,7 @@ export function Hub() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         <Card className="cursor-not-allowed opacity-60">
           <CardContent className="flex items-center gap-3 p-4">

@@ -135,6 +135,12 @@ const PERMISSION_LABELS: Record<string, string> = {
   manage_templates: "Templates verwalten",
   manage_settings: "Einstellungen verwalten",
   view_audit_log: "Audit-Log einsehen",
+  manage_connectors: "Konnektoren verwalten",
+  manage_backup: "Backup konfigurieren",
+  run_backup: "Backup ausführen",
+  restore_backup: "Backup wiederherstellen",
+  view_backups: "Backups einsehen",
+  manage_media: "Medien global verwalten",
 };
 
 const PERMISSION_GROUPS: { label: string; permissions: string[] }[] = [
@@ -175,6 +181,12 @@ const PERMISSION_GROUPS: { label: string; permissions: string[] }[] = [
       "manage_templates",
       "manage_settings",
       "view_audit_log",
+      "manage_connectors",
+      "manage_backup",
+      "run_backup",
+      "restore_backup",
+      "view_backups",
+      "manage_media",
     ],
   },
 ];

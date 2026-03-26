@@ -268,7 +268,7 @@ router.get("/assets/:id", requireAuth, async (req, res) => {
 router.delete(
   "/assets/:id",
   requireAuth,
-  requirePermission("edit_content"),
+  requirePermission("manage_media"),
   async (req, res) => {
     const id = req.params.id as string;
     await db
