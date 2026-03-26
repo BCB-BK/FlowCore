@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronRight,
   Users,
+  Eye,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -32,6 +33,7 @@ import type { PageTypeDefinition } from "@workspace/shared/page-types";
 import { AISettingsTab } from "@/components/settings/AISettingsTab";
 import { ConnectorsTab } from "@/components/settings/ConnectorsTab";
 import { TemplateDetailPanel } from "@/components/settings/TemplateDetailPanel";
+import { TemplatePreviewDialog } from "@/components/settings/TemplatePreviewDialog";
 import { UsersRolesTab } from "@/components/settings/UsersRolesTab";
 
 interface SystemInfo {
@@ -447,7 +449,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function TemplatesTab() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<string | null>(null);
   const templates = Object.values(PAGE_TYPE_REGISTRY) as PageTypeDefinition[];
+  const previewTemplate = previewType
+    ? (templates.find((t) => t.type === previewType) ?? null)
+    : null;
 
   const categories = ["process", "documentation", "governance", "system"];
 
@@ -460,6 +466,14 @@ function TemplatesTab() {
           sehen.
         </p>
       </div>
+
+      {previewTemplate && (
+        <TemplatePreviewDialog
+          template={previewTemplate}
+          open
+          onClose={() => setPreviewType(null)}
+        />
+      )}
 
       {categories.map((cat) => {
         const catTemplates = templates.filter((t) => t.category === cat);
@@ -516,7 +530,18 @@ function TemplatesTab() {
                           )}
                         </div>
                       </div>
-                      <div className="ml-2">
+                      <div className="ml-2 flex items-center gap-1">
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-muted transition-colors"
+                          title="Musteransicht"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewType(tmpl.type);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                        </button>
                         {selectedType === tmpl.type ? (
                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         ) : (

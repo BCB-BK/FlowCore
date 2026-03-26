@@ -63,10 +63,7 @@ export function AppHeader() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              className="text-sm font-medium"
-              disabled
-            >
+            <DropdownMenuItem className="text-sm font-medium" disabled>
               {user.displayName}
             </DropdownMenuItem>
             <DropdownMenuItem
