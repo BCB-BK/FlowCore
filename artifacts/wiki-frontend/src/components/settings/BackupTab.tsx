@@ -115,7 +115,7 @@ const TYPE_LABELS: Record<string, string> = {
 function extractErrorMessage(err: unknown): string {
   if (!err) return "";
   if (err instanceof Error) {
-    const axiosData = (err as Record<string, unknown>).response;
+    const axiosData = (err as unknown as Record<string, unknown>).response;
     if (axiosData && typeof axiosData === "object") {
       const data = (axiosData as Record<string, unknown>).data;
       if (data && typeof data === "object") {

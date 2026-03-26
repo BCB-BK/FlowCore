@@ -96,7 +96,7 @@ backupRouter.get(
   requirePermission("view_backups"),
   async (req, res) => {
     try {
-      const run = await getBackupRun(req.params.id);
+      const run = await getBackupRun(req.params.id as string);
       if (!run) {
         res.status(404).json({ error: "Backup-Run nicht gefunden" });
         return;
@@ -114,7 +114,7 @@ backupRouter.post(
   requirePermission("restore_backup"),
   async (req, res) => {
     try {
-      const result = await restoreBackup(req.params.id, req.user!.principalId);
+      const result = await restoreBackup(req.params.id as string, req.user!.principalId);
       if (result.success) {
         res.json({ status: "restored" });
       } else {
