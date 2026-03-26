@@ -7,6 +7,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Cluster 11: Prozessmanagement-Dashboard und Qualitätsanalytik
+  - Quality metrics engine (`quality.service.ts`) with SQL-driven analytics: page counts by status, orphan detection, overdue review tracking, completeness scoring, duplicate title analysis, stale content identification, archived reference detection
+  - 6 new API endpoints under `/api/quality/*`: overview, pages (filterable), duplicates, maintenance-hints, my-work (personal cockpit), search-insights
+  - Process Management Dashboard page (`/dashboard`): 8 KPI stat cards, quality distribution bars, sortable page list with completeness indicators, maintenance hints table with severity badges, duplicate group viewer
+  - Personal Work Cockpit page (`/my-work`): role-based work lists for drafts, pending reviews, pending approvals, and owned pages needing attention; grouped by category with priority badges
+  - Sidebar navigation entries for Dashboard and Meine Aufgaben
+  - Hub page Dashboard card now clickable (was placeholder)
+  - Progress component extended with `indicatorClassName` prop for colored progress bars
+  - OpenAPI spec: 6 quality endpoints + 7 schemas (QualityOverview, PageQualityRow, PageQualityList, DuplicateGroup, MaintenanceHint, PersonalWorkItem, SearchInsights)
+  - All SQL queries use parameterized values (no sql.raw for user input)
+
 - Nachschärfung Cluster 1-3: Comprehensive refinement
   - ADR-005: Eigenentwicklung auf Replit (architecture premise)
   - ADR-006: Campus-first / Multi-Org / Multi-Brand architecture

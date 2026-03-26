@@ -11,6 +11,7 @@ import { glossaryRouter } from "./glossary";
 import { connectorsRouter } from "./connectors";
 import { sourceRefsRouter } from "./source-refs";
 import { aiRouter } from "./ai";
+import { qualityRouter } from "./quality";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use("/media", mediaRouter);
 router.use("/connectors", connectorsRouter);
 router.use("/content", sourceRefsRouter);
 router.use("/ai", aiRouter);
+router.use("/quality", qualityRouter);
 
 export default router;

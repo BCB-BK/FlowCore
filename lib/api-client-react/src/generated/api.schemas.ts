@@ -1141,6 +1141,134 @@ export interface AiUsageStats {
   byDay: AiUsageStatsByDayItem[];
 }
 
+export interface QualityOverview {
+  totalPages: number;
+  publishedPages: number;
+  draftPages: number;
+  archivedPages: number;
+  pagesWithoutOwner: number;
+  overdueReviews: number;
+  orphanedPages: number;
+  incompletePagesCount: number;
+  avgCompleteness: number;
+}
+
+export interface PageQualityRow {
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  status: string;
+  ownerId?: string | null;
+  hasCurrentRevision: boolean;
+  hasPublishedRevision: boolean;
+  completeness: number;
+  isOrphan: boolean;
+  reviewOverdue: boolean;
+  nextReviewDate?: string | null;
+  updatedAt: string;
+  childCount: number;
+  relationCount: number;
+}
+
+export interface PageQualityList {
+  items: PageQualityRow[];
+  total: number;
+}
+
+export type DuplicateGroupNodesItem = {
+  nodeId: string;
+  displayCode: string;
+  templateType: string;
+  status: string;
+  updatedAt: string;
+};
+
+export interface DuplicateGroup {
+  title: string;
+  nodes: DuplicateGroupNodesItem[];
+}
+
+export type MaintenanceHintType =
+  (typeof MaintenanceHintType)[keyof typeof MaintenanceHintType];
+
+export const MaintenanceHintType = {
+  missing_owner: "missing_owner",
+  overdue_review: "overdue_review",
+  stale_content: "stale_content",
+  orphan: "orphan",
+  no_revision: "no_revision",
+  archived_reference: "archived_reference",
+  missing_mandatory_fields: "missing_mandatory_fields",
+} as const;
+
+export type MaintenanceHintSeverity =
+  (typeof MaintenanceHintSeverity)[keyof typeof MaintenanceHintSeverity];
+
+export const MaintenanceHintSeverity = {
+  critical: "critical",
+  warning: "warning",
+  info: "info",
+} as const;
+
+export interface MaintenanceHint {
+  type: MaintenanceHintType;
+  severity: MaintenanceHintSeverity;
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  detail: string;
+}
+
+export type PersonalWorkItemType =
+  (typeof PersonalWorkItemType)[keyof typeof PersonalWorkItemType];
+
+export const PersonalWorkItemType = {
+  my_draft: "my_draft",
+  pending_review: "pending_review",
+  pending_approval: "pending_approval",
+  owned_unhealthy: "owned_unhealthy",
+  my_page_overdue: "my_page_overdue",
+} as const;
+
+export type PersonalWorkItemPriority =
+  (typeof PersonalWorkItemPriority)[keyof typeof PersonalWorkItemPriority];
+
+export const PersonalWorkItemPriority = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+} as const;
+
+export interface PersonalWorkItem {
+  type: PersonalWorkItemType;
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  status: string;
+  detail: string;
+  priority: PersonalWorkItemPriority;
+  updatedAt: string;
+}
+
+export type SearchInsightsTopQueriesItem = {
+  query: string;
+  count: number;
+};
+
+export type SearchInsightsTopClickedNodesItem = {
+  nodeId: string;
+  clicks: number;
+};
+
+export interface SearchInsights {
+  totalSearches: number;
+  zeroResultSearches: number;
+  topQueries: SearchInsightsTopQueriesItem[];
+  topClickedNodes: SearchInsightsTopClickedNodesItem[];
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -1314,5 +1442,26 @@ export type ListSharePointDriveItemsParams = {
 };
 
 export type GetAiUsageStatsParams = {
+  days?: number;
+};
+
+export type GetQualityPagesParams = {
+  filter?: GetQualityPagesFilter;
+  limit?: number;
+  offset?: number;
+};
+
+export type GetQualityPagesFilter =
+  (typeof GetQualityPagesFilter)[keyof typeof GetQualityPagesFilter];
+
+export const GetQualityPagesFilter = {
+  no_owner: "no_owner",
+  overdue_review: "overdue_review",
+  orphan: "orphan",
+  draft: "draft",
+  stale: "stale",
+} as const;
+
+export type GetSearchInsightsParams = {
   days?: number;
 };

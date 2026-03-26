@@ -46,13 +46,16 @@ import type {
   CreateStorageProviderInput,
   CreateTag,
   DevUser,
+  DuplicateGroup,
   EffectivePermissions,
   ErrorResponse,
   ForwardLink,
   GetAiUsageStatsParams,
   GetPrincipalPermissionsParams,
+  GetQualityPagesParams,
   GetRolePermissionMatrix200,
   GetSearchAnalyticsParams,
+  GetSearchInsightsParams,
   GetSearchSuggestionsParams,
   GetWatchStatus200,
   GlossaryTerm,
@@ -68,16 +71,20 @@ import type {
   ListSharePointDriveItemsParams,
   ListSharePointSitesParams,
   ListTagsParams,
+  MaintenanceHint,
   MediaAsset,
   MediaAssetUsage,
   MoveNodeInput,
   NodeOwnership,
   PagePermission,
+  PageQualityList,
   PageTypeDefinition,
   PageWatcher,
+  PersonalWorkItem,
   Principal,
   PrincipalWithRoles,
   PublishRevisionInput,
+  QualityOverview,
   RejectRevisionBody,
   RestoreRevisionInput,
   ReviewWorkflow,
@@ -87,6 +94,7 @@ import type {
   SearchAnalytics,
   SearchContentParams,
   SearchGroupsParams,
+  SearchInsights,
   SearchPeopleParams,
   SearchResult,
   SearchSuggestions,
@@ -9154,6 +9162,489 @@ export function useGetAiUsageStats<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetAiUsageStatsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get quality metrics overview
+ */
+export const getGetQualityOverviewUrl = () => {
+  return `/api/quality/overview`;
+};
+
+export const getQualityOverview = async (
+  options?: RequestInit,
+): Promise<QualityOverview> => {
+  return customFetch<QualityOverview>(getGetQualityOverviewUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetQualityOverviewQueryKey = () => {
+  return [`/api/quality/overview`] as const;
+};
+
+export const getGetQualityOverviewQueryOptions = <
+  TData = Awaited<ReturnType<typeof getQualityOverview>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityOverview>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetQualityOverviewQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getQualityOverview>>
+  > = ({ signal }) => getQualityOverview({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityOverview>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetQualityOverviewQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getQualityOverview>>
+>;
+export type GetQualityOverviewQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get quality metrics overview
+ */
+
+export function useGetQualityOverview<
+  TData = Awaited<ReturnType<typeof getQualityOverview>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityOverview>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetQualityOverviewQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get page quality list with filters
+ */
+export const getGetQualityPagesUrl = (params?: GetQualityPagesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/quality/pages?${stringifiedParams}`
+    : `/api/quality/pages`;
+};
+
+export const getQualityPages = async (
+  params?: GetQualityPagesParams,
+  options?: RequestInit,
+): Promise<PageQualityList> => {
+  return customFetch<PageQualityList>(getGetQualityPagesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetQualityPagesQueryKey = (params?: GetQualityPagesParams) => {
+  return [`/api/quality/pages`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetQualityPagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getQualityPages>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetQualityPagesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getQualityPages>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetQualityPagesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getQualityPages>>> = ({
+    signal,
+  }) => getQualityPages(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityPages>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetQualityPagesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getQualityPages>>
+>;
+export type GetQualityPagesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get page quality list with filters
+ */
+
+export function useGetQualityPages<
+  TData = Awaited<ReturnType<typeof getQualityPages>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetQualityPagesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getQualityPages>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetQualityPagesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get duplicate title analysis
+ */
+export const getGetQualityDuplicatesUrl = () => {
+  return `/api/quality/duplicates`;
+};
+
+export const getQualityDuplicates = async (
+  options?: RequestInit,
+): Promise<DuplicateGroup[]> => {
+  return customFetch<DuplicateGroup[]>(getGetQualityDuplicatesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetQualityDuplicatesQueryKey = () => {
+  return [`/api/quality/duplicates`] as const;
+};
+
+export const getGetQualityDuplicatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getQualityDuplicates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityDuplicates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetQualityDuplicatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getQualityDuplicates>>
+  > = ({ signal }) => getQualityDuplicates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityDuplicates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetQualityDuplicatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getQualityDuplicates>>
+>;
+export type GetQualityDuplicatesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get duplicate title analysis
+ */
+
+export function useGetQualityDuplicates<
+  TData = Awaited<ReturnType<typeof getQualityDuplicates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getQualityDuplicates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetQualityDuplicatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get maintenance hints and conflicts
+ */
+export const getGetMaintenanceHintsUrl = () => {
+  return `/api/quality/maintenance-hints`;
+};
+
+export const getMaintenanceHints = async (
+  options?: RequestInit,
+): Promise<MaintenanceHint[]> => {
+  return customFetch<MaintenanceHint[]>(getGetMaintenanceHintsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMaintenanceHintsQueryKey = () => {
+  return [`/api/quality/maintenance-hints`] as const;
+};
+
+export const getGetMaintenanceHintsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMaintenanceHints>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMaintenanceHints>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMaintenanceHintsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMaintenanceHints>>
+  > = ({ signal }) => getMaintenanceHints({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMaintenanceHints>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMaintenanceHintsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMaintenanceHints>>
+>;
+export type GetMaintenanceHintsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get maintenance hints and conflicts
+ */
+
+export function useGetMaintenanceHints<
+  TData = Awaited<ReturnType<typeof getMaintenanceHints>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMaintenanceHints>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMaintenanceHintsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get personal work items (cockpit)
+ */
+export const getGetMyWorkUrl = () => {
+  return `/api/quality/my-work`;
+};
+
+export const getMyWork = async (
+  options?: RequestInit,
+): Promise<PersonalWorkItem[]> => {
+  return customFetch<PersonalWorkItem[]>(getGetMyWorkUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyWorkQueryKey = () => {
+  return [`/api/quality/my-work`] as const;
+};
+
+export const getGetMyWorkQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyWork>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getMyWork>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyWorkQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyWork>>> = ({
+    signal,
+  }) => getMyWork({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyWork>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyWorkQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyWork>>
+>;
+export type GetMyWorkQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get personal work items (cockpit)
+ */
+
+export function useGetMyWork<
+  TData = Awaited<ReturnType<typeof getMyWork>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getMyWork>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyWorkQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get search analytics insights
+ */
+export const getGetSearchInsightsUrl = (params?: GetSearchInsightsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/quality/search-insights?${stringifiedParams}`
+    : `/api/quality/search-insights`;
+};
+
+export const getSearchInsights = async (
+  params?: GetSearchInsightsParams,
+  options?: RequestInit,
+): Promise<SearchInsights> => {
+  return customFetch<SearchInsights>(getGetSearchInsightsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSearchInsightsQueryKey = (
+  params?: GetSearchInsightsParams,
+) => {
+  return [`/api/quality/search-insights`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSearchInsightsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSearchInsights>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetSearchInsightsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSearchInsights>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSearchInsightsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSearchInsights>>
+  > = ({ signal }) => getSearchInsights(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSearchInsights>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSearchInsightsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSearchInsights>>
+>;
+export type GetSearchInsightsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get search analytics insights
+ */
+
+export function useGetSearchInsights<
+  TData = Awaited<ReturnType<typeof getSearchInsights>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetSearchInsightsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSearchInsights>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSearchInsightsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

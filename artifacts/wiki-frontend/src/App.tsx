@@ -11,6 +11,8 @@ import { GlossaryPage } from "@/pages/GlossaryPage";
 import { BrokenLinksPage } from "@/pages/BrokenLinksPage";
 import { ConnectorsPage } from "@/pages/ConnectorsPage";
 import { AISettingsPage } from "@/pages/AISettingsPage";
+import { QualityDashboard } from "@/pages/QualityDashboard";
+import { MyWorkPage } from "@/pages/MyWorkPage";
 import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
 import NotFound from "@/pages/not-found";
 
@@ -25,6 +27,8 @@ function Router() {
         <Route path="/broken-links" component={BrokenLinksPage} />
         <Route path="/connectors" component={ConnectorsPage} />
         <Route path="/ai-settings" component={AISettingsPage} />
+        <Route path="/dashboard" component={QualityDashboard} />
+        <Route path="/my-work" component={MyWorkPage} />
         <Route component={NotFound} />
       </Switch>
       <GlobalAssistant />

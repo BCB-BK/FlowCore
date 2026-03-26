@@ -56,7 +56,10 @@ export function Hub() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-not-allowed opacity-60">
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => navigate("/dashboard")}
+        >
           <CardContent className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
               <BarChart3 className="h-5 w-5" />

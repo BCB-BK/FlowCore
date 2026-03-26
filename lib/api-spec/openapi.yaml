@@ -40,6 +40,8 @@ tags:
     description: External source reference tracking
   - name: ai
     description: AI assistant and settings
+  - name: quality
+    description: Quality metrics and process management
 paths:
   /healthz:
     get:
@@ -2188,6 +2190,112 @@ paths:
               schema:
                 $ref: "#/components/schemas/AiUsageStats"
 
+  /quality/overview:
+    get:
+      operationId: getQualityOverview
+      tags: [quality]
+      summary: Get quality metrics overview
+      responses:
+        "200":
+          description: Quality overview metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QualityOverview"
+
+  /quality/pages:
+    get:
+      operationId: getQualityPages
+      tags: [quality]
+      summary: Get page quality list with filters
+      parameters:
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [no_owner, overdue_review, orphan, draft, stale]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Paginated page quality list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageQualityList"
+
+  /quality/duplicates:
+    get:
+      operationId: getQualityDuplicates
+      tags: [quality]
+      summary: Get duplicate title analysis
+      responses:
+        "200":
+          description: Duplicate groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DuplicateGroup"
+
+  /quality/maintenance-hints:
+    get:
+      operationId: getMaintenanceHints
+      tags: [quality]
+      summary: Get maintenance hints and conflicts
+      responses:
+        "200":
+          description: Maintenance hints sorted by severity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MaintenanceHint"
+
+  /quality/my-work:
+    get:
+      operationId: getMyWork
+      tags: [quality]
+      summary: Get personal work items (cockpit)
+      responses:
+        "200":
+          description: Personal work items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonalWorkItem"
+
+  /quality/search-insights:
+    get:
+      operationId: getSearchInsights
+      tags: [quality]
+      summary: Get search analytics insights
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Search insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchInsights"
+
 components:
   parameters:
     NodeId:
@@ -4255,3 +4363,228 @@ components:
         - summary
         - byAction
         - byDay
+
+    QualityOverview:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+        publishedPages:
+          type: integer
+        draftPages:
+          type: integer
+        archivedPages:
+          type: integer
+        pagesWithoutOwner:
+          type: integer
+        overdueReviews:
+          type: integer
+        orphanedPages:
+          type: integer
+        incompletePagesCount:
+          type: integer
+        avgCompleteness:
+          type: number
+      required:
+        - totalPages
+        - publishedPages
+        - draftPages
+        - archivedPages
+        - pagesWithoutOwner
+        - overdueReviews
+        - orphanedPages
+        - incompletePagesCount
+        - avgCompleteness
+
+    PageQualityRow:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        displayCode:
+          type: string
+        templateType:
+          type: string
+        status:
+          type: string
+        ownerId:
+          type: string
+          nullable: true
+        hasCurrentRevision:
+          type: boolean
+        hasPublishedRevision:
+          type: boolean
+        completeness:
+          type: number
+        isOrphan:
+          type: boolean
+        reviewOverdue:
+          type: boolean
+        nextReviewDate:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+        childCount:
+          type: integer
+        relationCount:
+          type: integer
+      required:
+        - nodeId
+        - title
+        - displayCode
+        - templateType
+        - status
+        - hasCurrentRevision
+        - hasPublishedRevision
+        - completeness
+        - isOrphan
+        - reviewOverdue
+        - updatedAt
+        - childCount
+        - relationCount
+
+    PageQualityList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PageQualityRow"
+        total:
+          type: integer
+      required:
+        - items
+        - total
+
+    DuplicateGroup:
+      type: object
+      properties:
+        title:
+          type: string
+        nodes:
+          type: array
+          items:
+            type: object
+            properties:
+              nodeId:
+                type: string
+                format: uuid
+              displayCode:
+                type: string
+              templateType:
+                type: string
+              status:
+                type: string
+              updatedAt:
+                type: string
+            required:
+              - nodeId
+              - displayCode
+              - templateType
+              - status
+              - updatedAt
+      required:
+        - title
+        - nodes
+
+    MaintenanceHint:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, archived_reference, missing_mandatory_fields]
+        severity:
+          type: string
+          enum: [critical, warning, info]
+        nodeId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        displayCode:
+          type: string
+        detail:
+          type: string
+      required:
+        - type
+        - severity
+        - nodeId
+        - title
+        - displayCode
+        - detail
+
+    PersonalWorkItem:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [my_draft, pending_review, pending_approval, owned_unhealthy, my_page_overdue]
+        nodeId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        displayCode:
+          type: string
+        templateType:
+          type: string
+        status:
+          type: string
+        detail:
+          type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+        updatedAt:
+          type: string
+      required:
+        - type
+        - nodeId
+        - title
+        - displayCode
+        - templateType
+        - status
+        - detail
+        - priority
+        - updatedAt
+
+    SearchInsights:
+      type: object
+      properties:
+        totalSearches:
+          type: integer
+        zeroResultSearches:
+          type: integer
+        topQueries:
+          type: array
+          items:
+            type: object
+            properties:
+              query:
+                type: string
+              count:
+                type: integer
+            required:
+              - query
+              - count
+        topClickedNodes:
+          type: array
+          items:
+            type: object
+            properties:
+              nodeId:
+                type: string
+              clicks:
+                type: integer
+            required:
+              - nodeId
+              - clicks
+      required:
+        - totalSearches
+        - zeroResultSearches
+        - topQueries
+        - topClickedNodes

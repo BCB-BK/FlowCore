@@ -17,6 +17,8 @@ import {
   AlertTriangle,
   Database,
   Bot,
+  BarChart3,
+  ClipboardList,
 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useLocation } from "wouter";
@@ -72,6 +74,24 @@ export function WikiSidebar() {
               >
                 <BookOpen className="h-4 w-4" />
                 <span>Glossar</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/dashboard"}
+                onClick={() => navigate("/dashboard")}
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span>Dashboard</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/my-work"}
+                onClick={() => navigate("/my-work")}
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span>Meine Aufgaben</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

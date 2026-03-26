@@ -2327,3 +2327,145 @@ export const GetAiUsageStatsResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary Get quality metrics overview
+ */
+export const GetQualityOverviewResponse = zod.object({
+  totalPages: zod.number(),
+  publishedPages: zod.number(),
+  draftPages: zod.number(),
+  archivedPages: zod.number(),
+  pagesWithoutOwner: zod.number(),
+  overdueReviews: zod.number(),
+  orphanedPages: zod.number(),
+  incompletePagesCount: zod.number(),
+  avgCompleteness: zod.number(),
+});
+
+/**
+ * @summary Get page quality list with filters
+ */
+export const getQualityPagesQueryLimitDefault = 50;
+export const getQualityPagesQueryOffsetDefault = 0;
+
+export const GetQualityPagesQueryParams = zod.object({
+  filter: zod
+    .enum(["no_owner", "overdue_review", "orphan", "draft", "stale"])
+    .optional(),
+  limit: zod.coerce.number().default(getQualityPagesQueryLimitDefault),
+  offset: zod.coerce.number().default(getQualityPagesQueryOffsetDefault),
+});
+
+export const GetQualityPagesResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      nodeId: zod.string().uuid(),
+      title: zod.string(),
+      displayCode: zod.string(),
+      templateType: zod.string(),
+      status: zod.string(),
+      ownerId: zod.string().nullish(),
+      hasCurrentRevision: zod.boolean(),
+      hasPublishedRevision: zod.boolean(),
+      completeness: zod.number(),
+      isOrphan: zod.boolean(),
+      reviewOverdue: zod.boolean(),
+      nextReviewDate: zod.string().nullish(),
+      updatedAt: zod.string(),
+      childCount: zod.number(),
+      relationCount: zod.number(),
+    }),
+  ),
+  total: zod.number(),
+});
+
+/**
+ * @summary Get duplicate title analysis
+ */
+export const GetQualityDuplicatesResponseItem = zod.object({
+  title: zod.string(),
+  nodes: zod.array(
+    zod.object({
+      nodeId: zod.string().uuid(),
+      displayCode: zod.string(),
+      templateType: zod.string(),
+      status: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+});
+export const GetQualityDuplicatesResponse = zod.array(
+  GetQualityDuplicatesResponseItem,
+);
+
+/**
+ * @summary Get maintenance hints and conflicts
+ */
+export const GetMaintenanceHintsResponseItem = zod.object({
+  type: zod.enum([
+    "missing_owner",
+    "overdue_review",
+    "stale_content",
+    "orphan",
+    "no_revision",
+    "archived_reference",
+    "missing_mandatory_fields",
+  ]),
+  severity: zod.enum(["critical", "warning", "info"]),
+  nodeId: zod.string().uuid(),
+  title: zod.string(),
+  displayCode: zod.string(),
+  detail: zod.string(),
+});
+export const GetMaintenanceHintsResponse = zod.array(
+  GetMaintenanceHintsResponseItem,
+);
+
+/**
+ * @summary Get personal work items (cockpit)
+ */
+export const GetMyWorkResponseItem = zod.object({
+  type: zod.enum([
+    "my_draft",
+    "pending_review",
+    "pending_approval",
+    "owned_unhealthy",
+    "my_page_overdue",
+  ]),
+  nodeId: zod.string().uuid(),
+  title: zod.string(),
+  displayCode: zod.string(),
+  templateType: zod.string(),
+  status: zod.string(),
+  detail: zod.string(),
+  priority: zod.enum(["high", "medium", "low"]),
+  updatedAt: zod.string(),
+});
+export const GetMyWorkResponse = zod.array(GetMyWorkResponseItem);
+
+/**
+ * @summary Get search analytics insights
+ */
+export const getSearchInsightsQueryDaysDefault = 30;
+
+export const GetSearchInsightsQueryParams = zod.object({
+  days: zod.coerce.number().default(getSearchInsightsQueryDaysDefault),
+});
+
+export const GetSearchInsightsResponse = zod.object({
+  totalSearches: zod.number(),
+  zeroResultSearches: zod.number(),
+  topQueries: zod.array(
+    zod.object({
+      query: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  topClickedNodes: zod.array(
+    zod.object({
+      nodeId: zod.string(),
+      clicks: zod.number(),
+    }),
+  ),
+});

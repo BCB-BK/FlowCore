@@ -1,0 +1,106 @@
+import { Router, type IRouter } from "express";
+import { requireAuth } from "../middlewares/require-auth";
+import { requirePermission } from "../middlewares/require-permission";
+import {
+  getQualityOverview,
+  getPageQualityList,
+  getDuplicates,
+  getMaintenanceHints,
+  getPersonalWorkItems,
+  getSearchInsights,
+} from "../services/quality.service";
+import { logger } from "../lib/logger";
+
+export const qualityRouter: IRouter = Router();
+
+qualityRouter.get(
+  "/overview",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    try {
+      const overview = await getQualityOverview();
+      res.json(overview);
+    } catch (err) {
+      logger.error({ err }, "Failed to get quality overview");
+      res.status(500).json({ error: "Failed to get quality overview" });
+    }
+  },
+);
+
+qualityRouter.get(
+  "/pages",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    try {
+      const filter = req.query.filter as string | undefined;
+      const limit = Math.min(
+        parseInt(req.query.limit as string, 10) || 50,
+        200,
+      );
+      const offset = parseInt(req.query.offset as string, 10) || 0;
+      const result = await getPageQualityList(filter, limit, offset);
+      res.json(result);
+    } catch (err) {
+      logger.error({ err }, "Failed to get page quality list");
+      res.status(500).json({ error: "Failed to get page quality list" });
+    }
+  },
+);
+
+qualityRouter.get(
+  "/duplicates",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    try {
+      const duplicates = await getDuplicates();
+      res.json(duplicates);
+    } catch (err) {
+      logger.error({ err }, "Failed to get duplicates");
+      res.status(500).json({ error: "Failed to get duplicates" });
+    }
+  },
+);
+
+qualityRouter.get(
+  "/maintenance-hints",
+  requireAuth,
+  requirePermission("read_page"),
+  async (_req, res) => {
+    try {
+      const hints = await getMaintenanceHints();
+      res.json(hints);
+    } catch (err) {
+      logger.error({ err }, "Failed to get maintenance hints");
+      res.status(500).json({ error: "Failed to get maintenance hints" });
+    }
+  },
+);
+
+qualityRouter.get("/my-work", requireAuth, async (req, res) => {
+  try {
+    const items = await getPersonalWorkItems(req.user!.principalId);
+    res.json(items);
+  } catch (err) {
+    logger.error({ err }, "Failed to get personal work items");
+    res.status(500).json({ error: "Failed to get personal work items" });
+  }
+});
+
+qualityRouter.get(
+  "/search-insights",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (req, res) => {
+    try {
+      const days = parseInt(req.query.days as string, 10) || 30;
+      const insights = await getSearchInsights(days);
+      res.json(insights);
+    } catch (err) {
+      logger.error({ err }, "Failed to get search insights");
+      res.status(500).json({ error: "Failed to get search insights" });
+    }
+  },
+);
