@@ -18,15 +18,20 @@ import { logger } from "../lib/logger";
 
 export const aiRouter: IRouter = Router();
 
-aiRouter.get("/settings", requireAuth, async (req, res) => {
-  try {
-    const settings = await getAiSettings();
-    res.json(settings);
-  } catch (err) {
-    logger.error({ err }, "Failed to get AI settings");
-    res.status(500).json({ error: "Failed to get AI settings" });
-  }
-});
+aiRouter.get(
+  "/settings",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (req, res) => {
+    try {
+      const settings = await getAiSettings();
+      res.json(settings);
+    } catch (err) {
+      logger.error({ err }, "Failed to get AI settings");
+      res.status(500).json({ error: "Failed to get AI settings" });
+    }
+  },
+);
 
 aiRouter.put(
   "/settings",

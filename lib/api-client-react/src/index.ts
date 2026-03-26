@@ -4,6 +4,7 @@ export {
   setBaseUrl,
   setAuthTokenGetter,
   setDefaultHeaders,
+  getDefaultHeaders,
   customFetch,
 } from "./custom-fetch";
 export type { AuthTokenGetter } from "./custom-fetch";

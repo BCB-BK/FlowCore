@@ -48,6 +48,10 @@ export function setDefaultHeaders(
   _defaultHeaders = headers ?? {};
 }
 
+export function getDefaultHeaders(): Record<string, string> {
+  return { ..._defaultHeaders };
+}
+
 function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }

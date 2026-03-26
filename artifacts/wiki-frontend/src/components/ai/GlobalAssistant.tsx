@@ -14,7 +14,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { customFetch } from "@workspace/api-client-react";
+import { getDefaultHeaders } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 
 type SourceType = "wiki" | "connector" | "web";
@@ -34,6 +34,8 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: AiSource[];
+  confidence?: "high" | "medium" | "low";
+  webSearchUsed?: boolean;
 }
 
 export function GlobalAssistant() {
@@ -58,6 +60,7 @@ export function GlobalAssistant() {
 
     let currentSources: AiSource[] = [];
     let currentContent = "";
+    let webSearchActive = false;
 
     setMessages((prev) => [
       ...prev,
@@ -70,7 +73,7 @@ export function GlobalAssistant() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Dev-Principal-Id": "00000000-0000-0000-0000-000000000001",
+          ...getDefaultHeaders(),
         },
         body: JSON.stringify({ query: userQuery }),
         signal: controller.signal,
@@ -127,7 +130,32 @@ export function GlobalAssistant() {
                 }
                 return updated;
               });
+            } else if (data.type === "web_search_started") {
+              webSearchActive = true;
+              setMessages((prev) => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last?.role === "assistant") {
+                  updated[updated.length - 1] = {
+                    ...last,
+                    webSearchUsed: true,
+                  };
+                }
+                return updated;
+              });
             } else if (data.type === "done") {
+              setMessages((prev) => {
+                const updated = [...prev];
+                const last = updated[updated.length - 1];
+                if (last?.role === "assistant") {
+                  updated[updated.length - 1] = {
+                    ...last,
+                    confidence: data.confidence,
+                    webSearchUsed: data.webSearchUsed || webSearchActive,
+                  };
+                }
+                return updated;
+              });
               break;
             }
           } catch {
@@ -207,6 +235,35 @@ export function GlobalAssistant() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                   </div>
+
+                  {(msg.confidence || msg.webSearchUsed) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {msg.confidence && (
+                        <Badge
+                          variant={
+                            msg.confidence === "high"
+                              ? "default"
+                              : msg.confidence === "medium"
+                                ? "secondary"
+                                : "destructive"
+                          }
+                          className="text-[10px]"
+                        >
+                          {msg.confidence === "high"
+                            ? "Hohe Konfidenz"
+                            : msg.confidence === "medium"
+                              ? "Mittlere Konfidenz"
+                              : "Geringe Konfidenz"}
+                        </Badge>
+                      )}
+                      {msg.webSearchUsed && (
+                        <Badge variant="outline" className="text-[10px] gap-1">
+                          <Globe className="h-3 w-3" />
+                          Web-Quellen verwendet
+                        </Badge>
+                      )}
+                    </div>
+                  )}
 
                   {msg.sources && msg.sources.length > 0 && (
                     <div className="space-y-1">

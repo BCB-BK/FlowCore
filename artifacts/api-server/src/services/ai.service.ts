@@ -477,7 +477,19 @@ export async function streamAskAnswer(
     })
     .catch((e) => logger.error({ err: e }, "Failed to log AI usage"));
 
-  res.write(`data: ${JSON.stringify({ type: "done", done: true })}\n\n`);
+  let confidence: "high" | "medium" | "low" = "low";
+  if (sources.length >= 3) {
+    confidence = "high";
+  } else if (sources.length >= 1) {
+    confidence = "medium";
+  }
+  if (hasError) {
+    confidence = "low";
+  }
+
+  res.write(
+    `data: ${JSON.stringify({ type: "done", done: true, confidence, sourcesCount: sources.length, webSearchUsed })}\n\n`,
+  );
   res.end();
 }
 

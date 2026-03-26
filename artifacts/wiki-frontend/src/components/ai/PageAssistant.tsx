@@ -24,6 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getDefaultHeaders } from "@workspace/api-client-react";
 
 type Action =
   | "reformulate"
@@ -145,7 +146,7 @@ export function PageAssistant({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Dev-Principal-Id": "00000000-0000-0000-0000-000000000001",
+            ...getDefaultHeaders(),
           },
           body: JSON.stringify({ action, text, nodeId }),
           signal: controller.signal,
