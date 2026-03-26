@@ -14,7 +14,6 @@ import {
   Home,
   BookOpen,
   Search,
-  AlertTriangle,
   Database,
   Bot,
   BarChart3,
@@ -93,15 +92,6 @@ export function WikiSidebar() {
               >
                 <ClipboardList className="h-4 w-4" />
                 <span>Meine Aufgaben</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/broken-links"}
-                onClick={() => navigate("/broken-links")}
-              >
-                <AlertTriangle className="h-4 w-4" />
-                <span>Defekte Links</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
