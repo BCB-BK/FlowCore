@@ -20,6 +20,8 @@ import {
   Clock,
   Server,
   Shield,
+  ShieldCheck,
+  Tag,
   Cpu,
   ChevronDown,
   ChevronRight,
@@ -37,6 +39,8 @@ import { TemplateDetailPanel } from "@/components/settings/TemplateDetailPanel";
 import { TemplatePreviewDialog } from "@/components/settings/TemplatePreviewDialog";
 import { UsersRolesTab } from "@/components/settings/UsersRolesTab";
 import { BackupTab } from "@/components/settings/BackupTab";
+import { ConsistencyTab } from "@/components/settings/ConsistencyTab";
+import { ReleaseTab } from "@/components/settings/ReleaseTab";
 import { useAuth } from "@/hooks/use-auth";
 
 interface SystemInfo {
@@ -95,6 +99,10 @@ export function SettingsPage() {
     }
     if (perms.has("view_backups") || perms.has("manage_backup")) {
       t.push({ value: "backups", label: "Backup", icon: HardDrive });
+    }
+    if (perms.has("manage_settings")) {
+      t.push({ value: "consistency", label: "Konsistenz", icon: ShieldCheck });
+      t.push({ value: "releases", label: "Releases", icon: Tag });
     }
     return t;
   }, [perms]);
@@ -166,6 +174,14 @@ export function SettingsPage() {
 
         <TabsContent value="backups" className="mt-6">
           <BackupTab />
+        </TabsContent>
+
+        <TabsContent value="consistency" className="mt-6">
+          <ConsistencyTab />
+        </TabsContent>
+
+        <TabsContent value="releases" className="mt-6">
+          <ReleaseTab />
         </TabsContent>
       </Tabs>
     </div>

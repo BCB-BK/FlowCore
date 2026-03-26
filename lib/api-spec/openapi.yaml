@@ -48,6 +48,8 @@ tags:
     description: Backup and restore management
   - name: working-copies
     description: Working copy lifecycle management
+  - name: admin
+    description: System administration, consistency checks, and release management
 paths:
   /healthz:
     get:
@@ -2807,6 +2809,151 @@ paths:
                     nullable: true
                 required:
                   - valid
+
+  /admin/system-info:
+    get:
+      operationId: getSystemInfo
+      tags: [admin]
+      summary: Get system information
+      description: Returns system version, environment, database status, and integration configuration
+      responses:
+        "200":
+          description: System information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemInfo"
+
+  /admin/consistency-check:
+    get:
+      operationId: runConsistencyCheck
+      tags: [admin]
+      summary: Run consistency check
+      description: Checks system consistency between code schema, database, configuration, documentation, and release status
+      responses:
+        "200":
+          description: Consistency report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsistencyReport"
+
+  /admin/releases:
+    get:
+      operationId: listReleases
+      tags: [admin]
+      summary: List all releases
+      description: Returns all release records ordered by creation date
+      responses:
+        "200":
+          description: List of releases
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  releases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Release"
+                required:
+                  - releases
+    post:
+      operationId: createRelease
+      tags: [admin]
+      summary: Create a new release
+      description: Creates a new release record in "in_progress" status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReleaseInput"
+      responses:
+        "201":
+          description: Created release
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Release"
+
+  /admin/releases/{releaseId}:
+    get:
+      operationId: getReleaseById
+      tags: [admin]
+      summary: Get release by ID
+      parameters:
+        - name: releaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Release details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Release"
+        "404":
+          description: Release not found
+    patch:
+      operationId: updateRelease
+      tags: [admin]
+      summary: Update release metadata
+      parameters:
+        - name: releaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReleaseInput"
+      responses:
+        "200":
+          description: Updated release
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Release"
+
+  /admin/releases/{releaseId}/transition:
+    post:
+      operationId: transitionRelease
+      tags: [admin]
+      summary: Transition release status
+      description: >
+        Moves a release through the mandatory release path.
+        Valid transitions: in_progress→audit_pending→audit_passed→sync_pending→released.
+        Revoked releases can be re-opened.
+      parameters:
+        - name: releaseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransitionReleaseInput"
+      responses:
+        "200":
+          description: Transitioned release
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Release"
+        "400":
+          description: Invalid transition
 
 components:
   parameters:
@@ -5729,3 +5876,233 @@ components:
         - eventType
         - actorId
         - createdAt
+
+    SystemInfo:
+      type: object
+      properties:
+        system:
+          type: object
+          properties:
+            version:
+              type: string
+            environment:
+              type: string
+            uptime:
+              type: integer
+          required: [version, environment, uptime]
+        database:
+          type: object
+          properties:
+            status:
+              type: string
+            version:
+              type: string
+          required: [status, version]
+        auth:
+          type: object
+          properties:
+            devMode:
+              type: boolean
+            entraConfigured:
+              type: boolean
+            entraTenantId:
+              type: string
+              nullable: true
+            entraClientId:
+              type: string
+              nullable: true
+          required: [devMode, entraConfigured]
+        integrations:
+          type: object
+          properties:
+            openai:
+              type: object
+              properties:
+                configured:
+                  type: boolean
+                baseUrl:
+                  type: string
+              required: [configured, baseUrl]
+            teams:
+              type: object
+              properties:
+                appId:
+                  type: string
+                  nullable: true
+                configured:
+                  type: boolean
+              required: [configured]
+          required: [openai, teams]
+      required: [system, database, auth, integrations]
+
+    ConsistencyCheckResult:
+      type: object
+      properties:
+        category:
+          type: string
+        item:
+          type: string
+        status:
+          type: string
+          enum: [ok, warning, error]
+        message:
+          type: string
+        details:
+          type: string
+          nullable: true
+      required: [category, item, status, message]
+
+    ConsistencyReport:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConsistencyCheckResult"
+        summary:
+          type: object
+          properties:
+            total:
+              type: integer
+            ok:
+              type: integer
+            warnings:
+              type: integer
+            errors:
+              type: integer
+          required: [total, ok, warnings, errors]
+      required: [timestamp, checks, summary]
+
+    ReleaseStatus:
+      type: string
+      enum:
+        - in_progress
+        - audit_pending
+        - audit_passed
+        - sync_pending
+        - released
+        - revoked
+
+    Release:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        version:
+          type: string
+        status:
+          $ref: "#/components/schemas/ReleaseStatus"
+        clusterRef:
+          type: string
+          nullable: true
+        changedFiles:
+          type: array
+          items:
+            type: string
+          nullable: true
+        auditNotes:
+          type: string
+          nullable: true
+        auditedBy:
+          type: string
+          nullable: true
+        auditedAt:
+          type: string
+          nullable: true
+        syncedAt:
+          type: string
+          nullable: true
+        syncRef:
+          type: string
+          nullable: true
+          description: Commit SHA or export reference for GitHub sync traceability
+        syncNotes:
+          type: string
+          nullable: true
+        releasedBy:
+          type: string
+          nullable: true
+        releasedAt:
+          type: string
+          nullable: true
+        releaseNotes:
+          type: string
+          nullable: true
+        createdBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - version
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateReleaseInput:
+      type: object
+      properties:
+        title:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+          nullable: true
+        clusterRef:
+          type: string
+          nullable: true
+        changedFiles:
+          type: array
+          items:
+            type: string
+          nullable: true
+      required:
+        - title
+        - version
+
+    UpdateReleaseInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        clusterRef:
+          type: string
+          nullable: true
+        changedFiles:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    TransitionReleaseInput:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/ReleaseStatus"
+        auditNotes:
+          type: string
+        syncRef:
+          type: string
+          description: Commit SHA or export reference
+        syncNotes:
+          type: string
+        releaseNotes:
+          type: string
+      required:
+        - status

@@ -38,6 +38,7 @@ import type {
   BrokenLinksReport,
   CancelWorkingCopyBody,
   ConnectorValidationResult,
+  ConsistencyReport,
   ContentAlias,
   ContentNode,
   ContentRelation,
@@ -47,6 +48,7 @@ import type {
   CreateNodeInput,
   CreatePrincipalInput,
   CreateRelationInput,
+  CreateReleaseInput,
   CreateRevisionInput,
   CreateSourceReferenceInput,
   CreateSourceSystemInput,
@@ -76,6 +78,7 @@ import type {
   ListGlossaryTermsParams,
   ListMediaAssetsParams,
   ListPrincipalsParams,
+  ListReleases200,
   ListSharePointDriveItemsParams,
   ListSharePointSitesParams,
   ListTagsParams,
@@ -97,6 +100,7 @@ import type {
   PublishWorkingCopyResult,
   QualityOverview,
   RejectRevisionBody,
+  Release,
   RestoreBackup200,
   RestoreRevisionInput,
   ReturnWorkingCopyForChangesBody,
@@ -125,6 +129,7 @@ import type {
   SubmitWorkingCopyInput,
   SyncResult,
   SyncStatusEntry,
+  SystemInfo,
   Tag,
   TeamsContextResponse,
   TeamsSsoBody,
@@ -132,10 +137,12 @@ import type {
   TrackMediaUsageBody,
   TrackSearchClick201,
   TrackSearchClickBody,
+  TransitionReleaseInput,
   TreeNode,
   TriggerBackup200,
   UpdateAiSettingsBody,
   UpdateNodeInput,
+  UpdateReleaseInput,
   UpdateSourceSystemInput,
   UpdateStorageProviderInput,
   UpdateWorkingCopyInput,
@@ -11773,4 +11780,583 @@ export const useValidateBackupTarget = <
   TContext
 > => {
   return useMutation(getValidateBackupTargetMutationOptions(options));
+};
+
+/**
+ * Returns system version, environment, database status, and integration configuration
+ * @summary Get system information
+ */
+export const getGetSystemInfoUrl = () => {
+  return `/api/admin/system-info`;
+};
+
+export const getSystemInfo = async (
+  options?: RequestInit,
+): Promise<SystemInfo> => {
+  return customFetch<SystemInfo>(getGetSystemInfoUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSystemInfoQueryKey = () => {
+  return [`/api/admin/system-info`] as const;
+};
+
+export const getGetSystemInfoQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSystemInfo>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSystemInfo>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSystemInfoQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemInfo>>> = ({
+    signal,
+  }) => getSystemInfo({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSystemInfo>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSystemInfoQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSystemInfo>>
+>;
+export type GetSystemInfoQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get system information
+ */
+
+export function useGetSystemInfo<
+  TData = Awaited<ReturnType<typeof getSystemInfo>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSystemInfo>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSystemInfoQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Checks system consistency between code schema, database, configuration, documentation, and release status
+ * @summary Run consistency check
+ */
+export const getRunConsistencyCheckUrl = () => {
+  return `/api/admin/consistency-check`;
+};
+
+export const runConsistencyCheck = async (
+  options?: RequestInit,
+): Promise<ConsistencyReport> => {
+  return customFetch<ConsistencyReport>(getRunConsistencyCheckUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getRunConsistencyCheckQueryKey = () => {
+  return [`/api/admin/consistency-check`] as const;
+};
+
+export const getRunConsistencyCheckQueryOptions = <
+  TData = Awaited<ReturnType<typeof runConsistencyCheck>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof runConsistencyCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getRunConsistencyCheckQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof runConsistencyCheck>>
+  > = ({ signal }) => runConsistencyCheck({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof runConsistencyCheck>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type RunConsistencyCheckQueryResult = NonNullable<
+  Awaited<ReturnType<typeof runConsistencyCheck>>
+>;
+export type RunConsistencyCheckQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Run consistency check
+ */
+
+export function useRunConsistencyCheck<
+  TData = Awaited<ReturnType<typeof runConsistencyCheck>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof runConsistencyCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getRunConsistencyCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns all release records ordered by creation date
+ * @summary List all releases
+ */
+export const getListReleasesUrl = () => {
+  return `/api/admin/releases`;
+};
+
+export const listReleases = async (
+  options?: RequestInit,
+): Promise<ListReleases200> => {
+  return customFetch<ListReleases200>(getListReleasesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListReleasesQueryKey = () => {
+  return [`/api/admin/releases`] as const;
+};
+
+export const getListReleasesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listReleases>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listReleases>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListReleasesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listReleases>>> = ({
+    signal,
+  }) => listReleases({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listReleases>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListReleasesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listReleases>>
+>;
+export type ListReleasesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all releases
+ */
+
+export function useListReleases<
+  TData = Awaited<ReturnType<typeof listReleases>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listReleases>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListReleasesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Creates a new release record in "in_progress" status
+ * @summary Create a new release
+ */
+export const getCreateReleaseUrl = () => {
+  return `/api/admin/releases`;
+};
+
+export const createRelease = async (
+  createReleaseInput: CreateReleaseInput,
+  options?: RequestInit,
+): Promise<Release> => {
+  return customFetch<Release>(getCreateReleaseUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createReleaseInput),
+  });
+};
+
+export const getCreateReleaseMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createRelease>>,
+    TError,
+    { data: BodyType<CreateReleaseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createRelease>>,
+  TError,
+  { data: BodyType<CreateReleaseInput> },
+  TContext
+> => {
+  const mutationKey = ["createRelease"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createRelease>>,
+    { data: BodyType<CreateReleaseInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createRelease(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateReleaseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createRelease>>
+>;
+export type CreateReleaseMutationBody = BodyType<CreateReleaseInput>;
+export type CreateReleaseMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new release
+ */
+export const useCreateRelease = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createRelease>>,
+    TError,
+    { data: BodyType<CreateReleaseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createRelease>>,
+  TError,
+  { data: BodyType<CreateReleaseInput> },
+  TContext
+> => {
+  return useMutation(getCreateReleaseMutationOptions(options));
+};
+
+/**
+ * @summary Get release by ID
+ */
+export const getGetReleaseByIdUrl = (releaseId: string) => {
+  return `/api/admin/releases/${releaseId}`;
+};
+
+export const getReleaseById = async (
+  releaseId: string,
+  options?: RequestInit,
+): Promise<Release> => {
+  return customFetch<Release>(getGetReleaseByIdUrl(releaseId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetReleaseByIdQueryKey = (releaseId: string) => {
+  return [`/api/admin/releases/${releaseId}`] as const;
+};
+
+export const getGetReleaseByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getReleaseById>>,
+  TError = ErrorType<void>,
+>(
+  releaseId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReleaseById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetReleaseByIdQueryKey(releaseId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getReleaseById>>> = ({
+    signal,
+  }) => getReleaseById(releaseId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!releaseId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getReleaseById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetReleaseByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getReleaseById>>
+>;
+export type GetReleaseByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary Get release by ID
+ */
+
+export function useGetReleaseById<
+  TData = Awaited<ReturnType<typeof getReleaseById>>,
+  TError = ErrorType<void>,
+>(
+  releaseId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReleaseById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetReleaseByIdQueryOptions(releaseId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update release metadata
+ */
+export const getUpdateReleaseUrl = (releaseId: string) => {
+  return `/api/admin/releases/${releaseId}`;
+};
+
+export const updateRelease = async (
+  releaseId: string,
+  updateReleaseInput: UpdateReleaseInput,
+  options?: RequestInit,
+): Promise<Release> => {
+  return customFetch<Release>(getUpdateReleaseUrl(releaseId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateReleaseInput),
+  });
+};
+
+export const getUpdateReleaseMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRelease>>,
+    TError,
+    { releaseId: string; data: BodyType<UpdateReleaseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRelease>>,
+  TError,
+  { releaseId: string; data: BodyType<UpdateReleaseInput> },
+  TContext
+> => {
+  const mutationKey = ["updateRelease"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRelease>>,
+    { releaseId: string; data: BodyType<UpdateReleaseInput> }
+  > = (props) => {
+    const { releaseId, data } = props ?? {};
+
+    return updateRelease(releaseId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateReleaseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRelease>>
+>;
+export type UpdateReleaseMutationBody = BodyType<UpdateReleaseInput>;
+export type UpdateReleaseMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update release metadata
+ */
+export const useUpdateRelease = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRelease>>,
+    TError,
+    { releaseId: string; data: BodyType<UpdateReleaseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRelease>>,
+  TError,
+  { releaseId: string; data: BodyType<UpdateReleaseInput> },
+  TContext
+> => {
+  return useMutation(getUpdateReleaseMutationOptions(options));
+};
+
+/**
+ * Moves a release through the mandatory release path. Valid transitions: in_progress→audit_pending→audit_passed→sync_pending→released. Revoked releases can be re-opened.
+
+ * @summary Transition release status
+ */
+export const getTransitionReleaseUrl = (releaseId: string) => {
+  return `/api/admin/releases/${releaseId}/transition`;
+};
+
+export const transitionRelease = async (
+  releaseId: string,
+  transitionReleaseInput: TransitionReleaseInput,
+  options?: RequestInit,
+): Promise<Release> => {
+  return customFetch<Release>(getTransitionReleaseUrl(releaseId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(transitionReleaseInput),
+  });
+};
+
+export const getTransitionReleaseMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof transitionRelease>>,
+    TError,
+    { releaseId: string; data: BodyType<TransitionReleaseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof transitionRelease>>,
+  TError,
+  { releaseId: string; data: BodyType<TransitionReleaseInput> },
+  TContext
+> => {
+  const mutationKey = ["transitionRelease"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof transitionRelease>>,
+    { releaseId: string; data: BodyType<TransitionReleaseInput> }
+  > = (props) => {
+    const { releaseId, data } = props ?? {};
+
+    return transitionRelease(releaseId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TransitionReleaseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof transitionRelease>>
+>;
+export type TransitionReleaseMutationBody = BodyType<TransitionReleaseInput>;
+export type TransitionReleaseMutationError = ErrorType<void>;
+
+/**
+ * @summary Transition release status
+ */
+export const useTransitionRelease = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof transitionRelease>>,
+    TError,
+    { releaseId: string; data: BodyType<TransitionReleaseInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof transitionRelease>>,
+  TError,
+  { releaseId: string; data: BodyType<TransitionReleaseInput> },
+  TContext
+> => {
+  return useMutation(getTransitionReleaseMutationOptions(options));
 };

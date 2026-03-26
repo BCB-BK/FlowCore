@@ -7,6 +7,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Cluster 14: Source of Truth, GitHub-Sync und Release-Disziplin
+  - Source-of-Truth-Modell dokumentiert (docs/15-SOURCE-OF-TRUTH.md): Führungsquelle je Artefakttyp (Code, DB-Schema, API-Spec, Config, Inhalte, Docs, Templates), Sync-Pfade, Widerspruchsrisiken
+  - Konsistenzprüfung im Admin-Bereich (Einstellungen → Konsistenz): Prüft DB-Verbindung, Schema-Drift (erwartete vs. vorhandene Tabellen), DB-Erweiterungen, Konfiguration, Sicherheit, Dokumentation, Backup-Status, Release-Stand
+  - Release-Verwaltung im Admin-Bereich (Einstellungen → Releases): Verbindlicher Release-Pfad (In Arbeit → Audit → GitHub-Sync → Release), CRUD für Release-Records, Statusübergänge mit Validierung, Timeline-Ansicht
+  - Neue DB-Tabelle `releases` mit Status-Enum (in_progress, audit_pending, audit_passed, sync_pending, released, revoked)
+  - 6 neue API-Endpunkte: GET/POST /admin/releases, GET/PATCH /admin/releases/:id, POST /admin/releases/:id/transition, GET /admin/consistency-check
+  - Backend-Services: consistency.service.ts (automatische Systemprüfung), release.service.ts (Release-Lifecycle-Management)
+  - Frontend-Komponenten: ConsistencyTab, ReleaseTab in Settings-Seite
+  - Dokumentationsindex (docs/00-INDEX.md) aktualisiert
+
 - Cluster 11: Prozessmanagement-Dashboard und Qualitätsanalytik
   - Quality metrics engine (`quality.service.ts`) with SQL-driven analytics: page counts by status, orphan detection, overdue review tracking, completeness scoring, duplicate title analysis, stale content identification, archived reference detection
   - 6 new API endpoints under `/api/quality/*`: overview, pages (filterable), duplicates, maintenance-hints, my-work (personal cockpit), search-insights

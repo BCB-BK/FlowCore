@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774479300000,
+      "tag": "0001_add_backup_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774487640000,
+      "tag": "0002_add_working_copy_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774542743296,
+      "tag": "0003_add_releases_table",
+      "breakpoints": true
+    }
+  ]
+}

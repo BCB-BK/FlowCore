@@ -3413,3 +3413,253 @@ export const ValidateBackupTargetResponse = zod.object({
   valid: zod.boolean(),
   error: zod.string().nullish(),
 });
+
+/**
+ * Returns system version, environment, database status, and integration configuration
+ * @summary Get system information
+ */
+export const GetSystemInfoResponse = zod.object({
+  system: zod.object({
+    version: zod.string(),
+    environment: zod.string(),
+    uptime: zod.number(),
+  }),
+  database: zod.object({
+    status: zod.string(),
+    version: zod.string(),
+  }),
+  auth: zod.object({
+    devMode: zod.boolean(),
+    entraConfigured: zod.boolean(),
+    entraTenantId: zod.string().nullish(),
+    entraClientId: zod.string().nullish(),
+  }),
+  integrations: zod.object({
+    openai: zod.object({
+      configured: zod.boolean(),
+      baseUrl: zod.string(),
+    }),
+    teams: zod.object({
+      appId: zod.string().nullish(),
+      configured: zod.boolean(),
+    }),
+  }),
+});
+
+/**
+ * Checks system consistency between code schema, database, configuration, documentation, and release status
+ * @summary Run consistency check
+ */
+export const RunConsistencyCheckResponse = zod.object({
+  timestamp: zod.string(),
+  checks: zod.array(
+    zod.object({
+      category: zod.string(),
+      item: zod.string(),
+      status: zod.enum(["ok", "warning", "error"]),
+      message: zod.string(),
+      details: zod.string().nullish(),
+    }),
+  ),
+  summary: zod.object({
+    total: zod.number(),
+    ok: zod.number(),
+    warnings: zod.number(),
+    errors: zod.number(),
+  }),
+});
+
+/**
+ * Returns all release records ordered by creation date
+ * @summary List all releases
+ */
+export const ListReleasesResponse = zod.object({
+  releases: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      title: zod.string(),
+      description: zod.string().nullish(),
+      version: zod.string(),
+      status: zod.enum([
+        "in_progress",
+        "audit_pending",
+        "audit_passed",
+        "sync_pending",
+        "released",
+        "revoked",
+      ]),
+      clusterRef: zod.string().nullish(),
+      changedFiles: zod.array(zod.string()).nullish(),
+      auditNotes: zod.string().nullish(),
+      auditedBy: zod.string().nullish(),
+      auditedAt: zod.string().nullish(),
+      syncedAt: zod.string().nullish(),
+      syncRef: zod
+        .string()
+        .nullish()
+        .describe(
+          "Commit SHA or export reference for GitHub sync traceability",
+        ),
+      syncNotes: zod.string().nullish(),
+      releasedBy: zod.string().nullish(),
+      releasedAt: zod.string().nullish(),
+      releaseNotes: zod.string().nullish(),
+      createdBy: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * Creates a new release record in "in_progress" status
+ * @summary Create a new release
+ */
+export const CreateReleaseBody = zod.object({
+  title: zod.string(),
+  version: zod.string(),
+  description: zod.string().nullish(),
+  clusterRef: zod.string().nullish(),
+  changedFiles: zod.array(zod.string()).nullish(),
+});
+
+/**
+ * @summary Get release by ID
+ */
+export const GetReleaseByIdParams = zod.object({
+  releaseId: zod.coerce.string().uuid(),
+});
+
+export const GetReleaseByIdResponse = zod.object({
+  id: zod.string().uuid(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  version: zod.string(),
+  status: zod.enum([
+    "in_progress",
+    "audit_pending",
+    "audit_passed",
+    "sync_pending",
+    "released",
+    "revoked",
+  ]),
+  clusterRef: zod.string().nullish(),
+  changedFiles: zod.array(zod.string()).nullish(),
+  auditNotes: zod.string().nullish(),
+  auditedBy: zod.string().nullish(),
+  auditedAt: zod.string().nullish(),
+  syncedAt: zod.string().nullish(),
+  syncRef: zod
+    .string()
+    .nullish()
+    .describe("Commit SHA or export reference for GitHub sync traceability"),
+  syncNotes: zod.string().nullish(),
+  releasedBy: zod.string().nullish(),
+  releasedAt: zod.string().nullish(),
+  releaseNotes: zod.string().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Update release metadata
+ */
+export const UpdateReleaseParams = zod.object({
+  releaseId: zod.coerce.string().uuid(),
+});
+
+export const UpdateReleaseBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().nullish(),
+  clusterRef: zod.string().nullish(),
+  changedFiles: zod.array(zod.string()).nullish(),
+});
+
+export const UpdateReleaseResponse = zod.object({
+  id: zod.string().uuid(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  version: zod.string(),
+  status: zod.enum([
+    "in_progress",
+    "audit_pending",
+    "audit_passed",
+    "sync_pending",
+    "released",
+    "revoked",
+  ]),
+  clusterRef: zod.string().nullish(),
+  changedFiles: zod.array(zod.string()).nullish(),
+  auditNotes: zod.string().nullish(),
+  auditedBy: zod.string().nullish(),
+  auditedAt: zod.string().nullish(),
+  syncedAt: zod.string().nullish(),
+  syncRef: zod
+    .string()
+    .nullish()
+    .describe("Commit SHA or export reference for GitHub sync traceability"),
+  syncNotes: zod.string().nullish(),
+  releasedBy: zod.string().nullish(),
+  releasedAt: zod.string().nullish(),
+  releaseNotes: zod.string().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * Moves a release through the mandatory release path. Valid transitions: in_progress→audit_pending→audit_passed→sync_pending→released. Revoked releases can be re-opened.
+
+ * @summary Transition release status
+ */
+export const TransitionReleaseParams = zod.object({
+  releaseId: zod.coerce.string().uuid(),
+});
+
+export const TransitionReleaseBody = zod.object({
+  status: zod.enum([
+    "in_progress",
+    "audit_pending",
+    "audit_passed",
+    "sync_pending",
+    "released",
+    "revoked",
+  ]),
+  auditNotes: zod.string().optional(),
+  syncRef: zod.string().optional().describe("Commit SHA or export reference"),
+  syncNotes: zod.string().optional(),
+  releaseNotes: zod.string().optional(),
+});
+
+export const TransitionReleaseResponse = zod.object({
+  id: zod.string().uuid(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  version: zod.string(),
+  status: zod.enum([
+    "in_progress",
+    "audit_pending",
+    "audit_passed",
+    "sync_pending",
+    "released",
+    "revoked",
+  ]),
+  clusterRef: zod.string().nullish(),
+  changedFiles: zod.array(zod.string()).nullish(),
+  auditNotes: zod.string().nullish(),
+  auditedBy: zod.string().nullish(),
+  auditedAt: zod.string().nullish(),
+  syncedAt: zod.string().nullish(),
+  syncRef: zod
+    .string()
+    .nullish()
+    .describe("Commit SHA or export reference for GitHub sync traceability"),
+  syncNotes: zod.string().nullish(),
+  releasedBy: zod.string().nullish(),
+  releasedAt: zod.string().nullish(),
+  releaseNotes: zod.string().nullish(),
+  createdBy: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});

@@ -1780,6 +1780,134 @@ export interface WorkingCopyEvent {
   createdAt: string;
 }
 
+export type SystemInfoSystem = {
+  version: string;
+  environment: string;
+  uptime: number;
+};
+
+export type SystemInfoDatabase = {
+  status: string;
+  version: string;
+};
+
+export type SystemInfoAuth = {
+  devMode: boolean;
+  entraConfigured: boolean;
+  entraTenantId?: string | null;
+  entraClientId?: string | null;
+};
+
+export type SystemInfoIntegrationsOpenai = {
+  configured: boolean;
+  baseUrl: string;
+};
+
+export type SystemInfoIntegrationsTeams = {
+  appId?: string | null;
+  configured: boolean;
+};
+
+export type SystemInfoIntegrations = {
+  openai: SystemInfoIntegrationsOpenai;
+  teams: SystemInfoIntegrationsTeams;
+};
+
+export interface SystemInfo {
+  system: SystemInfoSystem;
+  database: SystemInfoDatabase;
+  auth: SystemInfoAuth;
+  integrations: SystemInfoIntegrations;
+}
+
+export type ConsistencyCheckResultStatus =
+  (typeof ConsistencyCheckResultStatus)[keyof typeof ConsistencyCheckResultStatus];
+
+export const ConsistencyCheckResultStatus = {
+  ok: "ok",
+  warning: "warning",
+  error: "error",
+} as const;
+
+export interface ConsistencyCheckResult {
+  category: string;
+  item: string;
+  status: ConsistencyCheckResultStatus;
+  message: string;
+  details?: string | null;
+}
+
+export type ConsistencyReportSummary = {
+  total: number;
+  ok: number;
+  warnings: number;
+  errors: number;
+};
+
+export interface ConsistencyReport {
+  timestamp: string;
+  checks: ConsistencyCheckResult[];
+  summary: ConsistencyReportSummary;
+}
+
+export type ReleaseStatus = (typeof ReleaseStatus)[keyof typeof ReleaseStatus];
+
+export const ReleaseStatus = {
+  in_progress: "in_progress",
+  audit_pending: "audit_pending",
+  audit_passed: "audit_passed",
+  sync_pending: "sync_pending",
+  released: "released",
+  revoked: "revoked",
+} as const;
+
+export interface Release {
+  id: string;
+  title: string;
+  description?: string | null;
+  version: string;
+  status: ReleaseStatus;
+  clusterRef?: string | null;
+  changedFiles?: string[] | null;
+  auditNotes?: string | null;
+  auditedBy?: string | null;
+  auditedAt?: string | null;
+  syncedAt?: string | null;
+  /** Commit SHA or export reference for GitHub sync traceability */
+  syncRef?: string | null;
+  syncNotes?: string | null;
+  releasedBy?: string | null;
+  releasedAt?: string | null;
+  releaseNotes?: string | null;
+  createdBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateReleaseInput {
+  title: string;
+  version: string;
+  description?: string | null;
+  clusterRef?: string | null;
+  changedFiles?: string[] | null;
+}
+
+export interface UpdateReleaseInput {
+  title?: string;
+  description?: string | null;
+  clusterRef?: string | null;
+  changedFiles?: string[] | null;
+}
+
+export interface TransitionReleaseInput {
+  status: ReleaseStatus;
+  auditNotes?: string;
+  /** Commit SHA or export reference */
+  syncRef?: string;
+  syncNotes?: string;
+  releaseNotes?: string;
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -2025,4 +2153,8 @@ export type ValidateBackupTargetBody = {
 export type ValidateBackupTarget200 = {
   valid: boolean;
   error?: string | null;
+};
+
+export type ListReleases200 = {
+  releases: Release[];
 };

@@ -34,6 +34,9 @@ The frontend, `wiki-frontend`, is a React 19 application utilizing Vite, Tailwin
     - **Backup:** Orchestrates `pg_dump`, manifest generation, SharePoint upload, and retention policies.
     - **Quality Dashboard:** Provides insights into page quality, duplicate detection, and maintenance hints.
     - **Page Types:** A registry of 18 page types, each with defined metadata fields, sections, and content quality calculation.
+    - **Consistency Check:** Automated system consistency verification (schema drift, config, docs, backup/release status) accessible via Admin Settings → Konsistenz.
+    - **Release Management:** Full release lifecycle tracking (in_progress → audit_pending → audit_passed → sync_pending → released) with transition validation, accessible via Admin Settings → Releases.
+    - **Source of Truth:** Documented model (docs/15-SOURCE-OF-TRUTH.md) defining authoritative sources per artifact type (code, schema, API spec, config, content, docs, templates).
 
 ## External Dependencies
 

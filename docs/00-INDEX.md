@@ -22,6 +22,7 @@
 - [12 – Backup & Restore](./12-BACKUP-RESTORE.md)
 - [13 – Performance & Capacity](./13-PERFORMANCE.md)
 - [14 – Go-Live Checklist](./14-GO-LIVE-CHECKLIST.md)
+- [15 – Source of Truth](./15-SOURCE-OF-TRUTH.md)
 
 ## Training & UAT
 - [20 – Editor Guide](./20-EDITOR-GUIDE.md)
