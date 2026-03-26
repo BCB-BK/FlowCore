@@ -1,4 +1,5 @@
 import { db, glossaryTermsTable } from "@workspace/db";
+import { sql } from "drizzle-orm";
 import XLSX from "xlsx";
 import path from "path";
 
@@ -15,10 +16,13 @@ function slugify(text: string): string {
 
 const EXCEL_PATH = path.resolve(
   import.meta.dirname,
-  "../../attached_assets/BCB_Glossar_v2_1774520810292.xlsx",
+  "../../attached_assets/BCB_Glossar_v5_final_1774525714408.xlsx",
 );
 
 async function importGlossary() {
+  const deleted = await db.delete(glossaryTermsTable).returning();
+  console.log(`Deleted ${deleted.length} existing glossary terms`);
+
   const wb = XLSX.readFile(EXCEL_PATH);
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 });
