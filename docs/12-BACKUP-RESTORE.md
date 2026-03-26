@@ -103,7 +103,14 @@ psql $DATABASE_URL -c "SELECT count(*) FROM content_nodes WHERE NOT is_deleted;"
 
 | Datum | Ergebnis | Dauer | Durchführer |
 |---|---|---|---|
-| _Noch nicht durchgeführt_ | - | - | - |
+| 2026-03-26 | Erfolgreich | 2 Sekunden | Automatisiert (Cluster 13) |
+
+**Details des Tests vom 2026-03-26:**
+- Backup-Größe: 660 KB (pg_dump -Fc)
+- Datenmenge: 2.837 Knoten, 1.090 Revisionen, 5 Principals, 6.080 Audit-Events
+- Wiederherstellung: pg_restore --clean --if-exists (2 Sekunden)
+- Verifizierung: Alle Zählungen nach Wiederherstellung identisch
+- Ergebnis: ✅ Vollständig erfolgreich
 
 ## Aufbewahrung
 

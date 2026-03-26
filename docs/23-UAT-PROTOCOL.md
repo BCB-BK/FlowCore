@@ -114,8 +114,19 @@ Dieses Protokoll definiert die Testszenarien, Pilotgruppen und Abnahmekriterien 
 | Auswertung | 1 Woche | Feedback analysieren, Bugs fixen |
 | Abnahme | — | Go/No-Go-Entscheidung |
 
+## Entwicklungsvalidierung (Pre-UAT, 2026-03-26)
+
+Automatisierte E2E-Tests als Baseline vor Pilot-UAT:
+- 81 E2E-Tests bestanden (62 Basis + 19 RBAC-Sicherheitstests)
+- Typecheck, Lint, No-Hardcode-Check, Docs-Check bestanden
+- Backup/Restore-Drill erfolgreich (2s Wiederherstellung, Datenintegrität verifiziert)
+- Performance-Baseline: alle Endpunkte < 50ms (2.837 Knoten)
+- Security Headers aktiv, Rate Limiting funktional
+
+Status: Bereit für Pilotgruppe A (Prozessverantwortliche)
+
 ## Ergebnis
 
 | Datum | Entscheidung | Begründung |
 |---|---|---|
-| _einzutragen_ | ☐ Go / ☐ No-Go | _einzutragen_ |
+| _nach UAT-Durchführung einzutragen_ | ☐ Go / ☐ No-Go | _nach UAT-Durchführung einzutragen_ |

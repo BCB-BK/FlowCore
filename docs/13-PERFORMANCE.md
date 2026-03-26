@@ -66,9 +66,18 @@ ab -n 1000 -c 50 -H "X-Dev-Principal-Id: <admin-id>" \
 # Erstelle k6-Skript für realistische Benutzerszenarien
 ```
 
-### Ergebnisse
+### Ergebnisse (Entwicklungsumgebung, 2026-03-26)
 
-_Ergebnisse nach Durchführung hier dokumentieren._
+Datenmenge: 2.837 Knoten, 1.090 Revisionen, 6.080 Audit-Events
+
+| Endpunkt | Durchschnitt | Min | Max | Status |
+|---|---|---|---|---|
+| `GET /healthz` | 3ms | 3ms | 11ms | ✅ Hervorragend |
+| `GET /content/nodes?limit=20` | 41ms | 38ms | 45ms | ✅ Hervorragend |
+| `GET /search?q=Richtlinie` | 17ms | 16ms | 22ms | ✅ Hervorragend |
+| `GET /quality/overview` | 24ms | 24ms | 26ms | ✅ Hervorragend |
+
+Alle Endpunkte liegen deutlich unter den Richtwerten. Die Datenbankindizes (tsvector GIN, pg_trgm) arbeiten effizient.
 
 ## Optimierungsmöglichkeiten
 
@@ -78,9 +87,11 @@ _Ergebnisse nach Durchführung hier dokumentieren._
 - Abfrage-Caching für häufig abgerufene Inhalte
 
 ### Mittelfristig
-- Redis/Valkey für Session-Speicherung (statt In-Memory)
+- Redis/Valkey für Session-Speicherung und Rate-Limiting (statt In-Memory, wichtig bei Multi-Instanz-Betrieb)
 - Materialisierte Views für Dashboard-Aggregationen
 - CDN für statische Frontend-Assets
+
+**Hinweis:** Das aktuelle Rate-Limiting ist prozesslokal (In-Memory). Bei horizontaler Skalierung auf mehrere API-Server-Instanzen muss der Rate-Limit-Speicher auf einen gemeinsamen Backend (Redis/Valkey) umgestellt werden.
 
 ### Langfristig
 - Read-Replicas für Leseoperationen
