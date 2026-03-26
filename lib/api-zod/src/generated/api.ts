@@ -2651,3 +2651,159 @@ export const TeamsContextResponse = zod.object({
   entraConfigured: zod.boolean(),
   tenantId: zod.string().nullish(),
 });
+
+/**
+ * @summary Get backup configuration
+ */
+export const GetBackupConfigResponse = zod.object({
+  id: zod.string().optional(),
+  enabled: zod.boolean(),
+  interval: zod.string().optional(),
+  targetDriveId: zod.string().nullish(),
+  targetSiteId: zod.string().nullish(),
+  targetSiteName: zod.string().nullish(),
+  targetDriveName: zod.string().nullish(),
+  targetFolderId: zod.string().nullish(),
+  targetFolderName: zod.string().nullish(),
+  targetFolderPath: zod.string().nullish(),
+  retainDaily: zod.number().optional(),
+  retainWeekly: zod.number().optional(),
+  retainMonthly: zod.number().optional(),
+  includeTemplates: zod.boolean().optional(),
+  includeConnectors: zod.boolean().optional(),
+  encryptionEnabled: zod.boolean().optional(),
+  lastRunAt: zod.string().nullish(),
+  nextRunAt: zod.string().nullish(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+
+/**
+ * @summary Update backup configuration
+ */
+export const UpdateBackupConfigBody = zod.object({
+  enabled: zod.boolean().optional(),
+  interval: zod.string().optional(),
+  targetDriveId: zod.string().nullish(),
+  targetSiteId: zod.string().nullish(),
+  targetSiteName: zod.string().nullish(),
+  targetDriveName: zod.string().nullish(),
+  targetFolderId: zod.string().nullish(),
+  targetFolderName: zod.string().nullish(),
+  targetFolderPath: zod.string().nullish(),
+  retainDaily: zod.number().optional(),
+  retainWeekly: zod.number().optional(),
+  retainMonthly: zod.number().optional(),
+  includeTemplates: zod.boolean().optional(),
+  includeConnectors: zod.boolean().optional(),
+});
+
+export const UpdateBackupConfigResponse = zod.object({
+  id: zod.string().optional(),
+  enabled: zod.boolean(),
+  interval: zod.string().optional(),
+  targetDriveId: zod.string().nullish(),
+  targetSiteId: zod.string().nullish(),
+  targetSiteName: zod.string().nullish(),
+  targetDriveName: zod.string().nullish(),
+  targetFolderId: zod.string().nullish(),
+  targetFolderName: zod.string().nullish(),
+  targetFolderPath: zod.string().nullish(),
+  retainDaily: zod.number().optional(),
+  retainWeekly: zod.number().optional(),
+  retainMonthly: zod.number().optional(),
+  includeTemplates: zod.boolean().optional(),
+  includeConnectors: zod.boolean().optional(),
+  encryptionEnabled: zod.boolean().optional(),
+  lastRunAt: zod.string().nullish(),
+  nextRunAt: zod.string().nullish(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+
+/**
+ * @summary Trigger a manual backup
+ */
+export const TriggerBackupResponse = zod.object({
+  id: zod.string(),
+  status: zod.string(),
+});
+
+/**
+ * @summary List backup runs
+ */
+export const listBackupRunsQueryLimitDefault = 50;
+
+export const ListBackupRunsQueryParams = zod.object({
+  limit: zod.coerce.number().default(listBackupRunsQueryLimitDefault),
+});
+
+export const ListBackupRunsResponseItem = zod.object({
+  id: zod.string(),
+  configId: zod.string().nullish(),
+  backupType: zod.string(),
+  status: zod.string(),
+  startedAt: zod.string().nullish(),
+  completedAt: zod.string().nullish(),
+  sizeBytes: zod.number().nullish(),
+  durationMs: zod.number().nullish(),
+  fileName: zod.string().nullish(),
+  driveItemId: zod.string().nullish(),
+  driveId: zod.string().nullish(),
+  manifest: zod.object({}).passthrough().nullish(),
+  errorMessage: zod.string().nullish(),
+  log: zod.string().nullish(),
+  triggeredBy: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListBackupRunsResponse = zod.array(ListBackupRunsResponseItem);
+
+/**
+ * @summary Get a single backup run
+ */
+export const GetBackupRunParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetBackupRunResponse = zod.object({
+  id: zod.string(),
+  configId: zod.string().nullish(),
+  backupType: zod.string(),
+  status: zod.string(),
+  startedAt: zod.string().nullish(),
+  completedAt: zod.string().nullish(),
+  sizeBytes: zod.number().nullish(),
+  durationMs: zod.number().nullish(),
+  fileName: zod.string().nullish(),
+  driveItemId: zod.string().nullish(),
+  driveId: zod.string().nullish(),
+  manifest: zod.object({}).passthrough().nullish(),
+  errorMessage: zod.string().nullish(),
+  log: zod.string().nullish(),
+  triggeredBy: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Restore from a backup run
+ */
+export const RestoreBackupParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const RestoreBackupResponse = zod.object({
+  status: zod.string(),
+});
+
+/**
+ * @summary Validate a SharePoint backup target
+ */
+export const ValidateBackupTargetBody = zod.object({
+  driveId: zod.string(),
+  folderId: zod.string().nullish(),
+});
+
+export const ValidateBackupTargetResponse = zod.object({
+  valid: zod.boolean(),
+  error: zod.string().nullish(),
+});

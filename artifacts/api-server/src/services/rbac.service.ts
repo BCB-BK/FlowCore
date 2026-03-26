@@ -36,7 +36,11 @@ export type WikiPermission =
   | "view_glossary"
   | "view_dashboard"
   | "view_tasks"
-  | "view_settings";
+  | "view_settings"
+  | "view_backups"
+  | "manage_backups"
+  | "run_backup"
+  | "restore_backup";
 
 const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
   system_admin: [
@@ -59,6 +63,10 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_dashboard",
     "view_tasks",
     "view_settings",
+    "view_backups",
+    "manage_backups",
+    "run_backup",
+    "restore_backup",
   ],
   process_manager: [
     "read_page",

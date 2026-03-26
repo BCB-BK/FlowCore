@@ -44,6 +44,8 @@ tags:
     description: Quality metrics and process management
   - name: teams
     description: Microsoft Teams integration
+  - name: backups
+    description: Backup and restore management
 paths:
   /healthz:
     get:
@@ -2389,6 +2391,162 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TeamsContextResponse"
+
+  /admin/backups/config:
+    get:
+      operationId: getBackupConfig
+      tags: [backups]
+      summary: Get backup configuration
+      responses:
+        "200":
+          description: Current backup configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupConfig"
+    put:
+      operationId: updateBackupConfig
+      tags: [backups]
+      summary: Update backup configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BackupConfigUpdate"
+      responses:
+        "200":
+          description: Updated configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupConfig"
+
+  /admin/backups/run:
+    post:
+      operationId: triggerBackup
+      tags: [backups]
+      summary: Trigger a manual backup
+      responses:
+        "200":
+          description: Backup started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                required:
+                  - id
+                  - status
+        "409":
+          description: Backup already running
+
+  /admin/backups/runs:
+    get:
+      operationId: listBackupRuns
+      tags: [backups]
+      summary: List backup runs
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of backup runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BackupRun"
+
+  /admin/backups/runs/{id}:
+    get:
+      operationId: getBackupRun
+      tags: [backups]
+      summary: Get a single backup run
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Backup run details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackupRun"
+        "404":
+          description: Not found
+
+  /admin/backups/runs/{id}/restore:
+    post:
+      operationId: restoreBackup
+      tags: [backups]
+      summary: Restore from a backup run
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Restore result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                required:
+                  - status
+        "400":
+          description: Restore failed
+
+  /admin/backups/validate-target:
+    post:
+      operationId: validateBackupTarget
+      tags: [backups]
+      summary: Validate a SharePoint backup target
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                driveId:
+                  type: string
+                folderId:
+                  type: string
+                  nullable: true
+              required:
+                - driveId
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  error:
+                    type: string
+                    nullable: true
+                required:
+                  - valid
 
 components:
   parameters:
@@ -4836,3 +4994,150 @@ components:
       required:
         - configured
         - entraConfigured
+
+    BackupConfig:
+      type: object
+      properties:
+        id:
+          type: string
+        enabled:
+          type: boolean
+        interval:
+          type: string
+        targetDriveId:
+          type: string
+          nullable: true
+        targetSiteId:
+          type: string
+          nullable: true
+        targetSiteName:
+          type: string
+          nullable: true
+        targetDriveName:
+          type: string
+          nullable: true
+        targetFolderId:
+          type: string
+          nullable: true
+        targetFolderName:
+          type: string
+          nullable: true
+        targetFolderPath:
+          type: string
+          nullable: true
+        retainDaily:
+          type: integer
+        retainWeekly:
+          type: integer
+        retainMonthly:
+          type: integer
+        includeTemplates:
+          type: boolean
+        includeConnectors:
+          type: boolean
+        encryptionEnabled:
+          type: boolean
+        lastRunAt:
+          type: string
+          nullable: true
+        nextRunAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - enabled
+
+    BackupConfigUpdate:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        interval:
+          type: string
+        targetDriveId:
+          type: string
+          nullable: true
+        targetSiteId:
+          type: string
+          nullable: true
+        targetSiteName:
+          type: string
+          nullable: true
+        targetDriveName:
+          type: string
+          nullable: true
+        targetFolderId:
+          type: string
+          nullable: true
+        targetFolderName:
+          type: string
+          nullable: true
+        targetFolderPath:
+          type: string
+          nullable: true
+        retainDaily:
+          type: integer
+        retainWeekly:
+          type: integer
+        retainMonthly:
+          type: integer
+        includeTemplates:
+          type: boolean
+        includeConnectors:
+          type: boolean
+
+    BackupRun:
+      type: object
+      properties:
+        id:
+          type: string
+        configId:
+          type: string
+          nullable: true
+        backupType:
+          type: string
+        status:
+          type: string
+        startedAt:
+          type: string
+          nullable: true
+        completedAt:
+          type: string
+          nullable: true
+        sizeBytes:
+          type: integer
+          nullable: true
+        durationMs:
+          type: integer
+          nullable: true
+        fileName:
+          type: string
+          nullable: true
+        driveItemId:
+          type: string
+          nullable: true
+        driveId:
+          type: string
+          nullable: true
+        manifest:
+          type: object
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        log:
+          type: string
+          nullable: true
+        triggeredBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - backupType
+        - status
+        - createdAt

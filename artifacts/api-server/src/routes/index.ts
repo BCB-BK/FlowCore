@@ -14,11 +14,13 @@ import { aiRouter } from "./ai";
 import { qualityRouter } from "./quality";
 import { teamsRouter } from "./teams";
 import adminRouter from "./admin";
+import { backupRouter } from "./backup";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(adminRouter);
+router.use("/admin/backups", backupRouter);
 router.use(authRouter);
 router.use(principalsRouter);
 router.use("/content", contentRouter);

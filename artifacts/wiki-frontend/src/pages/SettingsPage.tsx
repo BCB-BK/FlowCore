@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Users,
   Eye,
+  HardDrive,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -35,6 +36,7 @@ import { ConnectorsTab } from "@/components/settings/ConnectorsTab";
 import { TemplateDetailPanel } from "@/components/settings/TemplateDetailPanel";
 import { TemplatePreviewDialog } from "@/components/settings/TemplatePreviewDialog";
 import { UsersRolesTab } from "@/components/settings/UsersRolesTab";
+import { BackupTab } from "@/components/settings/BackupTab";
 
 interface SystemInfo {
   system: { version: string; environment: string; uptime: number };
@@ -84,7 +86,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-7 w-full">
           <TabsTrigger value="general" className="flex items-center gap-1.5">
             <Server className="h-3.5 w-3.5" />
             Allgemein
@@ -112,6 +114,10 @@ export function SettingsPage() {
             <Database className="h-3.5 w-3.5" />
             Konnektoren
           </TabsTrigger>
+          <TabsTrigger value="backups" className="flex items-center gap-1.5">
+            <HardDrive className="h-3.5 w-3.5" />
+            Backup
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-6">
@@ -136,6 +142,10 @@ export function SettingsPage() {
 
         <TabsContent value="connectors" className="mt-6">
           <ConnectorsTab />
+        </TabsContent>
+
+        <TabsContent value="backups" className="mt-6">
+          <BackupTab />
         </TabsContent>
       </Tabs>
     </div>

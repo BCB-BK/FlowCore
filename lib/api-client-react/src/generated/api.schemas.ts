@@ -1364,6 +1364,67 @@ export interface TeamsContextResponse {
   tenantId?: string | null;
 }
 
+export interface BackupConfig {
+  id?: string;
+  enabled: boolean;
+  interval?: string;
+  targetDriveId?: string | null;
+  targetSiteId?: string | null;
+  targetSiteName?: string | null;
+  targetDriveName?: string | null;
+  targetFolderId?: string | null;
+  targetFolderName?: string | null;
+  targetFolderPath?: string | null;
+  retainDaily?: number;
+  retainWeekly?: number;
+  retainMonthly?: number;
+  includeTemplates?: boolean;
+  includeConnectors?: boolean;
+  encryptionEnabled?: boolean;
+  lastRunAt?: string | null;
+  nextRunAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BackupConfigUpdate {
+  enabled?: boolean;
+  interval?: string;
+  targetDriveId?: string | null;
+  targetSiteId?: string | null;
+  targetSiteName?: string | null;
+  targetDriveName?: string | null;
+  targetFolderId?: string | null;
+  targetFolderName?: string | null;
+  targetFolderPath?: string | null;
+  retainDaily?: number;
+  retainWeekly?: number;
+  retainMonthly?: number;
+  includeTemplates?: boolean;
+  includeConnectors?: boolean;
+}
+
+export type BackupRunManifest = { [key: string]: unknown } | null;
+
+export interface BackupRun {
+  id: string;
+  configId?: string | null;
+  backupType: string;
+  status: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  sizeBytes?: number | null;
+  durationMs?: number | null;
+  fileName?: string | null;
+  driveItemId?: string | null;
+  driveId?: string | null;
+  manifest?: BackupRunManifest;
+  errorMessage?: string | null;
+  log?: string | null;
+  triggeredBy?: string | null;
+  createdAt: string;
+}
+
 export type AuthLogin200 = { [key: string]: unknown };
 
 export type AuthCallbackParams = {
@@ -1570,4 +1631,27 @@ export type GetSearchInsightsParams = {
 
 export type TeamsSsoBody = {
   ssoToken: string;
+};
+
+export type TriggerBackup200 = {
+  id: string;
+  status: string;
+};
+
+export type ListBackupRunsParams = {
+  limit?: number;
+};
+
+export type RestoreBackup200 = {
+  status: string;
+};
+
+export type ValidateBackupTargetBody = {
+  driveId: string;
+  folderId?: string | null;
+};
+
+export type ValidateBackupTarget200 = {
+  valid: boolean;
+  error?: string | null;
 };

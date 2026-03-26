@@ -31,6 +31,9 @@ import type {
   AuthResult,
   AuthUser,
   Backlink,
+  BackupConfig,
+  BackupConfigUpdate,
+  BackupRun,
   BrokenLinksReport,
   ContentAlias,
   ContentNode,
@@ -66,6 +69,7 @@ import type {
   GraphPerson,
   HealthStatus,
   LinkGlossaryTermBody,
+  ListBackupRunsParams,
   ListGlossaryTermsParams,
   ListMediaAssetsParams,
   ListPrincipalsParams,
@@ -88,6 +92,7 @@ import type {
   PublishRevisionInput,
   QualityOverview,
   RejectRevisionBody,
+  RestoreBackup200,
   RestoreRevisionInput,
   ReviewWorkflow,
   ReviewWorkflowDetail,
@@ -121,11 +126,14 @@ import type {
   TrackSearchClick201,
   TrackSearchClickBody,
   TreeNode,
+  TriggerBackup200,
   UpdateAiSettingsBody,
   UpdateNodeInput,
   UpdateSourceSystemInput,
   UpdateStorageProviderInput,
   UploadMediaBody,
+  ValidateBackupTarget200,
+  ValidateBackupTargetBody,
   WatchNodeBody,
 } from "./api.schemas";
 
@@ -10013,3 +10021,597 @@ export function useTeamsContext<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get backup configuration
+ */
+export const getGetBackupConfigUrl = () => {
+  return `/api/admin/backups/config`;
+};
+
+export const getBackupConfig = async (
+  options?: RequestInit,
+): Promise<BackupConfig> => {
+  return customFetch<BackupConfig>(getGetBackupConfigUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetBackupConfigQueryKey = () => {
+  return [`/api/admin/backups/config`] as const;
+};
+
+export const getGetBackupConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBackupConfig>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getBackupConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetBackupConfigQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBackupConfig>>> = ({
+    signal,
+  }) => getBackupConfig({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBackupConfig>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetBackupConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBackupConfig>>
+>;
+export type GetBackupConfigQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get backup configuration
+ */
+
+export function useGetBackupConfig<
+  TData = Awaited<ReturnType<typeof getBackupConfig>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getBackupConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetBackupConfigQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update backup configuration
+ */
+export const getUpdateBackupConfigUrl = () => {
+  return `/api/admin/backups/config`;
+};
+
+export const updateBackupConfig = async (
+  backupConfigUpdate: BackupConfigUpdate,
+  options?: RequestInit,
+): Promise<BackupConfig> => {
+  return customFetch<BackupConfig>(getUpdateBackupConfigUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(backupConfigUpdate),
+  });
+};
+
+export const getUpdateBackupConfigMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateBackupConfig>>,
+    TError,
+    { data: BodyType<BackupConfigUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateBackupConfig>>,
+  TError,
+  { data: BodyType<BackupConfigUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateBackupConfig"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateBackupConfig>>,
+    { data: BodyType<BackupConfigUpdate> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateBackupConfig(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateBackupConfigMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateBackupConfig>>
+>;
+export type UpdateBackupConfigMutationBody = BodyType<BackupConfigUpdate>;
+export type UpdateBackupConfigMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update backup configuration
+ */
+export const useUpdateBackupConfig = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateBackupConfig>>,
+    TError,
+    { data: BodyType<BackupConfigUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateBackupConfig>>,
+  TError,
+  { data: BodyType<BackupConfigUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateBackupConfigMutationOptions(options));
+};
+
+/**
+ * @summary Trigger a manual backup
+ */
+export const getTriggerBackupUrl = () => {
+  return `/api/admin/backups/run`;
+};
+
+export const triggerBackup = async (
+  options?: RequestInit,
+): Promise<TriggerBackup200> => {
+  return customFetch<TriggerBackup200>(getTriggerBackupUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getTriggerBackupMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof triggerBackup>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof triggerBackup>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["triggerBackup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof triggerBackup>>,
+    void
+  > = () => {
+    return triggerBackup(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TriggerBackupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof triggerBackup>>
+>;
+
+export type TriggerBackupMutationError = ErrorType<void>;
+
+/**
+ * @summary Trigger a manual backup
+ */
+export const useTriggerBackup = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof triggerBackup>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof triggerBackup>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getTriggerBackupMutationOptions(options));
+};
+
+/**
+ * @summary List backup runs
+ */
+export const getListBackupRunsUrl = (params?: ListBackupRunsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/admin/backups/runs?${stringifiedParams}`
+    : `/api/admin/backups/runs`;
+};
+
+export const listBackupRuns = async (
+  params?: ListBackupRunsParams,
+  options?: RequestInit,
+): Promise<BackupRun[]> => {
+  return customFetch<BackupRun[]>(getListBackupRunsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListBackupRunsQueryKey = (params?: ListBackupRunsParams) => {
+  return [`/api/admin/backups/runs`, ...(params ? [params] : [])] as const;
+};
+
+export const getListBackupRunsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listBackupRuns>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListBackupRunsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listBackupRuns>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListBackupRunsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listBackupRuns>>> = ({
+    signal,
+  }) => listBackupRuns(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listBackupRuns>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListBackupRunsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listBackupRuns>>
+>;
+export type ListBackupRunsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List backup runs
+ */
+
+export function useListBackupRuns<
+  TData = Awaited<ReturnType<typeof listBackupRuns>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListBackupRunsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listBackupRuns>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListBackupRunsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a single backup run
+ */
+export const getGetBackupRunUrl = (id: string) => {
+  return `/api/admin/backups/runs/${id}`;
+};
+
+export const getBackupRun = async (
+  id: string,
+  options?: RequestInit,
+): Promise<BackupRun> => {
+  return customFetch<BackupRun>(getGetBackupRunUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetBackupRunQueryKey = (id: string) => {
+  return [`/api/admin/backups/runs/${id}`] as const;
+};
+
+export const getGetBackupRunQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBackupRun>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getBackupRun>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetBackupRunQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBackupRun>>> = ({
+    signal,
+  }) => getBackupRun(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBackupRun>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetBackupRunQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBackupRun>>
+>;
+export type GetBackupRunQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a single backup run
+ */
+
+export function useGetBackupRun<
+  TData = Awaited<ReturnType<typeof getBackupRun>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getBackupRun>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetBackupRunQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Restore from a backup run
+ */
+export const getRestoreBackupUrl = (id: string) => {
+  return `/api/admin/backups/runs/${id}/restore`;
+};
+
+export const restoreBackup = async (
+  id: string,
+  options?: RequestInit,
+): Promise<RestoreBackup200> => {
+  return customFetch<RestoreBackup200>(getRestoreBackupUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getRestoreBackupMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restoreBackup>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof restoreBackup>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["restoreBackup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof restoreBackup>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return restoreBackup(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RestoreBackupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restoreBackup>>
+>;
+
+export type RestoreBackupMutationError = ErrorType<void>;
+
+/**
+ * @summary Restore from a backup run
+ */
+export const useRestoreBackup = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restoreBackup>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof restoreBackup>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getRestoreBackupMutationOptions(options));
+};
+
+/**
+ * @summary Validate a SharePoint backup target
+ */
+export const getValidateBackupTargetUrl = () => {
+  return `/api/admin/backups/validate-target`;
+};
+
+export const validateBackupTarget = async (
+  validateBackupTargetBody: ValidateBackupTargetBody,
+  options?: RequestInit,
+): Promise<ValidateBackupTarget200> => {
+  return customFetch<ValidateBackupTarget200>(getValidateBackupTargetUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(validateBackupTargetBody),
+  });
+};
+
+export const getValidateBackupTargetMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof validateBackupTarget>>,
+    TError,
+    { data: BodyType<ValidateBackupTargetBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof validateBackupTarget>>,
+  TError,
+  { data: BodyType<ValidateBackupTargetBody> },
+  TContext
+> => {
+  const mutationKey = ["validateBackupTarget"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof validateBackupTarget>>,
+    { data: BodyType<ValidateBackupTargetBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return validateBackupTarget(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ValidateBackupTargetMutationResult = NonNullable<
+  Awaited<ReturnType<typeof validateBackupTarget>>
+>;
+export type ValidateBackupTargetMutationBody =
+  BodyType<ValidateBackupTargetBody>;
+export type ValidateBackupTargetMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Validate a SharePoint backup target
+ */
+export const useValidateBackupTarget = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof validateBackupTarget>>,
+    TError,
+    { data: BodyType<ValidateBackupTargetBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof validateBackupTarget>>,
+  TError,
+  { data: BodyType<ValidateBackupTargetBody> },
+  TContext
+> => {
+  return useMutation(getValidateBackupTargetMutationOptions(options));
+};

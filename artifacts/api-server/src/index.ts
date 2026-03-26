@@ -2,6 +2,7 @@ import app from "./app";
 import { appConfig } from "./lib/config";
 import { logger } from "./lib/logger";
 import { startSyncScheduler } from "./services/sync-scheduler.service";
+import { startBackupScheduler } from "./services/backup.service";
 
 async function start() {
   app.listen(appConfig.port, (err) => {
@@ -20,6 +21,7 @@ async function start() {
     );
 
     startSyncScheduler();
+    startBackupScheduler();
   });
 }
 

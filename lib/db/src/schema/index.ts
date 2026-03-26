@@ -15,3 +15,4 @@ export * from "./collaboration";
 export * from "./glossary";
 export * from "./search-analytics";
 export * from "./ai-settings";
+export * from "./backups";
