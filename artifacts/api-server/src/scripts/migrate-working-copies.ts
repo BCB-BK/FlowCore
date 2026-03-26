@@ -67,6 +67,9 @@ export async function migrateToWorkingCopyModel() {
       const r = row as Record<string, unknown>;
       const baseRevId = (r.based_on_revision_id as string) || (r.published_revision_id as string) || null;
 
+      const contentJson = JSON.stringify(r.content || {});
+      const structuredJson = JSON.stringify(r.structured_fields || {});
+
       await tx.execute(sql`
         INSERT INTO content_working_copies (
           node_id, base_revision_id, status, title, content,
@@ -77,8 +80,8 @@ export async function migrateToWorkingCopyModel() {
           ${baseRevId},
           'draft',
           ${(r.title as string) || 'Unbenannt'},
-          ${sql.raw(`'${JSON.stringify(r.content || {}).replace(/'/g, "''")}'::jsonb`)},
-          ${sql.raw(`'${JSON.stringify(r.structured_fields || {}).replace(/'/g, "''")}'::jsonb`)},
+          ${contentJson}::jsonb,
+          ${structuredJson}::jsonb,
           ${(r.change_type as string) || 'editorial'},
           ${(r.change_summary as string) || null},
           ${(r.author_id as string) || 'system'},
