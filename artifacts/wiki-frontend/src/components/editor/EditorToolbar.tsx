@@ -23,6 +23,9 @@ import {
   AlignRight,
   Highlighter,
   Pilcrow,
+  ImageIcon,
+  VideoIcon,
+  Paperclip,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
@@ -258,6 +261,45 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <Unlink className="h-4 w-4" />
         </ToolbarButton>
       )}
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      <ToolbarButton
+        onClick={() =>
+          window.dispatchEvent(
+            new CustomEvent("editor:open-media-library", {
+              detail: { type: "image" },
+            }),
+          )
+        }
+        title="Bild einfügen"
+      >
+        <ImageIcon className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() =>
+          window.dispatchEvent(
+            new CustomEvent("editor:open-media-library", {
+              detail: { type: "video" },
+            }),
+          )
+        }
+        title="Video einfügen"
+      >
+        <VideoIcon className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() =>
+          window.dispatchEvent(
+            new CustomEvent("editor:open-media-library", {
+              detail: { type: "file" },
+            }),
+          )
+        }
+        title="Datei anhängen"
+      >
+        <Paperclip className="h-4 w-4" />
+      </ToolbarButton>
     </div>
   );
 }

@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Search, Image, FileText, Video, Loader2 } from "lucide-react";
+import { Upload, Search, Image, FileText, Video, Loader2, Globe } from "lucide-react";
+import { SharePointMediaBrowser } from "./SharePointMediaBrowser";
 
 interface MediaAsset {
   id: string;
@@ -67,6 +68,7 @@ export function MediaLibraryDialog({
       if (searchQuery) params.set("q", searchQuery);
       if (filterType === "image") params.set("classification", "image");
       if (filterType === "video") params.set("classification", "video");
+      if (filterType === "file") params.set("classification", "document");
 
       const res = await fetch(`${apiBase}/media/assets?${params}`, {
         credentials: "include",
@@ -158,6 +160,10 @@ export function MediaLibraryDialog({
             <TabsTrigger value="browse" className="flex-1">
               <Search className="h-4 w-4 mr-1" />
               Durchsuchen
+            </TabsTrigger>
+            <TabsTrigger value="sharepoint" className="flex-1">
+              <Globe className="h-4 w-4 mr-1" />
+              SharePoint
             </TabsTrigger>
           </TabsList>
 
@@ -313,6 +319,17 @@ export function MediaLibraryDialog({
                 })}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="sharepoint" className="mt-4">
+            <SharePointMediaBrowser
+              nodeId={nodeId}
+              filterType={filterType}
+              onSelect={(asset) => {
+                onSelect(asset);
+                onOpenChange(false);
+              }}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>

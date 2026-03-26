@@ -22,6 +22,7 @@ import {
   getStorageProviderById,
   getStorageProvider,
 } from "../services/storage.service";
+import { getDriveItemContent } from "../services/sharepoint.service";
 
 const router: IRouter = Router();
 
@@ -185,6 +186,102 @@ router.post(
         resourceType: "media_asset",
         resourceId: asset.id,
         details: { filename: file.originalname, mimeType: file.mimetype },
+      });
+
+      res.status(201).json({
+        ...asset,
+        url: result.url,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(500).json({ error: message });
+    }
+  },
+);
+
+function resolveGraphToken(req: {
+  headers: Record<string, string | string[] | undefined>;
+  session?: { graphAccessToken?: string };
+}): string {
+  return (
+    (req.headers["x-graph-token"] as string) ||
+    req.session?.graphAccessToken ||
+    ""
+  );
+}
+
+router.post(
+  "/import-sharepoint",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    try {
+      const { driveId, itemId, filename, nodeId } = req.body as {
+        driveId: string;
+        itemId: string;
+        filename: string;
+        nodeId?: string;
+      };
+
+      if (!driveId || !itemId || !filename) {
+        res.status(400).json({ error: "driveId, itemId and filename are required" });
+        return;
+      }
+
+      const accessToken = resolveGraphToken(req);
+      const content = await getDriveItemContent(accessToken, driveId, itemId);
+      if (!content) {
+        res.status(404).json({ error: "SharePoint file not found or inaccessible" });
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      let totalSize = 0;
+      for await (const chunk of content.stream) {
+        const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        totalSize += buf.length;
+        if (totalSize > MAX_FILE_SIZE) {
+          res.status(413).json({ error: "File too large (max 50 MB)" });
+          return;
+        }
+        chunks.push(buf);
+      }
+      const buffer = Buffer.concat(chunks);
+
+      const ext = path.extname(filename).toLowerCase();
+      const storageKey = `${randomUUID()}${ext}`;
+      const provider = await getDefaultStorageProvider();
+      const defaultProviderId = await getDefaultProviderId();
+
+      const result = await provider.upload(storageKey, buffer, {
+        mimeType: content.mimeType,
+        originalFilename: filename,
+      });
+
+      const classification = getClassification(content.mimeType);
+
+      const [asset] = await db
+        .insert(mediaAssetsTable)
+        .values({
+          filename: storageKey,
+          originalFilename: filename,
+          mimeType: content.mimeType,
+          sizeBytes: result.sizeBytes,
+          storageKey: result.storageKey,
+          storageProviderId: defaultProviderId,
+          classification,
+          nodeId: nodeId || null,
+          uploadedBy: req.user!.principalId,
+        })
+        .returning();
+
+      await db.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "media_imported_sharepoint",
+        actorId: req.user!.principalId,
+        resourceType: "media_asset",
+        resourceId: asset.id,
+        details: { filename, driveId, itemId, mimeType: content.mimeType },
       });
 
       res.status(201).json({
