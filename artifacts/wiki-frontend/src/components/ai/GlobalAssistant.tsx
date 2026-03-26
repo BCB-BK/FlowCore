@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import {
   Bot,
   Send,
@@ -14,9 +15,11 @@ import {
   ExternalLink,
   Globe,
   Sparkles,
+  Eye,
   X,
 } from "lucide-react";
 import { getDefaultHeaders } from "@workspace/api-client-react";
+import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 
 type SourceType = "wiki" | "connector" | "web";
@@ -28,6 +31,7 @@ interface AiSource {
   templateType: string;
   snippet: string;
   sourceType: SourceType;
+  contentStatus?: string;
   externalUrl?: string;
   sourceSystemName?: string;
 }
@@ -45,9 +49,24 @@ export function GlobalAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [includeUnpublished, setIncludeUnpublished] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
+  const { data: authData } = useAuth();
+
+  const PRIVILEGED_ROLES = [
+    "editor",
+    "reviewer",
+    "approver",
+    "process_manager",
+    "compliance_manager",
+    "system_admin",
+  ];
+  const userRoles = authData?.roles?.map((r: { role: string }) => r.role) ?? [];
+  const canToggleUnpublished = userRoles.some((r: string) =>
+    PRIVILEGED_ROLES.includes(r),
+  );
 
   const handleAsk = useCallback(async () => {
     if (!query.trim() || isStreaming) return;
@@ -77,7 +96,12 @@ export function GlobalAssistant() {
           "Content-Type": "application/json",
           ...getDefaultHeaders(),
         },
-        body: JSON.stringify({ query: userQuery }),
+        body: JSON.stringify({
+          query: userQuery,
+          ...(includeUnpublished && canToggleUnpublished
+            ? { includeUnpublished: true }
+            : {}),
+        }),
         signal: controller.signal,
       });
 
@@ -184,7 +208,7 @@ export function GlobalAssistant() {
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [query, isStreaming]);
+  }, [query, isStreaming, includeUnpublished, canToggleUnpublished]);
 
   if (!isOpen) {
     return (
@@ -319,6 +343,18 @@ export function GlobalAssistant() {
                                 ? src.sourceSystemName || "Extern"
                                 : src.templateType.replace(/_/g, " ")}
                           </Badge>
+                          {src.contentStatus && src.contentStatus !== "published" && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] shrink-0"
+                            >
+                              {src.contentStatus === "draft"
+                                ? "Entwurf"
+                                : src.contentStatus === "in_review"
+                                  ? "In Prüfung"
+                                  : src.contentStatus}
+                            </Badge>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -330,7 +366,18 @@ export function GlobalAssistant() {
         </div>
       </ScrollArea>
 
-      <div className="border-t p-3">
+      <div className="border-t p-3 space-y-2">
+        {canToggleUnpublished && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Eye className="h-3 w-3" />
+            <span>Unveröffentlichte einbeziehen</span>
+            <Switch
+              checked={includeUnpublished}
+              onCheckedChange={setIncludeUnpublished}
+              className="ml-auto h-4 w-7"
+            />
+          </div>
+        )}
         <form
           className="flex gap-2"
           onSubmit={(e) => {

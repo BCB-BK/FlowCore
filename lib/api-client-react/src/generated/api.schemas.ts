@@ -743,6 +743,15 @@ export type SearchResultFacets = {
   tags?: SearchResultFacetsTags;
 };
 
+export type SearchResultVisibility =
+  (typeof SearchResultVisibility)[keyof typeof SearchResultVisibility];
+
+export const SearchResultVisibility = {
+  published_only: "published_only",
+  include_review: "include_review",
+  all: "all",
+} as const;
+
 export interface SearchResult {
   results: SearchResultItem[];
   total: number;
@@ -750,6 +759,7 @@ export interface SearchResult {
   offset: number;
   queryId?: string | null;
   facets: SearchResultFacets;
+  visibility?: SearchResultVisibility;
 }
 
 export type SearchSuggestionsNodesItem = {
@@ -1298,6 +1308,7 @@ export interface AiAskBody {
    * @maxLength 2000
    */
   query: string;
+  includeUnpublished?: boolean;
 }
 
 export type AiPageAssistBodyAction =
@@ -1314,6 +1325,9 @@ export const AiPageAssistBodyAction = {
   adjust_tone: "adjust_tone",
   restructure: "restructure",
   template_completeness: "template_completeness",
+  quality_check: "quality_check",
+  change_summary: "change_summary",
+  duplicate_check: "duplicate_check",
 } as const;
 
 export interface AiPageAssistBody {
@@ -1326,12 +1340,25 @@ export interface AiPageAssistBody {
   nodeId?: string;
 }
 
+export type AiSourceSourceType =
+  (typeof AiSourceSourceType)[keyof typeof AiSourceSourceType];
+
+export const AiSourceSourceType = {
+  wiki: "wiki",
+  connector: "connector",
+  web: "web",
+} as const;
+
 export interface AiSource {
   nodeId: string;
   title: string;
   displayCode: string;
   templateType: string;
   snippet: string;
+  sourceType?: AiSourceSourceType;
+  contentStatus?: string;
+  externalUrl?: string;
+  sourceSystemName?: string;
 }
 
 export type AiUsageStatsPeriod = {
@@ -2060,6 +2087,7 @@ export type SearchContentParams = {
   dateTo?: string;
   limit?: number;
   offset?: number;
+  includeUnpublished?: boolean;
 };
 
 export type GetSearchSuggestionsParams = {

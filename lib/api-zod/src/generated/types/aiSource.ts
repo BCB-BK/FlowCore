@@ -5,6 +5,7 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AiSourceSourceType } from "./aiSourceSourceType";
 
 export interface AiSource {
   nodeId: string;
@@ -12,4 +13,8 @@ export interface AiSource {
   displayCode: string;
   templateType: string;
   snippet: string;
+  sourceType?: AiSourceSourceType;
+  contentStatus?: string;
+  externalUrl?: string;
+  sourceSystemName?: string;
 }

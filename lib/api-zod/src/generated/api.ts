@@ -2082,6 +2082,7 @@ export const GetMediaUsagesResponse = zod.array(GetMediaUsagesResponseItem);
  */
 export const searchContentQueryLimitDefault = 50;
 export const searchContentQueryOffsetDefault = 0;
+export const searchContentQueryIncludeUnpublishedDefault = false;
 
 export const SearchContentQueryParams = zod.object({
   q: zod.coerce.string().optional(),
@@ -2093,6 +2094,9 @@ export const SearchContentQueryParams = zod.object({
   dateTo: zod.date().optional(),
   limit: zod.coerce.number().default(searchContentQueryLimitDefault),
   offset: zod.coerce.number().default(searchContentQueryOffsetDefault),
+  includeUnpublished: zod.coerce
+    .boolean()
+    .default(searchContentQueryIncludeUnpublishedDefault),
 });
 
 export const SearchContentResponse = zod.object({
@@ -2121,6 +2125,7 @@ export const SearchContentResponse = zod.object({
     owner: zod.record(zod.string(), zod.number()).optional(),
     tags: zod.record(zod.string(), zod.number()).optional(),
   }),
+  visibility: zod.enum(["published_only", "include_review", "all"]).optional(),
 });
 
 /**
@@ -2985,8 +2990,11 @@ export const UpdateAiSettingsResponse = zod.object({
  */
 export const aiAskBodyQueryMax = 2000;
 
+export const aiAskBodyIncludeUnpublishedDefault = false;
+
 export const AiAskBody = zod.object({
   query: zod.string().min(1).max(aiAskBodyQueryMax),
+  includeUnpublished: zod.boolean().default(aiAskBodyIncludeUnpublishedDefault),
 });
 
 /**
@@ -3006,6 +3014,9 @@ export const AiPageAssistBody = zod.object({
     "adjust_tone",
     "restructure",
     "template_completeness",
+    "quality_check",
+    "change_summary",
+    "duplicate_check",
   ]),
   text: zod.string().min(1).max(aiPageAssistBodyTextMax),
   nodeId: zod.string().uuid().optional(),

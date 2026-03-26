@@ -8,7 +8,12 @@ import {
 import { eq, and, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import type { Response } from "express";
-import { hasPermission } from "./rbac.service";
+import {
+  hasPermission,
+  getHighestRole,
+  getSearchVisibilityForRole,
+  type WikiRole,
+} from "./rbac.service";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
 
 let _openaiClient: OpenAI | null = null;
@@ -37,6 +42,7 @@ export interface AiSource {
   templateType: string;
   snippet: string;
   sourceType: SourceType;
+  contentStatus?: string;
   externalUrl?: string;
   sourceSystemName?: string;
 }
@@ -206,11 +212,14 @@ export async function upsertAiSettings(
   return row;
 }
 
+type AiVisibility = "published_only" | "include_review" | "all";
+
 async function searchWikiContent(
   query: string,
   principalId: string,
   limit = 8,
   overFetchFactor = 3,
+  visibility: AiVisibility = "published_only",
 ): Promise<AiSource[]> {
   const tsQuery = query
     .split(/\s+/)
@@ -221,12 +230,26 @@ async function searchWikiContent(
 
   if (!tsQuery) return [];
 
+  const conditions = [
+    eq(contentNodesTable.isDeleted, false),
+    sql`${contentNodesTable.searchVector} @@ to_tsquery('german', ${tsQuery})`,
+  ];
+
+  if (visibility === "published_only") {
+    conditions.push(eq(contentNodesTable.status, "published"));
+  } else if (visibility === "include_review") {
+    conditions.push(
+      sql`${contentNodesTable.status} IN ('published', 'in_review', 'approved')`,
+    );
+  }
+
   const results = await db
     .select({
       id: contentNodesTable.id,
       title: contentNodesTable.title,
       displayCode: contentNodesTable.displayCode,
       templateType: contentNodesTable.templateType,
+      status: contentNodesTable.status,
       structuredFields: contentRevisionsTable.structuredFields,
     })
     .from(contentNodesTable)
@@ -234,12 +257,7 @@ async function searchWikiContent(
       contentRevisionsTable,
       eq(contentNodesTable.publishedRevisionId, contentRevisionsTable.id),
     )
-    .where(
-      and(
-        eq(contentNodesTable.isDeleted, false),
-        sql`${contentNodesTable.searchVector} @@ to_tsquery('german', ${tsQuery})`,
-      ),
-    )
+    .where(and(...conditions))
     .orderBy(
       sql`ts_rank(${contentNodesTable.searchVector}, to_tsquery('german', ${tsQuery})) DESC`,
     )
@@ -271,6 +289,7 @@ async function searchWikiContent(
       templateType: r.templateType,
       snippet,
       sourceType: "wiki" as SourceType,
+      contentStatus: r.status,
     };
   });
 }
@@ -346,7 +365,10 @@ function buildContextFromSources(sources: AiSource[]): string {
           : s.sourceType === "connector"
             ? `Connector: ${s.sourceSystemName || "extern"}`
             : "Web";
-      return `[Quelle ${i + 1} – ${typeLabel}] ${s.displayCode} – ${s.title} (${s.templateType})\n${s.snippet}`;
+      const statusLabel = s.contentStatus && s.contentStatus !== "published"
+        ? ` [Status: ${s.contentStatus}]`
+        : "";
+      return `[Quelle ${i + 1} – ${typeLabel}${statusLabel}] ${s.displayCode} – ${s.title} (${s.templateType})\n${s.snippet}`;
     })
     .join("\n\n");
 }
@@ -356,8 +378,15 @@ async function gatherSources(
   principalId: string,
   sourceMode: string,
   policies: PromptPolicies = {},
+  visibility: AiVisibility = "published_only",
 ): Promise<AiSource[]> {
-  const wikiSources = await searchWikiContent(query, principalId);
+  const wikiSources = await searchWikiContent(
+    query,
+    principalId,
+    8,
+    3,
+    visibility,
+  );
   let connectorSources: AiSource[] = [];
 
   if (
@@ -397,6 +426,7 @@ export async function streamAskAnswer(
   query: string,
   principalId: string,
   res: Response,
+  includeUnpublished = false,
 ) {
   const startTime = Date.now();
   const settings = await getAiSettings();
@@ -406,12 +436,20 @@ export async function streamAskAnswer(
     return;
   }
 
+  const highestRole = await getHighestRole(principalId);
+  const roleVisibility = getSearchVisibilityForRole(highestRole);
+  const effectiveVisibility: AiVisibility =
+    includeUnpublished && roleVisibility !== "published_only"
+      ? roleVisibility
+      : "published_only";
+
   const policies = parsePromptPolicies(settings.promptPolicies);
   const sources = await gatherSources(
     query,
     principalId,
     settings.sourceMode,
     policies,
+    effectiveVisibility,
   );
 
   const useWebSearch = shouldUseWebSearch(
@@ -431,7 +469,18 @@ export async function streamAskAnswer(
   const systemPrompt = settings.systemPrompt || DEFAULT_SYSTEM_PROMPT;
   const policyInstructions = buildPolicyInstructions(policies);
 
-  const instructions = `${systemPrompt}\n\n${policyInstructions}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
+  const roleContext = `\n\n## Benutzerkontext\nDie Rolle des Benutzers ist: ${highestRole}.`;
+
+  const publishedWarning = effectiveVisibility !== "published_only"
+    ? "\n\nHINWEIS: Einige Quellen sind möglicherweise nicht veröffentlicht (Status: in_review, approved). Kennzeichne solche Inhalte klar als 'In Überprüfung' oder 'Genehmigt' und weise darauf hin, dass diese noch nicht endgültig freigegeben sind."
+    : "\n\nHINWEIS: Alle verwendeten Quellen stammen aus veröffentlichten, freigegebenen Inhalten.";
+
+  const qualityHints = `\n\n## Qualitätshinweise
+- Wenn du Widersprüche zwischen verschiedenen Quellen erkennst, weise explizit darauf hin.
+- Wenn Informationen veraltet erscheinen oder Quellen im Status 'draft'/'in_review' sind, kennzeichne dies.
+- Wenn relevante Informationen fehlen könnten, erwähne dies am Ende der Antwort.`;
+
+  const instructions = `${systemPrompt}${roleContext}\n\n${policyInstructions}${publishedWarning}${qualityHints}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
 
   let hasError = false;
   let errorMessage: string | undefined;
@@ -608,7 +657,10 @@ export type PageAssistAction =
   | "professionalize"
   | "adjust_tone"
   | "restructure"
-  | "template_completeness";
+  | "template_completeness"
+  | "quality_check"
+  | "change_summary"
+  | "duplicate_check";
 
 const ACTION_PROMPTS: Record<PageAssistAction, string> = {
   reformulate:
@@ -631,6 +683,12 @@ const ACTION_PROMPTS: Record<PageAssistAction, string> = {
     "Strukturiere den folgenden Text neu. Verwende Überschriften, Aufzählungen und Absätze für bessere Lesbarkeit:",
   template_completeness:
     "Analysiere den folgenden Seiteninhalt und identifiziere fehlende oder unvollständige Felder. Schlage konkrete Ergänzungen vor, die den Inhalt vervollständigen würden:",
+  quality_check:
+    "Analysiere den folgenden Text auf Qualitätsprobleme. Prüfe auf:\n1. Widersprüche innerhalb des Textes\n2. Veraltete oder ungenaue Informationen\n3. Fehlende Quellen oder Belege\n4. Unklare oder mehrdeutige Formulierungen\n5. Mögliche Duplikate oder redundante Abschnitte\nGib eine strukturierte Liste der gefundenen Probleme mit konkreten Verbesserungsvorschlägen zurück:",
+  change_summary:
+    "Fasse die folgenden Änderungen an einer Wiki-Seite in 2-3 kurzen, sachlichen Sätzen auf Deutsch zusammen. Beschreibe WAS geändert wurde, nicht WARUM. Verwende Fließtext, keine Aufzählungszeichen:",
+  duplicate_check:
+    "Analysiere den folgenden Text und identifiziere:\n1. Redundante oder doppelte Informationen innerhalb des Textes\n2. Abschnitte, die zusammengefasst werden könnten\n3. Widersprüchliche Aussagen\nGib konkrete Vorschläge zur Bereinigung:",
 };
 
 export async function streamPageAssist(

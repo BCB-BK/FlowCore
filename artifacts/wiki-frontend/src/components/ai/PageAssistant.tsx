@@ -20,6 +20,9 @@ import {
   MessageSquare,
   LayoutList,
   ClipboardCheck,
+  ShieldCheck,
+  FileDiff,
+  ScanSearch,
 } from "lucide-react";
 import {
   Tooltip,
@@ -38,7 +41,10 @@ type Action =
   | "professionalize"
   | "adjust_tone"
   | "restructure"
-  | "template_completeness";
+  | "template_completeness"
+  | "quality_check"
+  | "change_summary"
+  | "duplicate_check";
 
 interface ActionDef {
   key: Action;
@@ -107,6 +113,24 @@ const ACTIONS: ActionDef[] = [
     label: "Vollständigkeit",
     icon: <ClipboardCheck className="h-4 w-4" />,
     description: "Fehlende Felder und Lücken im Seitentemplate prüfen",
+  },
+  {
+    key: "quality_check",
+    label: "Qualitätsprüfung",
+    icon: <ShieldCheck className="h-4 w-4" />,
+    description: "Widersprüche, veraltete Infos und Qualitätsprobleme erkennen",
+  },
+  {
+    key: "duplicate_check",
+    label: "Dubletten prüfen",
+    icon: <ScanSearch className="h-4 w-4" />,
+    description: "Redundante Informationen und Widersprüche identifizieren",
+  },
+  {
+    key: "change_summary",
+    label: "Änderungszusammenfassung",
+    icon: <FileDiff className="h-4 w-4" />,
+    description: "Änderungen sachlich in 2-3 Sätzen zusammenfassen",
   },
 ];
 

@@ -183,6 +183,63 @@ export function getRolePermissionMatrix(): Record<WikiRole, WikiPermission[]> {
   return { ...ROLE_PERMISSIONS };
 }
 
+const ROLE_PRIORITY: WikiRole[] = [
+  "system_admin",
+  "compliance_manager",
+  "process_manager",
+  "approver",
+  "reviewer",
+  "editor",
+  "viewer",
+];
+
+export async function getUserRoles(
+  principalId: string,
+  globalOnly = false,
+): Promise<WikiRole[]> {
+  const conditions = [
+    eq(roleAssignmentsTable.principalId, principalId),
+    eq(roleAssignmentsTable.isActive, true),
+    or(
+      sql`${roleAssignmentsTable.expiresAt} IS NULL`,
+      sql`${roleAssignmentsTable.expiresAt} > NOW()`,
+    )!,
+  ];
+
+  if (globalOnly) {
+    conditions.push(eq(roleAssignmentsTable.scope, "global"));
+  }
+
+  const rows = await db
+    .select({ role: roleAssignmentsTable.role })
+    .from(roleAssignmentsTable)
+    .where(and(...conditions));
+
+  return rows.map((r) => r.role as WikiRole);
+}
+
+export async function getHighestRole(principalId: string): Promise<WikiRole> {
+  const roles = await getUserRoles(principalId, true);
+  for (const r of ROLE_PRIORITY) {
+    if (roles.includes(r)) return r;
+  }
+  return "viewer";
+}
+
+export type SearchVisibility = "published_only" | "include_review" | "all";
+
+export function getSearchVisibilityForRole(role: WikiRole): SearchVisibility {
+  if (role === "system_admin" || role === "compliance_manager") return "all";
+  if (
+    role === "process_manager" ||
+    role === "approver" ||
+    role === "reviewer" ||
+    role === "editor"
+  )
+    return "include_review";
+  return "published_only";
+}
+
 export async function getEffectivePermissions(
   principalId: string,
   nodeId?: string,

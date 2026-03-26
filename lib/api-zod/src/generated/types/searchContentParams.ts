@@ -16,4 +16,5 @@ export type SearchContentParams = {
   dateTo?: Date;
   limit?: number;
   offset?: number;
+  includeUnpublished?: boolean;
 };

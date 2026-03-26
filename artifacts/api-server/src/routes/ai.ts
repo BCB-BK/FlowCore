@@ -65,7 +65,12 @@ aiRouter.post("/ask", requireAuth, async (req, res) => {
   }
 
   try {
-    await streamAskAnswer(parsed.data.query, req.user!.principalId, res);
+    await streamAskAnswer(
+      parsed.data.query,
+      req.user!.principalId,
+      res,
+      parsed.data.includeUnpublished ?? false,
+    );
   } catch (err) {
     logger.error({ err }, "AI ask failed");
     if (!res.headersSent) {

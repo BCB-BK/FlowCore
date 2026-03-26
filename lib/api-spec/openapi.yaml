@@ -1553,6 +1553,11 @@ paths:
           schema:
             type: integer
             default: 0
+        - name: includeUnpublished
+          in: query
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: Search results with facets
@@ -4220,6 +4225,12 @@ components:
               type: object
               additionalProperties:
                 type: integer
+        visibility:
+          type: string
+          enum:
+            - published_only
+            - include_review
+            - all
       required:
         - results
         - total
@@ -5041,6 +5052,9 @@ components:
           type: string
           minLength: 1
           maxLength: 2000
+        includeUnpublished:
+          type: boolean
+          default: false
       required:
         - query
 
@@ -5060,6 +5074,9 @@ components:
             - adjust_tone
             - restructure
             - template_completeness
+            - quality_check
+            - change_summary
+            - duplicate_check
         text:
           type: string
           minLength: 1
@@ -5084,6 +5101,18 @@ components:
         templateType:
           type: string
         snippet:
+          type: string
+        sourceType:
+          type: string
+          enum:
+            - wiki
+            - connector
+            - web
+        contentStatus:
+          type: string
+        externalUrl:
+          type: string
+        sourceSystemName:
           type: string
       required:
         - nodeId

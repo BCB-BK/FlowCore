@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Search,
   FileText,
@@ -17,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
+  Eye,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PAGE_TYPE_LABELS, STATUS_LABELS } from "@/lib/types";
@@ -26,6 +29,7 @@ import {
   useListTags,
   useTrackSearchClick,
 } from "@workspace/api-client-react";
+import { useAuth } from "@/hooks/use-auth";
 
 function sanitizeHeadline(html: string): string {
   return html.replace(/<\/?b>/g, "").replace(/<[^>]*>/g, "");
@@ -36,6 +40,7 @@ export function SearchPage() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [templateType, setTemplateType] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [includeUnpublished, setIncludeUnpublished] = useState(false);
   const [tagId, setTagId] = useState<string>("");
   const [ownerId, setOwnerId] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -43,6 +48,31 @@ export function SearchPage() {
   const [offset, setOffset] = useState(0);
   const limit = 20;
   const [, navigate] = useLocation();
+  const { data: authData } = useAuth();
+
+  const canSeeUnpublished = useMemo(() => {
+    const roles = authData?.roles?.map((r: { role?: string }) => r.role) ?? [];
+    const privilegedRoles = [
+      "system_admin",
+      "compliance_manager",
+      "process_manager",
+      "approver",
+      "reviewer",
+      "editor",
+    ];
+    return roles.some((r: string | undefined) => r && privilegedRoles.includes(r));
+  }, [authData]);
+
+  const allowedStatusKeys = useMemo(() => {
+    if (!canSeeUnpublished) return ["published"];
+    const roles = authData?.roles?.map((r: { role?: string }) => r.role) ?? [];
+    const isAdmin = roles.some(
+      (r: string | undefined) =>
+        r === "system_admin" || r === "compliance_manager",
+    );
+    if (isAdmin) return Object.keys(STATUS_LABELS);
+    return ["published", "in_review", "approved"];
+  }, [canSeeUnpublished, authData]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 300);
@@ -51,12 +81,13 @@ export function SearchPage() {
 
   useEffect(() => {
     setOffset(0);
-  }, [debouncedQuery, templateType, status, tagId, ownerId, dateFrom, dateTo]);
+  }, [debouncedQuery, templateType, status, tagId, ownerId, dateFrom, dateTo, includeUnpublished]);
 
   const { data: searchData, isLoading } = useSearchContent({
     q: debouncedQuery || undefined,
     templateType: templateType || undefined,
     status: status || undefined,
+    includeUnpublished: includeUnpublished || undefined,
     tagId: tagId || undefined,
     ownerId: ownerId || undefined,
     dateFrom: dateFrom || undefined,
@@ -71,6 +102,7 @@ export function SearchPage() {
   const clearFilters = useCallback(() => {
     setTemplateType("");
     setStatus("");
+    setIncludeUnpublished(false);
     setTagId("");
     setOwnerId("");
     setDateFrom("");
@@ -93,7 +125,7 @@ export function SearchPage() {
   );
 
   const hasFilters =
-    templateType || status || tagId || ownerId || dateFrom || dateTo;
+    templateType || status || tagId || ownerId || dateFrom || dateTo || includeUnpublished;
   const totalPages = searchData ? Math.ceil(searchData.total / limit) : 0;
   const currentPage = Math.floor(offset / limit) + 1;
 
@@ -132,11 +164,13 @@ export function SearchPage() {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(STATUS_LABELS).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
+            {Object.entries(STATUS_LABELS)
+              .filter(([key]) => allowedStatusKeys.includes(key))
+              .map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 
@@ -180,6 +214,20 @@ export function SearchPage() {
             placeholder="Bis"
           />
         </div>
+
+        {canSeeUnpublished && (
+          <div className="flex items-center gap-2">
+            <Switch
+              id="include-unpublished"
+              checked={includeUnpublished}
+              onCheckedChange={setIncludeUnpublished}
+            />
+            <Label htmlFor="include-unpublished" className="text-xs flex items-center gap-1 cursor-pointer">
+              <Eye className="h-3 w-3" />
+              Unveröffentlichte zeigen
+            </Label>
+          </div>
+        )}
 
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>

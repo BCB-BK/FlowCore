@@ -8,6 +8,7 @@ FlowCore integriert einen KI-gestützten Wissensassistenten basierend auf einer 
 2. **Seitenassistent:** Schreibunterstützung bei der Inhaltserstellung
 3. **RAG-Pipeline:** Kontextanreicherung durch Quellensuche
 4. **Nutzungsanalyse:** Tracking und Statistiken
+5. **Qualitäts- und Änderungslogik:** Qualitätsprüfung, Dublettenerkennung, Änderungszusammenfassungen
 
 ## 9.2 Globaler Assistent (AI Ask)
 
@@ -17,6 +18,8 @@ FlowCore integriert einen KI-gestützten Wissensassistenten basierend auf einer 
 - Antworten werden in **Echtzeit per Server-Sent Events (SSE)** gestreamt
 - Liefert anklickbare Quellenreferenzen (Wiki-Seiten, Konnektoren, Web)
 - Zeigt Konfidenzniveau (Hoch, Mittel, Niedrig) basierend auf gefundenen Quellen
+- **Published-first-Logik:** Standardmäßig nur veröffentlichte Inhalte als Kontext
+- **Quellenkennzeichnung:** Jede Quelle trägt Typ-Label (Wiki, Connector, Web) und ggf. Status-Label
 
 ### Endpunkt
 
@@ -25,34 +28,39 @@ POST /api/ai/ask
 Content-Type: application/json
 Accept: text/event-stream
 
-{ "question": "Wie funktioniert der Onboarding-Prozess?" }
+{
+  "query": "Wie funktioniert der Onboarding-Prozess?",
+  "includeUnpublished": false
+}
 ```
 
 ### Antwort-Stream
 
 ```
-data: {"type":"source","data":{"title":"Onboarding","nodeId":"...","type":"wiki"}}
-data: {"type":"chunk","data":{"text":"Der Onboarding-Prozess..."}}
-data: {"type":"confidence","data":{"level":"high","sourceCount":3}}
-data: {"type":"done"}
+data: {"type":"sources","sources":[{"nodeId":"...","title":"...","sourceType":"wiki","contentStatus":"published"}]}
+data: {"type":"content","content":"Der Onboarding-Prozess..."}
+data: {"type":"done","confidence":"high","sourcesCount":3,"webSearchUsed":false}
 ```
 
 ## 9.3 Seitenassistent (Page Assist)
 
 ### Aktionen
 
-| Aktion | Beschreibung |
-|:-------|:-------------|
-| **Umformulieren** | Text neu formulieren bei gleichem Inhalt |
-| **Zusammenfassen** | Kernaussagen extrahieren |
-| **Erweitern** | Text inhaltlich ausbauen |
-| **Kürzen** | Text auf Wesentliches reduzieren |
-| **Professionalisieren** | Sprachstil verbessern |
-| **Tonalität anpassen** | Formell/informell umschreiben |
-| **Umstrukturieren** | Logische Neuordnung |
-| **Grammatikprüfung** | Rechtschreib- und Grammatikkorrektur |
-| **Lückenanalyse** | Fehlende Informationen identifizieren |
-| **Template-Vollständigkeit** | Prüfung ob Template-Felder ausgefüllt sind |
+| Aktion | Beschreibung | Kategorie |
+|:-------|:-------------|:----------|
+| **Umformulieren** | Text neu formulieren bei gleichem Inhalt | Schreibhilfe |
+| **Zusammenfassen** | Kernaussagen extrahieren | Schreibhilfe |
+| **Erweitern** | Text inhaltlich ausbauen | Schreibhilfe |
+| **Kürzen** | Text auf Wesentliches reduzieren | Schreibhilfe |
+| **Professionalisieren** | Sprachstil verbessern | Schreibhilfe |
+| **Tonalität anpassen** | Formell/informell umschreiben | Schreibhilfe |
+| **Umstrukturieren** | Logische Neuordnung | Schreibhilfe |
+| **Grammatikprüfung** | Rechtschreib- und Grammatikkorrektur | Schreibhilfe |
+| **Lückenanalyse** | Fehlende Informationen identifizieren | Qualität |
+| **Template-Vollständigkeit** | Prüfung ob Template-Felder ausgefüllt sind | Qualität |
+| **Qualitätsprüfung** | Widersprüche, veraltete Infos erkennen | Qualität |
+| **Dubletten prüfen** | Redundante Informationen identifizieren | Qualität |
+| **Änderungszusammenfassung** | Änderungen sachlich zusammenfassen | Änderungslogik |
 
 ### Endpunkt
 
@@ -62,10 +70,9 @@ Content-Type: application/json
 Accept: text/event-stream
 
 {
-  "action": "professionalize",
+  "action": "quality_check",
   "text": "...",
-  "nodeId": "...",
-  "templateType": "policy"
+  "nodeId": "..."
 }
 ```
 
@@ -74,7 +81,7 @@ Accept: text/event-stream
 ### Ablauf
 
 ```
-Frage → Quellensuche → Kontext-Aufbereitung → LLM-Aufruf → Streaming-Antwort
+Frage → Rollenermittlung → Quellensuche → Published-Filter → Kontext-Aufbereitung → LLM-Aufruf → Streaming-Antwort
 ```
 
 ### Quellensuche
@@ -84,6 +91,7 @@ Frage → Quellensuche → Kontext-Aufbereitung → LLM-Aufruf → Streaming-Ant
 - Nutzt PostgreSQL-Volltextsuche (`to_tsquery` auf `searchVector`)
 - **Deutsche Sprachunterstützung** für Stemming
 - **RBAC-Prüfung:** Nur Inhalte, auf die der Benutzer Zugriff hat
+- **Published-first:** Standardmäßig nur `status = 'published'`; optional erweiterbar für berechtigte Rollen
 - Ergebnisse werden als strukturierte Snippets aufbereitet
 
 #### 2. Konnektor-Suche
@@ -98,23 +106,56 @@ Frage → Quellensuche → Kontext-Aufbereitung → LLM-Aufruf → Streaming-Ant
 
 ### Kontext-Aufbereitung
 
-Gefundene Snippets werden als strukturierter Block an das Modell übergeben:
+Gefundene Snippets werden als strukturierter Block mit Quelltyp und Status an das Modell übergeben:
 
 ```
-[WIKI-QUELLE] Titel: Onboarding-Prozess | ID: PROC-001
-Inhalt: Der Onboarding-Prozess umfasst folgende Schritte...
+[Quelle 1 – Wiki] PROC-001 – Onboarding-Prozess (process_page_text)
+Der Onboarding-Prozess umfasst folgende Schritte...
 
-[KONNEKTOR-QUELLE] Titel: HR-Handbuch | System: SharePoint
-Inhalt: Neue Mitarbeiter erhalten am ersten Tag...
+[Quelle 2 – Connector: SharePoint] HR-001 – HR-Handbuch (system_documentation)
+Neue Mitarbeiter erhalten am ersten Tag...
+
+[Quelle 3 – Wiki [Status: draft]] PROC-042 – Entwurf (process_page_text)
+Dieser Prozess ist noch in Bearbeitung...
 ```
 
-## 9.5 System-Prompt & Richtlinien
+### Quellenkennzeichnung
+
+Jede AI-Quelle enthält folgende Metadaten:
+
+| Feld | Beschreibung |
+|:-----|:-------------|
+| `sourceType` | `wiki`, `connector` oder `web` |
+| `contentStatus` | Status des Inhalts (z.B. `published`, `draft`, `in_review`) |
+| `sourceSystemName` | Name des externen Systems (bei Konnektoren) |
+| `externalUrl` | Externe URL (bei Konnektoren) |
+
+## 9.5 Rollen- und Zustandsbewusstsein
+
+### Rollenkontext
+
+Der KI-Prompt wird mit dem Rollenkontext des Benutzers angereichert:
+
+- **Viewer:** Sieht nur veröffentlichte Inhalte; keine Warnungen zu Entwürfen
+- **Editor/Reviewer/Approver/Process Manager:** Kann optional Entwürfe einbeziehen; erhält Warnungen zu nicht-freigegebenen Inhalten
+- **System Admin:** Vollständiger Zugriff auf alle Inhalte
+
+### Zustandsbewusstsein
+
+Die KI-Prompts enthalten automatische Qualitätshinweise:
+
+- Warnung bei Quellen im Status `draft` oder `in_review`
+- Hinweis, wenn nur veröffentlichte oder auch nicht-freigegebene Quellen verwendet werden
+- Aufforderung, Widersprüche zwischen Quellen zu kennzeichnen
+- Hinweis auf möglicherweise fehlende Informationen
+
+## 9.6 System-Prompt & Richtlinien
 
 ### Standard-System-Prompt
 
 Der System-Prompt definiert:
 
-- **Persona:** "Wissensassistent von FlowCore"
+- **Persona:** "FlowCore-Assistent der Wissensplattform des Bildungscampus Backnang"
 - **Tonalität:** Professionell, Du-Ansprache
 - **Fragetypen-Handler:**
   - Faktenfragen → Präzise, quellenbasierte Antworten
@@ -129,12 +170,12 @@ Basierend auf Admin-Einstellungen werden zusätzliche Anweisungen injiziert:
 
 | Richtlinie | Optionen |
 |:------------|:---------|
-| **Quellenpriorität** | Wiki bevorzugt / Ausgewogen |
+| **Quellenpriorität** | Wiki bevorzugt / Ausgewogen / Konnektor bevorzugt |
 | **Antwortsprache** | Auto (Erkennung), Deutsch, Englisch |
 | **Zitierstil** | Inline [1], Fußnoten, Keine |
-| **Max. Quellen pro Antwort** | Konfigurierbar (Standard: 5) |
+| **Max. Quellen pro Antwort** | Konfigurierbar (Standard: 12) |
 
-## 9.6 Modelle
+## 9.7 Modelle
 
 | Modell | Bezeichnung | Eigenschaft |
 |:-------|:------------|:------------|
@@ -142,7 +183,7 @@ Basierend auf Admin-Einstellungen werden zusätzliche Anweisungen injiziert:
 | GPT-5 Mini | Schneller | Gutes Gleichgewicht |
 | GPT-5 Nano | Schnellster | Für einfache Anfragen |
 
-## 9.7 Einstellungen
+## 9.8 Einstellungen
 
 Konfigurierbar über `GET/PUT /api/ai/settings`:
 
@@ -157,9 +198,9 @@ Konfigurierbar über `GET/PUT /api/ai/settings`:
 | `promptPolicies.responseLang` | Antwortsprache | `auto` |
 | `promptPolicies.citationStyle` | Zitierstil | `inline` |
 | `promptPolicies.sourcePriority` | Quellenpriorität | Wiki zuerst |
-| `promptPolicies.maxSourcesPerAnswer` | Max. Quellen | `5` |
+| `promptPolicies.maxSourcesPerAnswer` | Max. Quellen | `12` |
 
-## 9.8 Nutzungsanalyse
+## 9.9 Nutzungsanalyse
 
 - **Endpunkt:** `GET /api/ai/usage-stats`
 - **Metriken:**
@@ -171,13 +212,14 @@ Konfigurierbar über `GET/PUT /api/ai/settings`:
 
 **Gespeichert in:** `ai_usage_logs`-Tabelle mit Feldern für Benutzer, Anfrage, Modell, Tokens, Latenz und Fehler.
 
-## 9.9 Schlüsseldateien
+## 9.10 Schlüsseldateien
 
 | Datei | Zweck |
 |:------|:------|
-| `artifacts/api-server/src/services/ai.service.ts` | Kernlogik: RAG, Streaming, Prompt-Aufbau |
+| `artifacts/api-server/src/services/ai.service.ts` | Kernlogik: RAG, Streaming, Prompt-Aufbau, Qualitätslogik |
 | `artifacts/api-server/src/routes/ai.ts` | AI-Endpunkte |
 | `artifacts/wiki-frontend/src/components/ai/GlobalAssistant.tsx` | Globaler Assistent UI |
-| `artifacts/wiki-frontend/src/components/ai/PageAssistant.tsx` | Seitenassistent UI |
+| `artifacts/wiki-frontend/src/components/ai/PageAssistant.tsx` | Seitenassistent UI (inkl. Qualitäts-/Änderungsaktionen) |
 | `artifacts/wiki-frontend/src/components/settings/AISettingsTab.tsx` | KI-Einstellungen UI |
 | `lib/db/src/schema/ai-settings.ts` | DB-Schema für KI-Einstellungen und Logs |
+| `artifacts/api-server/src/services/rbac.service.ts` | Rollenlogik für Suchsichtbarkeit |

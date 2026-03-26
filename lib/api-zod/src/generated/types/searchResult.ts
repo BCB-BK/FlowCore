@@ -7,6 +7,7 @@
  */
 import type { SearchResultFacets } from "./searchResultFacets";
 import type { SearchResultItem } from "./searchResultItem";
+import type { SearchResultVisibility } from "./searchResultVisibility";
 
 export interface SearchResult {
   results: SearchResultItem[];
@@ -15,4 +16,5 @@ export interface SearchResult {
   offset: number;
   queryId?: string | null;
   facets: SearchResultFacets;
+  visibility?: SearchResultVisibility;
 }

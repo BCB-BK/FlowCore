@@ -8,11 +8,50 @@ import {
   searchQueriesTable,
   searchClicksTable,
 } from "@workspace/db/schema";
-import { eq, sql, and, desc, gte, lte, ilike, or } from "drizzle-orm";
+import { eq, sql, and, desc, gte, lte, ilike, or, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import {
+  getHighestRole,
+  getSearchVisibilityForRole,
+  type SearchVisibility,
+} from "../services/rbac.service";
 
 const router: IRouter = Router();
+
+type NodeStatus = "draft" | "in_review" | "approved" | "published" | "archived" | "deleted";
+
+const REVIEW_STATUSES: NodeStatus[] = ["published", "in_review", "approved"];
+
+function buildStatusCondition(
+  visibility: SearchVisibility,
+  explicitStatus?: string,
+  includeUnpublished?: boolean,
+) {
+  if (explicitStatus) {
+    const s = explicitStatus as NodeStatus;
+    if (visibility === "all") {
+      return eq(contentNodesTable.status, s);
+    }
+    if (visibility === "include_review") {
+      if (REVIEW_STATUSES.includes(s)) {
+        return eq(contentNodesTable.status, s);
+      }
+      return sql`false`;
+    }
+    if (s === "published") {
+      return eq(contentNodesTable.status, "published");
+    }
+    return sql`false`;
+  }
+
+  if (includeUnpublished && visibility !== "published_only") {
+    if (visibility === "all") return undefined;
+    return inArray(contentNodesTable.status, REVIEW_STATUSES);
+  }
+
+  return eq(contentNodesTable.status, "published");
+}
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -28,6 +67,7 @@ router.get(
     const q = (req.query.q as string) || "";
     const templateType = req.query.templateType as string | undefined;
     const status = req.query.status as string | undefined;
+    const includeUnpublished = req.query.includeUnpublished === "true";
     const tagId = req.query.tagId as string | undefined;
     const ownerId = req.query.ownerId as string | undefined;
     const dateFrom = req.query.dateFrom as string | undefined;
@@ -35,13 +75,19 @@ router.get(
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
     const offset = parseInt(req.query.offset as string) || 0;
 
+    const principalId = req.user?.principalId || "";
+    const highestRole = await getHighestRole(principalId);
+    const visibility = getSearchVisibilityForRole(highestRole);
+
     const conditions = [eq(contentNodesTable.isDeleted, false)];
+
+    const statusCond = buildStatusCondition(visibility, status, includeUnpublished);
+    if (statusCond) {
+      conditions.push(statusCond);
+    }
 
     if (templateType) {
       conditions.push(sql`${contentNodesTable.templateType} = ${templateType}`);
-    }
-    if (status) {
-      conditions.push(sql`${contentNodesTable.status} = ${status}`);
     }
     if (ownerId) {
       conditions.push(eq(contentNodesTable.ownerId, ownerId));
@@ -151,6 +197,12 @@ router.get(
     }
 
     const baseConditions = [eq(contentNodesTable.isDeleted, false)];
+
+    const facetStatusCond = buildStatusCondition(visibility, status, includeUnpublished);
+    if (facetStatusCond) {
+      baseConditions.push(facetStatusCond);
+    }
+
     if (q.trim().length > 0 && tsQuery) {
       baseConditions.push(
         or(
@@ -243,6 +295,7 @@ router.get(
       limit,
       offset,
       queryId,
+      visibility,
       facets: {
         templateType: typeFacets,
         status: statusFacets,
@@ -259,9 +312,26 @@ router.get(
   requirePermission("read_page"),
   async (req, res) => {
     const q = (req.query.q as string) || "";
+    const includeUnpublished = req.query.includeUnpublished === "true";
     if (q.trim().length < 2) {
       res.json({ nodes: [], aliases: [] });
       return;
+    }
+
+    const principalId = req.user?.principalId || "";
+    const highestRole = await getHighestRole(principalId);
+    const visibility = getSearchVisibilityForRole(highestRole);
+    const statusCond = buildStatusCondition(visibility, undefined, includeUnpublished);
+
+    const suggestionConditions = [
+      eq(contentNodesTable.isDeleted, false),
+      or(
+        ilike(contentNodesTable.title, `%${q}%`),
+        ilike(contentNodesTable.displayCode, `%${q}%`),
+      )!,
+    ];
+    if (statusCond) {
+      suggestionConditions.push(statusCond);
     }
 
     const suggestions = await db
@@ -272,17 +342,18 @@ router.get(
         templateType: contentNodesTable.templateType,
       })
       .from(contentNodesTable)
-      .where(
-        and(
-          eq(contentNodesTable.isDeleted, false),
-          or(
-            ilike(contentNodesTable.title, `%${q}%`),
-            ilike(contentNodesTable.displayCode, `%${q}%`),
-          ),
-        ),
-      )
+      .where(and(...suggestionConditions))
       .orderBy(contentNodesTable.title)
       .limit(10);
+
+    const aliasConditions = [
+      ilike(contentAliasesTable.previousDisplayCode, `%${q}%`),
+      eq(contentNodesTable.isDeleted, false),
+    ];
+    const aliasStatusCond = buildStatusCondition(visibility, undefined, includeUnpublished);
+    if (aliasStatusCond) {
+      aliasConditions.push(aliasStatusCond);
+    }
 
     const aliasSuggestions = await db
       .select({
@@ -290,7 +361,11 @@ router.get(
         previousDisplayCode: contentAliasesTable.previousDisplayCode,
       })
       .from(contentAliasesTable)
-      .where(ilike(contentAliasesTable.previousDisplayCode, `%${q}%`))
+      .innerJoin(
+        contentNodesTable,
+        eq(contentAliasesTable.nodeId, contentNodesTable.id),
+      )
+      .where(and(...aliasConditions))
       .limit(5);
 
     res.json({ nodes: suggestions, aliases: aliasSuggestions });

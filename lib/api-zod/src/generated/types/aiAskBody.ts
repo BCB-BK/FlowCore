@@ -12,4 +12,5 @@ export interface AiAskBody {
    * @maxLength 2000
    */
   query: string;
+  includeUnpublished?: boolean;
 }

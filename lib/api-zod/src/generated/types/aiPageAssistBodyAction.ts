@@ -20,4 +20,7 @@ export const AiPageAssistBodyAction = {
   adjust_tone: "adjust_tone",
   restructure: "restructure",
   template_completeness: "template_completeness",
+  quality_check: "quality_check",
+  change_summary: "change_summary",
+  duplicate_check: "duplicate_check",
 } as const;
