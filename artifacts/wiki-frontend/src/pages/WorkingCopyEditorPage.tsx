@@ -54,7 +54,7 @@ import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import type { JSONContent } from "@tiptap/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
-import { Bot } from "lucide-react";
+import { Bot, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 const AUTOSAVE_DELAY_MS = 2000;
@@ -115,6 +115,7 @@ export function WorkingCopyEditorPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   const wcRef = useRef<WorkingCopy | null>(null);
   useEffect(() => {
@@ -402,8 +403,10 @@ export function WorkingCopyEditorPage() {
 
   const isOwnWc = !currentUser || activeWC.authorId === currentUser.principalId;
   const isReviewPhase = activeWC.status === "submitted" || activeWC.status === "in_review";
-  const hasApprovePermission = currentUser?.permissions?.includes("approve_page") ?? false;
-  const canEdit = (isOwnWc && (activeWC.status === "draft" || activeWC.status === "changes_requested")) || (isReviewPhase && hasApprovePermission);
+  const hasEditPermission = currentUser?.permissions?.includes("edit_working_copy") ?? false;
+  const hasAmendPermission = currentUser?.permissions?.includes("amend_working_copy_in_review") ?? false;
+  const isDraftOrReturned = activeWC.status === "draft" || activeWC.status === "changes_requested";
+  const canEdit = ((isOwnWc || hasEditPermission) && isDraftOrReturned) || (isReviewPhase && hasAmendPermission);
   const pageDef = getPageType(node.templateType);
   const metadata: Record<string, unknown> = editableMetadata;
 
@@ -633,7 +636,39 @@ export function WorkingCopyEditorPage() {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Zusammenfassung der Änderungen</Label>
+              <div className="flex items-center justify-between">
+                <Label>Zusammenfassung der Änderungen</Label>
+                {activeWC && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    disabled={aiSummaryLoading}
+                    onClick={async () => {
+                      setAiSummaryLoading(true);
+                      try {
+                        const apiBase = import.meta.env.BASE_URL + "api";
+                        const result = await customFetch<{ summary: string }>(
+                          `${apiBase}/content/working-copies/${activeWC.id}/generate-summary`,
+                          { method: "POST" },
+                        );
+                        setChangeSummary(result.summary);
+                      } catch {
+                        toast({ variant: "destructive", title: "KI-Zusammenfassung fehlgeschlagen" });
+                      } finally {
+                        setAiSummaryLoading(false);
+                      }
+                    }}
+                  >
+                    {aiSummaryLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    KI-Zusammenfassung
+                  </Button>
+                )}
+              </div>
               <Textarea
                 placeholder="Beschreiben Sie kurz, was geändert wurde..."
                 value={changeSummary}

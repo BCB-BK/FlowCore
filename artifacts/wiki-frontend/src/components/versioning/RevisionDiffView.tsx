@@ -9,7 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Minus, Plus, Equal } from "lucide-react";
+import {
+  ArrowRight,
+  Minus,
+  Plus,
+  Equal,
+  FileText,
+  Settings,
+  Layers,
+  Tag,
+  Link2,
+} from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 
 interface RevisionDiffViewProps {
@@ -64,7 +74,89 @@ const FIELD_LABELS: Record<string, string> = {
   versionLabel: "Version",
   reviewerId: "Prüfer",
   approverId: "Genehmiger",
+  changeSummary: "Zusammenfassung",
 };
+
+function formatValue(val: unknown): string {
+  if (val === null || val === undefined) return "(leer)";
+  if (typeof val === "object") {
+    const str = JSON.stringify(val, null, 2);
+    if (str.length > 500) return str.substring(0, 500) + "…";
+    return str;
+  }
+  return String(val);
+}
+
+function DiffFieldRow({
+  label,
+  oldVal,
+  newVal,
+}: {
+  label: string;
+  oldVal: unknown;
+  newVal: unknown;
+}) {
+  const oldStr = formatValue(oldVal);
+  const newStr = formatValue(newVal);
+  const isAdded = oldVal === null || oldVal === undefined;
+  const isRemoved = newVal === null || newVal === undefined;
+
+  return (
+    <div className="rounded-lg border overflow-hidden">
+      <div className="px-3 py-1.5 bg-muted/50 border-b">
+        <span className="text-sm font-medium">{label}</span>
+        {isAdded && (
+          <Badge variant="outline" className="ml-2 text-[10px] h-4 text-green-600 border-green-300">
+            Hinzugefügt
+          </Badge>
+        )}
+        {isRemoved && (
+          <Badge variant="outline" className="ml-2 text-[10px] h-4 text-red-600 border-red-300">
+            Entfernt
+          </Badge>
+        )}
+      </div>
+      <div className="grid grid-cols-2 divide-x">
+        <div className="p-2 bg-red-50/40 dark:bg-red-950/10">
+          <div className="flex items-start gap-1">
+            <Minus className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
+            <span className="text-xs text-red-700 dark:text-red-300 whitespace-pre-wrap break-all">
+              {oldStr}
+            </span>
+          </div>
+        </div>
+        <div className="p-2 bg-green-50/40 dark:bg-green-950/10">
+          <div className="flex items-start gap-1">
+            <Plus className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+            <span className="text-xs text-green-700 dark:text-green-300 whitespace-pre-wrap break-all">
+              {newStr}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiffSectionHeader({
+  icon: Icon,
+  title,
+  count,
+}: {
+  icon: typeof FileText;
+  title: string;
+  count: number;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <h4 className="text-sm font-semibold">{title}</h4>
+      <Badge variant="secondary" className="text-[10px] h-4">
+        {count}
+      </Badge>
+    </div>
+  );
+}
 
 export function RevisionDiffView({
   revisionIdA,
@@ -87,24 +179,29 @@ export function RevisionDiffView({
       .finally(() => setLoading(false));
   }, [open, revisionIdA, revisionIdB, apiBase]);
 
-  const formatValue = (val: unknown): string => {
-    if (val === null || val === undefined) return "(leer)";
-    if (typeof val === "object") return JSON.stringify(val, null, 2);
-    return String(val);
-  };
+  const totalChanges = diff
+    ? Object.keys(diff.metadataChanges).length +
+      Object.keys(diff.structuredFieldChanges).length +
+      (diff.contentChanged ? 1 : 0)
+    : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
+      <DialogContent className="max-w-3xl max-h-[85vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Revisionsvergleich
             {diff && (
-              <span className="text-sm font-normal text-muted-foreground">
-                Rev. {diff.revisionA.revisionNo}
-                <ArrowRight className="h-3 w-3 inline mx-1" />
-                Rev. {diff.revisionB.revisionNo}
-              </span>
+              <>
+                <span className="text-sm font-normal text-muted-foreground">
+                  Rev. {diff.revisionA.revisionNo}
+                  <ArrowRight className="h-3 w-3 inline mx-1" />
+                  Rev. {diff.revisionB.revisionNo}
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  {totalChanges} {totalChanges === 1 ? "Änderung" : "Änderungen"}
+                </Badge>
+              </>
             )}
           </DialogTitle>
         </DialogHeader>
@@ -116,35 +213,47 @@ export function RevisionDiffView({
             <Skeleton className="h-20 w-full" />
           </div>
         ) : diff ? (
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-4 pr-4">
+          <ScrollArea className="max-h-[65vh]">
+            <div className="space-y-5 pr-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg border p-3 bg-red-50/30 dark:bg-red-950/10">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs font-mono">
                       Rev. {diff.revisionA.revisionNo}
                     </Badge>
                     <Badge variant="secondary" className="text-xs">
                       {diff.revisionA.status}
                     </Badge>
                   </div>
-                  <p className="text-sm font-medium">{diff.revisionA.title}</p>
+                  <p className="text-sm font-medium truncate">{diff.revisionA.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(diff.revisionA.createdAt).toLocaleString("de-DE")}
+                    {new Date(diff.revisionA.createdAt).toLocaleString("de-DE", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
                 <div className="rounded-lg border p-3 bg-green-50/30 dark:bg-green-950/10">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs font-mono">
                       Rev. {diff.revisionB.revisionNo}
                     </Badge>
                     <Badge variant="secondary" className="text-xs">
                       {diff.revisionB.status}
                     </Badge>
                   </div>
-                  <p className="text-sm font-medium">{diff.revisionB.title}</p>
+                  <p className="text-sm font-medium truncate">{diff.revisionB.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(diff.revisionB.createdAt).toLocaleString("de-DE")}
+                    {new Date(diff.revisionB.createdAt).toLocaleString("de-DE", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
               </div>
@@ -153,118 +262,77 @@ export function RevisionDiffView({
 
               {Object.keys(diff.metadataChanges).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">
-                    Metadaten-Änderungen
-                  </h4>
+                  <DiffSectionHeader
+                    icon={Settings}
+                    title="Metadaten"
+                    count={Object.keys(diff.metadataChanges).length}
+                  />
                   <div className="space-y-2">
-                    {Object.entries(diff.metadataChanges).map(
-                      ([field, change]) => (
-                        <div key={field} className="rounded border p-2 text-sm">
-                          <span className="font-medium text-muted-foreground">
-                            {FIELD_LABELS[field] || field}:
-                          </span>
-                          <div className="flex items-start gap-2 mt-1">
-                            <span className="flex items-center gap-1 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded text-xs">
-                              <Minus className="h-3 w-3" />
-                              {formatValue(change.old)}
-                            </span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                            <span className="flex items-center gap-1 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded text-xs">
-                              <Plus className="h-3 w-3" />
-                              {formatValue(change.new)}
-                            </span>
-                          </div>
-                        </div>
-                      ),
-                    )}
+                    {Object.entries(diff.metadataChanges).map(([field, change]) => (
+                      <DiffFieldRow
+                        key={field}
+                        label={FIELD_LABELS[field] || field}
+                        oldVal={change.old}
+                        newVal={change.new}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
               {Object.keys(diff.structuredFieldChanges).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">
-                    Governance-Felder-Änderungen
-                  </h4>
+                  <DiffSectionHeader
+                    icon={Layers}
+                    title="Governance-Felder"
+                    count={Object.keys(diff.structuredFieldChanges).length}
+                  />
                   <div className="space-y-2">
-                    {Object.entries(diff.structuredFieldChanges).map(
-                      ([field, change]) => (
-                        <div key={field} className="rounded border p-2 text-sm">
-                          <span className="font-medium text-muted-foreground">
-                            {field}:
-                          </span>
-                          <div className="flex items-start gap-2 mt-1">
-                            <span className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded text-xs break-all">
-                              <Minus className="h-3 w-3 inline mr-1" />
-                              {formatValue(change.old)}
-                            </span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                            <span className="text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded text-xs break-all">
-                              <Plus className="h-3 w-3 inline mr-1" />
-                              {formatValue(change.new)}
-                            </span>
-                          </div>
-                        </div>
-                      ),
-                    )}
+                    {Object.entries(diff.structuredFieldChanges).map(([field, change]) => (
+                      <DiffFieldRow
+                        key={field}
+                        label={field === "_editorContent" ? "Seiteninhalt (Editor)" : field}
+                        oldVal={change.old}
+                        newVal={change.new}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div className="rounded border p-3">
+              <div className="rounded-lg border p-3">
                 <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                   {diff.contentChanged ? (
                     <>
-                      <Plus className="h-4 w-4 text-amber-500" />
                       <span className="text-sm font-medium">
-                        Inhalt wurde geändert
+                        Block-Inhalt geändert
                       </span>
+                      <Badge variant="outline" className="text-[10px] h-4 text-amber-600 border-amber-300">
+                        Geändert
+                      </Badge>
                     </>
                   ) : (
                     <>
                       <Equal className="h-4 w-4 text-green-500" />
                       <span className="text-sm font-medium text-muted-foreground">
-                        Inhalt unverändert
+                        Block-Inhalt unverändert
                       </span>
                     </>
                   )}
                 </div>
-                {diff.contentChanged && diff.contentA && diff.contentB && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div className="rounded border bg-red-50/30 dark:bg-red-950/10 p-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        <Minus className="h-3 w-3 inline mr-1" />
-                        Rev. {diff.revisionA.revisionNo}
-                      </p>
-                      <pre className="text-xs whitespace-pre-wrap break-all max-h-[200px] overflow-auto">
-                        {JSON.stringify(diff.contentA, null, 2)}
-                      </pre>
-                    </div>
-                    <div className="rounded border bg-green-50/30 dark:bg-green-950/10 p-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        <Plus className="h-3 w-3 inline mr-1" />
-                        Rev. {diff.revisionB.revisionNo}
-                      </p>
-                      <pre className="text-xs whitespace-pre-wrap break-all max-h-[200px] overflow-auto">
-                        {JSON.stringify(diff.contentB, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {diff.nodeContext &&
                 (diff.nodeContext.relations.length > 0 ||
                   diff.nodeContext.tags.length > 0) && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2">
-                      Verknüpfungen & Tags (aktueller Stand)
+                    <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Link2 className="h-4 w-4 text-muted-foreground" />
+                      Verknüpfungen & Tags
                     </h4>
                     {diff.nodeContext.relations.length > 0 && (
                       <div className="space-y-1 mb-2">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          Verknüpfungen
-                        </p>
                         {diff.nodeContext.relations.map((rel) => (
                           <div
                             key={rel.id}
@@ -274,13 +342,8 @@ export function RevisionDiffView({
                               {rel.relationType}
                             </Badge>
                             <span className="text-muted-foreground">
-                              → {rel.targetNodeId}
+                              {rel.targetNodeId.substring(0, 8)}…
                             </span>
-                            {rel.description && (
-                              <span className="italic text-muted-foreground">
-                                {rel.description}
-                              </span>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -288,11 +351,8 @@ export function RevisionDiffView({
                     {diff.nodeContext.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {diff.nodeContext.tags.map((tag) => (
-                          <Badge
-                            key={tag.tagId}
-                            variant="secondary"
-                            className="text-xs"
-                          >
+                          <Badge key={tag.tagId} variant="secondary" className="text-xs">
+                            <Tag className="h-3 w-3 mr-1" />
                             {tag.tagName}
                           </Badge>
                         ))}
@@ -301,16 +361,14 @@ export function RevisionDiffView({
                   </div>
                 )}
 
-              {Object.keys(diff.metadataChanges).length === 0 &&
-                Object.keys(diff.structuredFieldChanges).length === 0 &&
-                !diff.contentChanged && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Equal className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">
-                      Keine Unterschiede zwischen den Revisionen gefunden.
-                    </p>
-                  </div>
-                )}
+              {totalChanges === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Equal className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">
+                    Keine Unterschiede zwischen den Revisionen gefunden.
+                  </p>
+                </div>
+              )}
             </div>
           </ScrollArea>
         ) : (

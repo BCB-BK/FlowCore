@@ -135,19 +135,18 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPer
   };
 
   const isOwner = !currentUserId || workingCopy.authorId === currentUserId;
-  const hasApprovePermission = userPermissions?.includes("approve_page") ?? false;
-  const isReviewerOrApprover =
-    workingCopy.reviewerId === currentUserId ||
-    workingCopy.approverId === currentUserId;
+  const hasReviewPermission = userPermissions?.includes("review_working_copy") ?? false;
+  const hasPublishPermission = userPermissions?.includes("publish_working_copy") ?? false;
+  const hasCancelPermission = userPermissions?.includes("cancel_working_copy") ?? false;
 
   const showApproveReturn =
     (workingCopy.status === "submitted" || workingCopy.status === "in_review") &&
-    (hasApprovePermission || isReviewerOrApprover);
+    hasReviewPermission;
   const showPublish =
     workingCopy.status === "approved_for_publish" &&
-    (hasApprovePermission || isReviewerOrApprover);
+    hasPublishPermission;
   const showCancel =
-    isOwner &&
+    (isOwner || hasCancelPermission) &&
     (workingCopy.status === "draft" ||
     workingCopy.status === "submitted" ||
     workingCopy.status === "changes_requested");

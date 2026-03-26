@@ -532,6 +532,72 @@ export async function streamAskAnswer(
   res.end();
 }
 
+export async function generateChangeSummary(
+  diff: {
+    titleChanged?: boolean;
+    metadataChanges: Record<string, { old: unknown; new: unknown }>;
+    structuredFieldChanges: Record<string, { old: unknown; new: unknown }>;
+    contentChanged: boolean;
+  },
+): Promise<string> {
+  const settings = await getAiSettings();
+  if (!settings.enabled) {
+    throw new Error("KI-Assistent ist deaktiviert.");
+  }
+
+  const parts: string[] = [];
+
+  if (diff.titleChanged) {
+    parts.push("- Titel wurde geändert");
+  }
+
+  for (const [key, change] of Object.entries(diff.metadataChanges)) {
+    const oldStr = change.old != null ? String(change.old) : "(leer)";
+    const newStr = change.new != null ? String(change.new) : "(leer)";
+    parts.push(`- Metadaten "${key}": "${oldStr}" → "${newStr}"`);
+  }
+
+  for (const [key, change] of Object.entries(diff.structuredFieldChanges)) {
+    if (key === "_editorContent") {
+      parts.push("- Seiteninhalt (Editor) wurde geändert");
+      continue;
+    }
+    const oldLen = change.old ? String(change.old).length : 0;
+    const newLen = change.new ? String(change.new).length : 0;
+    if (!change.old) {
+      parts.push(`- Strukturiertes Feld "${key}" wurde neu angelegt (${newLen} Zeichen)`);
+    } else if (!change.new) {
+      parts.push(`- Strukturiertes Feld "${key}" wurde entfernt`);
+    } else {
+      parts.push(`- Strukturiertes Feld "${key}" wurde geändert (${oldLen} → ${newLen} Zeichen)`);
+    }
+  }
+
+  if (diff.contentChanged) {
+    parts.push("- Block-Editor-Inhalt wurde geändert");
+  }
+
+  if (parts.length === 0) {
+    return "Keine Änderungen erkannt.";
+  }
+
+  const diffDescription = parts.join("\n");
+
+  const client = await getOpenAI();
+  const response = await client.responses.create({
+    model: settings.model,
+    instructions: `Du bist ein sachlicher Dokumentations-Assistent für FlowCore, die Wissensplattform des Bildungscampus Backnang.
+Fasse die folgenden Änderungen an einer Wiki-Seite in 2-3 kurzen, sachlichen Sätzen auf Deutsch zusammen.
+Beschreibe WAS geändert wurde, nicht WARUM. Verwende keine Aufzählungszeichen, sondern Fließtext.
+Antworte NUR mit der Zusammenfassung, ohne Einleitungssatz.`,
+    input: `Änderungen:\n${diffDescription}`,
+    max_output_tokens: 200,
+  });
+
+  const text = response.output_text?.trim() || "Änderungen an der Seite vorgenommen.";
+  return text;
+}
+
 export type PageAssistAction =
   | "reformulate"
   | "summarize"

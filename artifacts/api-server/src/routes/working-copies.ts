@@ -17,6 +17,7 @@ import {
   getWorkingCopyDiff,
   getWorkingCopyEvents,
 } from "../services/working-copy.service";
+import { generateChangeSummary } from "../services/ai.service";
 import { logger } from "../lib/logger";
 
 interface WorkingCopyRequest extends Request {
@@ -66,7 +67,7 @@ function requireWcOwnerOrPermission(permission: WikiPermission) {
 router.post(
   "/nodes/:nodeId/working-copies",
   requireAuth,
-  requirePermission("edit_content", (req) => req.params.nodeId),
+  requirePermission("create_working_copy", (req) => req.params.nodeId),
   async (req, res) => {
     try {
       const nodeId = req.params.nodeId as string;
@@ -118,10 +119,10 @@ router.patch(
     }
     const isReviewPhase = wc.status === "submitted" || wc.status === "in_review";
     if (isReviewPhase) {
-      const guard = requireWcPermission("approve_page");
+      const guard = requireWcPermission("amend_working_copy_in_review");
       await guard(req, res, next);
     } else {
-      const guard = requireWcOwnerOrPermission("edit_content");
+      const guard = requireWcOwnerOrPermission("edit_working_copy");
       await guard(req, res, next);
     }
   },
@@ -142,7 +143,7 @@ router.post(
   "/working-copies/:id/submit",
   requireAuth,
   loadWorkingCopy,
-  requireWcOwnerOrPermission("edit_content"),
+  requireWcOwnerOrPermission("submit_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -160,7 +161,7 @@ router.post(
   "/working-copies/:id/return-for-changes",
   requireAuth,
   loadWorkingCopy,
-  requireWcPermission("approve_page"),
+  requireWcPermission("review_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -182,7 +183,7 @@ router.post(
   "/working-copies/:id/approve",
   requireAuth,
   loadWorkingCopy,
-  requireWcPermission("approve_page"),
+  requireWcPermission("review_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -200,7 +201,7 @@ router.post(
   "/working-copies/:id/publish",
   requireAuth,
   loadWorkingCopy,
-  requireWcPermission("approve_page"),
+  requireWcPermission("publish_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -223,7 +224,7 @@ router.post(
   "/working-copies/:id/cancel",
   requireAuth,
   loadWorkingCopy,
-  requireWcOwnerOrPermission("edit_content"),
+  requireWcOwnerOrPermission("cancel_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -241,7 +242,7 @@ router.post(
   "/working-copies/:id/unlock",
   requireAuth,
   loadWorkingCopy,
-  requireWcPermission("manage_settings"),
+  requireWcPermission("force_unlock_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -251,6 +252,35 @@ router.post(
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       res.status(400).json({ error: message });
+    }
+  },
+);
+
+router.post(
+  "/working-copies/:id/generate-summary",
+  requireAuth,
+  loadWorkingCopy,
+  requireWcOwnerOrPermission("edit_working_copy"),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      const diff = await getWorkingCopyDiff(id);
+      const summary = await generateChangeSummary(diff);
+
+      const { db } = await import("@workspace/db");
+      const { contentWorkingCopiesTable } = await import("@workspace/db/schema");
+      const { eq } = await import("drizzle-orm");
+      await db
+        .update(contentWorkingCopiesTable)
+        .set({ lastAiSummary: summary, updatedAt: new Date() })
+        .where(eq(contentWorkingCopiesTable.id, id));
+
+      res.json({ summary });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      const isDisabled = message.includes("deaktiviert");
+      logger.warn({ err }, "Failed to generate AI summary");
+      res.status(isDisabled ? 400 : 500).json({ error: message, code: isDisabled ? "AI_DISABLED" : "AI_ERROR" });
     }
   },
 );

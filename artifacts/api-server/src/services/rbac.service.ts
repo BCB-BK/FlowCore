@@ -46,7 +46,15 @@ export type WikiPermission =
   | "view_backups"
   | "manage_backups"
   | "run_backup"
-  | "restore_backup";
+  | "restore_backup"
+  | "create_working_copy"
+  | "edit_working_copy"
+  | "submit_working_copy"
+  | "review_working_copy"
+  | "amend_working_copy_in_review"
+  | "publish_working_copy"
+  | "cancel_working_copy"
+  | "force_unlock_working_copy";
 
 const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
   system_admin: [
@@ -79,6 +87,14 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "manage_backups",
     "run_backup",
     "restore_backup",
+    "create_working_copy",
+    "edit_working_copy",
+    "submit_working_copy",
+    "review_working_copy",
+    "amend_working_copy_in_review",
+    "publish_working_copy",
+    "cancel_working_copy",
+    "force_unlock_working_copy",
   ],
   process_manager: [
     "read_page",
@@ -99,6 +115,12 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_dashboard",
     "view_tasks",
     "view_settings",
+    "create_working_copy",
+    "edit_working_copy",
+    "submit_working_copy",
+    "review_working_copy",
+    "amend_working_copy_in_review",
+    "cancel_working_copy",
   ],
   editor: [
     "read_page",
@@ -111,6 +133,10 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_glossary",
     "view_dashboard",
     "view_tasks",
+    "create_working_copy",
+    "edit_working_copy",
+    "submit_working_copy",
+    "cancel_working_copy",
   ],
   reviewer: [
     "read_page",
@@ -121,6 +147,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_glossary",
     "view_dashboard",
     "view_tasks",
+    "review_working_copy",
   ],
   approver: [
     "read_page",
@@ -132,6 +159,8 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_glossary",
     "view_dashboard",
     "view_tasks",
+    "review_working_copy",
+    "publish_working_copy",
   ],
   compliance_manager: [
     "read_page",

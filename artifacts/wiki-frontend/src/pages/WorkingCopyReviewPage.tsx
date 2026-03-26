@@ -29,8 +29,10 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { BlockEditor } from "@/components/editor";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
+import { WorkingCopyTimeline } from "@/components/versioning/WorkingCopyTimeline";
 import { useAuth } from "@/hooks/use-auth";
 import type { JSONContent } from "@tiptap/react";
+import { Sparkles } from "lucide-react";
 
 type ReviewMode = "changes" | "before_after" | "full";
 
@@ -323,6 +325,41 @@ export function WorkingCopyReviewPage() {
         />
       )}
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {(activeWC.changeSummary || activeWC.lastAiSummary) && (
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                {activeWC.lastAiSummary && <Sparkles className="h-4 w-4 text-amber-500" />}
+                Zusammenfassung
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {activeWC.changeSummary && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Manuelle Beschreibung</p>
+                  <p className="text-sm">{activeWC.changeSummary}</p>
+                </div>
+              )}
+              {activeWC.lastAiSummary && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> KI-Zusammenfassung
+                  </p>
+                  <p className="text-sm text-muted-foreground">{activeWC.lastAiSummary}</p>
+                </div>
+              )}
+              {activeWC.changeType && (
+                <Badge variant="outline" className="text-xs mt-1">{activeWC.changeType}</Badge>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        <div className={activeWC.changeSummary || activeWC.lastAiSummary ? "" : "lg:col-span-3"}>
+          <WorkingCopyTimeline workingCopyId={activeWC.id} />
+        </div>
+      </div>
+
       <Tabs
         value={reviewMode}
         onValueChange={(v) => setReviewMode(v as ReviewMode)}
@@ -464,23 +501,6 @@ export function WorkingCopyReviewPage() {
             </CardContent>
           </Card>
 
-          {activeWC.changeSummary && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">
-                  Zusammenfassung des Autors
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{activeWC.changeSummary}</p>
-                {activeWC.changeType && (
-                  <Badge variant="outline" className="mt-2 text-xs">
-                    {activeWC.changeType}
-                  </Badge>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
 
         <TabsContent value="before_after" className="mt-4 space-y-4">
