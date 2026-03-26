@@ -46,6 +46,26 @@ connectorsRouter.get(
 );
 
 connectorsRouter.get(
+  "/source-systems/active",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (_req, res) => {
+    const systems = await db
+      .select({
+        id: sourceSystemsTable.id,
+        name: sourceSystemsTable.name,
+        slug: sourceSystemsTable.slug,
+        systemType: sourceSystemsTable.systemType,
+        isActive: sourceSystemsTable.isActive,
+      })
+      .from(sourceSystemsTable)
+      .where(eq(sourceSystemsTable.isActive, true))
+      .orderBy(sourceSystemsTable.name);
+    res.json(systems);
+  },
+);
+
+connectorsRouter.get(
   "/source-systems/:id",
   requireAuth,
   requirePermission("manage_settings"),
@@ -351,26 +371,6 @@ connectorsRouter.patch(
     }
 
     res.json(provider);
-  },
-);
-
-connectorsRouter.get(
-  "/source-systems/active",
-  requireAuth,
-  requirePermission("edit_content"),
-  async (_req, res) => {
-    const systems = await db
-      .select({
-        id: sourceSystemsTable.id,
-        name: sourceSystemsTable.name,
-        slug: sourceSystemsTable.slug,
-        systemType: sourceSystemsTable.systemType,
-        isActive: sourceSystemsTable.isActive,
-      })
-      .from(sourceSystemsTable)
-      .where(eq(sourceSystemsTable.isActive, true))
-      .orderBy(sourceSystemsTable.name);
-    res.json(systems);
   },
 );
 

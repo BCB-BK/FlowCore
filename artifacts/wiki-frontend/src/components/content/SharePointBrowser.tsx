@@ -91,19 +91,39 @@ export function SharePointBrowser({
     (s) => s.systemType === "sharepoint" && s.isActive,
   );
 
-  const { data: sites, isLoading: sitesLoading } = useListSharePointSites(
+  const sitesQuery = useListSharePointSites(
     { q: searchQuery || undefined },
-    { query: { enabled: step === "site" } as never },
+    {
+      query: {
+        enabled: step === "site",
+        queryKey: ["sharepoint", "sites", searchQuery],
+      },
+    },
   );
-  const { data: drives, isLoading: drivesLoading } = useListSharePointDrives(
-    selectedSiteId || "placeholder",
-    { query: { enabled: !!selectedSiteId && step === "drive" } as never },
-  );
-  const { data: items, isLoading: itemsLoading } = useListSharePointDriveItems(
-    selectedDriveId || "placeholder",
+  const sites = sitesQuery.data;
+  const sitesLoading = sitesQuery.isLoading;
+
+  const drivesQuery = useListSharePointDrives(selectedSiteId || "_", {
+    query: {
+      enabled: !!selectedSiteId && step === "drive",
+      queryKey: ["sharepoint", "drives", selectedSiteId],
+    },
+  });
+  const drives = drivesQuery.data;
+  const drivesLoading = drivesQuery.isLoading;
+
+  const itemsQuery = useListSharePointDriveItems(
+    selectedDriveId || "_",
     { folderId: currentFolderId },
-    { query: { enabled: !!selectedDriveId && step === "items" } as never },
+    {
+      query: {
+        enabled: !!selectedDriveId && step === "items",
+        queryKey: ["sharepoint", "items", selectedDriveId, currentFolderId],
+      },
+    },
   );
+  const items = itemsQuery.data;
+  const itemsLoading = itemsQuery.isLoading;
 
   const createRef = useCreateSourceReference();
 

@@ -117,14 +117,32 @@ export class LocalStorageProvider implements IStorageProvider {
   }
 }
 
-let defaultProvider: IStorageProvider | null = null;
+let localProvider: IStorageProvider | null = null;
 const providerCache = new Map<string, IStorageProvider>();
 
 export function getStorageProvider(): IStorageProvider {
-  if (!defaultProvider) {
-    defaultProvider = new LocalStorageProvider();
+  if (!localProvider) {
+    localProvider = new LocalStorageProvider();
   }
-  return defaultProvider;
+  return localProvider;
+}
+
+export async function getDefaultStorageProvider(): Promise<IStorageProvider> {
+  const [defaultRow] = await db
+    .select()
+    .from(storageProvidersTable)
+    .where(
+      and(
+        eq(storageProvidersTable.isDefault, true),
+        eq(storageProvidersTable.isActive, true),
+      ),
+    );
+
+  if (!defaultRow) {
+    return getStorageProvider();
+  }
+
+  return getStorageProviderById(defaultRow.id);
 }
 
 export async function getStorageProviderById(
