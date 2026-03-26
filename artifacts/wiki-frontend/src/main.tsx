@@ -1,3 +1,4 @@
+import "./polyfills";
 import { createRoot } from "react-dom/client";
 import { setDefaultHeaders } from "@workspace/api-client-react";
 import App from "./App";
