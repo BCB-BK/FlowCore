@@ -518,6 +518,8 @@ export type AuthUserRolesItem = {
   scope?: string;
 };
 
+export type AuthUserSodRules = { [key: string]: boolean };
+
 export interface AuthUser {
   principalId: string;
   externalId?: string;
@@ -525,7 +527,7 @@ export interface AuthUser {
   email?: string;
   roles?: AuthUserRolesItem[];
   permissions?: string[];
-  sodRules?: Record<string, boolean>;
+  sodRules?: AuthUserSodRules;
 }
 
 export type PrincipalPrincipalType =
@@ -1599,6 +1601,8 @@ export interface BackupConfig {
   retainMonthly?: number;
   includeTemplates?: boolean;
   includeConnectors?: boolean;
+  includeMediaIndex?: boolean;
+  includeAuditMeta?: boolean;
   encryptionEnabled?: boolean;
   lastRunAt?: string | null;
   nextRunAt?: string | null;
@@ -1621,6 +1625,8 @@ export interface BackupConfigUpdate {
   retainMonthly?: number;
   includeTemplates?: boolean;
   includeConnectors?: boolean;
+  includeMediaIndex?: boolean;
+  includeAuditMeta?: boolean;
 }
 
 export type BackupRunManifest = { [key: string]: unknown } | null;
@@ -2176,6 +2182,14 @@ export type ListBackupRunsParams = {
 
 export type RestoreBackup200 = {
   status: string;
+};
+
+export type DryRunRestore200Details = { [key: string]: unknown };
+
+export type DryRunRestore200 = {
+  feasible: boolean;
+  details: DryRunRestore200Details;
+  warnings: string[];
 };
 
 export type ValidateBackupTargetBody = {

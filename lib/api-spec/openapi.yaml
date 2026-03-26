@@ -2780,6 +2780,40 @@ paths:
         "400":
           description: Restore failed
 
+  /admin/backups/runs/{id}/dry-run:
+    post:
+      operationId: dryRunRestore
+      tags: [backups]
+      summary: Dry-run a restore to check feasibility
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dry-run result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feasible:
+                    type: boolean
+                  details:
+                    type: object
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - feasible
+                  - details
+                  - warnings
+        "500":
+          description: Dry-run check failed
+
   /admin/backups/validate-target:
     post:
       operationId: validateBackupTarget
@@ -3786,6 +3820,10 @@ components:
           type: array
           items:
             type: string
+        sodRules:
+          type: object
+          additionalProperties:
+            type: boolean
       required:
         - principalId
         - displayName
@@ -5581,6 +5619,10 @@ components:
           type: boolean
         includeConnectors:
           type: boolean
+        includeMediaIndex:
+          type: boolean
+        includeAuditMeta:
+          type: boolean
         encryptionEnabled:
           type: boolean
         lastRunAt:
@@ -5633,6 +5675,10 @@ components:
         includeTemplates:
           type: boolean
         includeConnectors:
+          type: boolean
+        includeMediaIndex:
+          type: boolean
+        includeAuditMeta:
           type: boolean
 
     BackupRun:
@@ -5755,6 +5801,9 @@ components:
           nullable: true
         diffCache:
           type: object
+          nullable: true
+        submittedBy:
+          type: string
           nullable: true
         submittedAt:
           type: string

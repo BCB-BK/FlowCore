@@ -44,6 +44,8 @@ export const backupConfigsTable = pgTable("backup_configs", {
   retainMonthly: integer("retain_monthly").notNull().default(12),
   includeTemplates: boolean("include_templates").notNull().default(true),
   includeConnectors: boolean("include_connectors").notNull().default(true),
+  includeMediaIndex: boolean("include_media_index").notNull().default(true),
+  includeAuditMeta: boolean("include_audit_meta").notNull().default(true),
   encryptionEnabled: boolean("encryption_enabled").notNull().default(false),
   lastRunAt: timestamp("last_run_at", { withTimezone: true }),
   nextRunAt: timestamp("next_run_at", { withTimezone: true }),

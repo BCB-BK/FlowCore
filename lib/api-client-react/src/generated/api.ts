@@ -54,6 +54,7 @@ import type {
   CreateSourceSystemInput,
   CreateStorageProviderInput,
   CreateTag,
+  DryRunRestore200,
   DuplicateGroup,
   EffectivePermissions,
   ErrorResponse,
@@ -11693,6 +11694,90 @@ export const useRestoreBackup = <
   TContext
 > => {
   return useMutation(getRestoreBackupMutationOptions(options));
+};
+
+/**
+ * @summary Dry-run a restore to check feasibility
+ */
+export const getDryRunRestoreUrl = (id: string) => {
+  return `/api/admin/backups/runs/${id}/dry-run`;
+};
+
+export const dryRunRestore = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DryRunRestore200> => {
+  return customFetch<DryRunRestore200>(getDryRunRestoreUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getDryRunRestoreMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof dryRunRestore>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof dryRunRestore>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["dryRunRestore"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof dryRunRestore>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return dryRunRestore(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DryRunRestoreMutationResult = NonNullable<
+  Awaited<ReturnType<typeof dryRunRestore>>
+>;
+
+export type DryRunRestoreMutationError = ErrorType<void>;
+
+/**
+ * @summary Dry-run a restore to check feasibility
+ */
+export const useDryRunRestore = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof dryRunRestore>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof dryRunRestore>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDryRunRestoreMutationOptions(options));
 };
 
 /**

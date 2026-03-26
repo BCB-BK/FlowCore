@@ -29,6 +29,13 @@
       "when": 1774825860000,
       "tag": "0004_add_sod_and_delegations",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1774912260000,
+      "tag": "0005_add_backup_media_audit_columns",
+      "breakpoints": true
     }
   ]
 }

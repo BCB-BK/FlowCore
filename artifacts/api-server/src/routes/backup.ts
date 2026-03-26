@@ -7,6 +7,7 @@ import {
   getBackupRun,
   runBackup,
   restoreBackup,
+  dryRunRestore,
   validateBackupTarget,
   validateBackupConfigInput,
   getBackupConfig,
@@ -122,6 +123,20 @@ backupRouter.post(
       }
     } catch (err) {
       res.status(500).json({ error: "Wiederherstellung fehlgeschlagen" });
+    }
+  },
+);
+
+backupRouter.post(
+  "/runs/:id/dry-run",
+  requireAuth,
+  requirePermission("restore_backup"),
+  async (req, res) => {
+    try {
+      const result = await dryRunRestore(req.params.id as string);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: "Dry-Run-Prüfung fehlgeschlagen" });
     }
   },
 );

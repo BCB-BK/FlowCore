@@ -53,6 +53,7 @@ export const AuthMeResponse = zod.object({
     )
     .optional(),
   permissions: zod.array(zod.string()).optional(),
+  sodRules: zod.record(zod.string(), zod.boolean()).optional(),
 });
 
 /**
@@ -1227,6 +1228,7 @@ export const CreateWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1271,6 +1273,7 @@ export const GetActiveWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1315,6 +1318,7 @@ export const GetWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1370,6 +1374,7 @@ export const UpdateWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1422,6 +1427,7 @@ export const SubmitWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1470,6 +1476,7 @@ export const ReturnWorkingCopyForChangesResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1518,6 +1525,7 @@ export const ApproveWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1567,6 +1575,7 @@ export const PublishWorkingCopyResponse = zod.object({
     reviewerId: zod.string().nullish(),
     approverId: zod.string().nullish(),
     diffCache: zod.object({}).passthrough().nullish(),
+    submittedBy: zod.string().nullish(),
     submittedAt: zod.string().nullish(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -1621,6 +1630,7 @@ export const CancelWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1665,6 +1675,7 @@ export const UnlockWorkingCopyResponse = zod.object({
   reviewerId: zod.string().nullish(),
   approverId: zod.string().nullish(),
   diffCache: zod.object({}).passthrough().nullish(),
+  submittedBy: zod.string().nullish(),
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -3291,6 +3302,8 @@ export const GetBackupConfigResponse = zod.object({
   retainMonthly: zod.number().optional(),
   includeTemplates: zod.boolean().optional(),
   includeConnectors: zod.boolean().optional(),
+  includeMediaIndex: zod.boolean().optional(),
+  includeAuditMeta: zod.boolean().optional(),
   encryptionEnabled: zod.boolean().optional(),
   lastRunAt: zod.string().nullish(),
   nextRunAt: zod.string().nullish(),
@@ -3316,6 +3329,8 @@ export const UpdateBackupConfigBody = zod.object({
   retainMonthly: zod.number().optional(),
   includeTemplates: zod.boolean().optional(),
   includeConnectors: zod.boolean().optional(),
+  includeMediaIndex: zod.boolean().optional(),
+  includeAuditMeta: zod.boolean().optional(),
 });
 
 export const UpdateBackupConfigResponse = zod.object({
@@ -3334,6 +3349,8 @@ export const UpdateBackupConfigResponse = zod.object({
   retainMonthly: zod.number().optional(),
   includeTemplates: zod.boolean().optional(),
   includeConnectors: zod.boolean().optional(),
+  includeMediaIndex: zod.boolean().optional(),
+  includeAuditMeta: zod.boolean().optional(),
   encryptionEnabled: zod.boolean().optional(),
   lastRunAt: zod.string().nullish(),
   nextRunAt: zod.string().nullish(),
@@ -3413,6 +3430,19 @@ export const RestoreBackupParams = zod.object({
 
 export const RestoreBackupResponse = zod.object({
   status: zod.string(),
+});
+
+/**
+ * @summary Dry-run a restore to check feasibility
+ */
+export const DryRunRestoreParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DryRunRestoreResponse = zod.object({
+  feasible: zod.boolean(),
+  details: zod.object({}).passthrough(),
+  warnings: zod.array(zod.string()),
 });
 
 /**

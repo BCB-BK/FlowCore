@@ -6,6 +6,8 @@ import {
   sourceSystemsTable,
   storageProvidersTable,
   contentTemplatesTable,
+  mediaAssetsTable,
+  auditEventsTable,
 } from "@workspace/db/schema";
 import { eq, desc, and, lt, asc, sql } from "drizzle-orm";
 import { execFile } from "child_process";
@@ -70,6 +72,12 @@ export async function validateBackupConfigInput(
     }
   }
 
+  for (const boolField of ["includeMediaIndex", "includeAuditMeta"] as const) {
+    if (data[boolField] !== undefined && typeof data[boolField] !== "boolean") {
+      errors.push(`${boolField} muss ein Boolean sein`);
+    }
+  }
+
   for (const field of ["retainDaily", "retainWeekly", "retainMonthly"] as const) {
     if (data[field] !== undefined) {
       const val = Number(data[field]);
@@ -130,6 +138,8 @@ export async function upsertBackupConfig(data: Record<string, unknown>) {
     retainMonthly: data.retainMonthly as number | undefined,
     includeTemplates: data.includeTemplates as boolean | undefined,
     includeConnectors: data.includeConnectors as boolean | undefined,
+    includeMediaIndex: data.includeMediaIndex as boolean | undefined,
+    includeAuditMeta: data.includeAuditMeta as boolean | undefined,
   };
 
   if (existing) {
@@ -369,6 +379,69 @@ async function executeBackup(
       addLog(`${systems.length} Quellsysteme und ${providers.length} Speicheranbieter exportiert (ohne Secrets)`);
     }
 
+    if (config?.includeMediaIndex) {
+      const assets = await db
+        .select({
+          id: mediaAssetsTable.id,
+          nodeId: mediaAssetsTable.nodeId,
+          filename: mediaAssetsTable.filename,
+          originalFilename: mediaAssetsTable.originalFilename,
+          mimeType: mediaAssetsTable.mimeType,
+          sizeBytes: mediaAssetsTable.sizeBytes,
+          storageKey: mediaAssetsTable.storageKey,
+          altText: mediaAssetsTable.altText,
+          classification: mediaAssetsTable.classification,
+          originType: mediaAssetsTable.originType,
+          sourceUrl: mediaAssetsTable.sourceUrl,
+          isDeleted: mediaAssetsTable.isDeleted,
+          createdAt: mediaAssetsTable.createdAt,
+        })
+        .from(mediaAssetsTable);
+      const mediaFile = path.join(tmpDir, "media-index.json");
+      await fs.promises.writeFile(
+        mediaFile,
+        JSON.stringify(assets, null, 2),
+        "utf-8",
+      );
+      manifest.mediaIndex = { count: assets.length };
+      manifest.components = [
+        ...(manifest.components as string[]),
+        "media-index",
+      ];
+      addLog(`${assets.length} Medien-Assets im Index exportiert`);
+    }
+
+    if (config?.includeAuditMeta) {
+      const totalCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(auditEventsTable);
+      const recentAudit = await db
+        .select()
+        .from(auditEventsTable)
+        .orderBy(desc(auditEventsTable.createdAt))
+        .limit(1000);
+      const auditFile = path.join(tmpDir, "audit-metadata.json");
+      const auditData = {
+        exportedAt: new Date().toISOString(),
+        totalEventCount: Number(totalCount[0]?.count ?? 0),
+        recentEvents: recentAudit,
+      };
+      await fs.promises.writeFile(
+        auditFile,
+        JSON.stringify(auditData, null, 2),
+        "utf-8",
+      );
+      manifest.auditMeta = {
+        totalEventCount: Number(totalCount[0]?.count ?? 0),
+        exportedCount: recentAudit.length,
+      };
+      manifest.components = [
+        ...(manifest.components as string[]),
+        "audit-metadata",
+      ];
+      addLog(`${recentAudit.length} Audit-Einträge exportiert (von ${totalCount[0]?.count ?? 0} gesamt)`);
+    }
+
     const backupConfig = await getBackupConfig();
     const systemConfigData: Record<string, unknown> = {
       exportedAt: new Date().toISOString(),
@@ -380,6 +453,8 @@ async function executeBackup(
         retainMonthly: backupConfig.retainMonthly,
         includeTemplates: backupConfig.includeTemplates,
         includeConnectors: backupConfig.includeConnectors,
+        includeMediaIndex: backupConfig.includeMediaIndex,
+        includeAuditMeta: backupConfig.includeAuditMeta,
       } : null,
     };
     const sysConfigFile = path.join(tmpDir, "system-config.json");
@@ -451,6 +526,8 @@ async function executeBackup(
       const sidecarFiles = [
         { local: path.join(tmpDir, "templates.json"), remote: `templates-${timestamp}.json`, label: "Template-Export" },
         { local: path.join(tmpDir, "connectors.json"), remote: `connectors-${timestamp}.json`, label: "Konnektoren-Export" },
+        { local: path.join(tmpDir, "media-index.json"), remote: `media-index-${timestamp}.json`, label: "Medien-Index" },
+        { local: path.join(tmpDir, "audit-metadata.json"), remote: `audit-metadata-${timestamp}.json`, label: "Audit-Metadaten" },
         { local: path.join(tmpDir, "system-config.json"), remote: `system-config-${timestamp}.json`, label: "System-Konfiguration" },
       ];
       for (const sf of sidecarFiles) {
@@ -706,6 +783,77 @@ export async function restoreBackup(
     });
     return { success: false, error: msg };
   }
+}
+
+export async function dryRunRestore(
+  runId: string,
+): Promise<{ feasible: boolean; details: Record<string, unknown>; warnings: string[] }> {
+  const run = await getBackupRun(runId);
+  if (!run) {
+    return { feasible: false, details: {}, warnings: ["Backup-Run nicht gefunden"] };
+  }
+
+  const warnings: string[] = [];
+  const details: Record<string, unknown> = {
+    runId: run.id,
+    backupType: run.backupType,
+    status: run.status,
+    createdAt: run.createdAt,
+    fileName: run.fileName,
+    sizeBytes: run.sizeBytes,
+    durationMs: run.durationMs,
+  };
+
+  if (run.status !== "completed") {
+    return {
+      feasible: false,
+      details,
+      warnings: ["Nur abgeschlossene Backups können wiederhergestellt werden"],
+    };
+  }
+
+  const manifest = run.manifest as Record<string, unknown> | null;
+  details.manifest = manifest;
+  details.components = manifest?.components ?? [];
+
+  const dbFormat = (manifest?.database as Record<string, string>)?.format;
+  if (dbFormat === "json_export") {
+    warnings.push("Backup im JSON-Fallback-Format – automatische Wiederherstellung nicht möglich");
+    return { feasible: false, details, warnings };
+  }
+
+  if (!run.driveItemId || !run.driveId) {
+    warnings.push("Keine SharePoint-Datei für diesen Backup-Run vorhanden");
+    return { feasible: false, details, warnings };
+  }
+
+  try {
+    const connConfig = await getConnectorConfig();
+    const token = await acquireSystemToken(connConfig);
+    if (!token) {
+      warnings.push("SharePoint-Token nicht verfügbar – Restore-Datei nicht erreichbar");
+      return { feasible: false, details, warnings };
+    }
+
+    const client = getGraphClient(token);
+    const meta = await client
+      .api(`/drives/${run.driveId}/items/${run.driveItemId}`)
+      .select("id,name,size")
+      .get();
+    details.sharePointFile = { id: meta.id, name: meta.name, size: meta.size };
+  } catch {
+    warnings.push("SharePoint-Backup-Datei konnte nicht verifiziert werden – möglicherweise gelöscht");
+    return { feasible: false, details, warnings };
+  }
+
+  try {
+    await execFileAsync("pg_restore", ["--version"]);
+  } catch {
+    warnings.push("pg_restore ist auf dem Server nicht verfügbar");
+    return { feasible: false, details, warnings };
+  }
+
+  return { feasible: true, details, warnings };
 }
 
 let schedulerInterval: NodeJS.Timeout | null = null;

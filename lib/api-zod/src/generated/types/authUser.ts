@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AuthUserRolesItem } from "./authUserRolesItem";
+import type { AuthUserSodRules } from "./authUserSodRules";
 
 export interface AuthUser {
   principalId: string;
@@ -14,5 +15,5 @@ export interface AuthUser {
   email?: string;
   roles?: AuthUserRolesItem[];
   permissions?: string[];
-  sodRules?: Record<string, boolean>;
+  sodRules?: AuthUserSodRules;
 }

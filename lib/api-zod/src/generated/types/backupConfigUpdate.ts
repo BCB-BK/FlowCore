@@ -21,4 +21,6 @@ export interface BackupConfigUpdate {
   retainMonthly?: number;
   includeTemplates?: boolean;
   includeConnectors?: boolean;
+  includeMediaIndex?: boolean;
+  includeAuditMeta?: boolean;
 }

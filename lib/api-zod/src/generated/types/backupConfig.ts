@@ -22,6 +22,8 @@ export interface BackupConfig {
   retainMonthly?: number;
   includeTemplates?: boolean;
   includeConnectors?: boolean;
+  includeMediaIndex?: boolean;
+  includeAuditMeta?: boolean;
   encryptionEnabled?: boolean;
   lastRunAt?: string | null;
   nextRunAt?: string | null;

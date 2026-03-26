@@ -53,6 +53,7 @@ import {
   useListBackupRuns,
   useRestoreBackup,
   useValidateBackupTarget,
+  useDryRunRestore,
   getGetBackupConfigQueryKey,
   getListBackupRunsQueryKey,
 } from "@workspace/api-client-react";
@@ -190,6 +191,8 @@ function BackupConfigSection() {
   const [retainMonthly, setRetainMonthly] = useState("12");
   const [includeTemplates, setIncludeTemplates] = useState(true);
   const [includeConnectors, setIncludeConnectors] = useState(true);
+  const [includeMediaIndex, setIncludeMediaIndex] = useState(true);
+  const [includeAuditMeta, setIncludeAuditMeta] = useState(true);
   const [spSelection, setSpSelection] = useState<SharePointSelection | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -205,6 +208,8 @@ function BackupConfigSection() {
       setRetainMonthly(String(config.retainMonthly ?? 12));
       setIncludeTemplates(config.includeTemplates !== false);
       setIncludeConnectors(config.includeConnectors !== false);
+      setIncludeMediaIndex(config.includeMediaIndex !== false);
+      setIncludeAuditMeta(config.includeAuditMeta !== false);
       if (config.targetSiteId && config.targetDriveId) {
         setSpSelection({
           siteId: config.targetSiteId,
@@ -257,6 +262,8 @@ function BackupConfigSection() {
           retainMonthly: parseInt(retainMonthly, 10),
           includeTemplates,
           includeConnectors,
+          includeMediaIndex,
+          includeAuditMeta,
           targetSiteId: spSelection?.siteId || null,
           targetSiteName: spSelection?.siteName || null,
           targetDriveId: spSelection?.driveId || null,
@@ -399,6 +406,10 @@ function BackupConfigSection() {
 
           <div className="space-y-3">
             <Label className="text-sm font-medium">Backup-Inhalte</Label>
+            <p className="text-xs text-muted-foreground">
+              Der Datenbank-Dump und die System-Konfiguration werden immer eingeschlossen.
+              Zusätzliche Komponenten können aktiviert werden:
+            </p>
             <div className="flex items-center gap-3">
               <Switch checked={includeTemplates} onCheckedChange={setIncludeTemplates} />
               <Label className="text-sm">Template-Definitionen einschließen</Label>
@@ -407,6 +418,29 @@ function BackupConfigSection() {
               <Switch checked={includeConnectors} onCheckedChange={setIncludeConnectors} />
               <Label className="text-sm">Konnektoren-Konfiguration einschließen (ohne Secrets)</Label>
             </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={includeMediaIndex} onCheckedChange={setIncludeMediaIndex} />
+              <Label className="text-sm">Medien-Index einschließen (Asset-Metadaten)</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={includeAuditMeta} onCheckedChange={setIncludeAuditMeta} />
+              <Label className="text-sm">Audit-Metadaten einschließen (letzte 1.000 Einträge)</Label>
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Backup-Umfang
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
+              <li><span className="font-medium text-foreground">DB-Dump</span> – Vollständiger PostgreSQL-Datenbankexport (pg_dump oder JSON-Fallback)</li>
+              <li><span className="font-medium text-foreground">System-Konfiguration</span> – Backup- und Systemeinstellungen</li>
+              {includeTemplates && <li><span className="font-medium text-foreground">Template-Definitionen</span> – Alle Inhalts-Templates</li>}
+              {includeConnectors && <li><span className="font-medium text-foreground">Konnektoren</span> – Quellsysteme und Speicheranbieter (ohne Secrets)</li>}
+              {includeMediaIndex && <li><span className="font-medium text-foreground">Medien-Index</span> – Metadaten aller Medien-Assets (Dateinamen, Typen, Verknüpfungen)</li>}
+              {includeAuditMeta && <li><span className="font-medium text-foreground">Audit-Metadaten</span> – Letzte 1.000 Audit-Einträge für Nachvollziehbarkeit</li>}
+            </ul>
           </div>
 
           <div className="flex justify-end pt-2">
@@ -603,6 +637,7 @@ function BackupLogDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          <ManifestPreview manifest={run.manifest} />
           {errorMsg && (
             <div className="p-3 bg-destructive/10 rounded-lg flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
@@ -626,6 +661,49 @@ function BackupLogDialog({
   );
 }
 
+const COMPONENT_LABELS: Record<string, string> = {
+  database: "Datenbank (DB-Dump)",
+  templates: "Template-Definitionen",
+  connectors: "Konnektoren-Konfiguration",
+  "media-index": "Medien-Index",
+  "audit-metadata": "Audit-Metadaten",
+  "system-config": "System-Konfiguration",
+};
+
+function ManifestPreview({ manifest }: { manifest: Record<string, unknown> | null | undefined }) {
+  if (!manifest) return null;
+  const components = (manifest.components as string[]) ?? [];
+  const db = manifest.database as Record<string, string> | undefined;
+  const templates = manifest.templates as Record<string, number> | undefined;
+  const connectors = manifest.connectors as Record<string, number> | undefined;
+  const mediaIndex = manifest.mediaIndex as Record<string, number> | undefined;
+  const auditMeta = manifest.auditMeta as Record<string, number> | undefined;
+
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+      <p className="text-xs font-medium">Enthaltene Komponenten:</p>
+      <ul className="text-xs text-muted-foreground space-y-0.5 ml-4 list-disc">
+        {components.map((c) => (
+          <li key={c}>
+            {COMPONENT_LABELS[c] || c}
+            {c === "database" && db?.format && <span className="ml-1">({db.format})</span>}
+            {c === "templates" && templates?.count != null && <span className="ml-1">({templates.count} Stück)</span>}
+            {c === "connectors" && connectors && (
+              <span className="ml-1">
+                ({connectors.sourceSystemCount} Quellsysteme, {connectors.storageProviderCount} Speicheranbieter)
+              </span>
+            )}
+            {c === "media-index" && mediaIndex?.count != null && <span className="ml-1">({mediaIndex.count} Assets)</span>}
+            {c === "audit-metadata" && auditMeta && (
+              <span className="ml-1">({auditMeta.exportedCount} von {auditMeta.totalEventCount} Einträgen)</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function RestoreDialog({
   run,
   onClose,
@@ -638,6 +716,31 @@ function RestoreDialog({
   const restore = useRestoreBackup();
   const [confirmed, setConfirmed] = useState(false);
   const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [dryRunResult, setDryRunResult] = useState<{
+    feasible: boolean;
+    details: Record<string, unknown>;
+    warnings: string[];
+  } | null>(null);
+  const [dryRunLoading, setDryRunLoading] = useState(false);
+  const dryRun = useDryRunRestore();
+
+  const handleDryRun = async () => {
+    setDryRunLoading(true);
+    setRestoreError(null);
+    try {
+      const data = await dryRun.mutateAsync({ id: run.id });
+      const result = data as { feasible?: boolean; details?: Record<string, unknown>; warnings?: string[] };
+      setDryRunResult({
+        feasible: result.feasible ?? false,
+        details: result.details ?? {},
+        warnings: result.warnings ?? [],
+      });
+    } catch {
+      setRestoreError("Dry-Run-Prüfung konnte nicht durchgeführt werden");
+    } finally {
+      setDryRunLoading(false);
+    }
+  };
 
   const handleRestore = async () => {
     setRestoreError(null);
@@ -653,7 +756,7 @@ function RestoreDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <Shield className="w-5 h-5" />
@@ -683,7 +786,47 @@ function RestoreDialog({
           <div className="text-sm space-y-1">
             <p><span className="font-medium">Datei:</span> {run.fileName || "–"}</p>
             <p><span className="font-medium">Erstellt:</span> {formatDate(run.createdAt)}</p>
+            <p><span className="font-medium">Typ:</span> {TYPE_LABELS[run.backupType] || run.backupType}</p>
             <p><span className="font-medium">Größe:</span> {formatBytes(run.sizeBytes)}</p>
+            <p><span className="font-medium">Dauer:</span> {formatDuration(run.durationMs)}</p>
+            {run.triggeredBy && (
+              <p><span className="font-medium">Ausgelöst von:</span> {run.triggeredBy}</p>
+            )}
+          </div>
+
+          <ManifestPreview manifest={run.manifest} />
+
+          <div className="rounded-lg border p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium">Vorab-Prüfung (Dry Run)</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDryRun}
+                disabled={dryRunLoading}
+              >
+                {dryRunLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                ) : (
+                  <Shield className="w-3.5 h-3.5 mr-1" />
+                )}
+                Prüfen
+              </Button>
+            </div>
+            {dryRunResult && (
+              <div className="space-y-1">
+                <Badge variant={dryRunResult.feasible ? "default" : "destructive"}>
+                  {dryRunResult.feasible ? "Wiederherstellung möglich" : "Wiederherstellung nicht möglich"}
+                </Badge>
+                {dryRunResult.warnings.length > 0 && (
+                  <ul className="text-xs text-amber-700 space-y-0.5 ml-4 list-disc">
+                    {dryRunResult.warnings.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
 
           {restoreError && (
@@ -704,7 +847,7 @@ function RestoreDialog({
           <Button
             variant="destructive"
             onClick={handleRestore}
-            disabled={!confirmed || restore.isPending}
+            disabled={!confirmed || restore.isPending || (dryRunResult !== null && !dryRunResult.feasible)}
           >
             {restore.isPending ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
