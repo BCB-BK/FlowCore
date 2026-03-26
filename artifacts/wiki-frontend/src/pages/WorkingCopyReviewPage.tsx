@@ -319,6 +319,7 @@ export function WorkingCopyReviewPage() {
           workingCopy={activeWC}
           nodeId={nodeId!}
           currentUserId={currentUser?.principalId}
+          userPermissions={currentUser?.permissions}
         />
       )}
 

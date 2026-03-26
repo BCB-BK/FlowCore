@@ -32,9 +32,10 @@ interface WorkingCopyActionsProps {
   workingCopy: WorkingCopy;
   nodeId: string;
   currentUserId?: string;
+  userPermissions?: string[];
 }
 
-export function WorkingCopyActions({ workingCopy, nodeId, currentUserId }: WorkingCopyActionsProps) {
+export function WorkingCopyActions({ workingCopy, nodeId, currentUserId, userPermissions }: WorkingCopyActionsProps) {
   const [approveOpen, setApproveOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -134,16 +135,17 @@ export function WorkingCopyActions({ workingCopy, nodeId, currentUserId }: Worki
   };
 
   const isOwner = !currentUserId || workingCopy.authorId === currentUserId;
+  const hasApprovePermission = !userPermissions || userPermissions.includes("approve_page");
   const isReviewerOrApprover =
     workingCopy.reviewerId === currentUserId ||
     workingCopy.approverId === currentUserId;
 
   const showApproveReturn =
     (workingCopy.status === "submitted" || workingCopy.status === "in_review") &&
-    (isReviewerOrApprover || !currentUserId);
+    (hasApprovePermission || isReviewerOrApprover);
   const showPublish =
     workingCopy.status === "approved_for_publish" &&
-    (isReviewerOrApprover || isOwner || !currentUserId);
+    (hasApprovePermission || isReviewerOrApprover || isOwner);
   const showCancel =
     isOwner &&
     (workingCopy.status === "draft" ||

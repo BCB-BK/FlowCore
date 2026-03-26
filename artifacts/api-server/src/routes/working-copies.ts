@@ -84,7 +84,7 @@ router.post(
 router.get(
   "/nodes/:nodeId/working-copy",
   requireAuth,
-  requirePermission("edit_content", (req) => req.params.nodeId),
+  requirePermission("read_page", (req) => req.params.nodeId),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const wc = await getActiveWorkingCopyForNode(nodeId);
@@ -110,7 +110,17 @@ router.patch(
   "/working-copies/:id",
   requireAuth,
   loadWorkingCopy,
-  requireWcOwnerOrPermission("edit_content"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    const wc = (req as WorkingCopyRequest).workingCopy;
+    if (!wc) {
+      res.status(404).json({ error: "Working copy not found" });
+      return;
+    }
+    const isReviewPhase = wc.status === "submitted" || wc.status === "in_review";
+    const permission = isReviewPhase ? "approve_page" : "edit_content";
+    const guard = requireWcOwnerOrPermission(permission);
+    await guard(req, res, next);
+  },
   async (req, res) => {
     try {
       const id = req.params.id as string;
