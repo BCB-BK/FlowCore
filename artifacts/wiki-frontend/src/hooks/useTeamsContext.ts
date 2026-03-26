@@ -3,6 +3,7 @@ import type { TeamsContext } from "@/lib/teams";
 
 const defaultContext: TeamsContext = {
   inTeams: false,
+  initialized: false,
   theme: "default",
   locale: "de-DE",
 };

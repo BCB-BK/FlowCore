@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { configureTab, isInTeamsRuntime } from "@/lib/teams";
 
 type TabType = "wiki-home" | "wiki-search" | "wiki-dashboard" | "wiki-page";
 
@@ -25,7 +25,6 @@ export function TeamsTabConfig() {
     nodeId: "",
     label: "BC Wiki",
   });
-  const [saved, setSaved] = useState(false);
 
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -52,41 +51,15 @@ export function TeamsTabConfig() {
   );
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const existingConfig = params.get("tabConfig");
-    if (existingConfig) {
-      try {
-        const parsed = JSON.parse(existingConfig) as TabConfig;
-        setConfig(parsed);
-      } catch {
-        // ignore
-      }
+    if (isInTeamsRuntime()) {
+      configureTab({
+        entityId: config.tabType,
+        contentUrl: getContentUrl(config),
+        suggestedDisplayName: config.label || "BC Wiki",
+        websiteUrl: `${window.location.origin}${basePath}`,
+      });
     }
-  }, []);
-
-  const handleSave = () => {
-    try {
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage(
-          {
-            type: "teams-tab-config-save",
-            config: {
-              entityId: config.tabType,
-              contentUrl: getContentUrl(config),
-              suggestedDisplayName: config.label || "BC Wiki",
-              websiteUrl: `${window.location.origin}${basePath}`,
-              tabConfig: JSON.stringify(config),
-            },
-          },
-          "*",
-        );
-      }
-    } catch {
-      // ignore
-    }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
+  }, [config, getContentUrl, basePath]);
 
   const tabTypeLabels: Record<TabType, string> = {
     "wiki-home": "Wiki-Startseite",
@@ -152,9 +125,11 @@ export function TeamsTabConfig() {
             />
           </div>
 
-          <Button onClick={handleSave} className="w-full">
-            {saved ? "Gespeichert!" : "Speichern"}
-          </Button>
+          <p className="text-sm text-muted-foreground text-center">
+            {isInTeamsRuntime()
+              ? 'Klicken Sie auf "Speichern" in der Teams-Kopfzeile, um den Tab zu erstellen.'
+              : "Diese Seite wird innerhalb von Microsoft Teams angezeigt."}
+          </p>
         </CardContent>
       </Card>
     </div>

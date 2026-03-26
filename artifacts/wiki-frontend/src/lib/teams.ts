@@ -1,5 +1,8 @@
+import * as microsoftTeams from "@microsoft/teams-js";
+
 export interface TeamsContext {
   inTeams: boolean;
+  initialized: boolean;
   theme: "default" | "dark" | "contrast";
   locale: string;
   entityId?: string;
@@ -12,71 +15,124 @@ export interface TeamsContext {
   tid?: string;
 }
 
-const TEAMS_QUERY_PARAM = "context";
-const TEAMS_THEME_PARAM = "theme";
+let _initialized = false;
+let _inTeams = false;
 
-export function detectTeamsContext(): TeamsContext {
-  const params = new URLSearchParams(window.location.search);
-  const isTeams =
-    params.get(TEAMS_QUERY_PARAM) === "teams" || isInTeamsIframe();
-
-  const themeRaw = params.get(TEAMS_THEME_PARAM) || "default";
-  const theme = (
-    ["default", "dark", "contrast"].includes(themeRaw) ? themeRaw : "default"
-  ) as TeamsContext["theme"];
-
-  return {
-    inTeams: isTeams,
-    theme,
-    locale: params.get("locale") || navigator.language || "de-DE",
-    entityId: params.get("entityId") || undefined,
-    subEntityId: params.get("subEntityId") || undefined,
-    channelId: params.get("channelId") || undefined,
-    teamId: params.get("teamId") || undefined,
-    chatId: params.get("chatId") || undefined,
-  };
-}
-
-function isInTeamsIframe(): boolean {
+export async function initializeTeamsSDK(): Promise<boolean> {
+  if (_initialized) return _inTeams;
   try {
-    if (window.self === window.top) return false;
-    const ancestorOrigins = window.location.ancestorOrigins;
-    if (ancestorOrigins && ancestorOrigins.length > 0) {
-      const origin = ancestorOrigins[0];
-      return (
-        origin.includes("teams.microsoft.com") ||
-        origin.includes("teams.live.com") ||
-        origin.includes("teams.cloud.microsoft") ||
-        origin.includes(".office.com")
-      );
-    }
-    return (
-      document.referrer.includes("teams.microsoft.com") ||
-      document.referrer.includes("teams.live.com") ||
-      document.referrer.includes("teams.cloud.microsoft")
-    );
-  } catch {
+    await microsoftTeams.app.initialize();
+    _initialized = true;
+    _inTeams = true;
+    await microsoftTeams.app.notifyAppLoaded();
+    await microsoftTeams.app.notifySuccess();
     return true;
+  } catch {
+    _initialized = true;
+    _inTeams = false;
+    return false;
   }
 }
 
-export function notifyTeamsAppLoaded(): void {
-  try {
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "teams-app-loaded" }, "*");
+export function isTeamsInitialized(): boolean {
+  return _initialized;
+}
+
+export function isInTeamsRuntime(): boolean {
+  return _inTeams;
+}
+
+export async function getTeamsContextFromSDK(): Promise<TeamsContext> {
+  const base: TeamsContext = {
+    inTeams: false,
+    initialized: false,
+    theme: "default",
+    locale: "de-DE",
+  };
+
+  if (!_inTeams) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("context") === "teams") {
+      base.inTeams = true;
+      const themeRaw = params.get("theme") || "default";
+      base.theme = (
+        ["default", "dark", "contrast"].includes(themeRaw)
+          ? themeRaw
+          : "default"
+      ) as TeamsContext["theme"];
     }
+    return base;
+  }
+
+  try {
+    const ctx = await microsoftTeams.app.getContext();
+    const page = ctx.page;
+    const user = ctx.user;
+    const team = ctx.team;
+    const chat = ctx.chat;
+
+    const themeRaw = ctx.app?.theme || "default";
+    const theme = (
+      ["default", "dark", "contrast"].includes(themeRaw) ? themeRaw : "default"
+    ) as TeamsContext["theme"];
+
+    return {
+      inTeams: true,
+      initialized: true,
+      theme,
+      locale: ctx.app?.locale || "de-DE",
+      entityId: page?.id || undefined,
+      subEntityId: page?.subPageId || undefined,
+      channelId: (page as unknown as Record<string, unknown>)?.channelId as
+        | string
+        | undefined,
+      teamId: team?.internalId || undefined,
+      chatId: chat?.id || undefined,
+      userObjectId: user?.id || undefined,
+      userPrincipalName: user?.userPrincipalName || undefined,
+      tid: user?.tenant?.id || undefined,
+    };
   } catch {
-    // Ignore cross-origin errors
+    return base;
   }
 }
 
-export function notifyTeamsAuthSuccess(): void {
+export async function acquireTeamsSsoToken(): Promise<string | null> {
+  if (!_inTeams) return null;
   try {
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "teams-auth-success" }, "*");
-    }
+    const result = await microsoftTeams.authentication.getAuthToken();
+    return result;
   } catch {
-    // Ignore cross-origin errors
+    return null;
+  }
+}
+
+export async function authenticateWithTeamsSso(apiBase: string): Promise<{
+  principalId: string;
+  displayName: string;
+  email: string;
+} | null> {
+  const ssoToken = await acquireTeamsSsoToken();
+  if (!ssoToken) return null;
+
+  try {
+    const res = await fetch(`${apiBase}/teams/sso`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ ssoToken }),
+    });
+
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as {
+      principalId: string;
+      displayName: string;
+      email: string;
+    };
+    return data;
+  } catch {
+    return null;
   }
 }
 
@@ -132,4 +188,34 @@ export function getTeamsAppId(): string {
       import.meta.env?.VITE_TEAMS_APP_ID) ||
     ""
   );
+}
+
+export async function configureTab(settings: {
+  entityId: string;
+  contentUrl: string;
+  suggestedDisplayName: string;
+  websiteUrl: string;
+}): Promise<void> {
+  if (!_inTeams) return;
+
+  microsoftTeams.pages.config.registerOnSaveHandler(
+    (saveEvent: microsoftTeams.pages.config.SaveEvent) => {
+      microsoftTeams.pages.config.setConfig({
+        entityId: settings.entityId,
+        contentUrl: settings.contentUrl,
+        suggestedDisplayName: settings.suggestedDisplayName,
+        websiteUrl: settings.websiteUrl,
+      });
+      saveEvent.notifySuccess();
+    },
+  );
+
+  await microsoftTeams.pages.config.setValidityState(true);
+}
+
+export function navigateToSubEntity(subEntityId: string): void {
+  const basePath = import.meta.env.BASE_URL?.replace(/\/$/, "") || "";
+  const targetPath = `${basePath}/${subEntityId}`;
+  window.history.replaceState(null, "", targetPath);
+  window.dispatchEvent(new PopStateEvent("popstate"));
 }
