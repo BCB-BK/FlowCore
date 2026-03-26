@@ -17,6 +17,7 @@ import {
 import { PAGE_TYPE_LABELS, PAGE_TYPE_CATEGORIES, getPageType } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
+import { OPEN_ASSISTANT_EVENT } from "@/components/ai/GlobalAssistant";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { useState, useMemo } from "react";
@@ -106,13 +107,16 @@ export function Hub() {
         </Card>
         )}
 
-        <Card className="cursor-not-allowed opacity-60">
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => window.dispatchEvent(new CustomEvent(OPEN_ASSISTANT_EVENT))}
+        >
           <CardContent className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-4/10 text-chart-4">
               <BookOpen className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-medium text-sm">AI-Assistent</p>
+              <p className="font-medium text-sm">FlowCore Assistent</p>
               <p className="text-xs text-muted-foreground">Fragen stellen</p>
             </div>
           </CardContent>

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,8 @@ interface Message {
   webSearchUsed?: boolean;
 }
 
+export const OPEN_ASSISTANT_EVENT = "open-global-assistant";
+
 export function GlobalAssistant() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,6 +56,12 @@ export function GlobalAssistant() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [, navigate] = useLocation();
   const { data: authData } = useAuth();
+
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener(OPEN_ASSISTANT_EVENT, handler);
+    return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, handler);
+  }, []);
 
   const PRIVILEGED_ROLES = [
     "editor",
