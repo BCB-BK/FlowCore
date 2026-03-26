@@ -570,6 +570,23 @@ paths:
                 items:
                   $ref: "#/components/schemas/ContentNode"
 
+  /content/nodes/{nodeId}/siblings:
+    get:
+      operationId: getNodeSiblings
+      tags: [content]
+      summary: Get sibling nodes (same parent, excluding self)
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Sibling nodes ordered by sort_order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentNode"
+
   /content/nodes/{nodeId}/ancestors:
     get:
       operationId: getNodeAncestors

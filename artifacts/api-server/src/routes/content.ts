@@ -22,6 +22,7 @@ import {
   getNodeRelations,
   getNodeChildren,
   getNodeTree,
+  getSiblings,
 } from "../services/graph.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
@@ -267,6 +268,24 @@ router.get(
     const id = req.params.id as string;
     const children = await getNodeChildren(id);
     res.json(children);
+  },
+);
+
+router.get(
+  "/nodes/:id/siblings",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.id),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const siblings = await getSiblings(id);
+    const principalId = req.user!.principalId;
+    const filtered = [];
+    for (const sib of siblings) {
+      if (await hasPermission(principalId, "read_page", sib.id)) {
+        filtered.push(sib);
+      }
+    }
+    res.json(filtered);
   },
 );
 

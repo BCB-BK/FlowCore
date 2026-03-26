@@ -134,7 +134,27 @@ export async function getNodeChildren(nodeId: string) {
         eq(contentNodesTable.parentNodeId, nodeId),
         eq(contentNodesTable.isDeleted, false),
       ),
-    );
+    )
+    .orderBy(contentNodesTable.sortOrder);
+}
+
+export async function getSiblings(nodeId: string) {
+  const [node] = await db
+    .select({ parentNodeId: contentNodesTable.parentNodeId })
+    .from(contentNodesTable)
+    .where(eq(contentNodesTable.id, nodeId));
+  if (!node || !node.parentNodeId) return [];
+  return db
+    .select()
+    .from(contentNodesTable)
+    .where(
+      and(
+        eq(contentNodesTable.parentNodeId, node.parentNodeId),
+        eq(contentNodesTable.isDeleted, false),
+        sql`${contentNodesTable.id} != ${nodeId}`,
+      ),
+    )
+    .orderBy(contentNodesTable.sortOrder);
 }
 
 export async function getNodeTree(rootNodeId: string) {

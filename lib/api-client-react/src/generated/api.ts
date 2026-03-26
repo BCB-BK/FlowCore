@@ -2488,6 +2488,93 @@ export function useGetNodeChildren<
 }
 
 /**
+ * @summary Get sibling nodes (same parent, excluding self)
+ */
+export const getGetNodeSiblingsUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/siblings`;
+};
+
+export const getNodeSiblings = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<ContentNode[]> => {
+  return customFetch<ContentNode[]>(getGetNodeSiblingsUrl(nodeId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetNodeSiblingsQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/siblings`] as const;
+};
+
+export const getGetNodeSiblingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeSiblings>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeSiblings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetNodeSiblingsQueryKey(nodeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getNodeSiblings>>> = ({
+    signal,
+  }) => getNodeSiblings(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeSiblings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeSiblingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeSiblings>>
+>;
+export type GetNodeSiblingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get sibling nodes (same parent, excluding self)
+ */
+
+export function useGetNodeSiblings<
+  TData = Awaited<ReturnType<typeof getNodeSiblings>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeSiblings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNodeSiblingsQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
  * Returns the ancestor nodes from root to the direct parent, ordered root-first.
  * @summary Get ancestor chain of a content node
  */

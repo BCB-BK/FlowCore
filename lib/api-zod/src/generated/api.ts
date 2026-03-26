@@ -660,6 +660,59 @@ export const GetNodeChildrenResponseItem = zod.object({
 export const GetNodeChildrenResponse = zod.array(GetNodeChildrenResponseItem);
 
 /**
+ * @summary Get sibling nodes (same parent, excluding self)
+ */
+export const GetNodeSiblingsParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeSiblingsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  immutableId: zod.string(),
+  displayCode: zod.string(),
+  title: zod.string(),
+  templateType: zod.enum([
+    "core_process_overview",
+    "area_overview",
+    "process_page_text",
+    "process_page_graphic",
+    "procedure_instruction",
+    "use_case",
+    "policy",
+    "role_profile",
+    "dashboard",
+    "system_documentation",
+    "glossary",
+    "work_instruction",
+    "checklist",
+    "faq",
+    "interface_description",
+    "meeting_protocol",
+    "training_resource",
+    "audit_object",
+  ]),
+  templateId: zod.string().uuid().nullish(),
+  parentNodeId: zod.string().uuid().nullish(),
+  sortOrder: zod.number(),
+  status: zod.enum([
+    "draft",
+    "in_review",
+    "approved",
+    "published",
+    "archived",
+    "deleted",
+  ]),
+  currentRevisionId: zod.string().uuid().nullish(),
+  publishedRevisionId: zod.string().uuid().nullish(),
+  ownerId: zod.string().nullish(),
+  isDeleted: zod.boolean(),
+  deletedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const GetNodeSiblingsResponse = zod.array(GetNodeSiblingsResponseItem);
+
+/**
  * Returns the ancestor nodes from root to the direct parent, ordered root-first.
  * @summary Get ancestor chain of a content node
  */

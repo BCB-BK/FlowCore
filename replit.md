@@ -25,7 +25,7 @@ The frontend, `wiki-frontend`, is a React 19 application utilizing Vite, Tailwin
 - **API Specification and Codegen:** OpenAPI 3.1 defines the API, and Orval generates client-side code, including React Query hooks and Zod schemas.
 - **Monorepo Structure:** Organized into `artifacts/` (deployables), `lib/` (shared libraries), `scripts/` (utilities), and `e2e/` (Playwright tests).
 - **Core Features:**
-    - **Content Management:** CRUD operations for content nodes, revisions, relations, templates, and links, employing a dual ID system (`immutable_id` + `display_code`).
+    - **Content Management:** CRUD operations for content nodes, revisions, relations, templates, and links, employing a dual ID system (`immutable_id` + `display_code`). Navigation features include hierarchy-aware breadcrumbs (with L1/L2/... depth indicators and deep-path collapsing), professionalized relation sidebar (Parent/Children/Siblings/cross-references grouped by category with German labels), and overview pages with grouped child slots (by template type with per-group "+" buttons and numbered ordering).
     - **Search:** Full-text search with suggestions and analytics.
     - **AI Assistant:** Orchestration services for knowledge Q&A and page writing assistance via SSE streaming, with usage logging.
     - **Workflow:** Review workflows (submit/approve/reject), revision events, diffing, and watchers.

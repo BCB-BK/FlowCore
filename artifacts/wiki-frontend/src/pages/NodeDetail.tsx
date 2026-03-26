@@ -52,7 +52,8 @@ import {
   Loader2,
   Eye,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes } from "@/lib/types";
+import type { TemplateType } from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
   useGetActiveWorkingCopy,
@@ -93,10 +94,27 @@ export function NodeDetail() {
   const createWorkingCopy = useCreateWorkingCopy();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
+  const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [showEdit, setShowEdit] = useState(false);
   const [showPageAssist, setShowPageAssist] = useState(false);
   const isOverviewPage = node?.templateType === "core_process_overview" || node?.templateType === "area_overview";
   const { toast } = useToast();
+
+  const allowedChildTypes = useMemo(() => {
+    if (!node) return [];
+    return getAllowedChildTypes(node.templateType);
+  }, [node]);
+
+  const groupedChildren = useMemo(() => {
+    if (!children || children.length === 0) return {};
+    const groups: Record<string, typeof children> = {};
+    for (const child of children) {
+      const type = child.templateType;
+      if (!groups[type]) groups[type] = [];
+      groups[type].push(child);
+    }
+    return groups;
+  }, [children]);
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
     query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
@@ -441,82 +459,223 @@ export function NodeDetail() {
           )}
 
           {isOverviewPage && (
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold">
-                  {node.templateType === "core_process_overview" ? "Bereiche" : "Unterseiten"}
+                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Unterseiten"}
                 </h3>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowCreate(true)}
+                  onClick={() => { setCreatePresetType(undefined); setShowCreate(true); }}
                 >
                   <Plus className="mr-1 h-4 w-4" />
                   Hinzufügen
                 </Button>
               </div>
+
               {children && children.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                {children.map((child) => {
-                  const childDef = getPageType(child.templateType);
-                  return (
-                    <Card
-                      key={child.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow group"
-                      onClick={() => navigate(`/node/${child.id}`)}
-                    >
-                      <CardContent className="flex items-center gap-4 p-4">
-                        {childDef ? (
-                          <div
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-white shrink-0"
-                            style={{ backgroundColor: childDef.color }}
+                <div className="space-y-5">
+                  {allowedChildTypes.map((childType) => {
+                    const typeChildren = groupedChildren[childType] ?? [];
+                    const typeDef = getPageType(childType);
+                    if (typeChildren.length === 0) return null;
+                    return (
+                      <div key={childType}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {typeDef && (
+                              <div
+                                className="flex h-5 w-5 items-center justify-center rounded text-white"
+                                style={{ backgroundColor: typeDef.color }}
+                              >
+                                <PageTypeIcon iconName={typeDef.icon} className="h-3 w-3" />
+                              </div>
+                            )}
+                            <span className="text-sm font-medium">
+                              {PAGE_TYPE_LABELS[childType] ?? childType}
+                            </span>
+                            <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                              {typeChildren.length}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => { setCreatePresetType(childType); setShowCreate(true); }}
                           >
-                            <PageTypeIcon
-                              iconName={childDef.icon}
-                              className="h-4 w-4"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
-                            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                            {child.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {child.displayCode}
-                          </p>
+                            <Plus className="h-3 w-3 mr-1" />
+                            Neu
+                          </Button>
                         </div>
-                        <div className="hidden sm:flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
-                          <div className="text-right">
-                            <span className="block text-[10px] uppercase tracking-wide">Aktualisiert</span>
-                            <span>{new Date(child.updatedAt).toLocaleDateString("de-DE")}</span>
-                          </div>
+                        <div className="flex flex-col gap-1.5">
+                          {typeChildren.map((child, idx) => {
+                            const childDef = getPageType(child.templateType);
+                            return (
+                              <Card
+                                key={child.id}
+                                className="cursor-pointer hover:shadow-md transition-shadow group"
+                                onClick={() => navigate(`/node/${child.id}`)}
+                              >
+                                <CardContent className="flex items-center gap-4 p-3">
+                                  <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+                                    {idx + 1}.
+                                  </span>
+                                  {childDef ? (
+                                    <div
+                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
+                                      style={{ backgroundColor: childDef.color }}
+                                    >
+                                      <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                                    </div>
+                                  ) : (
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                      <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                      {child.title}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {child.displayCode}
+                                    </p>
+                                  </div>
+                                  <div className="hidden sm:flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
+                                    <span>{new Date(child.updatedAt).toLocaleDateString("de-DE")}</span>
+                                  </div>
+                                  <StatusBadge
+                                    status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
+                                    compact
+                                  />
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
                         </div>
-                        <StatusBadge
-                          status={
-                            child.status as Parameters<
-                              typeof StatusBadge
-                            >[0]["status"]
-                          }
-                          compact
-                        />
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+                      </div>
+                    );
+                  })}
+
+                  {Object.keys(groupedChildren).filter(
+                    (t) => !allowedChildTypes.includes(t as TemplateType)
+                  ).map((childType) => {
+                    const typeChildren = groupedChildren[childType] ?? [];
+                    const typeDef = getPageType(childType);
+                    return (
+                      <div key={childType}>
+                        <div className="flex items-center gap-2 mb-2">
+                          {typeDef && (
+                            <div
+                              className="flex h-5 w-5 items-center justify-center rounded text-white"
+                              style={{ backgroundColor: typeDef.color }}
+                            >
+                              <PageTypeIcon iconName={typeDef.icon} className="h-3 w-3" />
+                            </div>
+                          )}
+                          <span className="text-sm font-medium">
+                            {PAGE_TYPE_LABELS[childType] ?? childType}
+                          </span>
+                          <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                            {typeChildren.length}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          {typeChildren.map((child, idx) => {
+                            const childDef = getPageType(child.templateType);
+                            return (
+                              <Card
+                                key={child.id}
+                                className="cursor-pointer hover:shadow-md transition-shadow group"
+                                onClick={() => navigate(`/node/${child.id}`)}
+                              >
+                                <CardContent className="flex items-center gap-4 p-3">
+                                  <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+                                    {idx + 1}.
+                                  </span>
+                                  {childDef ? (
+                                    <div
+                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
+                                      style={{ backgroundColor: childDef.color }}
+                                    >
+                                      <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                                    </div>
+                                  ) : (
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                      <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                      {child.title}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {child.displayCode}
+                                    </p>
+                                  </div>
+                                  <StatusBadge
+                                    status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
+                                    compact
+                                  />
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-                  <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Noch keine {node.templateType === "core_process_overview" ? "Bereiche" : "Unterseiten"} vorhanden
-                  </p>
-                </CardContent>
-              </Card>
+                <div className="space-y-3">
+                  {allowedChildTypes.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {allowedChildTypes.slice(0, 6).map((childType) => {
+                        const typeDef = getPageType(childType);
+                        return (
+                          <Card
+                            key={childType}
+                            className="border-dashed cursor-pointer hover:border-primary/40 transition-colors"
+                            onClick={() => { setCreatePresetType(childType); setShowCreate(true); }}
+                          >
+                            <CardContent className="flex items-center gap-3 p-3">
+                              {typeDef ? (
+                                <div
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0 opacity-60"
+                                  style={{ backgroundColor: typeDef.color }}
+                                >
+                                  <PageTypeIcon iconName={typeDef.icon} className="h-3.5 w-3.5" />
+                                </div>
+                              ) : (
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-muted-foreground">
+                                  {PAGE_TYPE_LABELS[childType] ?? childType}
+                                </p>
+                              </div>
+                              <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                      <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Noch keine {node.templateType === "core_process_overview" ? "Bereiche oder Prozesse" : "Unterseiten"} vorhanden
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Nutzen Sie die Kacheln oben oder den Button, um die erste Unterseite anzulegen.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
             </div>
           )}
