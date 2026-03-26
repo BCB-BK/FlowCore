@@ -89,7 +89,7 @@ export function SettingsPage() {
     }
     if (perms.has("manage_settings")) {
       t.push({ value: "connections", label: "Verbindungen", icon: Link2 });
-      t.push({ value: "ai", label: "KI-Assistent", icon: Bot });
+      t.push({ value: "ai", label: "FlowCore-Assistent", icon: Bot });
     }
     if (perms.has("manage_templates")) {
       t.push({ value: "templates", label: "Seitentemplates", icon: FileText });
@@ -367,7 +367,7 @@ function ConnectionsTab() {
             </div>
           </div>
           <CardDescription>
-            KI-Funktionen wie Wissensassistent und Schreibhilfe
+            FlowCore-Assistent und FlowCore-Schreibassistent
           </CardDescription>
         </CardHeader>
         <CardContent>

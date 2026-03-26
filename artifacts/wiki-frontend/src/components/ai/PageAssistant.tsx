@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -212,7 +214,7 @@ export function PageAssistant({
       <CardHeader className="py-3 px-4 border-b flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Bot className="h-4 w-4 text-primary" />
-          KI-Schreibassistent
+          FlowCore-Schreibassistent
         </CardTitle>
         {onClose && (
           <Button
@@ -283,8 +285,12 @@ export function PageAssistant({
               )}
             </div>
             <ScrollArea className="max-h-60">
-              <div className="rounded-md bg-muted p-3 text-sm whitespace-pre-wrap">
-                {result || <Loader2 className="h-4 w-4 animate-spin" />}
+              <div className="rounded-md bg-muted p-3 text-sm prose prose-sm max-w-none">
+                {result ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+                ) : (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
               </div>
             </ScrollArea>
           </div>

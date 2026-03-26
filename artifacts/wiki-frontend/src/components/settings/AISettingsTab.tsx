@@ -118,7 +118,7 @@ export function AISettingsTab() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-muted-foreground text-sm">
-            Konfiguration des KI-gestützten Wissensassistenten
+            Konfiguration des FlowCore-Assistenten
           </p>
         </div>
         <Badge variant={enabled ? "default" : "secondary"}>
@@ -130,15 +130,15 @@ export function AISettingsTab() {
         <CardHeader>
           <CardTitle>Grundeinstellungen</CardTitle>
           <CardDescription>
-            Aktivierung und Konfiguration des KI-Assistenten
+            Aktivierung und Konfiguration des FlowCore-Assistenten
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="ai-enabled">KI-Assistent aktivieren</Label>
+              <Label htmlFor="ai-enabled">FlowCore-Assistent aktivieren</Label>
               <p className="text-sm text-muted-foreground">
-                Aktiviert den Wissensassistenten und den Schreibassistenten
+                Aktiviert den FlowCore-Assistenten und den FlowCore-Schreibassistenten
               </p>
             </div>
             <Switch

@@ -41,7 +41,7 @@ export interface AiSource {
   sourceSystemName?: string;
 }
 
-const DEFAULT_SYSTEM_PROMPT = `Du bist der Wissensassistent von FlowCore — der zentralen Prozess- und Wissensplattform des Bildungscampus Backnang.
+const DEFAULT_SYSTEM_PROMPT = `Du bist der FlowCore-Assistent — der KI-Assistent der zentralen Prozess- und Wissensplattform des Bildungscampus Backnang.
 
 ## Ansprache & Stil
 - Verwende konsequent die Du-Ansprache.
@@ -542,7 +542,7 @@ export async function generateChangeSummary(
 ): Promise<string> {
   const settings = await getAiSettings();
   if (!settings.enabled) {
-    throw new Error("KI-Assistent ist deaktiviert.");
+    throw new Error("FlowCore-Assistent ist deaktiviert.");
   }
 
   const parts: string[] = [];
@@ -675,7 +675,7 @@ export async function streamPageAssist(
     const stream = await client.responses.create({
       model: settings.model,
       instructions:
-        "Du bist ein Schreibassistent für FlowCore, die Wissensplattform des Bildungscampus Backnang. Antworte auf Deutsch.",
+        "Du bist der FlowCore-Schreibassistent — der KI-Schreibassistent der Wissensplattform des Bildungscampus Backnang. Antworte auf Deutsch.",
       input: `${actionPrompt}\n\n${text}`,
       max_output_tokens: settings.maxCompletionTokens,
       stream: true,

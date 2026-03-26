@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -201,7 +203,7 @@ export function GlobalAssistant() {
       <CardHeader className="py-3 px-4 border-b flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Bot className="h-4 w-4 text-primary" />
-          KI-Wissensassistent
+          FlowCore-Assistent
         </CardTitle>
         <Button
           variant="ghost"
@@ -230,8 +232,10 @@ export function GlobalAssistant() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="bg-muted rounded-lg px-3 py-2 text-sm whitespace-pre-wrap">
-                    {msg.content || (
+                  <div className="bg-muted rounded-lg px-3 py-2 text-sm prose prose-sm max-w-none">
+                    {msg.content ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                    ) : (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                   </div>

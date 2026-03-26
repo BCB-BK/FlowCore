@@ -119,9 +119,9 @@ export function AISettingsPage() {
         <div className="flex items-center gap-3">
           <Bot className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold">KI-Assistent</h1>
+            <h1 className="text-2xl font-bold">FlowCore-Assistent</h1>
             <p className="text-muted-foreground">
-              Konfiguration des KI-gestützten Wissensassistenten
+              Konfiguration des FlowCore-Assistenten
             </p>
           </div>
         </div>
@@ -134,15 +134,15 @@ export function AISettingsPage() {
         <CardHeader>
           <CardTitle>Grundeinstellungen</CardTitle>
           <CardDescription>
-            Aktivierung und Konfiguration des KI-Assistenten
+            Aktivierung und Konfiguration des FlowCore-Assistenten
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="ai-enabled">KI-Assistent aktivieren</Label>
+              <Label htmlFor="ai-enabled">FlowCore-Assistent aktivieren</Label>
               <p className="text-sm text-muted-foreground">
-                Aktiviert den Wissensassistenten und den Schreibassistenten
+                Aktiviert den FlowCore-Assistenten und den FlowCore-Schreibassistenten
               </p>
             </div>
             <Switch

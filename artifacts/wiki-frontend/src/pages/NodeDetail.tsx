@@ -455,7 +455,7 @@ export function NodeDetail() {
                   onClick={() => setShowPageAssist(!showPageAssist)}
                 >
                   <Bot className="h-3.5 w-3.5 mr-1" />
-                  KI-Assistent
+                  FlowCore-Assistent
                 </Button>
               </div>
             </div>
