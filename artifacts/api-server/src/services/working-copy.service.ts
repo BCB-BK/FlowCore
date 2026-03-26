@@ -590,6 +590,100 @@ export async function unlockWorkingCopy(
   return updated;
 }
 
+export async function restoreAsWorkingCopy(
+  sourceRevisionId: string,
+  actorId: string,
+) {
+  const [source] = await db
+    .select()
+    .from(contentRevisionsTable)
+    .where(eq(contentRevisionsTable.id, sourceRevisionId));
+
+  if (!source) {
+    throw new Error(`Quellrevision ${sourceRevisionId} nicht gefunden`);
+  }
+
+  const nodeId = source.nodeId;
+
+  return await db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext('wc-' || ${nodeId}))`,
+    );
+
+    const [existing] = await tx
+      .select({ id: contentWorkingCopiesTable.id, authorId: contentWorkingCopiesTable.authorId })
+      .from(contentWorkingCopiesTable)
+      .where(
+        and(
+          eq(contentWorkingCopiesTable.nodeId, nodeId),
+          notInArray(contentWorkingCopiesTable.status, ["cancelled", "published"]),
+        ),
+      );
+
+    if (existing) {
+      const err = new Error(
+        `Es existiert bereits eine aktive Arbeitskopie für diese Seite. Bitte schließen Sie diese zuerst ab oder brechen Sie sie ab.`,
+      );
+      (err as Error & { code: string }).code = "WORKING_COPY_ACTIVE";
+      throw err;
+    }
+
+    const [node] = await tx
+      .select({ publishedRevisionId: contentNodesTable.publishedRevisionId })
+      .from(contentNodesTable)
+      .where(eq(contentNodesTable.id, nodeId));
+
+    const baseRevisionId = node?.publishedRevisionId ?? null;
+
+    const [wc] = await tx
+      .insert(contentWorkingCopiesTable)
+      .values({
+        nodeId,
+        baseRevisionId,
+        title: source.title,
+        content: source.content as Record<string, unknown> | null,
+        structuredFields: source.structuredFields as Record<string, unknown> | null,
+        authorId: actorId,
+        lockedBy: actorId,
+        status: "draft",
+        changeSummary: `Wiederherstellung von Revision ${source.revisionNo}${source.versionLabel ? ` (${source.versionLabel})` : ""}`,
+        changeType: "editorial",
+      })
+      .returning();
+
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: wc.id,
+      eventType: "created",
+      actorId,
+      metadata: {
+        restoredFromRevisionId: sourceRevisionId,
+        restoredFromRevisionNo: source.revisionNo,
+        baseRevisionId,
+      },
+    });
+
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_restored",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: wc.id,
+      details: {
+        nodeId,
+        restoredFromRevisionId: sourceRevisionId,
+        restoredFromRevisionNo: source.revisionNo,
+      },
+    });
+
+    logger.info(
+      { workingCopyId: wc.id, nodeId, sourceRevisionId, actorId },
+      "Working copy created from restored revision",
+    );
+
+    return { workingCopy: wc, created: true };
+  });
+}
+
 export async function getWorkingCopyDiff(id: string) {
   const wc = await getWorkingCopyById(id);
   if (!wc) throw new Error("Working copy not found");

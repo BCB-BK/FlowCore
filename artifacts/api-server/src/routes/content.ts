@@ -11,11 +11,11 @@ import {
 import { eq, and, desc, isNull, sql, ne } from "drizzle-orm";
 import { createContentNode, moveNode } from "../services/identity.service";
 import {
-  createRevision,
-  publishRevision,
-  restoreRevision,
   getVersionTree,
 } from "../services/revision.service";
+import {
+  restoreAsWorkingCopy,
+} from "../services/working-copy.service";
 import {
   createRelation,
   removeRelation,
@@ -334,33 +334,10 @@ router.get(
 router.post(
   "/nodes/:id/revisions",
   requireAuth,
-  requirePermission("edit_content", (req) => req.params.id),
-  async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      const revisionId = await createRevision({
-        nodeId: id,
-        ...req.body,
-        authorId: req.user!.principalId,
-      });
-      const [revision] = await db
-        .select()
-        .from(contentRevisionsTable)
-        .where(eq(contentRevisionsTable.id, revisionId));
-
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "revision_created",
-        actorId: req.user!.principalId,
-        resourceType: "content_revision",
-        resourceId: revisionId,
-      });
-
-      res.status(201).json(revision);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
-    }
+  (_req, res) => {
+    res.status(409).json({
+      error: "Direkte Revisionserstellung ist deaktiviert. Bitte verwenden Sie den Arbeitskopie-Workflow (POST /nodes/:id/working-copies).",
+    });
   },
 );
 
@@ -378,47 +355,10 @@ router.get(
 router.post(
   "/revisions/:id/publish",
   requireAuth,
-  async (req, res, next) => {
-    const id = req.params.id as string;
-    const [rev] = await db
-      .select({ nodeId: contentRevisionsTable.nodeId })
-      .from(contentRevisionsTable)
-      .where(eq(contentRevisionsTable.id, id));
-    if (!rev) {
-      res.status(404).json({ error: "Revision not found" });
-      return;
-    }
-    (req as unknown as Record<string, string>)._resolvedNodeId = rev.nodeId;
-    next();
-  },
-  requirePermission(
-    "approve_page",
-    (req) =>
-      (req as unknown as Record<string, string>)._resolvedNodeId as string,
-  ),
-  async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      await publishRevision(id, req.body.versionLabel, req.user!.principalId);
-      const [revision] = await db
-        .select()
-        .from(contentRevisionsTable)
-        .where(eq(contentRevisionsTable.id, id));
-
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "revision_published",
-        actorId: req.user!.principalId,
-        resourceType: "content_revision",
-        resourceId: id,
-        details: { versionLabel: req.body.versionLabel },
-      });
-
-      res.json(revision);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
-    }
+  (_req, res) => {
+    res.status(409).json({
+      error: "Direktes Veröffentlichen von Revisionen ist deaktiviert. Veröffentlichung erfolgt ausschließlich über den Arbeitskopie-Freigabe-Workflow (POST /working-copies/:id/publish).",
+    });
   },
 );
 
@@ -439,22 +379,24 @@ router.post(
     next();
   },
   requirePermission(
-    "edit_content",
+    "create_working_copy",
     (req) =>
       (req as unknown as Record<string, string>)._resolvedNodeId as string,
   ),
   async (req, res) => {
     try {
-      const id = req.params.id as string;
-      const newRevisionId = await restoreRevision(id, req.user!.principalId);
-      const [revision] = await db
-        .select()
-        .from(contentRevisionsTable)
-        .where(eq(contentRevisionsTable.id, newRevisionId));
-      res.status(201).json(revision);
+      const sourceRevisionId = req.params.id as string;
+      const actorId = req.user!.principalId;
+      const result = await restoreAsWorkingCopy(sourceRevisionId, actorId);
+      res.status(201).json(result.workingCopy);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      const code = (err as { code?: string }).code;
+      if (code === "WORKING_COPY_ACTIVE") {
+        res.status(409).json({ error: message, code });
+      } else {
+        res.status(400).json({ error: message });
+      }
     }
   },
 );

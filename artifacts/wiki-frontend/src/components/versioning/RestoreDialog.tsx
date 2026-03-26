@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
+import { useLocation } from "wouter";
 
 interface RestoreDialogProps {
   revisionId: string;
@@ -31,6 +32,7 @@ export function RestoreDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const apiBase = import.meta.env.BASE_URL + "api";
+  const [, navigate] = useLocation();
 
   const handleRestore = useCallback(async () => {
     try {
@@ -40,8 +42,8 @@ export function RestoreDialog({
       });
 
       toast({
-        title: "Revision wiederhergestellt",
-        description: `Revision ${revisionNo} wurde als neue aktuelle Revision wiederhergestellt.`,
+        title: "Arbeitskopie erstellt",
+        description: `Eine Arbeitskopie mit dem Inhalt von Revision ${revisionNo} wurde erstellt. Die Änderungen müssen geprüft und freigegeben werden, bevor sie veröffentlicht werden.`,
       });
 
       queryClient.invalidateQueries({
@@ -50,11 +52,26 @@ export function RestoreDialog({
       queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}`],
       });
+      queryClient.invalidateQueries({
+        queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+      });
       onOpenChange(false);
-    } catch {
+      navigate(`/nodes/${nodeId}/edit`);
+    } catch (err) {
+      const errObj = err as { code?: string; message?: string; data?: { code?: string; error?: string } };
+      const isConflict =
+        errObj.code === "WORKING_COPY_ACTIVE" ||
+        errObj.data?.code === "WORKING_COPY_ACTIVE" ||
+        (typeof (errObj.data?.error ?? errObj.message) === "string" &&
+          (errObj.data?.error ?? errObj.message ?? "").includes("aktive Arbeitskopie"));
       toast({
         variant: "destructive",
-        title: "Fehler bei der Wiederherstellung",
+        title: isConflict
+          ? "Arbeitskopie bereits vorhanden"
+          : "Fehler bei der Wiederherstellung",
+        description: isConflict
+          ? "Es existiert bereits eine aktive Arbeitskopie für diese Seite. Bitte schließen Sie diese zuerst ab."
+          : undefined,
       });
     }
   }, [
@@ -65,6 +82,7 @@ export function RestoreDialog({
     toast,
     queryClient,
     onOpenChange,
+    navigate,
   ]);
 
   return (
@@ -73,16 +91,16 @@ export function RestoreDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Revision wiederherstellen?</AlertDialogTitle>
           <AlertDialogDescription>
-            Revision <strong>{revisionNo}</strong> wird als neue aktuelle
-            Revision wiederhergestellt. Die bestehende Revision bleibt in der
-            Historie erhalten. Eine neue Revision wird mit dem Inhalt der
-            ausgewählten Revision erstellt.
+            Der Inhalt von Revision <strong>{revisionNo}</strong> wird als neue
+            Arbeitskopie erstellt. Diese muss anschließend den regulären
+            Prüf- und Freigabeprozess durchlaufen, bevor sie veröffentlicht
+            werden kann. Die bestehende Versionshistorie bleibt unverändert.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Abbrechen</AlertDialogCancel>
           <AlertDialogAction onClick={handleRestore}>
-            Wiederherstellen
+            Als Arbeitskopie wiederherstellen
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
