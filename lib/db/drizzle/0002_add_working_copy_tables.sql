@@ -11,7 +11,8 @@ END $$;
 
 DO $$ BEGIN
   CREATE TYPE working_copy_event_type AS ENUM (
-    'created', 'updated', 'submitted', 'returned_for_changes',
+    'created', 'updated', 'submitted', 'review_started',
+    'returned_for_changes', 'amended_by_reviewer',
     'approved', 'published', 'cancelled', 'unlocked'
   );
 EXCEPTION WHEN duplicate_object THEN NULL;

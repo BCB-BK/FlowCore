@@ -5693,7 +5693,9 @@ components:
         - created
         - updated
         - submitted
+        - review_started
         - returned_for_changes
+        - amended_by_reviewer
         - approved
         - published
         - cancelled

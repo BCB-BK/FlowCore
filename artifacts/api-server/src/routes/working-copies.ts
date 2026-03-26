@@ -84,7 +84,7 @@ router.post(
 router.get(
   "/nodes/:nodeId/working-copy",
   requireAuth,
-  requirePermission("read_page", (req) => req.params.nodeId),
+  requirePermission("edit_content", (req) => req.params.nodeId),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const wc = await getActiveWorkingCopyForNode(nodeId);
