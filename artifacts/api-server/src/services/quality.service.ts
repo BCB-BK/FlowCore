@@ -11,6 +11,10 @@ export interface QualityOverview {
   orphanedPages: number;
   incompletePagesCount: number;
   avgCompleteness: number;
+  brokenLinks: number;
+  unreferencedMedia: number;
+  pagesWithoutTags: number;
+  zeroResultSearches: number;
 }
 
 export interface PageQualityRow {
@@ -29,10 +33,13 @@ export interface PageQualityRow {
   updatedAt: string;
   childCount: number;
   relationCount: number;
+  tagCount: number;
 }
 
 export interface DuplicateGroup {
   title: string;
+  matchType: "exact" | "similar";
+  similarityScore: number;
   nodes: {
     nodeId: string;
     displayCode: string;
@@ -50,7 +57,12 @@ export interface MaintenanceHint {
     | "orphan"
     | "no_revision"
     | "archived_reference"
-    | "missing_mandatory_fields";
+    | "missing_mandatory_fields"
+    | "broken_link"
+    | "unreferenced_media"
+    | "stale_policy_reference"
+    | "missing_tags"
+    | "violated_review_cycle";
   severity: "critical" | "warning" | "info";
   nodeId: string;
   title: string;
@@ -123,20 +135,88 @@ export async function getQualityOverview(): Promise<QualityOverview> {
       )
   `);
 
+  const incompleteResult = await db.execute(sql`
+    SELECT COUNT(*) as cnt
+    FROM content_nodes cn
+    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+      AND (
+        cn.owner_id IS NULL
+        OR cn.current_revision_id IS NULL
+        OR cn.published_revision_id IS NULL
+        OR NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)
+      )
+  `);
+
+  const brokenLinksResult = await db.execute(sql`
+    SELECT COUNT(*) as cnt
+    FROM content_relations rel
+    JOIN content_nodes src ON rel.source_node_id = src.id
+    JOIN content_nodes tgt ON rel.target_node_id = tgt.id
+    WHERE NOT src.is_deleted
+      AND (tgt.is_deleted OR tgt.status = 'archived')
+  `);
+
+  const unreferencedMediaResult = await db.execute(sql`
+    SELECT COUNT(*) as cnt
+    FROM media_assets ma
+    WHERE NOT ma.is_deleted
+      AND NOT EXISTS (
+        SELECT 1 FROM media_asset_usages mau WHERE mau.asset_id = ma.id
+      )
+  `);
+
+  const noTagsResult = await db.execute(sql`
+    SELECT COUNT(*) as cnt
+    FROM content_nodes cn
+    WHERE NOT cn.is_deleted
+      AND NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)
+  `);
+
+  const zeroSearchResult = await db.execute(sql`
+    SELECT COUNT(*) as cnt
+    FROM search_queries
+    WHERE result_count = 0
+      AND created_at > NOW() - INTERVAL '30 days'
+  `);
+
   const totalPages = num(row, "total_pages");
-  const publishedPages = num(row, "published_pages");
+  const incompletePagesCount = num(
+    (incompleteResult.rows[0] ?? {}) as R,
+    "cnt",
+  );
+
+  const completenessResult = await db.execute(sql`
+    SELECT
+      ROUND(AVG(
+        CASE WHEN cn.owner_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN cn.current_revision_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN cn.published_revision_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id) THEN 20 ELSE 0 END +
+        CASE WHEN cr.next_review_date IS NULL OR cr.next_review_date >= NOW() THEN 20 ELSE 0 END
+      )) as avg_completeness
+    FROM content_nodes cn
+    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+  `);
 
   return {
     totalPages,
-    publishedPages,
+    publishedPages: num(row, "published_pages"),
     draftPages: num(row, "draft_pages"),
     archivedPages: num(row, "archived_pages"),
     pagesWithoutOwner: num(row, "pages_without_owner"),
     overdueReviews: num((overdueResult.rows[0] ?? {}) as R, "cnt"),
     orphanedPages: num((orphanResult.rows[0] ?? {}) as R, "cnt"),
-    incompletePagesCount: 0,
-    avgCompleteness:
-      totalPages > 0 ? Math.round((publishedPages / totalPages) * 100) : 0,
+    incompletePagesCount,
+    avgCompleteness: num(
+      (completenessResult.rows[0] ?? {}) as R,
+      "avg_completeness",
+    ),
+    brokenLinks: num((brokenLinksResult.rows[0] ?? {}) as R, "cnt"),
+    unreferencedMedia: num((unreferencedMediaResult.rows[0] ?? {}) as R, "cnt"),
+    pagesWithoutTags: num((noTagsResult.rows[0] ?? {}) as R, "cnt"),
+    zeroResultSearches: num((zeroSearchResult.rows[0] ?? {}) as R, "cnt"),
   };
 }
 
@@ -158,6 +238,21 @@ export async function getPageQualityList(
     whereClause = sql`WHERE NOT cn.is_deleted AND cn.status = 'draft'`;
   } else if (filter === "stale") {
     whereClause = sql`WHERE NOT cn.is_deleted AND cn.updated_at < NOW() - INTERVAL '180 days'`;
+  } else if (filter === "no_tags") {
+    whereClause = sql`WHERE NOT cn.is_deleted AND NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)`;
+  } else if (filter === "broken_refs") {
+    whereClause = sql`WHERE NOT cn.is_deleted AND EXISTS (
+      SELECT 1 FROM content_relations rel
+      JOIN content_nodes tgt ON rel.target_node_id = tgt.id
+      WHERE rel.source_node_id = cn.id AND (tgt.is_deleted OR tgt.status = 'archived')
+    )`;
+  } else if (filter === "incomplete") {
+    whereClause = sql`WHERE NOT cn.is_deleted AND (
+      cn.owner_id IS NULL
+      OR cn.current_revision_id IS NULL
+      OR cn.published_revision_id IS NULL
+      OR NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)
+    )`;
   }
 
   const countResult = await db.execute(sql`
@@ -182,6 +277,7 @@ export async function getPageQualityList(
       cn.updated_at::text as updated_at,
       (SELECT COUNT(*) FROM content_nodes ch WHERE ch.parent_node_id = cn.id AND NOT ch.is_deleted)::text as child_count,
       (SELECT COUNT(*) FROM content_relations rel WHERE rel.source_node_id = cn.id OR rel.target_node_id = cn.id)::text as relation_count,
+      (SELECT COUNT(*) FROM content_node_tags t WHERE t.node_id = cn.id)::text as tag_count,
       (cn.parent_node_id IS NULL
         AND cn.template_type NOT IN ('core_process_overview', 'dashboard')
         AND NOT EXISTS (SELECT 1 FROM content_relations rel WHERE rel.source_node_id = cn.id OR rel.target_node_id = cn.id)
@@ -197,14 +293,18 @@ export async function getPageQualityList(
 
   const items: PageQualityRow[] = result.rows.map((raw) => {
     const r = raw as R;
-    let completeness = 0;
     const hasCurRev = bool(r, "has_current_revision");
     const hasPubRev = bool(r, "has_published_revision");
     const overdue = bool(r, "review_overdue");
-    if (hasCurRev) completeness += 25;
-    if (hasPubRev) completeness += 25;
-    if (r.owner_id) completeness += 25;
-    if (!overdue && hasCurRev) completeness += 25;
+    const hasOwner = !!r.owner_id;
+    const tagCount = num(r, "tag_count");
+
+    let completeness = 0;
+    if (hasOwner) completeness += 20;
+    if (hasCurRev) completeness += 20;
+    if (hasPubRev) completeness += 20;
+    if (tagCount > 0) completeness += 20;
+    if (!overdue && hasCurRev) completeness += 20;
 
     return {
       nodeId: str(r, "node_id"),
@@ -222,6 +322,7 @@ export async function getPageQualityList(
       updatedAt: str(r, "updated_at"),
       childCount: num(r, "child_count"),
       relationCount: num(r, "relation_count"),
+      tagCount,
     };
   });
 
@@ -229,7 +330,7 @@ export async function getPageQualityList(
 }
 
 export async function getDuplicates(): Promise<DuplicateGroup[]> {
-  const result = await db.execute(sql`
+  const exactResult = await db.execute(sql`
     SELECT cn.title, cn.id as node_id, cn.display_code, cn.template_type, cn.status, cn.updated_at::text as updated_at
     FROM content_nodes cn
     WHERE NOT cn.is_deleted
@@ -239,14 +340,19 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
     ORDER BY cn.title, cn.updated_at DESC
   `);
 
-  const groups = new Map<string, DuplicateGroup>();
-  for (const raw of result.rows) {
+  const exactGroups = new Map<string, DuplicateGroup>();
+  for (const raw of exactResult.rows) {
     const r = raw as R;
     const title = str(r, "title");
-    if (!groups.has(title)) {
-      groups.set(title, { title, nodes: [] });
+    if (!exactGroups.has(title)) {
+      exactGroups.set(title, {
+        title,
+        matchType: "exact",
+        similarityScore: 1.0,
+        nodes: [],
+      });
     }
-    groups.get(title)!.nodes.push({
+    exactGroups.get(title)!.nodes.push({
       nodeId: str(r, "node_id"),
       displayCode: str(r, "display_code"),
       templateType: str(r, "template_type"),
@@ -254,8 +360,73 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
       updatedAt: str(r, "updated_at"),
     });
   }
+  const groups = Array.from(exactGroups.values());
 
-  return Array.from(groups.values());
+  try {
+    const similarResult = await db.execute(sql`
+      SELECT
+        a.id as node_id_a, a.title as title_a, a.display_code as code_a,
+        a.template_type as type_a, a.status as status_a, a.updated_at::text as updated_a,
+        b.id as node_id_b, b.title as title_b, b.display_code as code_b,
+        b.template_type as type_b, b.status as status_b, b.updated_at::text as updated_b,
+        similarity(LOWER(a.title), LOWER(b.title)) as sim_score
+      FROM content_nodes a
+      JOIN content_nodes b ON a.id < b.id
+      WHERE NOT a.is_deleted AND NOT b.is_deleted
+        AND a.title != b.title
+        AND similarity(LOWER(a.title), LOWER(b.title)) > 0.4
+      ORDER BY sim_score DESC
+      LIMIT 50
+    `);
+
+    const exactTitles = new Set(exactGroups.keys());
+    for (const raw of similarResult.rows) {
+      const r = raw as R;
+      const titleA = str(r, "title_a");
+      const titleB = str(r, "title_b");
+      if (exactTitles.has(titleA) && exactTitles.has(titleB)) continue;
+
+      const key = [titleA, titleB].sort().join("|||");
+      const existing = groups.find(
+        (g) =>
+          g.matchType === "similar" &&
+          g.nodes.some(
+            (n) =>
+              n.nodeId === str(r, "node_id_a") ||
+              n.nodeId === str(r, "node_id_b"),
+          ),
+      );
+      if (existing) continue;
+
+      const score = parseFloat(String(r.sim_score ?? "0"));
+      groups.push({
+        title: `${titleA} / ${titleB}`,
+        matchType: "similar",
+        similarityScore: Math.round(score * 100) / 100,
+        nodes: [
+          {
+            nodeId: str(r, "node_id_a"),
+            displayCode: str(r, "code_a"),
+            templateType: str(r, "type_a"),
+            status: str(r, "status_a"),
+            updatedAt: str(r, "updated_a"),
+          },
+          {
+            nodeId: str(r, "node_id_b"),
+            displayCode: str(r, "code_b"),
+            templateType: str(r, "type_b"),
+            status: str(r, "status_b"),
+            updatedAt: str(r, "updated_b"),
+          },
+        ],
+      });
+    }
+  } catch {
+    // pg_trgm extension not available — exact matches only
+  }
+
+  groups.sort((a, b) => b.similarityScore - a.similarityScore);
+  return groups;
 }
 
 export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
@@ -375,12 +546,101 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
   for (const raw of archivedRefs.rows) {
     const r = raw as R;
     hints.push({
-      type: "archived_reference",
-      severity: "warning",
+      type: "broken_link",
+      severity: "critical",
       nodeId: str(r, "node_id"),
       title: str(r, "title"),
       displayCode: str(r, "display_code"),
       detail: `Referenziert archivierte/gelöschte Seite: ${str(r, "target_title")}`,
+    });
+  }
+
+  const unreferencedMedia = await db.execute(sql`
+    SELECT ma.id as asset_id, ma.filename, ma.original_filename
+    FROM media_assets ma
+    WHERE NOT ma.is_deleted
+      AND NOT EXISTS (
+        SELECT 1 FROM media_asset_usages mau WHERE mau.asset_id = ma.id
+      )
+    LIMIT 30
+  `);
+  for (const raw of unreferencedMedia.rows) {
+    const r = raw as R;
+    hints.push({
+      type: "unreferenced_media",
+      severity: "info",
+      nodeId: str(r, "asset_id"),
+      title: str(r, "original_filename"),
+      displayCode: str(r, "filename"),
+      detail: "Medien-Datei wird von keiner Seite referenziert",
+    });
+  }
+
+  const noTags = await db.execute(sql`
+    SELECT cn.id as node_id, cn.title, cn.display_code
+    FROM content_nodes cn
+    WHERE NOT cn.is_deleted
+      AND cn.status IN ('published', 'approved')
+      AND NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)
+    LIMIT 50
+  `);
+  for (const raw of noTags.rows) {
+    const r = raw as R;
+    hints.push({
+      type: "missing_tags",
+      severity: "info",
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      detail: "Veröffentlichte Seite ohne Tags — erschwert Auffindbarkeit",
+    });
+  }
+
+  const stalePolicyRefs = await db.execute(sql`
+    SELECT
+      proc.id as node_id, proc.title, proc.display_code,
+      pol.title as policy_title, pol.updated_at::text as policy_updated
+    FROM content_relations rel
+    JOIN content_nodes proc ON rel.source_node_id = proc.id
+    JOIN content_nodes pol ON rel.target_node_id = pol.id
+    WHERE NOT proc.is_deleted AND NOT pol.is_deleted
+      AND rel.relation_type = 'implements_policy'
+      AND pol.updated_at > proc.updated_at
+    LIMIT 30
+  `);
+  for (const raw of stalePolicyRefs.rows) {
+    const r = raw as R;
+    hints.push({
+      type: "stale_policy_reference",
+      severity: "warning",
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      detail: `Referenzierte Richtlinie "${str(r, "policy_title")}" wurde aktualisiert (${str(r, "policy_updated")})`,
+    });
+  }
+
+  const violatedReviewCycles = await db.execute(sql`
+    SELECT cn.id as node_id, cn.title, cn.display_code,
+           cr.next_review_date::text as next_review_date,
+           (NOW() - cr.next_review_date)::text as overdue_interval
+    FROM content_nodes cn
+    JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+      AND cr.next_review_date IS NOT NULL
+      AND cr.next_review_date < NOW() - INTERVAL '30 days'
+    ORDER BY cr.next_review_date ASC
+    LIMIT 20
+  `);
+  for (const raw of violatedReviewCycles.rows) {
+    const r = raw as R;
+    hints.push({
+      type: "violated_review_cycle",
+      severity: "critical",
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      detail: `Review-Zyklus massiv verletzt — fällig seit ${str(r, "next_review_date")}`,
     });
   }
 

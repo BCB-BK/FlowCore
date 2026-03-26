@@ -15,4 +15,7 @@ export const GetQualityPagesFilter = {
   orphan: "orphan",
   draft: "draft",
   stale: "stale",
+  no_tags: "no_tags",
+  broken_refs: "broken_refs",
+  incomplete: "incomplete",
 } as const;

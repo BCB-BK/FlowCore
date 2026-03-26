@@ -5,9 +5,12 @@
  * Enterprise Wiki API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DuplicateGroupMatchType } from "./duplicateGroupMatchType";
 import type { DuplicateGroupNodesItem } from "./duplicateGroupNodesItem";
 
 export interface DuplicateGroup {
   title: string;
+  matchType: DuplicateGroupMatchType;
+  similarityScore: number;
   nodes: DuplicateGroupNodesItem[];
 }

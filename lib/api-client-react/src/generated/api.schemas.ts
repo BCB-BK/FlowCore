@@ -1151,6 +1151,10 @@ export interface QualityOverview {
   orphanedPages: number;
   incompletePagesCount: number;
   avgCompleteness: number;
+  brokenLinks: number;
+  unreferencedMedia: number;
+  pagesWithoutTags: number;
+  zeroResultSearches: number;
 }
 
 export interface PageQualityRow {
@@ -1169,12 +1173,21 @@ export interface PageQualityRow {
   updatedAt: string;
   childCount: number;
   relationCount: number;
+  tagCount: number;
 }
 
 export interface PageQualityList {
   items: PageQualityRow[];
   total: number;
 }
+
+export type DuplicateGroupMatchType =
+  (typeof DuplicateGroupMatchType)[keyof typeof DuplicateGroupMatchType];
+
+export const DuplicateGroupMatchType = {
+  exact: "exact",
+  similar: "similar",
+} as const;
 
 export type DuplicateGroupNodesItem = {
   nodeId: string;
@@ -1186,6 +1199,8 @@ export type DuplicateGroupNodesItem = {
 
 export interface DuplicateGroup {
   title: string;
+  matchType: DuplicateGroupMatchType;
+  similarityScore: number;
   nodes: DuplicateGroupNodesItem[];
 }
 
@@ -1200,6 +1215,11 @@ export const MaintenanceHintType = {
   no_revision: "no_revision",
   archived_reference: "archived_reference",
   missing_mandatory_fields: "missing_mandatory_fields",
+  broken_link: "broken_link",
+  unreferenced_media: "unreferenced_media",
+  stale_policy_reference: "stale_policy_reference",
+  missing_tags: "missing_tags",
+  violated_review_cycle: "violated_review_cycle",
 } as const;
 
 export type MaintenanceHintSeverity =
@@ -1460,6 +1480,9 @@ export const GetQualityPagesFilter = {
   orphan: "orphan",
   draft: "draft",
   stale: "stale",
+  no_tags: "no_tags",
+  broken_refs: "broken_refs",
+  incomplete: "incomplete",
 } as const;
 
 export type GetSearchInsightsParams = {

@@ -2341,6 +2341,10 @@ export const GetQualityOverviewResponse = zod.object({
   orphanedPages: zod.number(),
   incompletePagesCount: zod.number(),
   avgCompleteness: zod.number(),
+  brokenLinks: zod.number(),
+  unreferencedMedia: zod.number(),
+  pagesWithoutTags: zod.number(),
+  zeroResultSearches: zod.number(),
 });
 
 /**
@@ -2351,7 +2355,16 @@ export const getQualityPagesQueryOffsetDefault = 0;
 
 export const GetQualityPagesQueryParams = zod.object({
   filter: zod
-    .enum(["no_owner", "overdue_review", "orphan", "draft", "stale"])
+    .enum([
+      "no_owner",
+      "overdue_review",
+      "orphan",
+      "draft",
+      "stale",
+      "no_tags",
+      "broken_refs",
+      "incomplete",
+    ])
     .optional(),
   limit: zod.coerce.number().default(getQualityPagesQueryLimitDefault),
   offset: zod.coerce.number().default(getQualityPagesQueryOffsetDefault),
@@ -2375,6 +2388,7 @@ export const GetQualityPagesResponse = zod.object({
       updatedAt: zod.string(),
       childCount: zod.number(),
       relationCount: zod.number(),
+      tagCount: zod.number(),
     }),
   ),
   total: zod.number(),
@@ -2385,6 +2399,8 @@ export const GetQualityPagesResponse = zod.object({
  */
 export const GetQualityDuplicatesResponseItem = zod.object({
   title: zod.string(),
+  matchType: zod.enum(["exact", "similar"]),
+  similarityScore: zod.number(),
   nodes: zod.array(
     zod.object({
       nodeId: zod.string().uuid(),
@@ -2411,6 +2427,11 @@ export const GetMaintenanceHintsResponseItem = zod.object({
     "no_revision",
     "archived_reference",
     "missing_mandatory_fields",
+    "broken_link",
+    "unreferenced_media",
+    "stale_policy_reference",
+    "missing_tags",
+    "violated_review_cycle",
   ]),
   severity: zod.enum(["critical", "warning", "info"]),
   nodeId: zod.string().uuid(),

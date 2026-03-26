@@ -2213,7 +2213,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [no_owner, overdue_review, orphan, draft, stale]
+            enum: [no_owner, overdue_review, orphan, draft, stale, no_tags, broken_refs, incomplete]
         - name: limit
           in: query
           schema:
@@ -4385,6 +4385,14 @@ components:
           type: integer
         avgCompleteness:
           type: number
+        brokenLinks:
+          type: integer
+        unreferencedMedia:
+          type: integer
+        pagesWithoutTags:
+          type: integer
+        zeroResultSearches:
+          type: integer
       required:
         - totalPages
         - publishedPages
@@ -4395,6 +4403,10 @@ components:
         - orphanedPages
         - incompletePagesCount
         - avgCompleteness
+        - brokenLinks
+        - unreferencedMedia
+        - pagesWithoutTags
+        - zeroResultSearches
 
     PageQualityRow:
       type: object
@@ -4432,6 +4444,8 @@ components:
           type: integer
         relationCount:
           type: integer
+        tagCount:
+          type: integer
       required:
         - nodeId
         - title
@@ -4446,6 +4460,7 @@ components:
         - updatedAt
         - childCount
         - relationCount
+        - tagCount
 
     PageQualityList:
       type: object
@@ -4465,6 +4480,11 @@ components:
       properties:
         title:
           type: string
+        matchType:
+          type: string
+          enum: [exact, similar]
+        similarityScore:
+          type: number
         nodes:
           type: array
           items:
@@ -4489,6 +4509,8 @@ components:
               - updatedAt
       required:
         - title
+        - matchType
+        - similarityScore
         - nodes
 
     MaintenanceHint:
@@ -4496,7 +4518,7 @@ components:
       properties:
         type:
           type: string
-          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, archived_reference, missing_mandatory_fields]
+          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, archived_reference, missing_mandatory_fields, broken_link, unreferenced_media, stale_policy_reference, missing_tags, violated_review_cycle]
         severity:
           type: string
           enum: [critical, warning, info]

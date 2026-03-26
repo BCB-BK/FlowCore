@@ -17,4 +17,9 @@ export const MaintenanceHintType = {
   no_revision: "no_revision",
   archived_reference: "archived_reference",
   missing_mandatory_fields: "missing_mandatory_fields",
+  broken_link: "broken_link",
+  unreferenced_media: "unreferenced_media",
+  stale_policy_reference: "stale_policy_reference",
+  missing_tags: "missing_tags",
+  violated_review_cycle: "violated_review_cycle",
 } as const;

@@ -22,4 +22,5 @@ export interface PageQualityRow {
   updatedAt: string;
   childCount: number;
   relationCount: number;
+  tagCount: number;
 }

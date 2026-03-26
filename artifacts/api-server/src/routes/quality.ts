@@ -92,7 +92,7 @@ qualityRouter.get("/my-work", requireAuth, async (req, res) => {
 qualityRouter.get(
   "/search-insights",
   requireAuth,
-  requirePermission("manage_settings"),
+  requirePermission("read_page"),
   async (req, res) => {
     try {
       const days = parseInt(req.query.days as string, 10) || 30;

@@ -16,4 +16,8 @@ export interface QualityOverview {
   orphanedPages: number;
   incompletePagesCount: number;
   avgCompleteness: number;
+  brokenLinks: number;
+  unreferencedMedia: number;
+  pagesWithoutTags: number;
+  zeroResultSearches: number;
 }
