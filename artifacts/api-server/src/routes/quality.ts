@@ -9,6 +9,8 @@ import {
   getPersonalWorkItems,
   getSearchInsights,
   getQualityByProcess,
+  getReviewDashboard,
+  getOwnershipMonitor,
 } from "../services/quality.service";
 import { getRolesForPrincipal } from "../services/principal.service";
 import { logger } from "../lib/logger";
@@ -109,6 +111,60 @@ qualityRouter.get(
     } catch (err) {
       logger.error({ err }, "Failed to get personal work items");
       res.status(500).json({ error: "Failed to get personal work items" });
+    }
+  },
+);
+
+qualityRouter.get(
+  "/review-dashboard",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    try {
+      const statusFilter = req.query.status as string | undefined;
+      const templateFilter = req.query.template as string | undefined;
+      const ownerFilter = req.query.owner as string | undefined;
+      const minAgeDays = req.query.minAge
+        ? Math.max(0, parseInt(req.query.minAge as string, 10) || 0)
+        : undefined;
+      const sortBy = (req.query.sortBy as string) || "updated_at";
+      const sortDir = (req.query.sortDir as string) || "desc";
+      const data = await getReviewDashboard(
+        statusFilter,
+        templateFilter,
+        ownerFilter,
+        minAgeDays,
+        sortBy,
+        sortDir,
+      );
+      res.json(data);
+    } catch (err) {
+      logger.error({ err }, "Failed to get review dashboard");
+      res.status(500).json({ error: "Failed to get review dashboard" });
+    }
+  },
+);
+
+qualityRouter.get(
+  "/ownership-monitor",
+  requireAuth,
+  requirePermission("read_page"),
+  async (req, res) => {
+    try {
+      const escalationThreshold = req.query.escalationThreshold
+        ? Math.max(
+            1,
+            Math.min(
+              parseInt(req.query.escalationThreshold as string, 10) || 30,
+              365,
+            ),
+          )
+        : 30;
+      const data = await getOwnershipMonitor(escalationThreshold);
+      res.json(data);
+    } catch (err) {
+      logger.error({ err }, "Failed to get ownership monitor");
+      res.status(500).json({ error: "Failed to get ownership monitor" });
     }
   },
 );

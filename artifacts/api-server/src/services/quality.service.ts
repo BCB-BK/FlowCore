@@ -977,6 +977,266 @@ export async function getPersonalWorkItems(
   return items;
 }
 
+export interface ReviewDashboardItem {
+  workingCopyId: string;
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  wcStatus: string;
+  changeType: string;
+  changeSummary: string | null;
+  authorId: string;
+  reviewerId: string | null;
+  approverId: string | null;
+  submittedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  ageDays: number;
+}
+
+export interface ReviewDashboardSummary {
+  totalWorkingCopies: number;
+  draftCount: number;
+  inReviewCount: number;
+  submittedCount: number;
+  changesRequestedCount: number;
+  approvedForPublishCount: number;
+  overdueCount: number;
+  items: ReviewDashboardItem[];
+}
+
+export interface OwnershipGap {
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  status: string;
+  ownerId: string | null;
+  hasReviewer: boolean;
+  hasApprover: boolean;
+  gapTypes: string[];
+  lastUpdated: string;
+  daysSinceUpdate: number;
+  isEscalated: boolean;
+}
+
+export interface OwnershipMonitorSummary {
+  totalPages: number;
+  pagesWithoutOwner: number;
+  pagesWithoutReviewer: number;
+  pagesWithoutApprover: number;
+  pagesWithMultipleGaps: number;
+  escalatedCount: number;
+  items: OwnershipGap[];
+}
+
+export async function getReviewDashboard(
+  statusFilter?: string,
+  templateFilter?: string,
+  ownerFilter?: string,
+  minAgeDays?: number,
+  sortBy = "updated_at",
+  sortDir = "desc",
+): Promise<ReviewDashboardSummary> {
+  let whereClause = sql`WHERE wc.status NOT IN ('cancelled', 'published')`;
+  if (statusFilter && statusFilter !== "all") {
+    whereClause = sql`WHERE wc.status = ${statusFilter} AND wc.status NOT IN ('cancelled', 'published')`;
+  }
+
+  const summaryResult = await db.execute(sql`
+    SELECT
+      COUNT(*) as total,
+      COUNT(*) FILTER (WHERE wc.status = 'draft') as draft_count,
+      COUNT(*) FILTER (WHERE wc.status = 'in_review') as in_review_count,
+      COUNT(*) FILTER (WHERE wc.status = 'submitted') as submitted_count,
+      COUNT(*) FILTER (WHERE wc.status = 'changes_requested') as changes_requested_count,
+      COUNT(*) FILTER (WHERE wc.status = 'approved_for_publish') as approved_for_publish_count,
+      COUNT(*) FILTER (WHERE wc.submitted_at IS NOT NULL AND wc.submitted_at < NOW() - INTERVAL '7 days' AND wc.status IN ('submitted', 'approved_for_publish')) as overdue_count
+    FROM content_working_copies wc
+    JOIN content_nodes cn ON wc.node_id = cn.id
+    WHERE wc.status NOT IN ('cancelled', 'published') AND NOT cn.is_deleted
+  `);
+  const sr = (summaryResult.rows[0] ?? {}) as R;
+
+  let templateWhere = sql``;
+  if (templateFilter && templateFilter !== "all") {
+    templateWhere = sql` AND cn.template_type = ${templateFilter}`;
+  }
+
+  let ownerWhere = sql``;
+  if (ownerFilter && ownerFilter !== "all") {
+    ownerWhere = sql` AND wc.author_id = ${ownerFilter}`;
+  }
+
+  let ageWhere = sql``;
+  if (minAgeDays && minAgeDays > 0) {
+    ageWhere = sql` AND wc.created_at < NOW() - make_interval(days => ${minAgeDays})`;
+  }
+
+  const orderClause =
+    sortBy === "age"
+      ? sql`ORDER BY wc.created_at ${sortDir === "asc" ? sql`ASC` : sql`DESC`}`
+      : sortBy === "status"
+        ? sql`ORDER BY wc.status ${sortDir === "asc" ? sql`ASC` : sql`DESC`}, wc.updated_at DESC`
+        : sql`ORDER BY wc.updated_at ${sortDir === "asc" ? sql`ASC` : sql`DESC`}`;
+
+  const itemsResult = await db.execute(sql`
+    SELECT
+      wc.id as working_copy_id,
+      wc.node_id,
+      wc.title,
+      cn.display_code,
+      cn.template_type,
+      wc.status as wc_status,
+      wc.change_type,
+      wc.change_summary,
+      wc.author_id,
+      wc.reviewer_id,
+      wc.approver_id,
+      wc.submitted_at::text as submitted_at,
+      wc.created_at::text as created_at,
+      wc.updated_at::text as updated_at,
+      EXTRACT(EPOCH FROM (NOW() - wc.created_at)) / 86400 as age_days
+    FROM content_working_copies wc
+    JOIN content_nodes cn ON wc.node_id = cn.id
+    ${whereClause}
+      AND NOT cn.is_deleted
+      ${templateWhere}
+      ${ownerWhere}
+      ${ageWhere}
+    ${orderClause}
+    LIMIT 200
+  `);
+
+  const items: ReviewDashboardItem[] = itemsResult.rows.map((raw) => {
+    const r = raw as R;
+    return {
+      workingCopyId: str(r, "working_copy_id"),
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      templateType: str(r, "template_type"),
+      wcStatus: str(r, "wc_status"),
+      changeType: str(r, "change_type"),
+      changeSummary: r.change_summary ? String(r.change_summary) : null,
+      authorId: str(r, "author_id"),
+      reviewerId: r.reviewer_id ? String(r.reviewer_id) : null,
+      approverId: r.approver_id ? String(r.approver_id) : null,
+      submittedAt: r.submitted_at ? String(r.submitted_at) : null,
+      createdAt: str(r, "created_at"),
+      updatedAt: str(r, "updated_at"),
+      ageDays: Math.floor(parseFloat(String(r.age_days ?? "0"))),
+    };
+  });
+
+  return {
+    totalWorkingCopies: num(sr, "total"),
+    draftCount: num(sr, "draft_count"),
+    inReviewCount: num(sr, "in_review_count"),
+    submittedCount: num(sr, "submitted_count"),
+    changesRequestedCount: num(sr, "changes_requested_count"),
+    approvedForPublishCount: num(sr, "approved_for_publish_count"),
+    overdueCount: num(sr, "overdue_count"),
+    items,
+  };
+}
+
+export async function getOwnershipMonitor(
+  escalationThresholdDays = 30,
+): Promise<OwnershipMonitorSummary> {
+  const safeThreshold = Math.max(1, Math.min(escalationThresholdDays, 365));
+
+  const summaryResult = await db.execute(sql`
+    SELECT
+      COUNT(*) as total_pages,
+      COUNT(*) FILTER (WHERE cn.owner_id IS NULL) as pages_without_owner,
+      COUNT(*) FILTER (WHERE cr.reviewer_id IS NULL AND cn.current_revision_id IS NOT NULL) as pages_without_reviewer,
+      COUNT(*) FILTER (WHERE cr.approver_id IS NULL AND cn.current_revision_id IS NOT NULL) as pages_without_approver,
+      COUNT(*) FILTER (WHERE (
+        (CASE WHEN cn.owner_id IS NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN cr.reviewer_id IS NULL AND cn.current_revision_id IS NOT NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN cr.approver_id IS NULL AND cn.current_revision_id IS NOT NULL THEN 1 ELSE 0 END)
+      ) > 1) as pages_with_multiple_gaps
+    FROM content_nodes cn
+    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+  `);
+  const sr = (summaryResult.rows[0] ?? {}) as R;
+
+  const gapsResult = await db.execute(sql`
+    SELECT
+      cn.id as node_id,
+      cn.title,
+      cn.display_code,
+      cn.template_type,
+      cn.status,
+      cn.owner_id,
+      cn.current_revision_id,
+      cr.reviewer_id,
+      cr.approver_id,
+      cn.updated_at::text as updated_at,
+      EXTRACT(EPOCH FROM (NOW() - cn.updated_at)) / 86400 as days_since_update
+    FROM content_nodes cn
+    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    WHERE NOT cn.is_deleted
+      AND (
+        cn.owner_id IS NULL
+        OR (cr.reviewer_id IS NULL AND cn.current_revision_id IS NOT NULL)
+        OR (cr.approver_id IS NULL AND cn.current_revision_id IS NOT NULL)
+      )
+    ORDER BY
+      CASE
+        WHEN cn.owner_id IS NULL AND cr.reviewer_id IS NULL AND cr.approver_id IS NULL THEN 0
+        WHEN cn.owner_id IS NULL THEN 1
+        WHEN cr.reviewer_id IS NULL AND cr.approver_id IS NULL THEN 2
+        ELSE 3
+      END,
+      cn.updated_at DESC
+    LIMIT 200
+  `);
+
+  const items: OwnershipGap[] = gapsResult.rows.map((raw) => {
+    const r = raw as R;
+    const hasCurrentRevision = !!r.current_revision_id;
+    const gapTypes: string[] = [];
+    if (!r.owner_id) gapTypes.push("no_owner");
+    if (!r.reviewer_id && hasCurrentRevision) gapTypes.push("no_reviewer");
+    if (!r.approver_id && hasCurrentRevision) gapTypes.push("no_approver");
+    const daysSinceUpdate = Math.floor(
+      parseFloat(String(r.days_since_update ?? "0")),
+    );
+    const isEscalated =
+      gapTypes.includes("no_owner") && daysSinceUpdate > safeThreshold;
+    return {
+      nodeId: str(r, "node_id"),
+      title: str(r, "title"),
+      displayCode: str(r, "display_code"),
+      templateType: str(r, "template_type"),
+      status: str(r, "status"),
+      ownerId: r.owner_id ? String(r.owner_id) : null,
+      hasReviewer: !!r.reviewer_id,
+      hasApprover: !!r.approver_id,
+      gapTypes,
+      lastUpdated: str(r, "updated_at"),
+      daysSinceUpdate,
+      isEscalated,
+    };
+  });
+
+  const escalatedCount = items.filter((i) => i.isEscalated).length;
+
+  return {
+    totalPages: num(sr, "total_pages"),
+    pagesWithoutOwner: num(sr, "pages_without_owner"),
+    pagesWithoutReviewer: num(sr, "pages_without_reviewer"),
+    pagesWithoutApprover: num(sr, "pages_without_approver"),
+    pagesWithMultipleGaps: num(sr, "pages_with_multiple_gaps"),
+    escalatedCount,
+    items,
+  };
+}
+
 export interface SearchInsights {
   totalSearches: number;
   zeroResultSearches: number;

@@ -60,9 +60,11 @@ import type {
   ErrorResponse,
   ForwardLink,
   GetAiUsageStatsParams,
+  GetOwnershipMonitorParams,
   GetPersonPhotoParams,
   GetPrincipalPermissionsParams,
   GetQualityPagesParams,
+  GetReviewDashboardParams,
   GetRolePermissionMatrix200,
   GetSearchAnalyticsParams,
   GetSearchInsightsParams,
@@ -88,6 +90,7 @@ import type {
   MediaAssetUsage,
   MoveNodeInput,
   NodeOwnership,
+  OwnershipMonitorSummary,
   PagePermission,
   PageQualityList,
   PageTypeDefinition,
@@ -105,6 +108,7 @@ import type {
   RestoreBackup200,
   RestoreRevisionInput,
   ReturnWorkingCopyForChangesBody,
+  ReviewDashboardSummary,
   ReviewWorkflow,
   ReviewWorkflowDetail,
   RevisionDiff,
@@ -11010,6 +11014,212 @@ export function useGetQualityByProcess<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetQualityByProcessQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get system-wide review/working copy dashboard
+ */
+export const getGetReviewDashboardUrl = (params?: GetReviewDashboardParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/quality/review-dashboard?${stringifiedParams}`
+    : `/api/quality/review-dashboard`;
+};
+
+export const getReviewDashboard = async (
+  params?: GetReviewDashboardParams,
+  options?: RequestInit,
+): Promise<ReviewDashboardSummary> => {
+  return customFetch<ReviewDashboardSummary>(getGetReviewDashboardUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetReviewDashboardQueryKey = (
+  params?: GetReviewDashboardParams,
+) => {
+  return [
+    `/api/quality/review-dashboard`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetReviewDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getReviewDashboard>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetReviewDashboardParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReviewDashboard>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetReviewDashboardQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getReviewDashboard>>
+  > = ({ signal }) => getReviewDashboard(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getReviewDashboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetReviewDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getReviewDashboard>>
+>;
+export type GetReviewDashboardQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get system-wide review/working copy dashboard
+ */
+
+export function useGetReviewDashboard<
+  TData = Awaited<ReturnType<typeof getReviewDashboard>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetReviewDashboardParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getReviewDashboard>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetReviewDashboardQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get ownership gap analysis for governance
+ */
+export const getGetOwnershipMonitorUrl = (
+  params?: GetOwnershipMonitorParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/quality/ownership-monitor?${stringifiedParams}`
+    : `/api/quality/ownership-monitor`;
+};
+
+export const getOwnershipMonitor = async (
+  params?: GetOwnershipMonitorParams,
+  options?: RequestInit,
+): Promise<OwnershipMonitorSummary> => {
+  return customFetch<OwnershipMonitorSummary>(
+    getGetOwnershipMonitorUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetOwnershipMonitorQueryKey = (
+  params?: GetOwnershipMonitorParams,
+) => {
+  return [
+    `/api/quality/ownership-monitor`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetOwnershipMonitorQueryOptions = <
+  TData = Awaited<ReturnType<typeof getOwnershipMonitor>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetOwnershipMonitorParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getOwnershipMonitor>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetOwnershipMonitorQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getOwnershipMonitor>>
+  > = ({ signal }) =>
+    getOwnershipMonitor(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getOwnershipMonitor>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetOwnershipMonitorQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getOwnershipMonitor>>
+>;
+export type GetOwnershipMonitorQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get ownership gap analysis for governance
+ */
+
+export function useGetOwnershipMonitor<
+  TData = Awaited<ReturnType<typeof getOwnershipMonitor>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetOwnershipMonitorParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getOwnershipMonitor>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetOwnershipMonitorQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

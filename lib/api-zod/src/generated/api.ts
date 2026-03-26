@@ -3281,6 +3281,118 @@ export const GetQualityByProcessResponse = zod.array(
 );
 
 /**
+ * @summary Get system-wide review/working copy dashboard
+ */
+export const getReviewDashboardQueryMinAgeMin = 0;
+
+export const getReviewDashboardQuerySortByDefault = `updated_at`;
+export const getReviewDashboardQuerySortDirDefault = `desc`;
+
+export const GetReviewDashboardQueryParams = zod.object({
+  status: zod
+    .enum([
+      "all",
+      "draft",
+      "in_review",
+      "submitted",
+      "changes_requested",
+      "approved_for_publish",
+    ])
+    .optional(),
+  template: zod.coerce.string().optional(),
+  owner: zod.coerce
+    .string()
+    .optional()
+    .describe("Filter by author\/owner principal ID"),
+  minAge: zod.coerce
+    .number()
+    .min(getReviewDashboardQueryMinAgeMin)
+    .optional()
+    .describe("Minimum age in days"),
+  sortBy: zod
+    .enum(["updated_at", "age", "status"])
+    .default(getReviewDashboardQuerySortByDefault),
+  sortDir: zod
+    .enum(["asc", "desc"])
+    .default(getReviewDashboardQuerySortDirDefault),
+});
+
+export const GetReviewDashboardResponse = zod.object({
+  totalWorkingCopies: zod.number(),
+  draftCount: zod.number(),
+  inReviewCount: zod.number(),
+  submittedCount: zod.number(),
+  changesRequestedCount: zod.number(),
+  approvedForPublishCount: zod.number(),
+  overdueCount: zod.number(),
+  items: zod.array(
+    zod.object({
+      workingCopyId: zod.string().uuid(),
+      nodeId: zod.string().uuid(),
+      title: zod.string(),
+      displayCode: zod.string(),
+      templateType: zod.string(),
+      wcStatus: zod.enum([
+        "draft",
+        "in_review",
+        "submitted",
+        "changes_requested",
+        "approved_for_publish",
+      ]),
+      changeType: zod.string(),
+      changeSummary: zod.string().nullish(),
+      authorId: zod.string(),
+      reviewerId: zod.string().nullish(),
+      approverId: zod.string().nullish(),
+      submittedAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+      ageDays: zod.number(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get ownership gap analysis for governance
+ */
+export const getOwnershipMonitorQueryEscalationThresholdDefault = 30;
+export const getOwnershipMonitorQueryEscalationThresholdMax = 365;
+
+export const GetOwnershipMonitorQueryParams = zod.object({
+  escalationThreshold: zod.coerce
+    .number()
+    .min(1)
+    .max(getOwnershipMonitorQueryEscalationThresholdMax)
+    .default(getOwnershipMonitorQueryEscalationThresholdDefault)
+    .describe("Days without owner before escalation flag is set"),
+});
+
+export const GetOwnershipMonitorResponse = zod.object({
+  totalPages: zod.number(),
+  pagesWithoutOwner: zod.number(),
+  pagesWithoutReviewer: zod.number(),
+  pagesWithoutApprover: zod.number(),
+  pagesWithMultipleGaps: zod.number(),
+  escalatedCount: zod.number(),
+  items: zod.array(
+    zod.object({
+      nodeId: zod.string().uuid(),
+      title: zod.string(),
+      displayCode: zod.string(),
+      templateType: zod.string(),
+      status: zod.string(),
+      ownerId: zod.string().nullish(),
+      hasReviewer: zod.boolean(),
+      hasApprover: zod.boolean(),
+      gapTypes: zod.array(zod.enum(["no_owner", "no_reviewer", "no_approver"])),
+      lastUpdated: zod.string(),
+      daysSinceUpdate: zod.number(),
+      isEscalated: zod.boolean(),
+    }),
+  ),
+});
+
+/**
  * @summary Get search analytics insights
  */
 export const getSearchInsightsQueryDaysDefault = 30;

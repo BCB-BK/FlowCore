@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -47,8 +48,15 @@ import {
   Search,
   ImageOff,
   Tag,
+  FileEdit,
+  Send,
+  RotateCcw,
+  UserX,
+  Eye,
+  UserCheck,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { PAGE_TYPE_LABELS } from "@/lib/types";
 import {
   useGetQualityOverview,
   useGetQualityPages,
@@ -56,10 +64,14 @@ import {
   useGetMaintenanceHints,
   useGetSearchInsights,
   useGetQualityByProcess,
+  useGetReviewDashboard,
+  useGetOwnershipMonitor,
 } from "@workspace/api-client-react";
 import type {
   GetQualityPagesFilter,
   MaintenanceHintSeverity,
+  GetReviewDashboardParams,
+  GetReviewDashboardStatus,
 } from "@workspace/api-client-react";
 
 function StatCard({
@@ -167,10 +179,73 @@ function StatusLabel({ status }: { status: string }) {
   return <Badge variant={c.variant}>{c.label}</Badge>;
 }
 
+function WcStatusBadge({ status }: { status: string }) {
+  const config: Record<
+    string,
+    {
+      label: string;
+      variant: "default" | "secondary" | "outline" | "destructive";
+    }
+  > = {
+    draft: { label: "Entwurf", variant: "secondary" },
+    in_review: { label: "In Review", variant: "default" },
+    submitted: { label: "Eingereicht", variant: "default" },
+    changes_requested: { label: "Zurückgegeben", variant: "destructive" },
+    approved_for_publish: { label: "Freigegeben", variant: "outline" },
+  };
+  const c = config[status] || { label: status, variant: "outline" as const };
+  return <Badge variant={c.variant}>{c.label}</Badge>;
+}
+
+function ChangeTypeBadge({ type }: { type: string }) {
+  const labels: Record<string, string> = {
+    editorial: "Redaktionell",
+    structural: "Strukturell",
+    content: "Inhaltlich",
+    metadata: "Metadaten",
+  };
+  return (
+    <span className="text-xs text-muted-foreground">
+      {labels[type] || type}
+    </span>
+  );
+}
+
+function GapBadge({ gap }: { gap: string }) {
+  const config: Record<
+    string,
+    { label: string; variant: "destructive" | "secondary" | "outline" }
+  > = {
+    no_owner: { label: "Kein Eigentümer", variant: "destructive" },
+    no_reviewer: { label: "Kein Reviewer", variant: "secondary" },
+    no_approver: { label: "Kein Genehmiger", variant: "outline" },
+  };
+  const c = config[gap] || { label: gap, variant: "outline" as const };
+  return (
+    <Badge variant={c.variant} className="text-xs">
+      {c.label}
+    </Badge>
+  );
+}
+
+function filteredOwnershipItems<
+  T extends { gapTypes: string[] },
+>(items: T[], filter: string): T[] {
+  if (filter === "all") return items;
+  if (filter === "multiple") return items.filter((i) => i.gapTypes.length > 1);
+  return items.filter((i) => i.gapTypes.includes(filter));
+}
+
 export function QualityDashboard() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
   const [pageFilter, setPageFilter] = useState<string>("all");
+  const [reviewStatusFilter, setReviewStatusFilter] = useState<string>("all");
+  const [reviewOwnerFilter, setReviewOwnerFilter] = useState<string>("");
+  const [reviewMinAge, setReviewMinAge] = useState<string>("");
+  const [reviewTemplateFilter, setReviewTemplateFilter] = useState<string>("all");
+  const [ownershipGapFilter, setOwnershipGapFilter] = useState<string>("all");
+  const [escalationThreshold, setEscalationThreshold] = useState<string>("30");
 
   const { data: overview, isLoading: overviewLoading } =
     useGetQualityOverview();
@@ -184,6 +259,26 @@ export function QualityDashboard() {
     useGetSearchInsights();
   const { data: processByType, isLoading: processLoading } =
     useGetQualityByProcess();
+  const reviewParams: GetReviewDashboardParams = {};
+  if (reviewStatusFilter !== "all") {
+    reviewParams.status = reviewStatusFilter as GetReviewDashboardStatus;
+  }
+  if (reviewTemplateFilter !== "all") {
+    reviewParams.template = reviewTemplateFilter;
+  }
+  if (reviewOwnerFilter.trim()) {
+    reviewParams.owner = reviewOwnerFilter.trim();
+  }
+  if (reviewMinAge && parseInt(reviewMinAge, 10) > 0) {
+    reviewParams.minAge = parseInt(reviewMinAge, 10);
+  }
+  const { data: reviewDashboard, isLoading: reviewLoading } =
+    useGetReviewDashboard(reviewParams);
+  const parsedThreshold = parseInt(escalationThreshold, 10) || 30;
+  const { data: ownershipMonitor, isLoading: ownershipLoading } =
+    useGetOwnershipMonitor({
+      escalationThreshold: Math.max(1, Math.min(parsedThreshold, 365)),
+    });
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -335,6 +430,22 @@ export function QualityDashboard() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="reviews">
+            Arbeitskopien
+            {reviewDashboard && reviewDashboard.totalWorkingCopies > 0 && (
+              <Badge variant="secondary" className="ml-2 text-xs px-1.5">
+                {reviewDashboard.totalWorkingCopies}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="ownership">
+            Verantwortlichkeit
+            {ownershipMonitor && ownershipMonitor.pagesWithoutOwner > 0 && (
+              <Badge variant="destructive" className="ml-2 text-xs px-1.5">
+                {ownershipMonitor.pagesWithoutOwner}
+              </Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="search">
             Suche
             {overview && overview.zeroResultSearches > 0 && (
@@ -428,7 +539,7 @@ export function QualityDashboard() {
                 Qualität nach Prozess-/Seitentyp
               </CardTitle>
               <CardDescription>
-                Aufschlüsselung der Metriken pro Template-Typ
+                Aufschlüsselung der Metriken pro Seitentyp
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -447,7 +558,7 @@ export function QualityDashboard() {
                       <TableHead className="text-right">Gesamt</TableHead>
                       <TableHead className="text-right">Veröff.</TableHead>
                       <TableHead className="text-right">Entwurf</TableHead>
-                      <TableHead className="text-right">Ohne Owner</TableHead>
+                      <TableHead className="text-right">Ohne Verantw.</TableHead>
                       <TableHead className="text-right">Ohne Tags</TableHead>
                       <TableHead className="text-right">Ø Vollst.</TableHead>
                     </TableRow>
@@ -456,7 +567,7 @@ export function QualityDashboard() {
                     {processByType.map((row) => (
                       <TableRow key={row.templateType}>
                         <TableCell className="font-medium text-sm">
-                          {row.templateType.replace(/_/g, " ")}
+                          {PAGE_TYPE_LABELS[row.templateType] || row.templateType.replace(/_/g, " ")}
                         </TableCell>
                         <TableCell className="text-right">
                           {row.totalPages}
@@ -756,7 +867,7 @@ export function QualityDashboard() {
                             </span>
                             <StatusLabel status={node.status} />
                             <span className="text-muted-foreground">
-                              {node.templateType}
+                              {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
                             </span>
                             <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" />
                           </div>
@@ -769,6 +880,427 @@ export function QualityDashboard() {
                 <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
                   <CheckCircle className="h-8 w-8 text-green-500" />
                   <p>Keine Duplikate gefunden</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reviews" className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {reviewLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-20" />
+              ))
+            ) : reviewDashboard ? (
+              <>
+                <StatCard
+                  title="Gesamt"
+                  value={reviewDashboard.totalWorkingCopies}
+                  icon={FileEdit}
+                  color="bg-primary/10 text-primary"
+                />
+                <StatCard
+                  title="Entwürfe"
+                  value={reviewDashboard.draftCount}
+                  icon={FileEdit}
+                  color="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                  onClick={() => {
+                    setReviewStatusFilter("draft");
+                  }}
+                />
+                <StatCard
+                  title="In Review"
+                  value={reviewDashboard.inReviewCount}
+                  icon={Search}
+                  color="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                  onClick={() => {
+                    setReviewStatusFilter("in_review");
+                  }}
+                />
+                <StatCard
+                  title="Eingereicht"
+                  value={reviewDashboard.submittedCount}
+                  icon={Send}
+                  color="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  onClick={() => {
+                    setReviewStatusFilter("submitted");
+                  }}
+                />
+                <StatCard
+                  title="Zurückgegeben"
+                  value={reviewDashboard.changesRequestedCount}
+                  icon={RotateCcw}
+                  color="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                  onClick={() => {
+                    setReviewStatusFilter("changes_requested");
+                  }}
+                />
+                <StatCard
+                  title="Zur Freigabe"
+                  value={reviewDashboard.approvedForPublishCount}
+                  icon={CheckCircle}
+                  color="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  onClick={() => {
+                    setReviewStatusFilter("approved_for_publish");
+                  }}
+                />
+                <StatCard
+                  title="Überfällig (>7d)"
+                  value={reviewDashboard.overdueCount}
+                  icon={Clock}
+                  color="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                />
+              </>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap">
+            <Select value={reviewStatusFilter} onValueChange={setReviewStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[220px]">
+                <SelectValue placeholder="Status wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Status</SelectItem>
+                <SelectItem value="draft">Entwürfe</SelectItem>
+                <SelectItem value="in_review">In Review</SelectItem>
+                <SelectItem value="submitted">Eingereicht</SelectItem>
+                <SelectItem value="changes_requested">Zurückgegeben</SelectItem>
+                <SelectItem value="approved_for_publish">Zur Freigabe</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={reviewTemplateFilter} onValueChange={setReviewTemplateFilter}>
+              <SelectTrigger className="w-full sm:w-[220px]">
+                <SelectValue placeholder="Seitentyp wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Seitentypen</SelectItem>
+                <SelectItem value="process_page_text">Prozessseite (Text)</SelectItem>
+                <SelectItem value="process_page_graphic">Prozessseite (Grafik)</SelectItem>
+                <SelectItem value="area_overview">Bereichsübersicht</SelectItem>
+                <SelectItem value="core_process_overview">Kernprozess-Übersicht</SelectItem>
+                <SelectItem value="work_instruction">Arbeitsanweisung</SelectItem>
+                <SelectItem value="procedure_instruction">Verfahrensanweisung</SelectItem>
+                <SelectItem value="policy">Richtlinie / Policy</SelectItem>
+                <SelectItem value="checklist">Checkliste / Formularvorlage</SelectItem>
+                <SelectItem value="faq">FAQ / Wissensartikel</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Autor-ID filtern…"
+              value={reviewOwnerFilter}
+              onChange={(e) => setReviewOwnerFilter(e.target.value)}
+              className="w-full sm:w-[200px]"
+            />
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                placeholder="Min. Alter (Tage)"
+                value={reviewMinAge}
+                onChange={(e) => setReviewMinAge(e.target.value)}
+                className="w-full sm:w-[160px]"
+                min={0}
+              />
+            </div>
+            {reviewDashboard && (
+              <span className="text-sm text-muted-foreground">
+                {reviewDashboard.items.length} Arbeitskopien
+              </span>
+            )}
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              {reviewLoading ? (
+                <div className="p-4 space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12" />
+                  ))}
+                </div>
+              ) : reviewDashboard && reviewDashboard.items.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Kennung</TableHead>
+                        <TableHead>Titel</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Änderungstyp</TableHead>
+                        <TableHead>Autor</TableHead>
+                        <TableHead>Reviewer</TableHead>
+                        <TableHead className="text-right">Alter</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reviewDashboard.items.map((item) => (
+                        <TableRow
+                          key={item.workingCopyId}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => navigate(`/nodes/${item.nodeId}/review`)}
+                        >
+                          <TableCell className="font-mono text-xs">
+                            {item.displayCode}
+                          </TableCell>
+                          <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
+                            {item.title}
+                          </TableCell>
+                          <TableCell>
+                            <WcStatusBadge status={item.wcStatus} />
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            <ChangeTypeBadge type={item.changeType} />
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground font-mono">
+                            {item.authorId.substring(0, 8)}…
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground font-mono">
+                            {item.reviewerId ? `${item.reviewerId.substring(0, 8)}…` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-sm">
+                            <span className={item.ageDays > 7 ? "text-red-600 font-medium" : ""}>
+                              {item.ageDays === 0
+                                ? "Heute"
+                                : item.ageDays === 1
+                                  ? "1 Tag"
+                                  : `${item.ageDays} Tage`}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                  <p>Keine offenen Arbeitskopien</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ownership" className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {ownershipLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-20" />
+              ))
+            ) : ownershipMonitor ? (
+              <>
+                <StatCard
+                  title="Seiten gesamt"
+                  value={ownershipMonitor.totalPages}
+                  icon={BarChart3}
+                  color="bg-primary/10 text-primary"
+                />
+                <StatCard
+                  title="Ohne Verantwortlichen"
+                  value={ownershipMonitor.pagesWithoutOwner}
+                  icon={UserX}
+                  color="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  onClick={() => setOwnershipGapFilter("no_owner")}
+                />
+                <StatCard
+                  title="Ohne Reviewer"
+                  value={ownershipMonitor.pagesWithoutReviewer}
+                  icon={Eye}
+                  color="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                  onClick={() => setOwnershipGapFilter("no_reviewer")}
+                />
+                <StatCard
+                  title="Ohne Genehmiger"
+                  value={ownershipMonitor.pagesWithoutApprover}
+                  icon={UserCheck}
+                  color="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                  onClick={() => setOwnershipGapFilter("no_approver")}
+                />
+                <StatCard
+                  title="Mehrfache Lücken"
+                  value={ownershipMonitor.pagesWithMultipleGaps}
+                  icon={AlertTriangle}
+                  color="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                  onClick={() => setOwnershipGapFilter("multiple")}
+                />
+              </>
+            ) : null}
+          </div>
+
+          {ownershipMonitor &&
+            (ownershipMonitor.escalatedCount > 0 ||
+              ownershipMonitor.pagesWithoutOwner > 0) && (
+              <Card
+                className={
+                  ownershipMonitor.escalatedCount > 0
+                    ? "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20"
+                    : "border-orange-200 dark:border-orange-900"
+                }
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle
+                      className={`h-5 w-5 mt-0.5 shrink-0 ${ownershipMonitor.escalatedCount > 0 ? "text-red-600" : "text-orange-600"}`}
+                    />
+                    <div>
+                      <p className="font-medium text-sm">
+                        {ownershipMonitor.escalatedCount > 0
+                          ? "Eskalation aktiv"
+                          : "Eskalationshinweis"}
+                      </p>
+                      {ownershipMonitor.escalatedCount > 0 && (
+                        <p className="text-sm text-red-600 font-medium mt-1">
+                          {ownershipMonitor.escalatedCount} Seiten sind seit
+                          über {parsedThreshold} Tagen ohne Verantwortlichen und wurden zur
+                          Eskalation vorgemerkt.
+                        </p>
+                      )}
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {ownershipMonitor.pagesWithoutOwner} Seiten ohne
+                        Eigentümer, {ownershipMonitor.pagesWithoutReviewer} ohne
+                        Reviewer, {ownershipMonitor.pagesWithoutApprover} ohne
+                        Genehmiger. Gemäß Governance-Richtlinien sollte jede
+                        Seite einen Eigentümer, einen Reviewer und einen
+                        Genehmiger haben.
+                      </p>
+                      {ownershipMonitor.pagesWithMultipleGaps > 0 && (
+                        <p className="text-sm text-orange-600 mt-1 font-medium">
+                          {ownershipMonitor.pagesWithMultipleGaps} Seiten haben
+                          mehrere Verantwortlichkeitslücken.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap">
+            <Select value={ownershipGapFilter} onValueChange={setOwnershipGapFilter}>
+              <SelectTrigger className="w-full sm:w-[220px]">
+                <SelectValue placeholder="Filter wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Lücken</SelectItem>
+                <SelectItem value="no_owner">Ohne Verantwortlichen</SelectItem>
+                <SelectItem value="no_reviewer">Ohne Reviewer</SelectItem>
+                <SelectItem value="no_approver">Ohne Genehmiger</SelectItem>
+                <SelectItem value="multiple">Mehrfache Lücken</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground whitespace-nowrap">
+                Eskalation nach
+              </label>
+              <Input
+                type="number"
+                value={escalationThreshold}
+                onChange={(e) => setEscalationThreshold(e.target.value)}
+                className="w-[80px]"
+                min={1}
+                max={365}
+              />
+              <span className="text-sm text-muted-foreground">Tagen</span>
+            </div>
+            {ownershipMonitor && (
+              <span className="text-sm text-muted-foreground">
+                {filteredOwnershipItems(ownershipMonitor.items, ownershipGapFilter).length} Seiten
+              </span>
+            )}
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Verantwortlichkeitslücken
+              </CardTitle>
+              <CardDescription>
+                Seiten mit fehlenden Eigentümern, Reviewern oder Genehmigern
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {ownershipLoading ? (
+                <div className="p-4 space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12" />
+                  ))}
+                </div>
+              ) : ownershipMonitor &&
+                filteredOwnershipItems(ownershipMonitor.items, ownershipGapFilter).length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Kennung</TableHead>
+                        <TableHead>Titel</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Lücken</TableHead>
+                        <TableHead className="text-right">Inaktiv</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOwnershipItems(ownershipMonitor.items, ownershipGapFilter).map(
+                        (item) => (
+                          <TableRow
+                            key={item.nodeId}
+                            className={`cursor-pointer hover:bg-muted/50 ${item.isEscalated ? "bg-red-50/50 dark:bg-red-950/10" : ""}`}
+                            onClick={() => navigate(`/node/${item.nodeId}`)}
+                          >
+                            <TableCell className="font-mono text-xs">
+                              <div className="flex items-center gap-1">
+                                {item.isEscalated && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        Eskaliert: &gt;{parsedThreshold} Tage ohne Verantwortlichen
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                                {item.displayCode}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
+                              {item.title}
+                            </TableCell>
+                            <TableCell>
+                              <StatusLabel status={item.status} />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 flex-wrap">
+                                {item.gapTypes.map((gap) => (
+                                  <GapBadge key={gap} gap={gap} />
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right text-sm">
+                              <span
+                                className={
+                                  item.daysSinceUpdate > parsedThreshold
+                                    ? "text-red-600 font-medium"
+                                    : ""
+                                }
+                              >
+                                {item.daysSinceUpdate === 0
+                                  ? "Heute"
+                                  : item.daysSinceUpdate === 1
+                                    ? "1 Tag"
+                                    : `${item.daysSinceUpdate} Tage`}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ),
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                  <p>Keine Verantwortlichkeitslücken gefunden</p>
                 </div>
               )}
             </CardContent>

@@ -1548,6 +1548,80 @@ export interface ProcessQualityRow {
   pagesWithoutTags: number;
 }
 
+export type ReviewDashboardItemWcStatus =
+  (typeof ReviewDashboardItemWcStatus)[keyof typeof ReviewDashboardItemWcStatus];
+
+export const ReviewDashboardItemWcStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  submitted: "submitted",
+  changes_requested: "changes_requested",
+  approved_for_publish: "approved_for_publish",
+} as const;
+
+export interface ReviewDashboardItem {
+  workingCopyId: string;
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  wcStatus: ReviewDashboardItemWcStatus;
+  changeType: string;
+  changeSummary?: string | null;
+  authorId: string;
+  reviewerId?: string | null;
+  approverId?: string | null;
+  submittedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  ageDays: number;
+}
+
+export interface ReviewDashboardSummary {
+  totalWorkingCopies: number;
+  draftCount: number;
+  inReviewCount: number;
+  submittedCount: number;
+  changesRequestedCount: number;
+  approvedForPublishCount: number;
+  overdueCount: number;
+  items: ReviewDashboardItem[];
+}
+
+export type OwnershipGapGapTypesItem =
+  (typeof OwnershipGapGapTypesItem)[keyof typeof OwnershipGapGapTypesItem];
+
+export const OwnershipGapGapTypesItem = {
+  no_owner: "no_owner",
+  no_reviewer: "no_reviewer",
+  no_approver: "no_approver",
+} as const;
+
+export interface OwnershipGap {
+  nodeId: string;
+  title: string;
+  displayCode: string;
+  templateType: string;
+  status: string;
+  ownerId?: string | null;
+  hasReviewer: boolean;
+  hasApprover: boolean;
+  gapTypes: OwnershipGapGapTypesItem[];
+  lastUpdated: string;
+  daysSinceUpdate: number;
+  isEscalated: boolean;
+}
+
+export interface OwnershipMonitorSummary {
+  totalPages: number;
+  pagesWithoutOwner: number;
+  pagesWithoutReviewer: number;
+  pagesWithoutApprover: number;
+  pagesWithMultipleGaps: number;
+  escalatedCount: number;
+  items: OwnershipGap[];
+}
+
 export type SearchInsightsTopQueriesItem = {
   query: string;
   count: number;
@@ -2162,6 +2236,60 @@ export const GetQualityPagesFilter = {
   broken_refs: "broken_refs",
   incomplete: "incomplete",
 } as const;
+
+export type GetReviewDashboardParams = {
+  status?: GetReviewDashboardStatus;
+  template?: string;
+  /**
+   * Filter by author/owner principal ID
+   */
+  owner?: string;
+  /**
+   * Minimum age in days
+   * @minimum 0
+   */
+  minAge?: number;
+  sortBy?: GetReviewDashboardSortBy;
+  sortDir?: GetReviewDashboardSortDir;
+};
+
+export type GetReviewDashboardStatus =
+  (typeof GetReviewDashboardStatus)[keyof typeof GetReviewDashboardStatus];
+
+export const GetReviewDashboardStatus = {
+  all: "all",
+  draft: "draft",
+  in_review: "in_review",
+  submitted: "submitted",
+  changes_requested: "changes_requested",
+  approved_for_publish: "approved_for_publish",
+} as const;
+
+export type GetReviewDashboardSortBy =
+  (typeof GetReviewDashboardSortBy)[keyof typeof GetReviewDashboardSortBy];
+
+export const GetReviewDashboardSortBy = {
+  updated_at: "updated_at",
+  age: "age",
+  status: "status",
+} as const;
+
+export type GetReviewDashboardSortDir =
+  (typeof GetReviewDashboardSortDir)[keyof typeof GetReviewDashboardSortDir];
+
+export const GetReviewDashboardSortDir = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type GetOwnershipMonitorParams = {
+  /**
+   * Days without owner before escalation flag is set
+   * @minimum 1
+   * @maximum 365
+   */
+  escalationThreshold?: number;
+};
 
 export type GetSearchInsightsParams = {
   days?: number;
