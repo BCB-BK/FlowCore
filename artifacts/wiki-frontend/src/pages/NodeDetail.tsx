@@ -286,7 +286,20 @@ export function NodeDetail() {
           {!wcLoading && (() => {
             const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
             const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
-            if (activeWC && !isOwnWc) {
+            const wcReviewable = activeWC && (activeWC.status === "submitted" || activeWC.status === "in_review");
+            if (activeWC && wcReviewable) {
+              return (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate(`/nodes/${nodeId}/review`)}
+                >
+                  <Eye className="mr-1 h-4 w-4" />
+                  Prüfen
+                </Button>
+              );
+            }
+            if (activeWC && !isOwnWc && !wcReviewable) {
               return (
                 <Button variant="outline" size="sm" disabled>
                   <FileEdit className="mr-1 h-4 w-4" />
@@ -295,19 +308,6 @@ export function NodeDetail() {
               );
             }
             if (activeWC && !wcEditable) {
-              const wcReviewable = activeWC.status === "submitted" || activeWC.status === "in_review";
-              if (wcReviewable) {
-                return (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => navigate(`/nodes/${nodeId}/review`)}
-                  >
-                    <Eye className="mr-1 h-4 w-4" />
-                    Prüfen
-                  </Button>
-                );
-              }
               return null;
             }
             return (
@@ -517,7 +517,7 @@ export function NodeDetail() {
               </CardContent>
             </Card>
           )}
-          {nodeId && <VersionHistoryPanel nodeId={nodeId} />}
+          {nodeId && <VersionHistoryPanel nodeId={nodeId} activeWorkingCopy={activeWC ? { id: activeWC.id, status: activeWC.status, title: activeWC.title ?? "", authorId: activeWC.authorId, createdAt: activeWC.createdAt, updatedAt: activeWC.updatedAt, changeSummary: activeWC.changeSummary } : null} />}
         </TabsContent>
 
         <TabsContent value="children" className="mt-4">

@@ -13,7 +13,13 @@ import {
   ArrowLeftRight,
   FileText,
   Pencil,
+  ChevronDown,
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { getPageType } from "@/lib/types";
 import {
   useGetActiveWorkingCopy,
@@ -165,6 +171,37 @@ export function WorkingCopyReviewPage() {
     }
     return changed;
   }, [publishedSF, wcStructuredFields]);
+
+  const diffMetadata = useMemo(() => {
+    const pubMeta =
+      (publishedRevision?.content as Record<string, unknown>) ?? {};
+    const wcMeta = (activeWC?.content as Record<string, unknown>) ?? {};
+    const allKeys = new Set([
+      ...Object.keys(pubMeta).filter((k) => !k.endsWith("_display")),
+      ...Object.keys(wcMeta).filter((k) => !k.endsWith("_display")),
+    ]);
+    const changed: Array<{ key: string; oldVal: unknown; newVal: unknown }> =
+      [];
+    for (const key of allKeys) {
+      const oldVal = pubMeta[key];
+      const newVal = wcMeta[key];
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        changed.push({ key, oldVal, newVal });
+      }
+    }
+    return changed;
+  }, [publishedRevision, activeWC]);
+
+  const unchangedSections = useMemo(() => {
+    if (!publishedRevision) return [];
+    const changedKeys = new Set(diffSections.map((d) => d.key));
+    return Object.entries(publishedSF)
+      .filter(
+        ([key]) =>
+          key !== "_editorContent" && !changedKeys.has(key) && publishedSF[key],
+      )
+      .map(([key, value]) => ({ key, value }));
+  }, [publishedSF, diffSections, publishedRevision]);
 
   const editorChanged = useMemo(() => {
     return (
@@ -356,9 +393,67 @@ export function WorkingCopyReviewPage() {
                 </div>
               ))}
 
+              {diffMetadata.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-orange-500" />
+                    <span className="text-sm font-medium">
+                      Metadaten ({diffMetadata.length} geändert)
+                    </span>
+                  </div>
+                  <div className="rounded-md border bg-muted/20 divide-y">
+                    {diffMetadata.map((m) => (
+                      <div key={m.key} className="px-3 py-2 text-sm">
+                        <span className="font-medium">{m.key}</span>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <div className="text-muted-foreground line-through">
+                            {m.oldVal != null ? String(m.oldVal) : "—"}
+                          </div>
+                          <div>
+                            {m.newVal != null ? String(m.newVal) : "—"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {unchangedSections.length > 0 && (
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-between text-muted-foreground"
+                    >
+                      <span>
+                        {unchangedSections.length} unveränderte Bereiche
+                      </span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-2 mt-2">
+                    {unchangedSections.map((section) => (
+                      <div key={section.key} className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-gray-300" />
+                          <span className="text-sm text-muted-foreground">
+                            {section.key}
+                          </span>
+                        </div>
+                        <div className="rounded-md border p-3 bg-muted/10 text-sm whitespace-pre-wrap text-muted-foreground">
+                          {String(section.value)}
+                        </div>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
               {!editorChanged &&
                 diffSections.length === 0 &&
-                wcMetadata.length === 0 && (
+                diffMetadata.length === 0 && (
                   <p className="text-sm text-muted-foreground py-4 text-center">
                     {isFirstVersion
                       ? "Erste Version — kein Vergleich verfügbar."

@@ -35,8 +35,19 @@ interface Revision {
   nextReviewDate?: string | null;
 }
 
+interface ActiveWorkingCopy {
+  id: string;
+  status: string;
+  title: string;
+  authorId?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  changeSummary?: string | null;
+}
+
 interface VersionHistoryPanelProps {
   nodeId: string;
+  activeWorkingCopy?: ActiveWorkingCopy | null;
 }
 
 const statusIcons: Record<string, typeof FileCheck> = {
@@ -47,7 +58,7 @@ const statusIcons: Record<string, typeof FileCheck> = {
   approved: FileCheck,
 };
 
-export function VersionHistoryPanel({ nodeId }: VersionHistoryPanelProps) {
+export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistoryPanelProps) {
   const { data: revisions, isLoading } = useNodeRevisions(nodeId);
   const [selectedForDiff, setSelectedForDiff] = useState<string[]>([]);
   const [restoreRevisionId, setRestoreRevisionId] = useState<string | null>(
@@ -84,8 +95,56 @@ export function VersionHistoryPanel({ nodeId }: VersionHistoryPanelProps) {
 
   const revisionList = (revisions as Revision[]) || [];
 
+  const wcStatusLabels: Record<string, string> = {
+    draft: "Entwurf",
+    submitted: "Eingereicht",
+    in_review: "In Prüfung",
+    changes_requested: "Änderung zurückgegeben",
+    approved_for_publish: "Freigegeben",
+    cancelled: "Abgebrochen",
+    published: "Veröffentlicht",
+  };
+
   return (
     <>
+      {activeWorkingCopy && (
+        <Card className="mb-4 border-blue-200 dark:border-blue-800">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FilePen className="h-4 w-4 text-blue-500" />
+              Aktive Arbeitskopie
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="text-xs">
+                {wcStatusLabels[activeWorkingCopy.status] || activeWorkingCopy.status}
+              </Badge>
+              {activeWorkingCopy.title && (
+                <span className="text-sm font-medium">{activeWorkingCopy.title}</span>
+              )}
+            </div>
+            {activeWorkingCopy.updatedAt && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Letzte Änderung:{" "}
+                {new Date(activeWorkingCopy.updatedAt).toLocaleString("de-DE", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            )}
+            {activeWorkingCopy.changeSummary && (
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {activeWorkingCopy.changeSummary}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
