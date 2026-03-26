@@ -1,6 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useNode } from "@/hooks/use-nodes";
+import { useNode, useNodeRevisions } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,6 +87,20 @@ export function WorkingCopyEditorPage() {
   const { data: wcAuthor } = useGetPrincipal(wcAuthorId || "", {
     query: { queryKey: [`/api/principals/${wcAuthorId || ""}`], enabled: !!wcAuthorId && !wcIsOwn },
   });
+
+  const { data: revisions } = useNodeRevisions(nodeId);
+
+  const publishedSF = useMemo<Record<string, unknown>>(() => {
+    if (!revisions || !Array.isArray(revisions) || revisions.length === 0) return {};
+    const rev = revisions[0] as { structuredFields?: Record<string, unknown> | null };
+    return (rev.structuredFields as Record<string, unknown>) ?? {};
+  }, [revisions]);
+
+  const publishedMeta = useMemo<Record<string, unknown>>(() => {
+    if (!revisions || !Array.isArray(revisions) || revisions.length === 0) return {};
+    const rev = revisions[0] as { content?: Record<string, unknown> | null };
+    return (rev.content as Record<string, unknown>) ?? {};
+  }, [revisions]);
 
   const createWorkingCopy = useCreateWorkingCopy();
   const updateWorkingCopy = useUpdateWorkingCopy();
@@ -386,7 +400,8 @@ export function WorkingCopyEditorPage() {
   }
 
   const isOwnWc = !currentUser || activeWC.authorId === currentUser.principalId;
-  const canEdit = isOwnWc && (activeWC.status === "draft" || activeWC.status === "changes_requested");
+  const isReviewPhase = activeWC.status === "submitted" || activeWC.status === "in_review";
+  const canEdit = (isOwnWc && (activeWC.status === "draft" || activeWC.status === "changes_requested")) || isReviewPhase;
   const pageDef = getPageType(node.templateType);
   const metadata: Record<string, unknown> = editableMetadata;
 
@@ -547,36 +562,54 @@ export function WorkingCopyEditorPage() {
             const currentSF = localStructuredFieldsRef.current;
             const currentContent = editableMetadata;
 
-            const changedSections: string[] = [];
-            for (const [key, val] of Object.entries(currentSF)) {
-              if (key === "_editorContent") continue;
-              if (val && typeof val === "string" && val.trim()) {
-                changedSections.push(key);
+            const items: Array<{ label: string; color: string; detail?: string }> = [];
+
+            const editorChanged = JSON.stringify(currentSF._editorContent) !== JSON.stringify(publishedSF._editorContent);
+            if (editorChanged) items.push({ label: "Seiteninhalt (Editor)", color: "bg-blue-500" });
+
+            const allSFKeys = new Set([
+              ...Object.keys(currentSF).filter(k => k !== "_editorContent"),
+              ...Object.keys(publishedSF).filter(k => k !== "_editorContent"),
+            ]);
+            for (const key of allSFKeys) {
+              if (JSON.stringify(currentSF[key]) !== JSON.stringify(publishedSF[key])) {
+                const isNew = !publishedSF[key];
+                items.push({ label: key, color: "bg-green-500", detail: isNew ? "neu" : "geändert" });
               }
             }
-            const hasEditorContent = !!currentSF._editorContent && JSON.stringify(currentSF._editorContent) !== '{"type":"doc","content":[{"type":"paragraph"}]}';
-            const hasMetadataChanges = Object.entries(currentContent).some(([k, v]) => !k.endsWith("_display") && v !== null && v !== undefined && v !== "");
 
-            const items: Array<{ label: string; color: string }> = [];
-            if (hasEditorContent) items.push({ label: "Seiteninhalt (Editor)", color: "bg-blue-500" });
-            for (const section of changedSections) items.push({ label: section, color: "bg-green-500" });
-            if (hasMetadataChanges) items.push({ label: "Metadaten", color: "bg-blue-500" });
+            const allMetaKeys = new Set([
+              ...Object.keys(currentContent).filter(k => !k.endsWith("_display")),
+              ...Object.keys(publishedMeta).filter(k => !k.endsWith("_display")),
+            ]);
+            const metaChanges: string[] = [];
+            for (const key of allMetaKeys) {
+              if (JSON.stringify(currentContent[key]) !== JSON.stringify(publishedMeta[key])) {
+                metaChanges.push(key);
+              }
+            }
+            if (metaChanges.length > 0) {
+              items.push({ label: `Metadaten (${metaChanges.length} Felder)`, color: "bg-orange-500" });
+            }
 
             return items.length > 0 ? (
               <div className="rounded-md border p-3 bg-muted/30 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Bearbeitete Bereiche ({items.length})</p>
+                <p className="text-xs font-medium text-muted-foreground">Änderungen gegenüber der veröffentlichten Version ({items.length})</p>
                 <div className="space-y-1 text-xs">
                   {items.map((item) => (
                     <div key={item.label} className="flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${item.color}`} />
                       <span>{item.label}</span>
+                      {item.detail && <Badge variant="secondary" className="text-[10px] h-4 px-1">{item.detail}</Badge>}
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
               <div className="rounded-md border p-3 bg-muted/30">
-                <p className="text-xs text-muted-foreground">Keine Änderungen erkannt.</p>
+                <p className="text-xs text-muted-foreground">
+                  {Object.keys(publishedSF).length === 0 ? "Erste Version — kein Vergleich verfügbar." : "Keine Änderungen gegenüber der veröffentlichten Version erkannt."}
+                </p>
               </div>
             );
           })()}
