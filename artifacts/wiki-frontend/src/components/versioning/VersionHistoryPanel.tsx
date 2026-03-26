@@ -39,6 +39,7 @@ interface Revision {
   reviewerId?: string | null;
   approverId?: string | null;
   basedOnRevisionId?: string | null;
+  validFrom?: string | null;
   createdAt: string;
   nextReviewDate?: string | null;
 }
@@ -163,9 +164,21 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
                 <span className="text-sm font-medium truncate">{activeWorkingCopy.title}</span>
               )}
             </div>
+            {activeWorkingCopy.authorId && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <User className="h-2.5 w-2.5" />
+                Autor: {activeWorkingCopy.authorId.substring(0, 8)}…
+              </p>
+            )}
             {activeWorkingCopy.updatedAt && (
               <p className="text-xs text-muted-foreground mt-1">
                 Letzte Änderung: {formatDate(activeWorkingCopy.updatedAt)}
+              </p>
+            )}
+            {activeWorkingCopy.status === "changes_requested" && (
+              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1 font-medium">
+                <AlertTriangle className="h-2.5 w-2.5" />
+                Änderungen angefordert – zur Überarbeitung zurückgegeben
               </p>
             )}
             {activeWorkingCopy.changeSummary && (
@@ -302,6 +315,13 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
                             <RotateCcw className="h-2.5 w-2.5" />
                             Wiederhergestellt von Rev. {revisionList.find((r) => r.id === rev.basedOnRevisionId)?.revisionNo || "?"}
                           </p>
+                        )}
+
+                        {rev.validFrom && (
+                          <div className="text-[11px] mt-1 flex items-center gap-1 text-muted-foreground">
+                            <CalendarClock className="h-2.5 w-2.5" />
+                            Gültig ab: {new Date(rev.validFrom).toLocaleDateString("de-DE")}
+                          </div>
                         )}
 
                         {isLatest && rev.nextReviewDate && (

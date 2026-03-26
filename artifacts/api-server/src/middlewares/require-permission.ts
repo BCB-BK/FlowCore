@@ -2,6 +2,24 @@ import type { Request, Response, NextFunction } from "express";
 import { hasPermission, type WikiPermission } from "../services/rbac.service";
 import { logger } from "../lib/logger";
 
+export function requireAnyPermission(...permissions: WikiPermission[]) {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+    const results = await Promise.all(
+      permissions.map((p) => hasPermission(req.user!.principalId, p)),
+    );
+    if (results.some(Boolean)) {
+      next();
+      return;
+    }
+    logger.warn({ principalId: req.user.principalId, permissions }, "Permission denied (any)");
+    res.status(403).json({ error: "Forbidden", requiredPermissions: permissions });
+  };
+}
+
 export function requirePermission(
   permission: WikiPermission,
   getNodeId?: (req: Request) => string | string[] | undefined,

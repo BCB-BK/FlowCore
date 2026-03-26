@@ -41,6 +41,7 @@ import { UsersRolesTab } from "@/components/settings/UsersRolesTab";
 import { BackupTab } from "@/components/settings/BackupTab";
 import { ConsistencyTab } from "@/components/settings/ConsistencyTab";
 import { ReleaseTab } from "@/components/settings/ReleaseTab";
+import { AuditTrailTab } from "@/components/settings/AuditTrailTab";
 import { useAuth } from "@/hooks/use-auth";
 
 interface SystemInfo {
@@ -99,6 +100,9 @@ export function SettingsPage() {
     }
     if (perms.has("view_backups") || perms.has("manage_backup")) {
       t.push({ value: "backups", label: "Backup", icon: HardDrive });
+    }
+    if (perms.has("view_audit_log") || perms.has("manage_settings")) {
+      t.push({ value: "audit", label: "Audit-Trail", icon: Eye });
     }
     if (perms.has("manage_settings")) {
       t.push({ value: "consistency", label: "Konsistenz", icon: ShieldCheck });
@@ -174,6 +178,10 @@ export function SettingsPage() {
 
         <TabsContent value="backups" className="mt-6">
           <BackupTab />
+        </TabsContent>
+
+        <TabsContent value="audit" className="mt-6">
+          <AuditTrailTab />
         </TabsContent>
 
         <TabsContent value="consistency" className="mt-6">

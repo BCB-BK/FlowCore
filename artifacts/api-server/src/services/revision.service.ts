@@ -3,6 +3,7 @@ import {
   contentRevisionsTable,
   contentRevisionEventsTable,
   contentNodesTable,
+  auditEventsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
@@ -83,15 +84,40 @@ export async function publishRevision(
   }
 
   await db.transaction(async (tx) => {
-    await tx
-      .update(contentRevisionsTable)
-      .set({ status: "archived" })
+    const archivedRevisions = await tx
+      .select({ id: contentRevisionsTable.id })
+      .from(contentRevisionsTable)
       .where(
         and(
           eq(contentRevisionsTable.nodeId, revision.nodeId),
           eq(contentRevisionsTable.status, "published"),
+          sql`${contentRevisionsTable.id} != ${revisionId}`,
         ),
       );
+
+    if (archivedRevisions.length > 0) {
+      await tx
+        .update(contentRevisionsTable)
+        .set({ status: "archived" })
+        .where(
+          and(
+            eq(contentRevisionsTable.nodeId, revision.nodeId),
+            eq(contentRevisionsTable.status, "published"),
+            sql`${contentRevisionsTable.id} != ${revisionId}`,
+          ),
+        );
+
+      for (const archived of archivedRevisions) {
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "revision_archived",
+          actorId,
+          resourceType: "revision",
+          resourceId: archived.id,
+          details: { nodeId: revision.nodeId, reason: "superseded_by_publish", newRevisionId: revisionId },
+        });
+      }
+    }
 
     await tx
       .update(contentRevisionsTable)

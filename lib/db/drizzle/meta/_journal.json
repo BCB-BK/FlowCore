@@ -36,6 +36,13 @@
       "when": 1774912260000,
       "tag": "0005_add_backup_media_audit_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774559324771,
+      "tag": "0006_add_commented_event_type",
+      "breakpoints": true
     }
   ]
 }

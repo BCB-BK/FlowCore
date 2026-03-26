@@ -229,11 +229,27 @@ export async function updateWorkingCopy(
       eventType: "amended_by_reviewer",
       actorId,
     });
+    await db.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_amended_by_reviewer",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId },
+    });
   } else if (!isReviewPhase) {
     await db.insert(workingCopyEventsTable).values({
       workingCopyId: id,
       eventType: "updated",
       actorId,
+    });
+    await db.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_updated",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId },
     });
   }
 
@@ -461,15 +477,40 @@ export async function publishWorkingCopy(
       })
       .returning();
 
-    await tx
-      .update(contentRevisionsTable)
-      .set({ status: "archived" })
+    const priorPublished = await tx
+      .select({ id: contentRevisionsTable.id })
+      .from(contentRevisionsTable)
       .where(
         and(
           eq(contentRevisionsTable.nodeId, wc.nodeId),
           eq(contentRevisionsTable.status, "published"),
+          sql`${contentRevisionsTable.id} != ${newRevision.id}`,
         ),
       );
+
+    if (priorPublished.length > 0) {
+      await tx
+        .update(contentRevisionsTable)
+        .set({ status: "archived" })
+        .where(
+          and(
+            eq(contentRevisionsTable.nodeId, wc.nodeId),
+            eq(contentRevisionsTable.status, "published"),
+            sql`${contentRevisionsTable.id} != ${newRevision.id}`,
+          ),
+        );
+
+      for (const archived of priorPublished) {
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "revision_archived",
+          actorId,
+          resourceType: "revision",
+          resourceId: archived.id,
+          details: { nodeId: wc.nodeId, reason: "superseded_by_publish", newRevisionId: newRevision.id },
+        });
+      }
+    }
 
     await tx
       .update(contentRevisionsTable)
@@ -718,6 +759,38 @@ export async function restoreAsWorkingCopy(
 
     return { workingCopy: wc, created: true };
   });
+}
+
+const COMMENTABLE_STATUSES = ["draft", "in_review", "changes_requested"];
+
+export async function addWorkingCopyComment(
+  id: string,
+  comment: string,
+  actorId: string,
+) {
+  const wc = await getWorkingCopyById(id);
+  if (!wc) throw new Error("Working copy not found");
+  if (!COMMENTABLE_STATUSES.includes(wc.status)) {
+    throw new Error(`Kommentar nicht möglich im Status "${wc.status}"`);
+  }
+
+  await db.insert(workingCopyEventsTable).values({
+    workingCopyId: id,
+    eventType: "commented",
+    actorId,
+    comment,
+  });
+
+  await db.insert(auditEventsTable).values({
+    eventType: "content",
+    action: "working_copy_commented",
+    actorId,
+    resourceType: "working_copy",
+    resourceId: id,
+    details: { nodeId: wc.nodeId, comment },
+  });
+
+  logger.info({ workingCopyId: id, actorId }, "Comment added to working copy");
 }
 
 export async function getWorkingCopyDiff(id: string) {

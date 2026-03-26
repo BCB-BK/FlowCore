@@ -3,7 +3,7 @@ import { pool } from "@workspace/db";
 import { appConfig } from "../lib/config";
 import { isAuthConfigured } from "../services/auth.service";
 import { requireAuth } from "../middlewares/require-auth";
-import { requirePermission } from "../middlewares/require-permission";
+import { requirePermission, requireAnyPermission } from "../middlewares/require-permission";
 import { migrateToWorkingCopyModel } from "../scripts/migrate-working-copies";
 import { runConsistencyCheck } from "../services/consistency.service";
 import {
@@ -13,6 +13,8 @@ import {
   updateRelease,
   transitionRelease,
 } from "../services/release.service";
+import { auditService, type AuditQueryOptions } from "../lib/audit";
+import { hasPermission } from "../services/rbac.service";
 
 const router: IRouter = Router();
 
@@ -181,6 +183,170 @@ router.post("/admin/releases/:id/transition", requireAuth, requirePermission("ma
       res.status(400).json({ error: message });
       return;
     }
+    res.status(500).json({ error: message });
+  }
+});
+
+const PII_FIELD_PATTERNS = /^(actor|author|user|submitted|approved|returned|created|updated|reviewed|assigned|delegat|unlock|cancel|comment|ip|email|name)/i;
+
+const SAFE_ID_FIELDS = new Set(["resourceId", "correlationId", "workingCopyId", "revisionId", "pageId", "nodeId"]);
+
+function sanitizeDetails(details: Record<string, unknown>): Record<string, unknown> {
+  const safe: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(details)) {
+    if (PII_FIELD_PATTERNS.test(key)) continue;
+    if (typeof value === "string" && key.toLowerCase().includes("id") && !SAFE_ID_FIELDS.has(key)) continue;
+    if (Array.isArray(value)) {
+      safe[key] = value.map((item) =>
+        item !== null && typeof item === "object" && !Array.isArray(item)
+          ? sanitizeDetails(item as Record<string, unknown>)
+          : item,
+      );
+    } else if (value !== null && typeof value === "object") {
+      safe[key] = sanitizeDetails(value as Record<string, unknown>);
+    } else {
+      safe[key] = value;
+    }
+  }
+  return safe;
+}
+
+function sanitizeAuditEvent(evt: Record<string, unknown>, canSeePersonalData: boolean) {
+  const base: Record<string, unknown> = {
+    id: evt.id,
+    eventType: evt.eventType,
+    action: evt.action,
+    resourceType: evt.resourceType,
+    resourceId: evt.resourceId,
+    correlationId: evt.correlationId,
+    createdAt: evt.createdAt,
+  };
+
+  if (canSeePersonalData) {
+    base.actorId = evt.actorId;
+    base.ipAddress = evt.ipAddress;
+    base.details = evt.details;
+  } else {
+    base.actorId = evt.actorId ? "[redacted]" : null;
+    base.ipAddress = null;
+    const details = evt.details as Record<string, unknown> | null;
+    if (details) {
+      base.details = sanitizeDetails(details);
+    }
+  }
+
+  return base;
+}
+
+router.get("/admin/audit-events", requireAuth, requireAnyPermission("view_audit_log", "manage_settings"), async (req, res) => {
+  try {
+    const opts: AuditQueryOptions = {};
+    if (req.query.resourceType) opts.resourceType = req.query.resourceType as string;
+    if (req.query.resourceId) opts.resourceId = req.query.resourceId as string;
+    if (req.query.actorId) opts.actorId = req.query.actorId as string;
+    if (req.query.action) opts.action = req.query.action as string;
+    if (req.query.eventType) opts.eventType = req.query.eventType as string;
+    if (req.query.from) {
+      const d = new Date(req.query.from as string);
+      if (!isNaN(d.getTime())) opts.from = d;
+    }
+    if (req.query.to) {
+      const d = new Date(req.query.to as string);
+      if (!isNaN(d.getTime())) opts.to = d;
+    }
+    if (req.query.limit) {
+      const parsed = parseInt(req.query.limit as string, 10);
+      opts.limit = Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 500) : 100;
+    }
+    if (req.query.offset) {
+      const parsed = parseInt(req.query.offset as string, 10);
+      opts.offset = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    }
+
+    const canSeePersonalData = req.user
+      ? await hasPermission(req.user.principalId, "manage_settings")
+      : false;
+
+    const result = await auditService.query(opts);
+    res.json({
+      events: result.events.map((evt) => sanitizeAuditEvent(evt as unknown as Record<string, unknown>, canSeePersonalData)),
+      total: result.total,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.get("/admin/audit-events/filters", requireAuth, requireAnyPermission("view_audit_log", "manage_settings"), async (_req, res) => {
+  try {
+    const [actions, resourceTypes] = await Promise.all([
+      auditService.getDistinctActions(),
+      auditService.getDistinctResourceTypes(),
+    ]);
+    res.json({ actions, resourceTypes });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.get("/admin/audit-events/export", requireAuth, requireAnyPermission("view_audit_log", "manage_settings"), async (req, res) => {
+  try {
+    const opts: AuditQueryOptions = { limit: 10000 };
+    if (req.query.resourceType) opts.resourceType = req.query.resourceType as string;
+    if (req.query.resourceId) opts.resourceId = req.query.resourceId as string;
+    if (req.query.actorId) opts.actorId = req.query.actorId as string;
+    if (req.query.action) opts.action = req.query.action as string;
+    if (req.query.eventType) opts.eventType = req.query.eventType as string;
+    if (req.query.from) {
+      const d = new Date(req.query.from as string);
+      if (!isNaN(d.getTime())) opts.from = d;
+    }
+    if (req.query.to) {
+      const d = new Date(req.query.to as string);
+      if (!isNaN(d.getTime())) opts.to = d;
+    }
+
+    const includePersonalData = req.query.includePersonalData === "true";
+    const canExportPersonal = includePersonalData && req.user
+      ? await hasPermission(req.user!.principalId, "manage_settings")
+      : false;
+
+    const result = await auditService.query(opts);
+
+    const format = (req.query.format as string) || "json";
+
+    const sanitizedEvents = result.events.map((evt) =>
+      sanitizeAuditEvent(evt as unknown as Record<string, unknown>, canExportPersonal),
+    );
+
+    if (format === "csv") {
+      const escapeCsv = (val: unknown): string => {
+        const str = val == null ? "" : String(val);
+        if (str.includes(";") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+      const header = "id;eventType;action;actorId;resourceType;resourceId;correlationId;createdAt\n";
+      const rows = sanitizedEvents.map((e) =>
+        [e.id, e.eventType, e.action, e.actorId || "", e.resourceType || "", e.resourceId || "", e.correlationId || "", e.createdAt].map(escapeCsv).join(";"),
+      );
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="audit-export-${new Date().toISOString().slice(0, 10)}.csv"`);
+      res.send(header + rows.join("\n"));
+    } else {
+      res.setHeader("Content-Disposition", `attachment; filename="audit-export-${new Date().toISOString().slice(0, 10)}.json"`);
+      res.json({
+        exportedAt: new Date().toISOString(),
+        total: result.total,
+        includesPersonalData: includePersonalData && canExportPersonal,
+        events: sanitizedEvents,
+      });
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: message });
   }
 });

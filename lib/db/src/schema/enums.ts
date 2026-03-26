@@ -203,4 +203,5 @@ export const workingCopyEventTypeEnum = pgEnum("working_copy_event_type", [
   "published",
   "cancelled",
   "unlocked",
+  "commented",
 ]);

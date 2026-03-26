@@ -18,6 +18,7 @@ import {
   unlockWorkingCopy,
   getWorkingCopyDiff,
   getWorkingCopyEvents,
+  addWorkingCopyComment,
 } from "../services/working-copy.service";
 import { generateChangeSummary } from "../services/ai.service";
 import { logger } from "../lib/logger";
@@ -416,6 +417,29 @@ router.post(
       const isDisabled = message.includes("deaktiviert");
       logger.warn({ err }, "Failed to generate AI summary");
       res.status(isDisabled ? 400 : 500).json({ error: message, code: isDisabled ? "AI_DISABLED" : "AI_ERROR" });
+    }
+  },
+);
+
+router.post(
+  "/working-copies/:id/comment",
+  requireAuth,
+  loadWorkingCopy,
+  requireWcOwnerOrPermission("review_working_copy"),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      const actorId = req.user!.principalId;
+      const { comment } = req.body;
+      if (!comment || typeof comment !== "string") {
+        res.status(400).json({ error: "comment is required" });
+        return;
+      }
+      await addWorkingCopyComment(id, comment, actorId);
+      res.json({ ok: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      res.status(400).json({ error: message });
     }
   },
 );
