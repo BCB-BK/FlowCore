@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SharePointBrowser } from "@/components/settings/SharePointBrowser";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ import {
   Trash2,
   HardDrive,
   Activity,
+  Library,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -58,7 +60,7 @@ export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
   const [showCreateSystem, setShowCreateSystem] = useState(false);
   const [showCreateProvider, setShowCreateProvider] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "systems" | "providers" | "status"
+    "systems" | "providers" | "status" | "sharepoint"
   >("systems");
 
   return (
@@ -107,6 +109,14 @@ export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
           <Activity className="w-4 h-4 mr-2" />
           Sync-Status
         </Button>
+        <Button
+          variant={activeTab === "sharepoint" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setActiveTab("sharepoint")}
+        >
+          <Library className="w-4 h-4 mr-2" />
+          SharePoint-Bibliotheken
+        </Button>
       </div>
 
       {activeTab === "systems" && (
@@ -122,6 +132,7 @@ export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
         />
       )}
       {activeTab === "status" && <SyncStatusTab queryClient={queryClient} />}
+      {activeTab === "sharepoint" && <SharePointBrowserTab />}
 
       {showCreateSystem && (
         <CreateSourceSystemDialog
@@ -1027,5 +1038,25 @@ function CreateStorageProviderDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SharePointBrowserTab() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Library className="w-5 h-5" />
+          SharePoint-Bibliotheken
+        </CardTitle>
+        <CardDescription>
+          Durchsuchen Sie SharePoint-Sites, Dokumentbibliotheken und Dateien
+          Ihrer Organisation
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <SharePointBrowser />
+      </CardContent>
+    </Card>
   );
 }

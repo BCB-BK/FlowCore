@@ -1,5 +1,6 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { appConfig } from "../lib/config";
+import { getAppAccessToken } from "./auth.service";
 import { logger } from "../lib/logger";
 
 interface ConnectorConfig {
@@ -8,10 +9,23 @@ interface ConnectorConfig {
   clientSecret?: string;
 }
 
+async function resolveSharePointToken(
+  accessToken: string,
+): Promise<string | null> {
+  if (accessToken) return accessToken;
+  const appToken = await getAppAccessToken();
+  if (appToken) return appToken;
+  return null;
+}
+
 export async function acquireSystemToken(
   connectionConfig: unknown,
 ): Promise<string> {
-  if (appConfig.authDevMode) return "";
+  if (appConfig.authDevMode) {
+    const appToken = await getAppAccessToken();
+    if (appToken) return appToken;
+    return "";
+  }
 
   const cfg = connectionConfig as ConnectorConfig | null;
   if (!cfg?.tenantId || !cfg?.clientId || !cfg?.clientSecret) {
@@ -84,18 +98,16 @@ export async function listSites(
   accessToken: string,
   query?: string,
 ): Promise<SharePointSite[]> {
-  if (appConfig.authDevMode) {
-    return getDevSites(query);
+  const token = await resolveSharePointToken(accessToken);
+  if (!token) {
+    logger.warn("listSites: no access token available");
+    return [];
   }
 
   try {
-    const client = getGraphClient(accessToken);
-    let api = client.api("/sites");
-    if (query) {
-      api = client.api(`/sites?search=${encodeURIComponent(query)}`);
-    } else {
-      api = client.api("/sites?search=*");
-    }
+    const client = getGraphClient(token);
+    const searchTerm = query || "*";
+    const api = client.api(`/sites?search=${encodeURIComponent(searchTerm)}`);
     const result = await api
       .select("id,displayName,webUrl,description")
       .top(50)
@@ -111,12 +123,14 @@ export async function listDrives(
   accessToken: string,
   siteId: string,
 ): Promise<SharePointDrive[]> {
-  if (appConfig.authDevMode) {
-    return getDevDrives(siteId);
+  const token = await resolveSharePointToken(accessToken);
+  if (!token) {
+    logger.warn("listDrives: no access token available");
+    return [];
   }
 
   try {
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const result = await client
       .api(`/sites/${siteId}/drives`)
       .select("id,name,driveType,webUrl")
@@ -139,12 +153,14 @@ export async function listDriveItems(
   driveId: string,
   folderId?: string,
 ): Promise<SharePointItem[]> {
-  if (appConfig.authDevMode) {
-    return getDevDriveItems(driveId, folderId);
+  const token = await resolveSharePointToken(accessToken);
+  if (!token) {
+    logger.warn("listDriveItems: no access token available");
+    return [];
   }
 
   try {
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const path = folderId
       ? `/drives/${driveId}/items/${folderId}/children`
       : `/drives/${driveId}/root/children`;
@@ -173,12 +189,11 @@ export async function getDriveItemContent(
   mimeType: string;
   size: number;
 } | null> {
-  if (appConfig.authDevMode) {
-    return null;
-  }
+  const token = await resolveSharePointToken(accessToken);
+  if (!token) return null;
 
   try {
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const stream = await client
       .api(`/drives/${driveId}/items/${itemId}/content`)
       .getStream();
@@ -204,12 +219,11 @@ export async function getDriveItemMeta(
   driveId: string,
   itemId: string,
 ): Promise<SharePointItem | null> {
-  if (appConfig.authDevMode) {
-    return getDevItemMeta(driveId, itemId);
-  }
+  const token = await resolveSharePointToken(accessToken);
+  if (!token) return null;
 
   try {
-    const client = getGraphClient(accessToken);
+    const client = getGraphClient(token);
     const item = await client
       .api(`/drives/${driveId}/items/${itemId}`)
       .select(
@@ -256,188 +270,6 @@ function mapDriveItem(
     driveId,
     parentPath: parentRef?.path,
   };
-}
-
-function getDevSites(query?: string): SharePointSite[] {
-  const sites: SharePointSite[] = [
-    {
-      id: "dev-site-qm",
-      displayName: "QM Dokumente",
-      webUrl: "https://bildungscampus.sharepoint.com/sites/qm",
-      description: "Qualitätsmanagement Dokumentenbibliothek",
-    },
-    {
-      id: "dev-site-hr",
-      displayName: "HR Portal",
-      webUrl: "https://bildungscampus.sharepoint.com/sites/hr",
-      description: "Human Resources Dokumente",
-    },
-    {
-      id: "dev-site-it",
-      displayName: "IT Wiki",
-      webUrl: "https://bildungscampus.sharepoint.com/sites/it",
-      description: "IT Dokumentation und Anleitungen",
-    },
-  ];
-  if (query) {
-    const q = query.toLowerCase();
-    return sites.filter(
-      (s) =>
-        s.displayName.toLowerCase().includes(q) ||
-        (s.description || "").toLowerCase().includes(q),
-    );
-  }
-  return sites;
-}
-
-function getDevDrives(siteId: string): SharePointDrive[] {
-  const drivesMap: Record<string, SharePointDrive[]> = {
-    "dev-site-qm": [
-      {
-        id: "dev-drive-qm-docs",
-        name: "Dokumente",
-        driveType: "documentLibrary",
-        webUrl: "https://bildungscampus.sharepoint.com/sites/qm/Dokumente",
-        siteId: "dev-site-qm",
-      },
-      {
-        id: "dev-drive-qm-templates",
-        name: "Vorlagen",
-        driveType: "documentLibrary",
-        webUrl: "https://bildungscampus.sharepoint.com/sites/qm/Vorlagen",
-        siteId: "dev-site-qm",
-      },
-    ],
-    "dev-site-hr": [
-      {
-        id: "dev-drive-hr-docs",
-        name: "Personalunterlagen",
-        driveType: "documentLibrary",
-        webUrl: "https://bildungscampus.sharepoint.com/sites/hr/Dokumente",
-        siteId: "dev-site-hr",
-      },
-    ],
-    "dev-site-it": [
-      {
-        id: "dev-drive-it-docs",
-        name: "Anleitungen",
-        driveType: "documentLibrary",
-        webUrl: "https://bildungscampus.sharepoint.com/sites/it/Anleitungen",
-        siteId: "dev-site-it",
-      },
-    ],
-  };
-  return drivesMap[siteId] || [];
-}
-
-function getDevDriveItems(
-  driveId: string,
-  folderId?: string,
-): SharePointItem[] {
-  if (folderId === "dev-folder-policies") {
-    return [
-      {
-        id: "dev-item-policy-001",
-        name: "Datenschutzrichtlinie_v3.pdf",
-        webUrl: "https://bildungscampus.sharepoint.com/doc/datenschutz",
-        size: 245000,
-        mimeType: "application/pdf",
-        lastModifiedAt: "2025-12-15T10:30:00Z",
-        lastModifiedBy: "Max Mustermann",
-        isFolder: false,
-        driveId,
-      },
-      {
-        id: "dev-item-policy-002",
-        name: "IT-Sicherheitskonzept_2025.docx",
-        webUrl: "https://bildungscampus.sharepoint.com/doc/itsecurity",
-        size: 180000,
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        lastModifiedAt: "2025-11-20T14:00:00Z",
-        lastModifiedBy: "Lisa Schmidt",
-        isFolder: false,
-        driveId,
-      },
-    ];
-  }
-
-  const itemsMap: Record<string, SharePointItem[]> = {
-    "dev-drive-qm-docs": [
-      {
-        id: "dev-folder-policies",
-        name: "Richtlinien",
-        webUrl: "https://bildungscampus.sharepoint.com/sites/qm/Richtlinien",
-        size: 0,
-        mimeType: "application/octet-stream",
-        lastModifiedAt: "2025-12-01T08:00:00Z",
-        lastModifiedBy: "System",
-        isFolder: true,
-        childCount: 12,
-        driveId,
-      },
-      {
-        id: "dev-item-qm-001",
-        name: "Qualitätshandbuch_2025.pdf",
-        webUrl: "https://bildungscampus.sharepoint.com/doc/qm-handbook",
-        size: 1500000,
-        mimeType: "application/pdf",
-        lastModifiedAt: "2026-01-10T09:15:00Z",
-        lastModifiedBy: "Max Mustermann",
-        isFolder: false,
-        driveId,
-      },
-      {
-        id: "dev-item-qm-002",
-        name: "Prozesslandkarte.xlsx",
-        webUrl: "https://bildungscampus.sharepoint.com/doc/process-map",
-        size: 340000,
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        lastModifiedAt: "2026-02-28T16:30:00Z",
-        lastModifiedBy: "Lisa Schmidt",
-        isFolder: false,
-        driveId,
-      },
-      {
-        id: "dev-item-qm-003",
-        name: "Auditbericht_Q4_2025.pdf",
-        webUrl: "https://bildungscampus.sharepoint.com/doc/audit-q4",
-        size: 890000,
-        mimeType: "application/pdf",
-        lastModifiedAt: "2026-01-20T11:00:00Z",
-        lastModifiedBy: "Thomas Weber",
-        isFolder: false,
-        driveId,
-      },
-    ],
-    "dev-drive-qm-templates": [
-      {
-        id: "dev-item-tpl-001",
-        name: "Prozessbeschreibung_Vorlage.docx",
-        webUrl: "https://bildungscampus.sharepoint.com/doc/tpl-process",
-        size: 78000,
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        lastModifiedAt: "2025-09-15T10:00:00Z",
-        lastModifiedBy: "Lisa Schmidt",
-        isFolder: false,
-        driveId,
-      },
-    ],
-  };
-  return itemsMap[driveId] || [];
-}
-
-function getDevItemMeta(
-  driveId: string,
-  itemId: string,
-): SharePointItem | null {
-  const allItems = [
-    ...getDevDriveItems(driveId),
-    ...getDevDriveItems(driveId, "dev-folder-policies"),
-  ];
-  return allItems.find((i) => i.id === itemId) || null;
 }
 
 logger.info("SharePoint service initialized");

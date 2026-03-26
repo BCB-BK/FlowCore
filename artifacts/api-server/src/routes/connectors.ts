@@ -473,7 +473,7 @@ connectorsRouter.patch(
 connectorsRouter.get(
   "/sharepoint/sites",
   requireAuth,
-  requirePermission("edit_content"),
+  requirePermission("manage_settings"),
   async (req, res) => {
     const query = req.query.q as string | undefined;
     const accessToken = resolveGraphToken(req);
@@ -485,7 +485,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/sharepoint/sites/:siteId/drives",
   requireAuth,
-  requirePermission("read_page"),
+  requirePermission("manage_settings"),
   async (req, res) => {
     const siteId = req.params.siteId as string;
     const accessToken = resolveGraphToken(req);
@@ -497,7 +497,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/sharepoint/drives/:driveId/items",
   requireAuth,
-  requirePermission("read_page"),
+  requirePermission("manage_settings"),
   async (req, res) => {
     const driveId = req.params.driveId as string;
     const folderId = req.query.folderId as string | undefined;
@@ -510,7 +510,7 @@ connectorsRouter.get(
 connectorsRouter.get(
   "/sharepoint/drives/:driveId/items/:itemId",
   requireAuth,
-  requirePermission("read_page"),
+  requirePermission("manage_settings"),
   async (req, res) => {
     const driveId = req.params.driveId as string;
     const itemId = req.params.itemId as string;
