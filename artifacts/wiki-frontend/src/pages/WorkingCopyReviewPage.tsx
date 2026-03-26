@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
@@ -14,7 +15,10 @@ import {
   FileText,
   Pencil,
   ChevronDown,
+  Save,
+  Loader2,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Collapsible,
   CollapsibleContent,
@@ -24,6 +28,7 @@ import { getPageType } from "@/lib/types";
 import {
   useGetActiveWorkingCopy,
   useGetPrincipal,
+  customFetch,
 } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { BlockEditor } from "@/components/editor";
@@ -104,6 +109,12 @@ export function WorkingCopyReviewPage() {
   const { data: revisions } = useNodeRevisions(nodeId);
 
   const [reviewMode, setReviewMode] = useState<ReviewMode>("changes");
+  const [editableSummary, setEditableSummary] = useState<string | null>(null);
+  const [savingSummary, setSavingSummary] = useState(false);
+  const { toast } = useToast();
+  const apiBase = import.meta.env.BASE_URL + "api";
+
+  const hasReviewPermission = currentUser?.permissions?.includes("review_working_copy") ?? false;
 
   const publishedRevision = useMemo<RevisionRecord | null>(() => {
     if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
@@ -326,36 +337,79 @@ export function WorkingCopyReviewPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {(activeWC.changeSummary || activeWC.lastAiSummary) && (
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                {activeWC.lastAiSummary && <Sparkles className="h-4 w-4 text-amber-500" />}
-                Zusammenfassung
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {activeWC.changeSummary && (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Manuelle Beschreibung</p>
-                  <p className="text-sm">{activeWC.changeSummary}</p>
-                </div>
-              )}
-              {activeWC.lastAiSummary && (
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /> KI-Zusammenfassung
-                  </p>
-                  <p className="text-sm text-muted-foreground">{activeWC.lastAiSummary}</p>
-                </div>
-              )}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              {activeWC.lastAiSummary && <Sparkles className="h-4 w-4 text-amber-500" />}
+              Zusammenfassung
               {activeWC.changeType && (
-                <Badge variant="outline" className="text-xs mt-1">{activeWC.changeType}</Badge>
+                <Badge variant="outline" className="text-xs">{activeWC.changeType}</Badge>
               )}
-            </CardContent>
-          </Card>
-        )}
-        <div className={activeWC.changeSummary || activeWC.lastAiSummary ? "" : "lg:col-span-3"}>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {activeWC.changeSummary && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Beschreibung des Autors</p>
+                <p className="text-sm">{activeWC.changeSummary}</p>
+              </div>
+            )}
+            {activeWC.lastAiSummary && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" /> KI-Zusammenfassung
+                </p>
+                <p className="text-sm text-muted-foreground">{activeWC.lastAiSummary}</p>
+              </div>
+            )}
+
+            {hasReviewPermission && canReview && (
+              <div className="pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Finale Zusammenfassung (wird mit der Version veröffentlicht)
+                </p>
+                <Textarea
+                  value={editableSummary ?? activeWC.lastManualSummary ?? activeWC.lastAiSummary ?? activeWC.changeSummary ?? ""}
+                  onChange={(e) => setEditableSummary(e.target.value)}
+                  placeholder="Zusammenfassung bearbeiten oder übernehmen..."
+                  rows={3}
+                  className="text-sm"
+                />
+                <Button
+                  size="sm"
+                  className="mt-2 gap-1"
+                  disabled={savingSummary || editableSummary === null}
+                  onClick={async () => {
+                    if (editableSummary === null) return;
+                    setSavingSummary(true);
+                    try {
+                      await customFetch(`${apiBase}/content/working-copies/${activeWC.id}/summary`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ summary: editableSummary }),
+                      });
+                      toast({ title: "Zusammenfassung gespeichert" });
+                      activeWCQuery.refetch();
+                    } catch {
+                      toast({ variant: "destructive", title: "Speichern fehlgeschlagen" });
+                    } finally {
+                      setSavingSummary(false);
+                      setEditableSummary(null);
+                    }
+                  }}
+                >
+                  {savingSummary ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                  Zusammenfassung speichern
+                </Button>
+              </div>
+            )}
+
+            {!activeWC.changeSummary && !activeWC.lastAiSummary && !hasReviewPermission && (
+              <p className="text-sm text-muted-foreground italic">Keine Zusammenfassung vorhanden.</p>
+            )}
+          </CardContent>
+        </Card>
+        <div>
           <WorkingCopyTimeline workingCopyId={activeWC.id} />
         </div>
       </div>

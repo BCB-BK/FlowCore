@@ -256,6 +256,36 @@ router.post(
   },
 );
 
+router.put(
+  "/working-copies/:id/summary",
+  requireAuth,
+  loadWorkingCopy,
+  requireWcOwnerOrPermission("review_working_copy"),
+  async (req, res) => {
+    try {
+      const id = req.params.id as string;
+      const { summary } = req.body as { summary: string };
+      if (typeof summary !== "string") {
+        res.status(400).json({ error: "summary is required" });
+        return;
+      }
+
+      const { db } = await import("@workspace/db");
+      const { contentWorkingCopiesTable } = await import("@workspace/db/schema");
+      const { eq } = await import("drizzle-orm");
+      await db
+        .update(contentWorkingCopiesTable)
+        .set({ lastManualSummary: summary.trim(), updatedAt: new Date() })
+        .where(eq(contentWorkingCopiesTable.id, id));
+
+      res.json({ ok: true });
+    } catch (err) {
+      logger.warn({ err }, "Failed to save manual summary");
+      res.status(500).json({ error: "Failed to save summary" });
+    }
+  },
+);
+
 router.post(
   "/working-copies/:id/generate-summary",
   requireAuth,

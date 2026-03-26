@@ -115,12 +115,9 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_dashboard",
     "view_tasks",
     "view_settings",
-    "create_working_copy",
-    "edit_working_copy",
-    "submit_working_copy",
     "review_working_copy",
     "amend_working_copy_in_review",
-    "cancel_working_copy",
+    "publish_working_copy",
   ],
   editor: [
     "read_page",
@@ -159,7 +156,6 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_glossary",
     "view_dashboard",
     "view_tasks",
-    "review_working_copy",
     "publish_working_copy",
   ],
   compliance_manager: [
