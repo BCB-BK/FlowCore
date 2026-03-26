@@ -35,6 +35,13 @@ import {
   Building2,
 } from "lucide-react";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   useListPrincipals,
   getListPrincipalsQueryKey,
   useGetPrincipal,
@@ -46,6 +53,7 @@ import {
   getSearchPeopleQueryKey,
   useSearchGroups,
   getSearchGroupsQueryKey,
+  useGetRolePermissionMatrix,
 } from "@workspace/api-client-react";
 import type {
   PrincipalWithRoles,
@@ -106,6 +114,53 @@ const ALL_ROLE_KEYS = [
   "compliance_manager",
   "viewer",
 ] as const;
+
+const PERMISSION_LABELS: Record<string, string> = {
+  read_page: "Seiten lesen",
+  create_page: "Seiten erstellen",
+  edit_content: "Inhalte bearbeiten",
+  edit_structure: "Struktur bearbeiten",
+  manage_relations: "Verknüpfungen verwalten",
+  submit_for_review: "Zur Prüfung einreichen",
+  review_page: "Seiten prüfen",
+  approve_page: "Seiten genehmigen",
+  archive_page: "Seiten archivieren",
+  manage_permissions: "Berechtigungen verwalten",
+  manage_templates: "Templates verwalten",
+  manage_settings: "Einstellungen verwalten",
+  view_audit_log: "Audit-Log einsehen",
+};
+
+const PERMISSION_GROUPS: { label: string; permissions: string[] }[] = [
+  {
+    label: "Inhalte",
+    permissions: [
+      "read_page",
+      "create_page",
+      "edit_content",
+      "edit_structure",
+      "manage_relations",
+    ],
+  },
+  {
+    label: "Workflow",
+    permissions: [
+      "submit_for_review",
+      "review_page",
+      "approve_page",
+      "archive_page",
+    ],
+  },
+  {
+    label: "Administration",
+    permissions: [
+      "manage_permissions",
+      "manage_templates",
+      "manage_settings",
+      "view_audit_log",
+    ],
+  },
+];
 
 interface GraphSearchResult {
   id: string;
@@ -204,58 +259,10 @@ export function UsersRolesTab() {
 
       <Separator />
 
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Rollen-Übersicht</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {ALL_ROLE_KEYS.map((roleKey) => {
-            const Icon = ROLE_ICONS[roleKey] ?? Shield;
-            const members = principalsByRole[roleKey] ?? [];
-            return (
-              <Card key={roleKey} className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-md ${ROLE_COLORS[roleKey]}`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold">
-                      {ROLE_LABELS[roleKey]}
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {ROLE_DESCRIPTIONS[roleKey]}
-                    </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {members.length === 0 ? (
-                        <span className="text-xs text-muted-foreground italic">
-                          Keine Zuweisungen
-                        </span>
-                      ) : (
-                        members.map(({ principal }) => (
-                          <Badge
-                            key={principal.id}
-                            variant="secondary"
-                            className="text-xs cursor-pointer"
-                            onClick={() => setSelectedPrincipalId(principal.id)}
-                          >
-                            {principal.principalType === "group" ? (
-                              <Users className="h-3 w-3 mr-1" />
-                            ) : (
-                              <User className="h-3 w-3 mr-1" />
-                            )}
-                            {principal.displayName}
-                          </Badge>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-xs shrink-0">
-                    {members.length}
-                  </Badge>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
+      <RoleOverviewSection
+        principalsByRole={principalsByRole}
+        onSelectPrincipal={setSelectedPrincipalId}
+      />
     </div>
   );
 }
@@ -807,5 +814,234 @@ function PrincipalDetail({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function RoleOverviewSection({
+  principalsByRole,
+  onSelectPrincipal,
+}: {
+  principalsByRole: Record<
+    string,
+    { principal: PrincipalWithRoles; assignment: RoleAssignment }[]
+  >;
+  onSelectPrincipal: (id: string) => void;
+}) {
+  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const { data: permMatrix } = useGetRolePermissionMatrix();
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-4">Rollen-Übersicht</h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Klicken Sie auf eine Rolle, um die Berechtigungen im Detail anzuzeigen.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {ALL_ROLE_KEYS.map((roleKey) => {
+          const Icon = ROLE_ICONS[roleKey] ?? Shield;
+          const members = principalsByRole[roleKey] ?? [];
+          const perms = permMatrix?.[roleKey] ?? [];
+          return (
+            <Card
+              key={roleKey}
+              className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all"
+              onClick={() => setEditingRole(roleKey)}
+            >
+              <div className="flex items-start gap-3">
+                <div className={`p-2 rounded-md ${ROLE_COLORS[roleKey]}`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold">
+                    {ROLE_LABELS[roleKey]}
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {ROLE_DESCRIPTIONS[roleKey]}
+                  </p>
+
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {perms.slice(0, 5).map((perm) => (
+                      <Badge
+                        key={perm}
+                        variant="outline"
+                        className="text-[10px] font-normal"
+                      >
+                        {PERMISSION_LABELS[perm] ?? perm}
+                      </Badge>
+                    ))}
+                    {perms.length > 5 && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] font-normal"
+                      >
+                        +{perms.length - 5} weitere
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {members.length === 0 ? (
+                      <span className="text-xs text-muted-foreground italic">
+                        Keine Zuweisungen
+                      </span>
+                    ) : (
+                      members.map(({ principal }) => (
+                        <Badge
+                          key={principal.id}
+                          variant="secondary"
+                          className="text-xs cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectPrincipal(principal.id);
+                          }}
+                        >
+                          {principal.principalType === "group" ? (
+                            <Users className="h-3 w-3 mr-1" />
+                          ) : (
+                            <User className="h-3 w-3 mr-1" />
+                          )}
+                          {principal.displayName}
+                        </Badge>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <Badge variant="outline" className="text-xs">
+                    {members.length} Nutzer
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {perms.length} Rechte
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {editingRole && permMatrix && (
+        <RolePermissionDialog
+          roleKey={editingRole}
+          permissions={permMatrix[editingRole] ?? []}
+          members={principalsByRole[editingRole] ?? []}
+          onClose={() => setEditingRole(null)}
+          onSelectPrincipal={onSelectPrincipal}
+        />
+      )}
+    </div>
+  );
+}
+
+function RolePermissionDialog({
+  roleKey,
+  permissions,
+  members,
+  onClose,
+  onSelectPrincipal,
+}: {
+  roleKey: string;
+  permissions: string[];
+  members: { principal: PrincipalWithRoles; assignment: RoleAssignment }[];
+  onClose: () => void;
+  onSelectPrincipal: (id: string) => void;
+}) {
+  const Icon = ROLE_ICONS[roleKey] ?? Shield;
+  const permSet = new Set(permissions);
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            <div className={`p-2 rounded-md ${ROLE_COLORS[roleKey]}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            {ROLE_LABELS[roleKey]} — Berechtigungen
+          </DialogTitle>
+        </DialogHeader>
+
+        <p className="text-sm text-muted-foreground">
+          {ROLE_DESCRIPTIONS[roleKey]}
+        </p>
+
+        <div className="space-y-5 mt-2">
+          {PERMISSION_GROUPS.map((group) => (
+            <div key={group.label}>
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                {group.label}
+              </h4>
+              <div className="space-y-1">
+                {group.permissions.map((perm) => {
+                  const hasPermission = permSet.has(perm);
+                  return (
+                    <label
+                      key={perm}
+                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-default"
+                    >
+                      <Checkbox
+                        checked={hasPermission}
+                        disabled
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium">
+                          {PERMISSION_LABELS[perm] ?? perm}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({perm})
+                        </span>
+                      </div>
+                      {hasPermission && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        >
+                          Aktiv
+                        </Badge>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Separator className="my-2" />
+
+        <div>
+          <h4 className="text-sm font-semibold mb-2">
+            Zugewiesene Nutzer & Gruppen ({members.length})
+          </h4>
+          {members.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">
+              Keine Zuweisungen für diese Rolle
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {members.map(({ principal }) => (
+                <Badge
+                  key={principal.id}
+                  variant="secondary"
+                  className="text-xs cursor-pointer hover:bg-secondary/80"
+                  onClick={() => {
+                    onSelectPrincipal(principal.id);
+                    onClose();
+                  }}
+                >
+                  {principal.principalType === "group" ? (
+                    <Users className="h-3 w-3 mr-1" />
+                  ) : (
+                    <User className="h-3 w-3 mr-1" />
+                  )}
+                  {principal.displayName}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
