@@ -496,13 +496,6 @@ export interface AuthUser {
   email?: string;
 }
 
-export interface DevUser {
-  id: string;
-  displayName: string;
-  email: string;
-  role: string;
-}
-
 export type PrincipalPrincipalType =
   (typeof PrincipalPrincipalType)[keyof typeof PrincipalPrincipalType];
 

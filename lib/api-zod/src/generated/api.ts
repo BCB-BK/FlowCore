@@ -47,17 +47,6 @@ export const AuthMeResponse = zod.object({
 });
 
 /**
- * @summary List dev users (dev mode only)
- */
-export const ListDevUsersResponseItem = zod.object({
-  id: zod.string().uuid(),
-  displayName: zod.string(),
-  email: zod.string(),
-  role: zod.string(),
-});
-export const ListDevUsersResponse = zod.array(ListDevUsersResponseItem);
-
-/**
  * @summary List or search principals (includes role assignments)
  */
 export const listPrincipalsQueryLimitDefault = 50;

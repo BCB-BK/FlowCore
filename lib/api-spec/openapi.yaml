@@ -130,22 +130,6 @@ paths:
         "200":
           description: Logged out
 
-  /auth/dev-users:
-    get:
-      operationId: listDevUsers
-      tags: [auth]
-      summary: List dev users (dev mode only)
-      responses:
-        "200":
-          description: Dev user list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/DevUser"
-        "404":
-          description: Not available in production
 
   /principals:
     get:
@@ -3182,24 +3166,6 @@ components:
       required:
         - principalId
         - displayName
-
-    DevUser:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        displayName:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
-      required:
-        - id
-        - displayName
-        - email
-        - role
 
     Principal:
       type: object

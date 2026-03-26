@@ -46,7 +46,6 @@ import type {
   CreateSourceSystemInput,
   CreateStorageProviderInput,
   CreateTag,
-  DevUser,
   DuplicateGroup,
   EffectivePermissions,
   ErrorResponse,
@@ -521,81 +520,6 @@ export const useAuthLogout = <
 > => {
   return useMutation(getAuthLogoutMutationOptions(options));
 };
-
-/**
- * @summary List dev users (dev mode only)
- */
-export const getListDevUsersUrl = () => {
-  return `/api/auth/dev-users`;
-};
-
-export const listDevUsers = async (
-  options?: RequestInit,
-): Promise<DevUser[]> => {
-  return customFetch<DevUser[]>(getListDevUsersUrl(), {
-    ...options,
-    method: "GET",
-  });
-};
-
-export const getListDevUsersQueryKey = () => {
-  return [`/api/auth/dev-users`] as const;
-};
-
-export const getListDevUsersQueryOptions = <
-  TData = Awaited<ReturnType<typeof listDevUsers>>,
-  TError = ErrorType<void>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listDevUsers>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getListDevUsersQueryKey();
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof listDevUsers>>> = ({
-    signal,
-  }) => listDevUsers({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof listDevUsers>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
-
-export type ListDevUsersQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listDevUsers>>
->;
-export type ListDevUsersQueryError = ErrorType<void>;
-
-/**
- * @summary List dev users (dev mode only)
- */
-
-export function useListDevUsers<
-  TData = Awaited<ReturnType<typeof listDevUsers>>,
-  TError = ErrorType<void>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listDevUsers>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListDevUsersQueryOptions(options);
-
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
 
 /**
  * @summary List or search principals (includes role assignments)
