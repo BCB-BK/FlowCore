@@ -11,6 +11,8 @@
     "import-glossary": "tsx ./src/import-glossary.ts",
     "import-kernprozesse": "tsx ./src/import-kernprozesse.ts",
     "export-sharepoint-pages": "tsx ./src/export-sharepoint-pages.ts",
+    "cleanup-content": "tsx ./src/cleanup-content.ts",
+    "import-sharepoint-pages": "tsx ./src/import-sharepoint-pages.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

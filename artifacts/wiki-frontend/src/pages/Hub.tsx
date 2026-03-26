@@ -11,6 +11,8 @@ import {
   Search,
   FileText,
   BarChart3,
+  Calendar,
+  ChevronRight,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS } from "@/lib/types";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
@@ -96,45 +98,48 @@ export function Hub() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-2">
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-lg" />
+              <Skeleton key={i} className="h-16 rounded-lg" />
             ))}
           </div>
         ) : roots && roots.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-2">
             {roots.map((node) => (
               <Card
                 key={node.id}
-                className="cursor-pointer hover:shadow-md transition-shadow"
+                className="cursor-pointer hover:shadow-md transition-shadow group"
                 onClick={() => navigate(`/node/${node.id}`)}
               >
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <FolderOpen className="h-5 w-5" />
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                    <FolderOpen className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                      {node.title}
+                    </p>
+                    <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                      <span className="font-mono">{node.displayCode}</span>
+                      <span className="hidden sm:inline">·</span>
+                      <span className="hidden sm:inline">{PAGE_TYPE_LABELS[node.templateType] || node.templateType}</span>
                     </div>
-                    <StatusBadge
-                      status={
-                        node.status as Parameters<
-                          typeof StatusBadge
-                        >[0]["status"]
-                      }
-                      compact
-                    />
                   </div>
-                  <CardTitle className="text-base mt-2">{node.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <FileText className="h-3.5 w-3.5" />
-                    <span>
-                      {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
-                    </span>
+                  <div className="hidden sm:flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{new Date(node.updatedAt).toLocaleDateString("de-DE")}</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {node.displayCode}
-                  </p>
+                  <StatusBadge
+                    status={
+                      node.status as Parameters<
+                        typeof StatusBadge
+                      >[0]["status"]
+                    }
+                    compact
+                  />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                 </CardContent>
               </Card>
             ))}

@@ -95,6 +95,7 @@ export function NodeDetail() {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showPageAssist, setShowPageAssist] = useState(false);
+  const isOverviewPage = node?.templateType === "core_process_overview" || node?.templateType === "area_overview";
   const { toast } = useToast();
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
@@ -397,18 +398,11 @@ export function NodeDetail() {
               <CardTitle className="text-base">Seitendetails</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Hash className="h-3.5 w-3.5" />
-                    <span>System-ID</span>
-                  </div>
-                  <p className="font-mono text-xs">{node.immutableId}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Hash className="h-3.5 w-3.5" />
-                    <span>Display-Code</span>
+                    <span>FlowCore-ID</span>
                   </div>
                   <p className="font-medium">{node.displayCode}</p>
                 </div>
@@ -437,13 +431,95 @@ export function NodeDetail() {
           )}
 
           {nodeId && <RelatedContentSidebar nodeId={nodeId} />}
-          {nodeId && <SourceReferencesPanel nodeId={nodeId} />}
           {nodeId && <GlossaryTermsPanel nodeId={nodeId} />}
 
-          <PageLayout
-            templateType={node.templateType}
-            structuredFields={structuredFields}
-          />
+          {!isOverviewPage && (
+            <PageLayout
+              templateType={node.templateType}
+              structuredFields={structuredFields}
+            />
+          )}
+
+          {isOverviewPage && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold">
+                  {node.templateType === "core_process_overview" ? "Bereiche" : "Unterseiten"}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreate(true)}
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  Hinzufügen
+                </Button>
+              </div>
+              {children && children.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {children.map((child) => {
+                  const childDef = getPageType(child.templateType);
+                  return (
+                    <Card
+                      key={child.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow group"
+                      onClick={() => navigate(`/node/${child.id}`)}
+                    >
+                      <CardContent className="flex items-center gap-4 p-4">
+                        {childDef ? (
+                          <div
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-white shrink-0"
+                            style={{ backgroundColor: childDef.color }}
+                          >
+                            <PageTypeIcon
+                              iconName={childDef.icon}
+                              className="h-4 w-4"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
+                            <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                            {child.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {child.displayCode}
+                          </p>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
+                          <div className="text-right">
+                            <span className="block text-[10px] uppercase tracking-wide">Aktualisiert</span>
+                            <span>{new Date(child.updatedAt).toLocaleDateString("de-DE")}</span>
+                          </div>
+                        </div>
+                        <StatusBadge
+                          status={
+                            child.status as Parameters<
+                              typeof StatusBadge
+                            >[0]["status"]
+                          }
+                          compact
+                        />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              ) : (
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                  <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Noch keine {node.templateType === "core_process_overview" ? "Bereiche" : "Unterseiten"} vorhanden
+                  </p>
+                </CardContent>
+              </Card>
+              )}
+            </div>
+          )}
 
           <div className="mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
@@ -483,6 +559,8 @@ export function NodeDetail() {
               )}
             </div>
           </div>
+
+          {nodeId && <SourceReferencesPanel nodeId={nodeId} />}
         </TabsContent>
 
         <TabsContent value="metadata" className="mt-4 space-y-4">
