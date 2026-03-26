@@ -83,10 +83,12 @@ cd e2e && npx playwright test
 Express 5 API server with structured logging, config validation, content management, auth/RBAC, and audit events.
 
 - Entry: `src/index.ts` — uses validated config (Zod), seeds dev principals on startup
-- App: `src/app.ts` — correlation ID middleware, pinoHttp, CORS, routes at `/api`
+- App: `src/app.ts` — security headers, rate limiting, correlation ID middleware, pinoHttp, CORS, 2MB body limit, routes at `/api`
 - Config: `src/lib/config.ts` — Zod schema for PORT, NODE_ENV, DATABASE_URL, LOG_LEVEL, AUTH_DEV_MODE, Entra ID config
 - Logger: `src/lib/logger.ts` — pino with redaction
 - Audit: `src/lib/audit.ts` — persistent audit event logging
+- Middlewares: `src/middlewares/security-headers.ts` — CSP, HSTS, X-Content-Type-Options, frame-ancestors for Teams
+- Middlewares: `src/middlewares/rate-limit.ts` — In-memory rate limiter (auth: 30/15min, API: 200/min)
 - Middlewares: `src/middlewares/correlation-id.ts` — request correlation IDs
 - Middlewares: `src/middlewares/require-auth.ts` — authentication gate (dev mode + Entra SSO)
 - Middlewares: `src/middlewares/require-permission.ts` — RBAC permission gate
@@ -185,7 +187,7 @@ Playwright E2E tests.
 
 ### `scripts` (`@workspace/scripts`)
 
-Utility scripts: `no-hardcode-check`, `docs-check`.
+Utility scripts: `no-hardcode-check`, `docs-check`, `migrate-pilot` (pilot content migration).
 
 ## Documentation
 

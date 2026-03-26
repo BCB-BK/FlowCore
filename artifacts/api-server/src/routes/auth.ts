@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { appConfig } from "../lib/config";
+import { authRateLimit } from "../middlewares/rate-limit";
 import {
   getAuthUrl,
   exchangeCodeForToken,
@@ -30,7 +31,7 @@ router.get("/auth/config", (_req, res) => {
   });
 });
 
-router.get("/auth/login", async (req, res) => {
+router.get("/auth/login", authRateLimit, async (req, res) => {
   if (appConfig.authDevMode) {
     res.json({
       devMode: true,
@@ -57,7 +58,7 @@ router.get("/auth/login", async (req, res) => {
   }
 });
 
-router.get("/auth/callback", async (req, res) => {
+router.get("/auth/callback", authRateLimit, async (req, res) => {
   if (appConfig.authDevMode) {
     res.status(400).json({ error: "Callback not available in dev mode" });
     return;

@@ -7,7 +7,12 @@
     "hello": "tsx ./src/hello.ts",
     "no-hardcode-check": "tsx ./src/no-hardcode-check.ts",
     "docs:check": "tsx ./src/docs-check.ts",
+    "migrate-pilot": "tsx ./src/migrate-pilot-content.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

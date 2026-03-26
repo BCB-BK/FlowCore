@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { appConfig } from "../lib/config";
+import { authRateLimit } from "../middlewares/rate-limit";
 import {
   exchangeTeamsSsoToken,
   isAuthConfigured,
@@ -18,7 +19,7 @@ import { logger } from "../lib/logger";
 
 export const teamsRouter = Router();
 
-teamsRouter.post("/teams/sso", async (req, res) => {
+teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
   if (appConfig.authDevMode) {
     res.status(400).json({ error: "Teams SSO not available in dev mode" });
     return;
