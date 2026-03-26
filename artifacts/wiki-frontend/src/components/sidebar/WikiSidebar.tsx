@@ -32,17 +32,14 @@ export function WikiSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-3">
         <div
-          className="flex items-center gap-2.5 cursor-pointer"
+          className="flex items-center cursor-pointer"
           onClick={() => navigate("/")}
         >
           <img
-            src={`${import.meta.env.BASE_URL}bildungscampus-logo.svg`}
+            src={`${import.meta.env.BASE_URL}bildungscampus-logo.png`}
             alt="BildungsCampus"
-            className="h-7 w-7 shrink-0"
+            className="h-7 w-auto shrink-0"
           />
-          <span className="text-sm text-muted-foreground font-medium leading-tight">
-            BildungsCampus
-          </span>
         </div>
       </SidebarHeader>
 
