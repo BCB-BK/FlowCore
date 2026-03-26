@@ -382,7 +382,7 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
         b.id as node_id_b, b.title as title_b, b.display_code as code_b,
         b.template_type as type_b, b.status as status_b, b.updated_at::text as updated_b,
         similarity(LOWER(a.title), LOWER(b.title)) as title_sim,
-        CASE WHEN a.template_type = b.template_type THEN 0.15 ELSE 0.0 END as type_bonus,
+        CASE WHEN a.template_type = b.template_type THEN 1.0 ELSE 0.0 END as type_match,
         COALESCE((
           SELECT COUNT(*)::float / GREATEST(
             (SELECT COUNT(*) FROM content_node_tags WHERE node_id = a.id) +
@@ -392,15 +392,34 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
           FROM content_node_tags ta
           JOIN content_node_tags tb ON ta.tag_id = tb.tag_id
           WHERE ta.node_id = a.id AND tb.node_id = b.id
-        ), 0) * 0.15 as tag_overlap
+        ), 0) as tag_jaccard,
+        CASE WHEN cra.id IS NOT NULL AND crb.id IS NOT NULL THEN
+          similarity(
+            COALESCE(LEFT(cra.content::text, 500), ''),
+            COALESCE(LEFT(crb.content::text, 500), '')
+          )
+        ELSE 0.0 END as content_sim,
+        CASE
+          WHEN cra.structured_fields IS NOT NULL AND crb.structured_fields IS NOT NULL THEN
+            similarity(
+              COALESCE(LEFT(cra.structured_fields::text, 300), ''),
+              COALESCE(LEFT(crb.structured_fields::text, 300), '')
+            )
+          ELSE 0.0
+        END as desc_sim,
+        CASE
+          WHEN a.parent_node_id IS NOT NULL AND a.parent_node_id = b.parent_node_id THEN 1.0
+          ELSE 0.0
+        END as same_parent
       FROM content_nodes a
       JOIN content_nodes b ON a.id < b.id
+      LEFT JOIN content_revisions cra ON a.current_revision_id = cra.id
+      LEFT JOIN content_revisions crb ON b.current_revision_id = crb.id
       WHERE NOT a.is_deleted AND NOT b.is_deleted
         AND a.title != b.title
-        AND similarity(LOWER(a.title), LOWER(b.title)) > 0.3
-      ORDER BY (similarity(LOWER(a.title), LOWER(b.title)) * 0.7 +
-        CASE WHEN a.template_type = b.template_type THEN 0.15 ELSE 0.0 END) DESC
-      LIMIT 50
+        AND similarity(LOWER(a.title), LOWER(b.title)) > 0.25
+      ORDER BY similarity(LOWER(a.title), LOWER(b.title)) DESC
+      LIMIT 100
     `);
 
     const exactTitles = new Set(exactGroups.keys());
@@ -418,9 +437,19 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
       seenPairs.add(pairKey);
 
       const titleSim = parseFloat(String(r.title_sim ?? "0"));
-      const typeBonus = parseFloat(String(r.type_bonus ?? "0"));
-      const tagOverlap = parseFloat(String(r.tag_overlap ?? "0"));
-      const compositeScore = titleSim * 0.7 + typeBonus + tagOverlap;
+      const typeMatch = parseFloat(String(r.type_match ?? "0"));
+      const tagJaccard = parseFloat(String(r.tag_jaccard ?? "0"));
+      const contentSim = parseFloat(String(r.content_sim ?? "0"));
+      const descSim = parseFloat(String(r.desc_sim ?? "0"));
+      const sameParent = parseFloat(String(r.same_parent ?? "0"));
+
+      const compositeScore =
+        titleSim * 0.35 +
+        typeMatch * 0.1 +
+        tagJaccard * 0.1 +
+        contentSim * 0.2 +
+        descSim * 0.15 +
+        sameParent * 0.1;
 
       if (compositeScore < 0.3) continue;
 
@@ -713,7 +742,8 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
   }
 
   const missingMandatory = await db.execute(sql`
-    SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type
+    SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type,
+           cn.owner_id, cn.current_revision_id, cn.published_revision_id
     FROM content_nodes cn
     WHERE NOT cn.is_deleted
       AND cn.status IN ('published', 'approved')
