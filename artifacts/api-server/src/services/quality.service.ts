@@ -56,7 +56,6 @@ export interface MaintenanceHint {
     | "stale_content"
     | "orphan"
     | "no_revision"
-    | "archived_reference"
     | "missing_mandatory_fields"
     | "broken_link"
     | "unreferenced_media"
@@ -206,7 +205,7 @@ export async function getQualityOverview(): Promise<QualityOverview> {
         CASE WHEN cn.current_revision_id IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN cn.published_revision_id IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id) THEN 20 ELSE 0 END +
-        CASE WHEN cr.next_review_date IS NULL OR cr.next_review_date >= NOW() THEN 20 ELSE 0 END
+        CASE WHEN cn.current_revision_id IS NOT NULL AND (cr.next_review_date IS NULL OR cr.next_review_date >= NOW()) THEN 20 ELSE 0 END
       )) as avg_completeness
     FROM content_nodes cn
     LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
@@ -944,7 +943,7 @@ export async function getQualityByProcess(): Promise<ProcessQualityRow[]> {
         CASE WHEN cn.current_revision_id IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN cn.published_revision_id IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id) THEN 20 ELSE 0 END +
-        CASE WHEN cr.next_review_date IS NULL OR cr.next_review_date >= NOW() THEN 20 ELSE 0 END
+        CASE WHEN cn.current_revision_id IS NOT NULL AND (cr.next_review_date IS NULL OR cr.next_review_date >= NOW()) THEN 20 ELSE 0 END
       )) as avg_completeness
     FROM content_nodes cn
     LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id

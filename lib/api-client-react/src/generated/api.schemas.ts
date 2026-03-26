@@ -1213,7 +1213,6 @@ export const MaintenanceHintType = {
   stale_content: "stale_content",
   orphan: "orphan",
   no_revision: "no_revision",
-  archived_reference: "archived_reference",
   missing_mandatory_fields: "missing_mandatory_fields",
   broken_link: "broken_link",
   unreferenced_media: "unreferenced_media",

@@ -2425,7 +2425,6 @@ export const GetMaintenanceHintsResponseItem = zod.object({
     "stale_content",
     "orphan",
     "no_revision",
-    "archived_reference",
     "missing_mandatory_fields",
     "broken_link",
     "unreferenced_media",

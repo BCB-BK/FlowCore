@@ -4533,7 +4533,7 @@ components:
       properties:
         type:
           type: string
-          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, archived_reference, missing_mandatory_fields, broken_link, unreferenced_media, stale_policy_reference, missing_tags, violated_review_cycle, contradictory_roles]
+          enum: [missing_owner, overdue_review, stale_content, orphan, no_revision, missing_mandatory_fields, broken_link, unreferenced_media, stale_policy_reference, missing_tags, violated_review_cycle, contradictory_roles]
         severity:
           type: string
           enum: [critical, warning, info]

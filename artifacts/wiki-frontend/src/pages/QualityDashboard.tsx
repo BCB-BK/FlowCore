@@ -138,7 +138,6 @@ function HintTypeLabel({ type }: { type: string }) {
     stale_content: "Veralteter Inhalt",
     orphan: "Verwaiste Seite",
     no_revision: "Keine Revision",
-    archived_reference: "Archivierte Referenz",
     missing_mandatory_fields: "Fehlende Pflichtfelder",
     broken_link: "Defekte Verknüpfung",
     unreferenced_media: "Ungenutzte Medien",
