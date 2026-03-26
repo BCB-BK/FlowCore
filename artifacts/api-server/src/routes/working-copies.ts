@@ -260,10 +260,16 @@ router.put(
   "/working-copies/:id/summary",
   requireAuth,
   loadWorkingCopy,
-  requireWcOwnerOrPermission("review_working_copy"),
+  requireWcPermission("review_working_copy"),
   async (req, res) => {
     try {
       const id = req.params.id as string;
+      const wc = (req as WorkingCopyRequest).workingCopy;
+      const reviewStatuses = ["submitted", "in_review", "approved_for_publish"];
+      if (!reviewStatuses.includes(wc.status)) {
+        res.status(409).json({ error: "Zusammenfassung kann nur während der Prüfphase bearbeitet werden." });
+        return;
+      }
       const { summary } = req.body as { summary: string };
       if (typeof summary !== "string") {
         res.status(400).json({ error: "summary is required" });

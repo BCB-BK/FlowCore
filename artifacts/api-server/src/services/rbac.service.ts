@@ -117,7 +117,6 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_settings",
     "review_working_copy",
     "amend_working_copy_in_review",
-    "publish_working_copy",
   ],
   editor: [
     "read_page",
