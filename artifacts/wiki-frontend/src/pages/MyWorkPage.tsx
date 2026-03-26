@@ -255,7 +255,9 @@ function WorkSection({
                   onClick={() =>
                     item.type === "my_draft"
                       ? navigate(`/nodes/${item.nodeId}/edit`)
-                      : navigate(`/node/${item.nodeId}`)
+                      : item.type === "pending_approval"
+                        ? navigate(`/nodes/${item.nodeId}/review`)
+                        : navigate(`/node/${item.nodeId}`)
                   }
                 >
                   <TableCell>

@@ -50,6 +50,7 @@ import {
   Pencil,
   FileEdit,
   Loader2,
+  Eye,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
@@ -294,6 +295,19 @@ export function NodeDetail() {
               );
             }
             if (activeWC && !wcEditable) {
+              const wcReviewable = activeWC.status === "submitted" || activeWC.status === "in_review";
+              if (wcReviewable) {
+                return (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => navigate(`/nodes/${nodeId}/review`)}
+                  >
+                    <Eye className="mr-1 h-4 w-4" />
+                    Prüfen
+                  </Button>
+                );
+              }
               return null;
             }
             return (
