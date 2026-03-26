@@ -25,6 +25,7 @@ import {
 } from "../services/graph.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { hasPermission } from "../services/rbac.service";
 import {
   PAGE_TYPE_REGISTRY,
   getPageType as getPageTypeDef,
@@ -578,7 +579,15 @@ router.get(
         ),
       );
 
-    res.json(backlinks);
+    const principalId = req.user!.principalId;
+    const filtered = [];
+    for (const link of backlinks) {
+      if (await hasPermission(principalId, "read_page", link.sourceId)) {
+        filtered.push(link);
+      }
+    }
+
+    res.json(filtered);
   },
 );
 
@@ -611,7 +620,15 @@ router.get(
         ),
       );
 
-    res.json(forwardLinks);
+    const principalId = req.user!.principalId;
+    const filtered = [];
+    for (const link of forwardLinks) {
+      if (await hasPermission(principalId, "read_page", link.targetId)) {
+        filtered.push(link);
+      }
+    }
+
+    res.json(filtered);
   },
 );
 
