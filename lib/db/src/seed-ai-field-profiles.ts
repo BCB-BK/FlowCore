@@ -236,7 +236,7 @@ const profiles: FieldProfileData[] = [
     isActive: true,
   },
 
-  // ─── procedure_instruction (12 Sections) ───
+  // ─── procedure_instruction (17 Sections) ───
   {
     pageType: "procedure_instruction",
     fieldKey: "purpose",
@@ -349,6 +349,17 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "procedure_instruction",
+    fieldKey: "outputs",
+    label: "VA – Ergebnisse & Ausgaben",
+    purpose: "Beschreibt die Ergebnisse und Ausgaben, die durch das Verfahren erzeugt werden, inklusive Nachweise, Dokumente und Übergaben.",
+    promptInstruction: "Liste alle Ergebnisse klar auf. Benenne für jedes Ergebnis: was erzeugt wird, in welcher Form und wer es erhält oder wo es abgelegt wird. Verwende klare Nominalphrasen (z.B. 'Geprüfter Prüfbericht', 'Freigegebene Bestellung').",
+    style: "präzise, ergebnisorientiert, vollständig",
+    guardrails: "Erfinde KEINE Outputs oder Empfänger. Füge KEINE Archivierungsvorgaben hinzu, die nicht im Text stehen. Erstelle KEINE Dokumentenkennzeichen.",
+    allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "procedure_instruction",
     fieldKey: "risks",
     label: "VA – Risiken",
     purpose: "Identifiziert die spezifischen Risiken auf Verfahrensebene und beschreibt die zugehörigen Präventiv- und Reaktivmaßnahmen.",
@@ -360,12 +371,56 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "procedure_instruction",
-    fieldKey: "related_documents",
+    fieldKey: "kpis",
+    label: "VA – KPI & Kennzahlen",
+    purpose: "Definiert Prozesskennzahlen zur Erfolgsmessung und Wirksamkeitskontrolle der Verfahrensanweisung.",
+    promptInstruction: "Beschreibe KPIs mit einheitlicher Struktur: Kennzahlname, was gemessen wird, Zielwert (falls angegeben), Messfrequenz und Verantwortlichkeit. Nutze klare, messbare Formulierungen ohne Fachjargon.",
+    style: "präzise, messbar, sachlich",
+    guardrails: "Erfinde KEINE Kennzahlen, Zielwerte oder Messformeln. Ändere KEINE bestehenden Zielwerte oder Messfrequenzen. Füge KEINE Verantwortlichkeiten hinzu, die nicht im Text stehen.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "procedure_instruction",
+    fieldKey: "compliance",
+    label: "VA – Normbezug & Compliance",
+    purpose: "Ordnet die Verfahrensanweisung in den regulatorischen Rahmen ein und benennt alle relevanten Normen, Gesetze und Compliance-Anforderungen.",
+    promptInstruction: "Formuliere Normbezüge präzise. Benenne Normen mit vollständigem Namen und Ausgabestand, wenn angegeben. Erläutere kurz, welcher Aspekt des Verfahrens durch die jeweilige Norm abgedeckt wird. Verwende Aufzählungen für mehrere Normen.",
+    style: "normkonform, sachlich, formal",
+    guardrails: "Erfinde KEINE Normen, Gesetze, Richtlinien oder Zertifizierungen. Verwende ausschließlich die im Text genannten Referenzen. Ändere KEINE Normbezeichnungen oder Ausgabedaten.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "procedure_instruction",
+    fieldKey: "documents",
     label: "VA – Mitgeltende Unterlagen",
     purpose: "Verweist auf alle Dokumente, Vorlagen, Normen und Referenzen, die für die Durchführung oder das Verständnis der Verfahrensanweisung relevant sind.",
     promptInstruction: "Liste alle mitgeltenden Unterlagen strukturiert auf. Unterscheide: Vorlagen, Formulare, Normen, Arbeitsanweisungen, externe Dokumente. Benenne Dokumente mit ihrer offiziellen Bezeichnung.",
     style: "referenzierend, präzise, vollständig",
     guardrails: "Erfinde KEINE Dokumentenbezeichnungen oder Dokumentenkennzeichen. Erstelle KEINE Links oder URLs. Füge KEINE Normen hinzu, die nicht im Text erwähnt sind.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "procedure_instruction",
+    fieldKey: "relations",
+    label: "VA – Verknüpfungen & Querverweise",
+    purpose: "Dokumentiert die Beziehungen zu anderen Wiki-Seiten: übergeordnete Prozesse, abhängige Arbeitsanweisungen, zugehörige Checklisten und Richtlinien.",
+    promptInstruction: "Formuliere Verknüpfungen klar und knapp. Benenne für jeden Verweis: Art des verknüpften Dokuments (übergeordneter Prozess, nachgelagerte Arbeitsanweisung, Richtlinie, Checkliste), den Namen und den Bezug zur VA. Verwende Aufzählungen.",
+    style: "referenzierend, strukturiert, navigatorisch",
+    guardrails: "Erfinde KEINE Verknüpfungen oder Dokumentenbeziehungen. Erstelle KEINE Links oder Dokumentenkennzeichen. Füge KEINE Abhängigkeiten hinzu, die nicht im Text beschrieben sind.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "procedure_instruction",
+    fieldKey: "changelog",
+    label: "VA – Änderungshistorie",
+    purpose: "Dokumentiert alle wesentlichen Änderungen an der Verfahrensanweisung mit Datum, Beschreibung der Änderung und Verantwortlichem.",
+    promptInstruction: "Formuliere Änderungseinträge einheitlich. Jeder Eintrag soll enthalten: Revisionsnummer (wenn vorhanden), Datum, kurze Beschreibung der Änderung, verantwortliche Person/Rolle. Verwende eine tabellarische oder listenbasierte Struktur.",
+    style: "sachlich, chronologisch, vollständig",
+    guardrails: "Erfinde KEINE Änderungen, Revisionen oder Daten. Füge KEINE Personennamen hinzu, die nicht im Text stehen. Ändere NICHT die chronologische Reihenfolge bestehender Einträge.",
     allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
@@ -384,6 +439,17 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "work_instruction",
+    fieldKey: "scope",
+    label: "AA – Geltungsbereich",
+    purpose: "Legt fest, für welche Mitarbeitenden, Tätigkeiten, Standorte und Arbeitsbedingungen diese Arbeitsanweisung verbindlich gilt.",
+    promptInstruction: "Formuliere den Geltungsbereich klar und eindeutig. Benenne: wer (Rollen/Funktionen), was (Tätigkeiten/Produkte), wo (Arbeitsplatz/Standort) und ggf. unter welchen Bedingungen die Anweisung gilt. Schreibe verständlich für Ausführende.",
+    style: "präzise, eindeutig, praxisnah",
+    guardrails: "Erfinde KEINE Organisationseinheiten oder Standorte. Schränke NICHT den Geltungsbereich ein, ohne dass dies im Text steht. Füge KEINE Ausnahmen hinzu, die nicht spezifiziert sind.",
+    allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "work_instruction",
     fieldKey: "safety",
     label: "AA – Sicherheitshinweise",
     purpose: "Enthält alle relevanten Sicherheitshinweise und Schutzmaßnahmen, die bei der Durchführung der Tätigkeit zu beachten sind.",
@@ -396,7 +462,7 @@ const profiles: FieldProfileData[] = [
   {
     pageType: "work_instruction",
     fieldKey: "materials",
-    label: "AA – Materialien & Hilfsmittel",
+    label: "AA – Werkzeuge & Materialien",
     purpose: "Listet alle Materialien, Werkzeuge und Hilfsmittel auf, die zur Durchführung der Arbeitsanweisung benötigt werden.",
     promptInstruction: "Liste alle benötigten Materialien und Werkzeuge in einer übersichtlichen Aufzählung auf. Benenne Menge und Spezifikation, wenn angegeben. Unterscheide zwischen Verbrauchsmaterialien und Werkzeugen.",
     style: "strukturiert, vollständig, knapp",
@@ -428,19 +494,8 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "work_instruction",
-    fieldKey: "documentation",
-    label: "AA – Dokumentation",
-    purpose: "Beschreibt, was nach Durchführung der Tätigkeit dokumentiert werden muss, in welcher Form und wo die Dokumentation abgelegt wird.",
-    promptInstruction: "Beschreibe die Dokumentationsanforderungen klar: Was wird dokumentiert? In welchem Dokument/System? Wer dokumentiert? Wie lange wird aufbewahrt (wenn angegeben)? Verwende klare Formulierungen ohne Fachbegriffe.",
-    style: "präzise, prozessorientiert, vollständig",
-    guardrails: "Erfinde KEINE Dokumentationspflichten oder Aufbewahrungsfristen. Nenne KEINE Systemnamen oder Formulare, die nicht im Text stehen. Füge KEINE regulatorischen Anforderungen hinzu.",
-    allowedOperations: SUMMARY_OPS,
-    isActive: true,
-  },
-  {
-    pageType: "work_instruction",
-    fieldKey: "related_documents",
-    label: "AA – Zugehörige Dokumente",
+    fieldKey: "documents",
+    label: "AA – Mitgeltende Unterlagen",
     purpose: "Verweist auf Verfahrensanweisungen, Normen, Vorlagen oder andere Dokumente, die für die Durchführung dieser Arbeitsanweisung relevant sind.",
     promptInstruction: "Liste zugehörige Dokumente mit ihrer offiziellen Bezeichnung auf. Unterscheide: übergeordnete Verfahrensanweisungen, Formulare/Vorlagen, Normen. Halte die Einträge kurz und präzise.",
     style: "referenzierend, knapp, strukturiert",
@@ -487,10 +542,10 @@ const profiles: FieldProfileData[] = [
     pageType: "use_case",
     fieldKey: "alternative_flows",
     label: "UC – Alternativabläufe",
-    purpose: "Beschreibt abweichende Ablaufpfade, die bei bestimmten Bedingungen oder Ausnahmen eintreten können.",
-    promptInstruction: "Beschreibe jeden Alternativablauf mit Angabe: ab welchem Hauptablauf-Schritt er abweicht, was die auslösende Bedingung ist, wie der Ablauf verläuft und wo er wieder in den Hauptablauf einmündet (oder endet). Nutze klare Einleitungen ('Falls...', 'Wenn...', 'Alternativ...').",
-    style: "konditionell, klar, vollständig",
-    guardrails: "Erfinde KEINE Alternativabläufe. Stelle sicher, dass Abweichungen klar mit dem Hauptablauf verbunden sind. Füge KEINE Fehlerbehandlungen hinzu, die nicht spezifiziert sind.",
+    purpose: "Beschreibt Varianten und Abweichungen vom Normalablauf, einschließlich Fehlerpfade und Sonderfälle.",
+    promptInstruction: "Benenne jeden Alternativablauf mit dem Auslöser ('Falls ... auftritt:'). Beschreibe, ab welchem Schritt des Hauptablaufs der Alternativpfad abzweigt und wie er endet (Erfolg oder Fehler). Nutze nummerierte Schritte.",
+    style: "klar, variantenbewusst, vollständig",
+    guardrails: "Erfinde KEINE Alternativpfade oder Fehlerfälle. Ändere NICHT den Hauptablauf durch Alternativbeschreibungen. Füge KEINE technischen Fehlercodes hinzu, die nicht spezifiziert sind.",
     allowedOperations: TEXT_OPS,
     isActive: true,
   },
@@ -506,7 +561,7 @@ const profiles: FieldProfileData[] = [
     isActive: true,
   },
 
-  // ─── policy (5 Sections) ───
+  // ─── policy (6 Sections) ───
   {
     pageType: "policy",
     fieldKey: "purpose",
@@ -527,6 +582,17 @@ const profiles: FieldProfileData[] = [
     style: "präzise, formal, eindeutig",
     guardrails: "Erfinde KEINE Ausnahmen oder Einschränkungen. Füge KEINE Organisationseinheiten hinzu, die nicht spezifiziert sind. Ändere NICHT bestehende Geltungsbereichsgrenzen.",
     allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "policy",
+    fieldKey: "definitions",
+    label: "Richtlinie – Begriffe & Definitionen",
+    purpose: "Klärt zentrale Fachbegriffe, die für das einheitliche Verständnis und die korrekte Anwendung der Richtlinie entscheidend sind.",
+    promptInstruction: "Formuliere Definitionen präzise und vollständig. Eine gute Definition erklärt den Begriff in einem vollständigen Satz, ohne den Begriff selbst zu verwenden. Verwende klare, formale Sprache. Halte Definitionen auf 1–3 Sätze begrenzt. Liste jeden Begriff als eigenen Eintrag.",
+    style: "definitorisch, formal, präzise",
+    guardrails: "Erfinde KEINE Definitionen oder Begriffsabgrenzungen. Ändere NICHT den fachlichen Bedeutungsgehalt bestehender Definitionen. Füge KEINE Normbezüge hinzu, die nicht im Text stehen.",
+    allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
   {
@@ -563,53 +629,163 @@ const profiles: FieldProfileData[] = [
     isActive: true,
   },
 
-  // ─── role_profile (4 Sections) ───
+  // ─── role_profile (13 Sections) – vollständig überarbeitet ───
   {
     pageType: "role_profile",
-    fieldKey: "summary",
-    label: "Rollenprofil – Zusammenfassung",
-    purpose: "Gibt eine prägnante Übersicht über die Rolle, ihre Bedeutung in der Organisation und ihre Kernaufgaben.",
-    promptInstruction: "Formuliere eine kompakte Rollenzusammenfassung (3–5 Sätze). Beantworte: Was ist der Kern der Rolle? Welchen Beitrag leistet sie zur Organisation? Für wen und in welchem Kontext ist sie tätig? Vermeide Aufzählungen und schreibe Fließtext.",
-    style: "prägnant, informativ, professionell",
-    guardrails: "Erfinde KEINE Aufgaben, Kompetenzen oder HR-Daten. Verwende KEINE konkreten Personennamen. Füge KEINE Gehaltsangaben oder Organisationsdetails hinzu, die nicht spezifiziert sind.",
+    fieldKey: "role_definition",
+    label: "Rollenprofil – Zielsetzung & Einordnung",
+    purpose: "Beschreibt das übergeordnete Ziel der Stelle, ihre organisatorische Einordnung und den Kernauftrag — sachlich und rollenbasiert.",
+    promptInstruction: "Formuliere die Rollendefinition in 3–5 Sätzen als Fließtext. Beantworte: Was ist das übergeordnete Ziel der Stelle? Welchen Beitrag leistet sie zur Organisation? Wo ist sie organisatorisch angesiedelt? Verwende sachliche, professionelle Sprache ohne Personenbezug.",
+    style: "sachlich, prägnant, rollenbasiert",
+    guardrails: "Erfinde KEINE Ziele, Organisationseinheiten oder Strategiebezüge. Verwende KEINE konkreten Personennamen. Füge KEINE Gehalts- oder Budgetdaten hinzu.",
     allowedOperations: SUMMARY_OPS,
     isActive: true,
   },
   {
     pageType: "role_profile",
-    fieldKey: "tasks",
-    label: "Rollenprofil – Aufgaben",
-    purpose: "Beschreibt die konkreten Aufgaben und Tätigkeiten, die diese Rolle regelmäßig ausführt.",
-    promptInstruction: "Liste Aufgaben als aktive Tätigkeiten auf (Verben im Infinitiv: 'Koordinieren von...', 'Erstellen von...'). Gruppiere verwandte Aufgaben. Achte auf Vollständigkeit und vermeide Dopplungen. Unterscheide Routine- von Projektaufgaben, wenn relevant.",
+    fieldKey: "core_tasks",
+    label: "Rollenprofil – Kernaufgaben",
+    purpose: "Beschreibt die 5–8 wichtigsten Aufgaben der Stelle mit optionaler Gewichtung nach Zeitanteil.",
+    promptInstruction: "Liste Kernaufgaben als aktive Tätigkeiten auf (Verben im Infinitiv: 'Koordinieren von...', 'Erstellen von...'). Gliedere in Routineaufgaben und Projektarbeit, wenn sinnvoll. Vermeide Dopplungen und halte jeden Eintrag präzise und eigenständig verständlich.",
     style: "handlungsorientiert, strukturiert, vollständig",
-    guardrails: "Erfinde KEINE Aufgaben. Füge KEINE Kompetenzen oder Qualifikationen in die Aufgabenliste ein. Verwende KEINE konkreten Personennamen oder Organisationseinheiten, die nicht genannt sind.",
+    guardrails: "Erfinde KEINE Aufgaben. Füge KEINE Kompetenzen oder Qualifikationen in die Aufgabenliste ein. Verwende KEINE konkreten Personennamen.",
     allowedOperations: TEXT_OPS,
     isActive: true,
   },
   {
     pageType: "role_profile",
-    fieldKey: "competency_areas",
-    label: "Rollenprofil – Kompetenzfelder",
-    purpose: "Definiert die fachlichen, methodischen und sozialen Kompetenzen, die für die erfolgreiche Ausübung der Rolle erforderlich sind.",
-    promptInstruction: "Beschreibe Kompetenzfelder gegliedert nach: Fachkompetenz, Methodenkompetenz, Sozialkompetenz. Formuliere Kompetenzen als Fähigkeiten ('Fähigkeit zur...', 'Kenntnisse in...'). Halte jeden Eintrag präzise und nachvollziehbar.",
-    style: "kompetenzorientiert, strukturiert, professionell",
-    guardrails: "Erfinde KEINE Qualifikationsanforderungen oder Zertifizierungen. Füge KEINE HR-spezifischen Bewertungskriterien hinzu. Verwende KEINE Punktwerte oder Bewertungsskalen.",
+    fieldKey: "responsibilities",
+    label: "Rollenprofil – Verantwortungsbereiche",
+    purpose: "Gliedert die Verantwortlichkeiten in Bereiche und ordnet die zugehörigen Prozesse und Ergebnisse zu.",
+    promptInstruction: "Gliedere Verantwortlichkeiten in klar benannte Bereiche. Für jeden Bereich: Titel des Bereichs, zugehörige Aufgaben/Prozesse, Ergebnisverantwortung. Verwende kompetenzorientierte Sprache ('Verantwortet die...', 'Stellt sicher, dass...').",
+    style: "strukturiert, kompetenzorientiert, verbindlich",
+    guardrails: "Erfinde KEINE Verantwortungsbereiche oder Prozesse. Verwende KEINE konkreten Personennamen. Ändere NICHT bestehende Zuordnungen.",
     allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
   {
     pageType: "role_profile",
-    fieldKey: "authorities",
-    label: "Rollenprofil – Befugnisse",
-    purpose: "Legt fest, welche Entscheidungs- und Handlungsbefugnisse der Rolleninhaber hat.",
-    promptInstruction: "Formuliere Befugnisse klar und eindeutig. Unterscheide: Entscheidungsbefugnis (darf alleine entscheiden), Mitzeichnungsbefugnis (darf mitentscheiden), Informationsbefugnis (muss informiert werden). Verwende klare Formulierungen ('ist berechtigt zu...', 'darf ... bis zu einem Wert von...').",
-    style: "präzise, verbindlich, governance-orientiert",
-    guardrails: "Erfinde KEINE Befugnisse oder Budgetgrenzen. Ändere NICHT die Entscheidungsebene. Füge KEINE Vollmachten hinzu, die nicht im Text genannt sind.",
+    fieldKey: "budget_authority",
+    label: "Rollenprofil – Budget- & Personalverantwortung",
+    purpose: "Beschreibt die finanziellen Befugnisse, Personalführung und Weisungsbefugnisse der Stelle — ohne konkrete Zahlen zu erfinden.",
+    promptInstruction: "Formuliere Befugnisse klar und rollenbasiert. Beschreibe: Budgetverantwortung (Art, nicht Höhe wenn nicht angegeben), Personalverantwortung (Anzahl wenn genannt), Weisungsbefugnisse (fachlich/disziplinarisch). Verwende verbindliche Formulierungen ('ist berechtigt zu...', 'trägt Verantwortung für...').",
+    style: "präzise, governance-orientiert, sachlich",
+    guardrails: "Erfinde KEINE Budgetgrenzen oder Personalzahlen. Ändere NICHT die Entscheidungsebene. Füge KEINE Vollmachten hinzu, die nicht im Text genannt sind.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "routines",
+    label: "Rollenprofil – Routinen & wiederkehrende Termine",
+    purpose: "Listet die regelmäßigen Tätigkeiten, festen Meetings und Berichtspflichten der Stelle auf.",
+    promptInstruction: "Strukturiere Routinen nach Frequenz (täglich, wöchentlich, monatlich, jährlich). Benenne: Tätigkeit, Zweck, ggf. beteiligte Rollen. Schreibe klar und knapp. Nutze Aufzählungen.",
+    style: "strukturiert, zeitbewusst, vollständig",
+    guardrails: "Erfinde KEINE Routinen oder Termine. Füge KEINE Verantwortlichkeiten hinzu, die nicht im Text stehen. Verwende KEINE konkreten Datums- oder Uhrzeitangaben ohne Grundlage.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "competencies_professional",
+    label: "Rollenprofil – Fachliche Kompetenzen",
+    purpose: "Beschreibt die erforderlichen fachlichen Qualifikationen: Ausbildung, Berufserfahrung, Zertifizierungen und Fachkenntnisse.",
+    promptInstruction: "Formuliere Fachkompetenzen als klar beschriebene Anforderungen ('Abgeschlossenes Studium in...', 'Mindestens X Jahre Erfahrung in...'). Unterscheide Pflichtanforderungen von wünschenswerten Qualifikationen. Schreibe sachlich und ohne Übertreibung.",
+    style: "kompetenzorientiert, sachlich, vollständig",
+    guardrails: "Erfinde KEINE Qualifikationsanforderungen oder Zertifizierungen. Verwende KEINE konkreten Bildungseinrichtungen, die nicht erwähnt sind. Füge KEINE HR-Bewertungskriterien hinzu.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "competencies_methodical",
+    label: "Rollenprofil – Methodische Kompetenzen",
+    purpose: "Beschreibt die erforderlichen Methodenkompetenzen: Projektmanagement, Analysemethoden, IT-Kenntnisse und Arbeitsweisen.",
+    promptInstruction: "Formuliere Methodenkompetenzen als Fähigkeiten ('Kenntnisse in...', 'Fähigkeit zur...', 'Beherrschung von...'). Benenne konkrete Methoden, Tools oder Frameworks, wenn angegeben. Unterscheide Pflicht- von Wunschkompetenzen.",
+    style: "kompetenzorientiert, strukturiert, präzise",
+    guardrails: "Erfinde KEINE Methoden oder Tools. Füge KEINE Softwareprodukte oder Versionsnummern hinzu, die nicht spezifiziert sind. Verwende KEINE Bewertungsskalen.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "competencies_social",
+    label: "Rollenprofil – Soziale Kompetenzen",
+    purpose: "Beschreibt die erforderlichen sozialen Kompetenzen: Führung, Kommunikation, Teamarbeit und Konfliktmanagement.",
+    promptInstruction: "Formuliere soziale Kompetenzen als beobachtbare Fähigkeiten ('Ausgeprägte Kommunikationsfähigkeit...', 'Fähigkeit zur konstruktiven Konfliktlösung...'). Vermeide allgemeine Floskeln. Benenne spezifische Anforderungen, wenn aus dem Text ableitbar.",
+    style: "kompetenzorientiert, verhaltensorientiert, sachlich",
+    guardrails: "Erfinde KEINE Verhaltensanforderungen. Verwende KEINE subjektiven Bewertungen. Füge KEINE persönlichkeitsbezogenen Diagnosen hinzu.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "competencies_personal",
+    label: "Rollenprofil – Persönliche Kompetenzen",
+    purpose: "Beschreibt die erwarteten persönlichen Eigenschaften: Eigeninitiative, Belastbarkeit, Flexibilität und Selbstmanagement.",
+    promptInstruction: "Formuliere persönliche Kompetenzen als konkrete Eigenschaften mit Bezug zur Rolle ('Hohe Eigeninitiative bei komplexen Aufgaben...', 'Ausgeprägte Belastbarkeit in dynamischen Umgebungen...'). Schreibe sachlich und rollenbasiert.",
+    style: "kompetenzorientiert, sachlich, rollenbasiert",
+    guardrails: "Erfinde KEINE Persönlichkeitseigenschaften. Verwende KEINE diagnostischen oder klinischen Begriffe. Füge KEINE privaten Aspekte hinzu.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "success_metrics",
+    label: "Rollenprofil – Messerfolg & Leistungskriterien",
+    purpose: "Definiert messbare Kriterien, anhand derer der Beitrag und die Leistung der Stelle bewertet werden.",
+    promptInstruction: "Formuliere Erfolgskriterien als messbare oder beobachtbare Indikatoren ('KPI: ...', 'Zielgröße: ...', 'Qualitätsmerkmal: ...'). Benenne Messfrequenz und Bewertungsmethode, wenn angegeben. Schreibe sachlich und ohne Übertreibung.",
+    style: "messbar, sachlich, ergebnisorientiert",
+    guardrails: "Erfinde KEINE KPIs oder Zielwerte. Ändere NICHT bestehende Messgrößen oder Bewertungsskalen. Füge KEINE persönlichen Leistungsbeurteilungen hinzu.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "tools",
+    label: "Rollenprofil – Arbeitsmittel & Systeme",
+    purpose: "Listet die IT-Systeme, Software, Arbeitsmittel und Ausstattung auf, die für die Stelle benötigt werden.",
+    promptInstruction: "Liste Arbeitsmittel und Systeme in einer übersichtlichen Aufzählung. Unterscheide: IT-Systeme/Software, Kommunikationsmittel, sonstige Arbeitsmittel. Benenne Systeme mit ihrer üblichen Bezeichnung. Gib Zugriffsrechte an, wenn relevant.",
+    style: "strukturiert, vollständig, sachlich",
+    guardrails: "Erfinde KEINE Systeme oder Softwareprodukte. Füge KEINE Versionsnummern hinzu, die nicht spezifiziert sind. Erstelle KEINE technischen Spezifikationen.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "data_protection",
+    label: "Rollenprofil – Datenschutz & Vertraulichkeit",
+    purpose: "Dokumentiert, mit welchen sensiblen Daten die Stelle in Berührung kommt und welche Vertraulichkeitspflichten gelten.",
+    promptInstruction: "Beschreibe Datenschutzpflichten klar und sachlich. Benenne: welche Datenkategorien (personenbezogen, vertraulich, etc.) die Stelle verarbeitet, welche Vertraulichkeitspflichten gelten, ob besondere Schulungspflichten bestehen. Verwende formale, sachliche Sprache.",
+    style: "sachlich, datenschutzbewusst, formal",
+    guardrails: "Erfinde KEINE Datenkategorien oder Vertraulichkeitsstufen. Füge KEINE konkreten Datensätze oder Personenangaben hinzu. Verwende KEINE rechtlich bindenden Formulierungen ohne Grundlage.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "working_model",
+    label: "Rollenprofil – Arbeitszeitmodell & Arbeitsort",
+    purpose: "Beschreibt das Arbeitszeitmodell, Homeoffice-Optionen, Reiseanteil und Arbeitsortregelungen der Stelle.",
+    promptInstruction: "Beschreibe das Arbeitszeitmodell sachlich: Zeitmodell (Gleitzeit, Vertrauensarbeitszeit, Schicht), Homeoffice-Anteil (Prozent oder Tage, wenn angegeben), Reiseanteil und Arbeitsort. Schreibe klar und ohne Wertung.",
+    style: "sachlich, informativ, neutral",
+    guardrails: "Erfinde KEINE konkreten Prozentwerte oder Tagesangaben ohne Grundlage. Füge KEINE Vergütungsangaben hinzu. Verwende KEINE Formulierungen, die rechtliche Zusagen implizieren.",
+    allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "role_profile",
+    fieldKey: "interfaces",
+    label: "Rollenprofil – Zusammenarbeit & Schnittstellen",
+    purpose: "Dokumentiert die wichtigsten Kooperationsbeziehungen und Schnittstellen der Stelle zu internen und externen Partnern.",
+    promptInstruction: "Beschreibe Schnittstellen und Kooperationsbeziehungen klar und rollenbasiert. Unterscheide: interne Schnittstellen (Abteilungen, Rollen), externe Schnittstellen (Kunden, Lieferanten, Behörden), Gremien- und Projektbeteiligungen. Benenne für jede Schnittstelle: Partner, Zweck und Art der Zusammenarbeit. Verwende Rollenbegriffe, keine Personennamen.",
+    style: "strukturiert, kooperationsorientiert, sachlich",
+    guardrails: "Erfinde KEINE Kooperationspartner oder Schnittstellenbeziehungen. Verwende KEINE konkreten Personennamen. Füge KEINE organisatorischen Regelungen hinzu, die nicht im Text beschrieben sind.",
     allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
 
-  // ─── system_documentation (5 Sections) ───
+  // ─── system_documentation (6 Sections) ───
   {
     pageType: "system_documentation",
     fieldKey: "system_info",
@@ -645,6 +821,17 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "system_documentation",
+    fieldKey: "data_objects",
+    label: "Systemdoku – Datenobjekte",
+    purpose: "Beschreibt die vom System verwalteten Daten und das Datenmodell, einschließlich der wichtigsten Entitäten und ihrer Beziehungen.",
+    promptInstruction: "Beschreibe die Datenobjekte klar und strukturiert. Benenne die wichtigsten Entitäten/Datenklassen, ihre Felder (wenn angegeben) und die Beziehungen untereinander. Verwende klare, technische Nominalphrasen. Gib Datenkategorien (z.B. personenbezogen) an, wenn relevant.",
+    style: "technisch-präzise, strukturiert, vollständig",
+    guardrails: "Erfinde KEINE Datenfelder oder Entitäten. Mache KEINE Angaben zu Datenbanktypen oder ORM-Frameworks, die nicht spezifiziert sind. Erstelle KEINE Datenbankschemas oder SQL-Ausdrücke.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "system_documentation",
     fieldKey: "access_rights",
     label: "Systemdoku – Zugriffsrechte",
     purpose: "Beschreibt das Berechtigungskonzept des Systems: Rollen, Berechtigungsstufen und Prozesse zur Rechtevergabe.",
@@ -666,7 +853,7 @@ const profiles: FieldProfileData[] = [
     isActive: true,
   },
 
-  // ─── interface_description (4 Sections) ───
+  // ─── interface_description (6 Sections) ───
   {
     pageType: "interface_description",
     fieldKey: "overview",
@@ -711,8 +898,30 @@ const profiles: FieldProfileData[] = [
     allowedOperations: TEXT_OPS,
     isActive: true,
   },
+  {
+    pageType: "interface_description",
+    fieldKey: "sla",
+    label: "Schnittstelle – SLA & Verfügbarkeit",
+    purpose: "Dokumentiert die Service Level Agreements und Verfügbarkeitsanforderungen der Schnittstelle.",
+    promptInstruction: "Beschreibe SLAs und Verfügbarkeitsanforderungen klar und präzise. Benenne: Verfügbarkeit (Prozent oder Zeitfenster), maximale Ausfallzeit (RTO), maximaler Datenverlust (RPO, wenn relevant), Wartungsfenster und Eskalationszeit. Gib nur Werte an, die im Text stehen.",
+    style: "präzise, technisch, verbindlich",
+    guardrails: "Erfinde KEINE SLA-Werte oder Verfügbarkeitsziele. Ändere KEINE bestehenden Vertragsbedingungen. Füge KEINE Strafzahlungen oder Kompensationen hinzu, die nicht spezifiziert sind.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "interface_description",
+    fieldKey: "responsibilities",
+    label: "Schnittstelle – Verantwortlichkeiten",
+    purpose: "Definiert, welche Seite (Quell- oder Zielsystem) für welchen Teil der Schnittstelle verantwortlich ist.",
+    promptInstruction: "Formuliere Verantwortlichkeiten klar und rollenbasiert. Benenne für beide Schnittstellenseiten: technische Verantwortung (Betrieb, Monitoring), fachliche Verantwortung (Datenpflege, Korrektheit), Ansprechpartner (Rolle, nicht Name). Nutze eine strukturierte Darstellung.",
+    style: "präzise, rollenbasiert, strukturiert",
+    guardrails: "Erfinde KEINE Verantwortlichkeiten oder Rollen. Verwende KEINE konkreten Personennamen. Füge KEINE organisatorischen Regelungen hinzu, die nicht im Text stehen.",
+    allowedOperations: COMPOUND_OPS,
+    isActive: true,
+  },
 
-  // ─── checklist (3 Sections) ───
+  // ─── checklist (4 Sections) ───
   {
     pageType: "checklist",
     fieldKey: "purpose",
@@ -726,7 +935,18 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "checklist",
-    fieldKey: "check_items",
+    fieldKey: "instructions",
+    label: "Checkliste – Anleitung zur Durchführung",
+    purpose: "Gibt Hinweise zur korrekten Durchführung der Checkliste, damit sie einheitlich und vollständig angewendet wird.",
+    promptInstruction: "Formuliere Anleitungshinweise klar und praxisnah. Beantworte: Wie wird die Checkliste genutzt? Was ist bei der Ausfüllung zu beachten? Gibt es besondere Hinweise zur Dokumentation oder Ablage? Schreibe verständlich für Ausführende.",
+    style: "klar, handlungsorientiert, praxisnah",
+    guardrails: "Erfinde KEINE Verfahrensregeln oder Dokumentationspflichten. Beschränke dich auf die Anleitung zur Checkliste selbst. Füge KEINE normativen Anforderungen hinzu, die nicht im Text stehen.",
+    allowedOperations: TEXT_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "checklist",
+    fieldKey: "checklist_items",
     label: "Checkliste – Prüfpunkte",
     purpose: "Enthält die vollständige Liste der Prüfpunkte, die systematisch abzuhaken sind.",
     promptInstruction: "Formuliere Checklistenpunkte als klare, überprüfbare Handlungen oder Zustände. Beginne jeden Punkt mit einem Verb oder einer nominalen Formulierung. Stelle sicher, dass jeder Punkt eigenständig verständlich ist und eindeutig abgehakt werden kann.",
@@ -750,7 +970,7 @@ const profiles: FieldProfileData[] = [
   // ─── glossary (1 Section) ───
   {
     pageType: "glossary",
-    fieldKey: "term_repeater",
+    fieldKey: "terms",
     label: "Glossar – Begriffsdefinitionen",
     purpose: "Enthält die strukturierten Definitionen aller Fachbegriffe des Glossars, inklusive Begriff, Definition und ggf. Synonymen und Verwandten Begriffen.",
     promptInstruction: "Verbessere Begriffsdefinitionen sprachlich. Eine gute Definition erklärt den Begriff in einem vollständigen Satz ohne den Begriff selbst zu verwenden. Verwende klare, präzise Sprache. Halte Definitionen auf 2–4 Sätze begrenzt.",
@@ -774,7 +994,7 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "faq",
-    fieldKey: "qa_repeater",
+    fieldKey: "content",
     label: "FAQ – Fragen & Antworten",
     purpose: "Enthält die strukturierten Frage-Antwort-Paare des FAQ-Dokuments.",
     promptInstruction: "Verbessere Fragen und Antworten sprachlich. Fragen sollen klar und aus Nutzerperspektive formuliert sein. Antworten sollen präzise, vollständig und direkt sein. Vermeide Füllwörter und unnötige Einleitungen ('Ja, natürlich...'). Halte Antworten auf das Wesentliche beschränkt.",
@@ -795,7 +1015,7 @@ const profiles: FieldProfileData[] = [
     isActive: true,
   },
 
-  // ─── meeting_protocol (5 Sections) ───
+  // ─── meeting_protocol (6 Sections) ───
   {
     pageType: "meeting_protocol",
     fieldKey: "participants",
@@ -842,7 +1062,7 @@ const profiles: FieldProfileData[] = [
   },
   {
     pageType: "meeting_protocol",
-    fieldKey: "actions",
+    fieldKey: "action_items",
     label: "Protokoll – Maßnahmen & Aufgaben",
     purpose: "Dokumentiert alle vereinbarten Maßnahmen mit Verantwortlichkeit, Fälligkeitsdatum und Bezug zum Tagesordnungspunkt.",
     promptInstruction: "Formuliere Maßnahmen als klare Aufgaben. Jede Maßnahme soll enthalten: Was ist zu tun? Wer ist verantwortlich? Bis wann? Verwende aktive Formulierungen ('Person X erstellt bis [Datum] ...').",
@@ -851,8 +1071,19 @@ const profiles: FieldProfileData[] = [
     allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
+  {
+    pageType: "meeting_protocol",
+    fieldKey: "next_meeting",
+    label: "Protokoll – Nächster Termin",
+    purpose: "Dokumentiert Datum, Uhrzeit, Ort und ggf. vorläufige Tagesordnung des nächsten Meetings.",
+    promptInstruction: "Formuliere den nächsten Terminhinweis klar und vollständig. Benenne: Datum, Uhrzeit (wenn angegeben), Ort oder Format (Präsenz/Online), Einladungsverantwortlicher (wenn genannt). Halte die Formulierung knapp und präzise.",
+    style: "sachlich, vollständig, klar",
+    guardrails: "Erfinde KEINE Termine, Orte oder Uhrzeiten. Füge KEINE Tagesordnungspunkte hinzu, die nicht im Text stehen. Erstelle KEINE Einladungstexte oder Kalendereinträge.",
+    allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
 
-  // ─── training_resource (4 Sections) ───
+  // ─── training_resource (6 Sections) ───
   {
     pageType: "training_resource",
     fieldKey: "objectives",
@@ -861,6 +1092,17 @@ const profiles: FieldProfileData[] = [
     promptInstruction: "Formuliere Lernziele als beobachtbare, messbare Kompetenzen. Beginne jeden Lernziel mit 'Die Teilnehmenden können...' und einem Verb, das die Kompetenzebene zeigt (benennen, erklären, anwenden, analysieren, bewerten). Nutze Aufzählungen.",
     style: "lernzielorientiert, messbar, handlungsorientiert",
     guardrails: "Erfinde KEINE Lernziele. Passe NICHT die Kompetenzebene an, ohne Grundlage im Text. Füge KEINE Zertifizierungsziele hinzu, die nicht spezifiziert sind.",
+    allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "training_resource",
+    fieldKey: "prerequisites",
+    label: "Schulung – Voraussetzungen",
+    purpose: "Beschreibt die erforderlichen Vorkenntnisse, Qualifikationen und Vorbereitungen, die Teilnehmende vor der Schulung mitbringen sollen.",
+    promptInstruction: "Formuliere Voraussetzungen klar und konkret. Unterscheide: Pflichtvorkenntnisse (Teilnahme sonst nicht sinnvoll) und empfohlene Vorkenntnisse. Benenne ggf. Vorbereitungsmaßnahmen oder vorgelagerte Schulungen. Schreibe verständlich für potenzielle Teilnehmende.",
+    style: "klar, praxisnah, informativ",
+    guardrails: "Erfinde KEINE Qualifikationsanforderungen. Füge KEINE Zertifizierungsvoraussetzungen hinzu, die nicht spezifiziert sind. Verwende KEINE ausschließenden Formulierungen ohne Grundlage.",
     allowedOperations: SUMMARY_OPS,
     isActive: true,
   },
@@ -897,8 +1139,19 @@ const profiles: FieldProfileData[] = [
     allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
+  {
+    pageType: "training_resource",
+    fieldKey: "materials",
+    label: "Schulung – Materialien & Ressourcen",
+    purpose: "Listet die benötigten und ergänzenden Materialien, Lernressourcen und Hilfsmittel für die Schulung auf.",
+    promptInstruction: "Liste Materialien und Ressourcen strukturiert auf. Unterscheide: Pflichtmaterialien (für die Teilnahme notwendig) und ergänzende Ressourcen (empfohlen). Benenne Materialien mit Typ und Bezeichnung. Gib Quellen an, wenn vorhanden.",
+    style: "strukturiert, vollständig, praxisnah",
+    guardrails: "Erfinde KEINE Materialien oder externe Ressourcen. Erstelle KEINE Links oder Dokumentenkennzeichen, die nicht im Text stehen. Füge KEINE kostenpflichtigen Ressourcen ohne Grundlage hinzu.",
+    allowedOperations: SUMMARY_OPS,
+    isActive: true,
+  },
 
-  // ─── audit_object (4 Sections) ───
+  // ─── audit_object (6 Sections) ───
   {
     pageType: "audit_object",
     fieldKey: "finding",
@@ -936,11 +1189,33 @@ const profiles: FieldProfileData[] = [
     pageType: "audit_object",
     fieldKey: "corrective_action",
     label: "Audit – Korrekturmaßnahmen",
-    purpose: "Beschreibt die geplanten oder umgesetzten Korrektur- und Vorbeugemaßnahmen zur Beseitigung der Befundursachen.",
+    purpose: "Beschreibt die geplanten oder umgesetzten Korrekturmaßnahmen zur Beseitigung der Befundursachen.",
     promptInstruction: "Formuliere Korrekturmaßnahmen handlungsorientiert und verbindlich. Jede Maßnahme soll enthalten: Beschreibung der Maßnahme, Verantwortliche Person/Rolle, geplantes Umsetzungsdatum (wenn angegeben), Wirksamkeitskontrolle. Verwende aktive Formulierungen.",
     style: "handlungsorientiert, verbindlich, präzise",
     guardrails: "Erfinde KEINE Maßnahmen, Verantwortliche oder Fristen. Ändere NICHT bestehende Fälligkeitsdaten. Füge KEINE Maßnahmen hinzu, die über den beschriebenen Befund hinausgehen.",
     allowedOperations: TEXT_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "audit_object",
+    fieldKey: "preventive_action",
+    label: "Audit – Vorbeugemaßnahme",
+    purpose: "Beschreibt Maßnahmen, die ein Wiederauftreten des Befunds oder ähnlicher Probleme in der Zukunft verhindern sollen.",
+    promptInstruction: "Formuliere Vorbeugemaßnahmen klar und systemorientiert. Unterscheide von Korrekturmaßnahmen: Vorbeugemaßnahmen wirken auf das System, nicht auf den konkreten Befund. Beschreibe: Was wird verändert (Prozess, Schulung, System), wie und wer verantwortet die Umsetzung.",
+    style: "präventiv, systemorientiert, handlungsorientiert",
+    guardrails: "Erfinde KEINE Vorbeugemaßnahmen oder Systemänderungen. Füge KEINE Verantwortlichkeiten hinzu, die nicht im Text stehen. Ändere NICHT die Abgrenzung zu Korrekturmaßnahmen.",
+    allowedOperations: TEXT_OPS,
+    isActive: true,
+  },
+  {
+    pageType: "audit_object",
+    fieldKey: "effectiveness_check",
+    label: "Audit – Wirksamkeitsprüfung",
+    purpose: "Definiert, wie und wann die Wirksamkeit der Korrektur- und Vorbeugemaßnahmen überprüft wird.",
+    promptInstruction: "Beschreibe die Wirksamkeitsprüfung konkret. Benenne: Prüfmethode (Audit, Stichprobe, Kennzahlenauswertung), Prüfzeitpunkt oder -intervall, Erfolgskriterium (wann gilt die Maßnahme als wirksam), Verantwortlicher. Schreibe sachlich und messbar.",
+    style: "sachlich, messbar, kontrollorientiert",
+    guardrails: "Erfinde KEINE Prüfmethoden oder Erfolgskriterien. Ändere KEINE bestehenden Prüfzeiträume. Füge KEINE Normanforderungen hinzu, die nicht im Text stehen.",
+    allowedOperations: COMPOUND_OPS,
     isActive: true,
   },
 
@@ -969,9 +1244,38 @@ const profiles: FieldProfileData[] = [
   },
 ];
 
+const OBSOLETE_PROFILES: Array<{ pageType: string; fieldKey: string }> = [
+  { pageType: "procedure_instruction", fieldKey: "related_documents" },
+  { pageType: "work_instruction", fieldKey: "documentation" },
+  { pageType: "work_instruction", fieldKey: "related_documents" },
+  { pageType: "checklist", fieldKey: "check_items" },
+  { pageType: "glossary", fieldKey: "term_repeater" },
+  { pageType: "faq", fieldKey: "qa_repeater" },
+  { pageType: "meeting_protocol", fieldKey: "actions" },
+  { pageType: "role_profile", fieldKey: "summary" },
+  { pageType: "role_profile", fieldKey: "tasks" },
+  { pageType: "role_profile", fieldKey: "competency_areas" },
+  { pageType: "role_profile", fieldKey: "authorities" },
+];
+
 async function seedAiFieldProfiles() {
   console.log("Seeding AI field profiles...");
-  console.log(`Total profiles to insert: ${profiles.length}`);
+
+  console.log(`\nRemoving ${OBSOLETE_PROFILES.length} obsolete profiles with wrong keys...`);
+  for (const obs of OBSOLETE_PROFILES) {
+    const deleted = await db
+      .delete(schema.aiFieldProfilesTable)
+      .where(
+        sql`${schema.aiFieldProfilesTable.pageType} = ${obs.pageType}
+          AND ${schema.aiFieldProfilesTable.fieldKey} = ${obs.fieldKey}`
+      )
+      .returning({ id: schema.aiFieldProfilesTable.id });
+    if (deleted.length > 0) {
+      console.log(`  Deleted obsolete profile: ${obs.pageType}/${obs.fieldKey}`);
+    }
+  }
+
+  console.log(`\nTotal profiles to upsert: ${profiles.length}`);
 
   const values = profiles.map((p) => ({
     pageType: p.pageType,
@@ -989,10 +1293,23 @@ async function seedAiFieldProfiles() {
   const inserted = await db
     .insert(schema.aiFieldProfilesTable)
     .values(values)
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: [schema.aiFieldProfilesTable.pageType, schema.aiFieldProfilesTable.fieldKey],
+      set: {
+        label: sql`excluded.label`,
+        purpose: sql`excluded.purpose`,
+        promptInstruction: sql`excluded.prompt_instruction`,
+        style: sql`excluded.style`,
+        guardrails: sql`excluded.guardrails`,
+        allowedOperations: sql`excluded.allowed_operations`,
+        isActive: sql`excluded.is_active`,
+        updatedBy: sql`excluded.updated_by`,
+        updatedAt: sql`now()`,
+      },
+    })
     .returning();
 
-  console.log(`Inserted ${inserted.length} new profiles (skipped existing)`);
+  console.log(`Upserted ${inserted.length} profiles (inserted or updated)`);
 
   const verification = await db
     .select({ count: sql<number>`count(*)` })
