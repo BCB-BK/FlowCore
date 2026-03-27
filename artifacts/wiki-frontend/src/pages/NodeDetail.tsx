@@ -44,9 +44,6 @@ import {
   FolderOpen,
   Plus,
   Trash2,
-  Clock,
-  Hash,
-  Calendar,
   Pencil,
   FileEdit,
   Loader2,
@@ -63,6 +60,8 @@ import {
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
+import { PageHeader } from "@/components/layouts/PageHeader";
+import { QuickFactsStrip } from "@/components/layouts/QuickFactsStrip";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { TagManager } from "@/components/tags/TagManager";
 import { RelatedContentSidebar } from "@/components/content/RelatedContentSidebar";
@@ -97,8 +96,15 @@ export function NodeDetail() {
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [showEdit, setShowEdit] = useState(false);
   const [showPageAssist, setShowPageAssist] = useState(false);
-  const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
   const { toast } = useToast();
+
+  const pageDef = useMemo(() => {
+    if (!node) return undefined;
+    return getPageType(node.templateType);
+  }, [node]);
+
+  const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
+  const showQuickFacts = !isOverviewPage && !!pageDef;
 
   const allowedChildTypes = useMemo(() => {
     if (!node) return [];
@@ -163,6 +169,11 @@ export function NodeDetail() {
     return null;
   }, [structuredFields]);
 
+  const governanceFields = useMemo(() => {
+    if (!structuredFields.governance || typeof structuredFields.governance !== "object") return {};
+    return structuredFields.governance as Record<string, string>;
+  }, [structuredFields]);
+
   const handleCreateOrResumeWC = useCallback(async () => {
     if (!nodeId) return;
     if (activeWC) {
@@ -206,7 +217,6 @@ export function NodeDetail() {
     );
   }
 
-  const pageDef = getPageType(node.templateType);
   const metadata: Record<string, unknown> = revisionContent;
 
   const handleDelete = async () => {
@@ -250,50 +260,25 @@ export function NodeDetail() {
     }
   };
 
+  const ownerDisplayName = metadataDisplayValues.owner || (revisionContent.owner ? String(revisionContent.owner) : undefined);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <NodeBreadcrumbs nodeId={nodeId} />
 
       <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            {pageDef && (
-              <div
-                className="flex h-7 w-7 items-center justify-center rounded-md text-white"
-                style={{ backgroundColor: pageDef.color }}
-              >
-                <PageTypeIcon iconName={pageDef.icon} className="h-3.5 w-3.5" />
-              </div>
-            )}
-            <StatusBadge
-              status={
-                node.status as Parameters<typeof StatusBadge>[0]["status"]
-              }
-              nextReviewDate={
-                (
-                  structuredFields as Record<
-                    string,
-                    Record<string, string> | undefined
-                  >
-                )?.governance?.nextReviewDate
-              }
-              ownerId={node.ownerId}
-            />
-            <Badge variant="secondary">
-              {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
-            </Badge>
-            <CompletenessIndicator
-              templateType={node.templateType}
-              metadata={metadata}
-              sectionData={structuredFields}
-              compact
-            />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">{node.title}</h1>
-          <p className="text-sm text-muted-foreground">{node.displayCode}</p>
-        </div>
+        <PageHeader
+          title={node.title}
+          displayCode={node.displayCode}
+          templateType={node.templateType}
+          status={node.status}
+          metadata={metadata}
+          structuredFields={structuredFields}
+          nextReviewDate={governanceFields.nextReviewDate}
+          ownerId={node.ownerId}
+        />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {nodeId && (
             <ShareToTeams
               nodeId={nodeId}
@@ -382,6 +367,16 @@ export function NodeDetail() {
         </div>
       </div>
 
+      {showQuickFacts && (
+        <QuickFactsStrip
+          displayCode={node.displayCode}
+          createdAt={node.createdAt}
+          updatedAt={node.updatedAt}
+          ownerName={ownerDisplayName}
+          nextReviewDate={governanceFields.nextReviewDate}
+        />
+      )}
+
       <Tabs defaultValue="content" className="w-full">
         <TabsList>
           <TabsTrigger value="content">Inhalt</TabsTrigger>
@@ -411,58 +406,16 @@ export function NodeDetail() {
             </div>
           )}
 
-          <Card className="mb-4">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Seitendetails</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Hash className="h-3.5 w-3.5" />
-                    <span>FlowCore-ID</span>
-                  </div>
-                  <p className="font-medium">{node.displayCode}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>Erstellt</span>
-                  </div>
-                  <p>{new Date(node.createdAt).toLocaleDateString("de-DE")}</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>Aktualisiert</span>
-                  </div>
-                  <p>{new Date(node.updatedAt).toLocaleDateString("de-DE")}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {nodeId && (
-            <div className="mb-4">
-              <TagManager nodeId={nodeId} />
-            </div>
-          )}
-
-          {nodeId && <RelatedContentSidebar nodeId={nodeId} />}
-          {nodeId && <GlossaryTermsPanel nodeId={nodeId} />}
-
-          {!isOverviewPage && (
-            <PageLayout
-              templateType={node.templateType}
-              structuredFields={structuredFields}
-            />
-          )}
-
           {isOverviewPage && (
             <div className="mb-6 space-y-4">
+              <PageLayout
+                templateType={node.templateType}
+                structuredFields={structuredFields}
+              />
+
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold">
-                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Untergeordnete Inhalte"}
+                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : node.templateType === "area_overview" ? "Zugehörige Seiten" : "Untergeordnete Inhalte"}
                 </h3>
                 <Button
                   variant="outline"
@@ -680,6 +633,24 @@ export function NodeDetail() {
             </div>
           )}
 
+          {!isOverviewPage && (
+            <>
+              <PageLayout
+                templateType={node.templateType}
+                structuredFields={structuredFields}
+              />
+
+              {nodeId && (
+                <div className="mt-4">
+                  <TagManager nodeId={nodeId} />
+                </div>
+              )}
+
+              {nodeId && <div className="mt-4"><RelatedContentSidebar nodeId={nodeId} /></div>}
+              {nodeId && <div className="mt-4"><GlossaryTermsPanel nodeId={nodeId} /></div>}
+            </>
+          )}
+
           <div className="mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <h3 className="text-base font-semibold">Inhalt</h3>
@@ -735,6 +706,13 @@ export function NodeDetail() {
             onChange={() => {}}
             readOnly
           />
+          {nodeId && (
+            <div className="space-y-4">
+              <TagManager nodeId={nodeId} />
+              <RelatedContentSidebar nodeId={nodeId} />
+              <GlossaryTermsPanel nodeId={nodeId} />
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="versions" className="mt-4 space-y-4">

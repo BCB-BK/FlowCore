@@ -1,6 +1,7 @@
 import { getDisplayProfile } from "@workspace/shared/page-types";
 import type { DisplayProfile } from "@workspace/shared/page-types";
 import { ProcessOverviewLayout } from "./ProcessOverviewLayout";
+import { AreaOverviewLayout } from "./AreaOverviewLayout";
 import { ProcessPageTextLayout } from "./ProcessPageTextLayout";
 import { ProcessPageGraphicLayout } from "./ProcessPageGraphicLayout";
 import { ProcedureLayout } from "./ProcedureLayout";
@@ -14,6 +15,9 @@ import { InterfaceDescriptionLayout } from "./InterfaceDescriptionLayout";
 import { MeetingProtocolLayout } from "./MeetingProtocolLayout";
 import { AuditObjectLayout } from "./AuditObjectLayout";
 import { TrainingResourceLayout } from "./TrainingResourceLayout";
+import { UseCaseLayout } from "./UseCaseLayout";
+import { DashboardLayout } from "./DashboardLayout";
+import { GlossaryLayout } from "./GlossaryLayout";
 import { GenericSectionLayout } from "./GenericSectionLayout";
 
 interface LayoutComponentProps {
@@ -29,6 +33,10 @@ interface ProfileLayoutStrategy {
 const PROFILE_LAYOUT_STRATEGIES: Record<DisplayProfile, ProfileLayoutStrategy> = {
   overview_container: {
     defaultLayout: ProcessOverviewLayout,
+    overrides: {
+      area_overview: AreaOverviewLayout,
+      dashboard: DashboardLayout,
+    },
   },
   process_document: {
     defaultLayout: ProcessPageTextLayout,
@@ -43,6 +51,8 @@ const PROFILE_LAYOUT_STRATEGIES: Record<DisplayProfile, ProfileLayoutStrategy> =
       faq: FaqLayout,
       role_profile: RoleProfileLayout,
       meeting_protocol: MeetingProtocolLayout,
+      use_case: UseCaseLayout,
+      glossary: GlossaryLayout,
     },
   },
   governance_document: {

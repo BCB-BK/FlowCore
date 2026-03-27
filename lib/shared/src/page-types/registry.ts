@@ -124,11 +124,11 @@ export interface PageTypeDefinition {
   descriptionDe: string;
   icon: string;
   color: string;
+  displayProfile: DisplayProfile;
   allowedChildTypes: TemplateType[];
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   category: PageTypeCategory;
-  displayProfile: DisplayProfile;
   displayIdPrefix: string;
   helpText?: string;
   variants: TemplateVariant[];
