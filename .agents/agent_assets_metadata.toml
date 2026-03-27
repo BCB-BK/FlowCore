@@ -6,3 +6,9 @@ id = "5YtcAPgLXLrt1wUMwzLb6"
 uri = "file://FlowCore_Systemdokumentation_Audit.zip"
 type = "unspecified"
 title = "FlowCore Systemdokumentation (Audit)"
+
+[[outputs]]
+id = "1mCbgH2P-Y01iNRB-bRoU"
+uri = "file://page-types-export.json"
+type = "unspecified"
+title = "FlowCore Page Type Registry – AI Audit Export"
