@@ -8,9 +8,12 @@ import {
   ArrowLeftRight,
   PackageCheck,
   History,
+  Ban,
+  ShieldCheck,
+  Link2,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
-import { RACIMatrix, RisksControlsTable, KPITable, InterfacesSystemsTable, SwimlaneDiagram } from "@/components/qm";
+import { RACIMatrix, RisksControlsTable, KPITable, InterfacesSystemsTable, SwimlaneDiagram, SIPOCTable } from "@/components/qm";
 import { getPageType } from "@/lib/types";
 
 interface ProcedureLayoutProps {
@@ -34,15 +37,20 @@ export function ProcedureLayout({
   const def = getPageType("procedure_instruction");
   const purposeSection = def?.sections.find(s => s.key === "purpose");
   const scopeSection = def?.sections.find(s => s.key === "scope");
+  const exclusionsSection = def?.sections.find(s => s.key === "exclusions");
+  const sipocLightSection = def?.sections.find(s => s.key === "sipoc_light");
   const triggerSection = def?.sections.find(s => s.key === "trigger");
   const inputsSection = def?.sections.find(s => s.key === "inputs");
   const procedureSection = def?.sections.find(s => s.key === "procedure");
+  const swimlaneSection = def?.sections.find(s => s.key === "swimlane");
   const respSection = def?.sections.find(s => s.key === "responsibilities");
   const interfacesSection = def?.sections.find(s => s.key === "interfaces");
   const outputsSection = def?.sections.find(s => s.key === "outputs");
   const risksSection = def?.sections.find(s => s.key === "risks");
   const kpisSection = def?.sections.find(s => s.key === "kpis");
+  const complianceSection = def?.sections.find(s => s.key === "compliance");
   const documentsSection = def?.sections.find(s => s.key === "documents");
+  const relationsSection = def?.sections.find(s => s.key === "relations");
   const changelogSection = def?.sections.find(s => s.key === "changelog");
 
   return (
@@ -63,20 +71,44 @@ export function ProcedureLayout({
         requirement="required"
       />
 
-      <EditableSectionCard
-        sectionKey="scope"
-        label="Geltungsbereich"
-        description="Für wen und wo gilt diese Anweisung?"
-        icon={<BookOpen className="h-4 w-4 text-blue-600" />}
-        value={str(structuredFields.scope)}
-        onSave={onSectionSave}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <EditableSectionCard
+          sectionKey="scope"
+          label="Geltungsbereich"
+          description="Für wen und wo gilt diese Anweisung?"
+          icon={<BookOpen className="h-4 w-4 text-blue-600" />}
+          value={str(structuredFields.scope)}
+          onSave={onSectionSave}
           pageType={pageType}
           nodeId={nodeId}
-        emptyText="Noch kein Geltungsbereich definiert"
-        help={scopeSection?.help}
-        helpText={scopeSection?.helpText}
-        guidingQuestions={scopeSection?.guidingQuestions}
-        requirement="required"
+          emptyText="Noch kein Geltungsbereich definiert"
+          help={scopeSection?.help}
+          helpText={scopeSection?.helpText}
+          guidingQuestions={scopeSection?.guidingQuestions}
+          requirement="required"
+        />
+
+        <EditableSectionCard
+          sectionKey="exclusions"
+          label="Ausschlüsse"
+          description="Was wird explizit NICHT durch diese Anweisung geregelt?"
+          icon={<Ban className="h-4 w-4 text-gray-500" />}
+          value={str(structuredFields.exclusions)}
+          onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
+          emptyText="Keine Ausschlüsse definiert"
+          help={exclusionsSection?.help}
+          helpText={exclusionsSection?.helpText}
+          guidingQuestions={exclusionsSection?.guidingQuestions}
+          requirement="recommended"
+        />
+      </div>
+
+      <SIPOCTable
+        data={structuredFields.sipoc_light}
+        onSave={onSectionSave ? (data) => onSectionSave("sipoc_light", data) : undefined}
+        readOnly={!onSectionSave}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -173,6 +205,20 @@ export function ProcedureLayout({
       />
 
       <EditableSectionCard
+        sectionKey="compliance"
+        label="Normbezug & Compliance"
+        description="Regulatorische Anforderungen, Normreferenzen und gesetzliche Vorgaben"
+        icon={<ShieldCheck className="h-4 w-4 text-red-600" />}
+        value={str(structuredFields.compliance)}
+        onSave={onSectionSave}
+        emptyText="Kein Normbezug definiert"
+        help={complianceSection?.help}
+        helpText={complianceSection?.helpText}
+        guidingQuestions={complianceSection?.guidingQuestions}
+        requirement="recommended"
+      />
+
+      <EditableSectionCard
         sectionKey="documents"
         label="Mitgeltende Unterlagen"
         description="Referenzierte Dokumente, Normen und Formulare"
@@ -185,6 +231,20 @@ export function ProcedureLayout({
         help={documentsSection?.help}
         helpText={documentsSection?.helpText}
         guidingQuestions={documentsSection?.guidingQuestions}
+      />
+
+      <EditableSectionCard
+        sectionKey="relations"
+        label="Verknüpfungen & Querverweise"
+        description="Verknüpfte Prozesse, übergeordnete Dokumente und abhängige Seiten"
+        icon={<Link2 className="h-4 w-4 text-cyan-600" />}
+        value={str(structuredFields.relations)}
+        onSave={onSectionSave}
+        emptyText="Keine Verknüpfungen dokumentiert"
+        help={relationsSection?.help}
+        helpText={relationsSection?.helpText}
+        guidingQuestions={relationsSection?.guidingQuestions}
+        requirement="recommended"
       />
 
       <EditableSectionCard

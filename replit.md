@@ -56,7 +56,17 @@ Seven structured QM components live in `artifacts/wiki-frontend/src/components/q
 
 All components support edit and view modes. `onSectionSave` type signature updated from `string` to `unknown` across all layouts and the editor page to support structured data persistence.
 
-Integrated into layouts: ProcessOverviewLayout (SIPOC, KPI, Risks, Interfaces, ProcessSteps), ProcedureLayout (Swimlane, RACI, Interfaces, Risks, KPI), AuditObjectLayout (Risks), InterfaceDescriptionLayout (Interfaces), ProcessPageGraphicLayout (Swimlane), SystemDocumentationLayout (Interfaces).
+Integrated into layouts: ProcessOverviewLayout (ProcessSteps, SIPOC, KPI, Interfaces, Risks), ProcedureLayout (SIPOC-light, Swimlane, RACI, Interfaces, Risks, KPI), AuditObjectLayout (Risks), InterfaceDescriptionLayout (Interfaces), ProcessPageGraphicLayout (Swimlane), SystemDocumentationLayout (Interfaces).
+
+## Page Type Specialization (Cluster 31)
+
+- **procedure_instruction**: Fully aligned to QM-Muster-Verfahrensanweisung. Sections: Zweck, Geltungsbereich, Ausschlüsse, SIPOC light, Auslöser, Eingaben, Ablauf, Swimlane, RACI-Mini, Schnittstellen, Ergebnisse, Risiken & Kontrollen, KPI, Normbezug/Compliance, Mitgeltende Unterlagen, Relations, Änderungshistorie.
+- **core_process_overview**: Aligned to Gesamtprozess-Vorlage. Content-first with Prozessschritte & Phasen, SIPOC, Unterprozesse & Detailseiten, KPIs, Schnittstellen & Systeme, Compliance, Risiken.
+- **role_profile**: Expanded to full Stellenprofil: Zielsetzung, Kernaufgaben, Verantwortungsbereiche, Budget-/Personalverantwortung, Routinen, 4 Kompetenzfelder (fachlich/methodisch/sozial/persönlich), Messerfolg, Arbeitsmittel, Datenschutz, Arbeitszeitmodell, Schnittstellen. HR metadata: Standort, Beschäftigungsart, Vergütungsgruppe, Personalverantwortung FTE.
+- **FAQ**: Frage/Antwort-Blöcke via QaRepeater (already specialized).
+- **Glossar**: Begriffslogik mit Definition/Synonym via TermRepeater (already specialized).
+- **Checklist**: Strukturierte Prüfpunkte via CheckItemsEditor (already specialized).
+- **Modular types**: Dashboard and Meeting displayProfile changed to `module_page`. Dashboard and Training removed from area_overview's allowedChildTypes to prevent mixing with core process tree.
 
 ## External Dependencies
 
