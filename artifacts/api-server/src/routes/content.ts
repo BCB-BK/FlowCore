@@ -29,6 +29,7 @@ import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
 import {
   PAGE_TYPE_REGISTRY,
+  ALL_TEMPLATE_TYPES,
   getPageType as getPageTypeDef,
 } from "@workspace/shared/page-types";
 
@@ -117,24 +118,12 @@ router.patch(
       return;
     }
 
-    const VALID_TEMPLATE_TYPES = [
-      "core_process_overview",
-      "area_overview",
-      "process_page_text",
-      "process_page_graphic",
-      "procedure_instruction",
-      "use_case",
-      "policy",
-      "role_profile",
-      "dashboard",
-      "system_documentation",
-    ];
     if (
       templateType !== undefined &&
-      !VALID_TEMPLATE_TYPES.includes(templateType)
+      !ALL_TEMPLATE_TYPES.includes(templateType)
     ) {
       res.status(400).json({
-        error: `templateType must be one of: ${VALID_TEMPLATE_TYPES.join(", ")}`,
+        error: `templateType must be one of: ${ALL_TEMPLATE_TYPES.join(", ")}`,
       });
       return;
     }

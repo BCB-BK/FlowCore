@@ -8,27 +8,14 @@ import { eq, and, isNull, sql, asc } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { logger } from "../lib/logger";
 import crypto from "node:crypto";
-
-const TEMPLATE_PREFIX_MAP: Record<string, string> = {
-  core_process_overview: "KP",
-  area_overview: "BER",
-  process_page_text: "PRZ",
-  process_page_graphic: "PRZ",
-  procedure_instruction: "VA",
-  use_case: "UC",
-  policy: "RL",
-  role_profile: "ROL",
-  dashboard: "DSH",
-  system_documentation: "SYS",
-  glossary: "GLO",
-};
+import { getDisplayIdPrefix } from "@workspace/shared/page-types";
 
 function generateImmutableId(): string {
   return `WN-${crypto.randomUUID().split("-")[0].toUpperCase()}`;
 }
 
 function getPrefix(templateType: string): string {
-  return TEMPLATE_PREFIX_MAP[templateType] ?? "DOC";
+  return getDisplayIdPrefix(templateType);
 }
 
 async function acquireParentLock(

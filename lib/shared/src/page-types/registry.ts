@@ -71,6 +71,14 @@ export type PageTypeCategory =
   | "quality"
   | "knowledge";
 
+export type DisplayProfile =
+  | "overview_container"
+  | "process_document"
+  | "reference_article"
+  | "governance_document"
+  | "system_document"
+  | "module_page";
+
 export interface PublicationRules {
   minimumSections: string[];
   minimumMetadata: string[];
@@ -106,7 +114,7 @@ export interface ValidationResult {
   readinessPercentage: number;
 }
 
-export const REGISTRY_VERSION = "1.0.0";
+export const REGISTRY_VERSION = "2.0.0";
 
 export interface PageTypeDefinition {
   type: TemplateType;
@@ -120,6 +128,8 @@ export interface PageTypeDefinition {
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   category: PageTypeCategory;
+  displayProfile: DisplayProfile;
+  displayIdPrefix: string;
   helpText?: string;
   variants: TemplateVariant[];
   publicationRules: PublicationRules;
@@ -331,6 +341,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Workflow",
     color: "hsl(145, 76%, 38%)",
     category: "process",
+    displayProfile: "overview_container",
+    displayIdPrefix: "KP",
     helpText:
       "Erstellen Sie eine Kernprozess-Übersicht, um einen übergeordneten Geschäftsprozess zu dokumentieren. Füllen Sie die SIPOC-Tabelle aus, definieren Sie KPIs und verknüpfen Sie zugehörige Teilprozesse.",
     allowedChildTypes: [
@@ -476,6 +488,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Building2",
     color: "hsl(200, 70%, 45%)",
     category: "documentation",
+    displayProfile: "overview_container",
+    displayIdPrefix: "BER",
     helpText:
       "Nutzen Sie die Bereichsübersicht, um Abteilungen oder Organisationseinheiten zu dokumentieren. Beschreiben Sie Aufgaben, Aufbauorganisation und verknüpfen Sie relevante Prozesse.",
     allowedChildTypes: [
@@ -573,6 +587,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "FileText",
     color: "hsl(220, 60%, 50%)",
     category: "process",
+    displayProfile: "process_document",
+    displayIdPrefix: "PRZ",
     helpText:
       "Dokumentieren Sie einen Prozessablauf als Textbeschreibung mit Verfahrensschritten, Zuständigkeiten und zugehörigen Dokumenten.",
     allowedChildTypes: [
@@ -682,6 +698,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "GitBranchPlus",
     color: "hsl(260, 50%, 55%)",
     category: "process",
+    displayProfile: "process_document",
+    displayIdPrefix: "PRZ",
     helpText:
       "Erstellen Sie eine grafische Prozessdarstellung mit Swimlane-Diagramm. Ideal für Prozesse, die visuell besser verständlich sind als in Textform.",
     allowedChildTypes: [
@@ -757,6 +775,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "ListChecks",
     color: "hsl(30, 80%, 50%)",
     category: "process",
+    displayProfile: "process_document",
+    displayIdPrefix: "VA",
     helpText:
       "Erstellen Sie eine detaillierte Verfahrensanweisung nach QM-Standard. Definieren Sie Zweck, Geltungsbereich, Auslöser, Ablauf, Verantwortlichkeiten, Schnittstellen, Risiken und mitgeltende Unterlagen.",
     allowedChildTypes: ["work_instruction", "checklist"],
@@ -987,6 +1007,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Users",
     color: "hsl(180, 50%, 45%)",
     category: "documentation",
+    displayProfile: "reference_article",
+    displayIdPrefix: "UC",
     helpText:
       "Beschreiben Sie einen konkreten Anwendungsfall mit Akteuren, Vor-/Nachbedingungen, Normalablauf und Alternativabläufen.",
     allowedChildTypes: [],
@@ -1072,6 +1094,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Shield",
     color: "hsl(0, 60%, 50%)",
     category: "governance",
+    displayProfile: "governance_document",
+    displayIdPrefix: "RL",
     helpText:
       "Erstellen Sie eine Richtlinie mit klarem Zweck, Geltungsbereich, Richtlinientext und Durchsetzungsmaßnahmen. Verknüpfen Sie bei Bedarf Verfahrensanweisungen.",
     allowedChildTypes: ["procedure_instruction", "work_instruction", "checklist"],
@@ -1212,6 +1236,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "UserCog",
     color: "hsl(320, 50%, 50%)",
     category: "governance",
+    displayProfile: "reference_article",
+    displayIdPrefix: "ROL",
     helpText:
       "Definieren Sie ein Rollenprofil mit Aufgabenbeschreibung, Verantwortlichkeiten, erforderlichen Qualifikationen und Befugnissen.",
     allowedChildTypes: [],
@@ -1345,6 +1371,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "LayoutDashboard",
     color: "hsl(280, 50%, 55%)",
     category: "system",
+    displayProfile: "overview_container",
+    displayIdPrefix: "DSH",
     helpText:
       "Erstellen Sie ein Dashboard mit konfigurierbaren Widgets für KPI-Übersichten, Prozesskennzahlen und Statusanzeigen.",
     allowedChildTypes: [],
@@ -1393,6 +1421,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "BookOpen",
     color: "hsl(280, 50%, 55%)",
     category: "documentation",
+    displayProfile: "reference_article",
+    displayIdPrefix: "GLO",
     helpText:
       "Erstellen und verwalten Sie Glossareinträge mit Definitionen, Synonymen und Verknüpfungen zu relevanten Wiki-Seiten.",
     allowedChildTypes: [],
@@ -1441,6 +1471,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "Server",
     color: "hsl(200, 40%, 50%)",
     category: "system",
+    displayProfile: "system_document",
+    displayIdPrefix: "SYS",
     helpText:
       "Dokumentieren Sie ein IT-System mit Schnittstellen, Datenobjekten, Zugriffsrechten und technischen Details.",
     allowedChildTypes: ["interface_description"],
@@ -1572,6 +1604,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "ClipboardCheck",
     color: "hsl(35, 85%, 48%)",
     category: "process",
+    displayProfile: "process_document",
+    displayIdPrefix: "AA",
     helpText:
       "Erstellen Sie eine Arbeitsanweisung für eine konkrete Tätigkeit. Im Unterschied zur Verfahrensanweisung beschreibt die Arbeitsanweisung das ‚Wie' auf Arbeitsplatzebene.",
     allowedChildTypes: ["checklist"],
@@ -1708,6 +1742,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "CheckSquare",
     color: "hsl(160, 60%, 40%)",
     category: "quality",
+    displayProfile: "module_page",
+    displayIdPrefix: "CKL",
     helpText:
       "Erstellen Sie eine Checkliste oder Formularvorlage mit strukturierten Prüfpunkten. Ideal für wiederkehrende Prüfungen, Audits und standardisierte Abläufe.",
     allowedChildTypes: [],
@@ -1816,6 +1852,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "HelpCircle",
     color: "hsl(45, 80%, 48%)",
     category: "knowledge",
+    displayProfile: "reference_article",
+    displayIdPrefix: "FAQ",
     helpText:
       "Erstellen Sie einen FAQ- oder Wissensartikel. Ideal für häufig gestellte Fragen, Anleitungen und Erklärungen, die als Selbsthilfe dienen.",
     allowedChildTypes: [],
@@ -1905,6 +1943,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "ArrowLeftRight",
     color: "hsl(210, 55%, 52%)",
     category: "system",
+    displayProfile: "system_document",
+    displayIdPrefix: "SST",
     helpText:
       "Dokumentieren Sie eine Schnittstelle zwischen zwei Systemen oder Organisationseinheiten. Beschreiben Sie Datenflüsse, Protokolle und Verantwortlichkeiten.",
     allowedChildTypes: [],
@@ -2039,6 +2079,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "MessageSquare",
     color: "hsl(270, 50%, 55%)",
     category: "documentation",
+    displayProfile: "reference_article",
+    displayIdPrefix: "MPR",
     helpText:
       "Erstellen Sie ein Besprechungsprotokoll mit Agenda, Teilnehmern, Ergebnissen, Entscheidungen und Maßnahmen. Ideal für Projekt-, Lenkungs- und Gremiumssitzungen.",
     allowedChildTypes: [],
@@ -2183,6 +2225,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "GraduationCap",
     color: "hsl(190, 60%, 45%)",
     category: "knowledge",
+    displayProfile: "module_page",
+    displayIdPrefix: "SCH",
     helpText:
       "Erstellen Sie Schulungsmaterial oder Lernressourcen. Ideal für Einarbeitungspläne, Schulungsunterlagen und Wissenstransfer.",
     allowedChildTypes: ["checklist", "faq"],
@@ -2331,6 +2375,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     icon: "SearchCheck",
     color: "hsl(340, 55%, 50%)",
     category: "quality",
+    displayProfile: "governance_document",
+    displayIdPrefix: "AUD",
     helpText:
       "Dokumentieren Sie ein Kontroll- oder Prüfobjekt. Verwenden Sie diesen Typ für Audit-Feststellungen, Kontrollmaßnahmen und Qualitätsprüfpunkte.",
     allowedChildTypes: ["checklist"],
@@ -2620,6 +2666,60 @@ export const PAGE_TYPE_CATEGORIES: Record<
     icon: "GraduationCap",
   },
 };
+
+export const DISPLAY_PROFILE_LABELS: Record<
+  DisplayProfile,
+  { label: string; labelDe: string; description: string }
+> = {
+  overview_container: {
+    label: "Overview Container",
+    labelDe: "Übersichtscontainer",
+    description: "Top-level container pages that aggregate child pages (e.g. core process overview, area overview, dashboard)",
+  },
+  process_document: {
+    label: "Process Document",
+    labelDe: "Prozessdokument",
+    description: "Step-by-step procedural documentation (e.g. process page, procedure instruction, work instruction)",
+  },
+  reference_article: {
+    label: "Reference Article",
+    labelDe: "Nachschlagewerk",
+    description: "Self-contained knowledge or reference content (e.g. use case, FAQ, glossary, role profile, meeting protocol)",
+  },
+  governance_document: {
+    label: "Governance Document",
+    labelDe: "Governance-Dokument",
+    description: "Normative or regulatory content requiring formal approval (e.g. policy, audit object)",
+  },
+  system_document: {
+    label: "System Document",
+    labelDe: "Systemdokument",
+    description: "Technical system or interface documentation (e.g. system documentation, interface description)",
+  },
+  module_page: {
+    label: "Module Page",
+    labelDe: "Modulseite",
+    description: "Structured interactive content with specialized rendering (e.g. checklist, training resource)",
+  },
+};
+
+export function getDisplayProfile(type: string): DisplayProfile | undefined {
+  const def = getPageType(type);
+  return def?.displayProfile;
+}
+
+export function getDisplayIdPrefix(type: string): string {
+  const def = getPageType(type);
+  return def?.displayIdPrefix ?? "DOC";
+}
+
+export function getPageTypesByDisplayProfile(
+  profile: DisplayProfile,
+): PageTypeDefinition[] {
+  return Object.values(PAGE_TYPE_REGISTRY).filter(
+    (def) => def.displayProfile === profile,
+  );
+}
 
 function isNonEmpty(val: unknown): boolean {
   if (val === undefined || val === null) return false;

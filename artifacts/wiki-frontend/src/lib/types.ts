@@ -20,14 +20,19 @@ export {
   getPublicationReadiness,
   getFieldsByRequirement,
   getSectionsByRequirement,
+  getDisplayProfile,
+  getDisplayIdPrefix,
+  getPageTypesByDisplayProfile,
   METADATA_GROUP_LABELS,
   PAGE_TYPE_CATEGORIES,
+  DISPLAY_PROFILE_LABELS,
 } from "@workspace/shared/page-types";
 
 export type {
   TemplateType,
   MetadataGroupKey,
   PageTypeCategory,
+  DisplayProfile,
   FieldRequirement,
   PublicationRules,
   ValidationError,
@@ -35,26 +40,11 @@ export type {
   ValidationResult,
 } from "@workspace/shared/page-types";
 
-export const PAGE_TYPE_LABELS: Record<string, string> = {
-  core_process_overview: "Kernprozess-Übersicht",
-  area_overview: "Bereichsübersicht",
-  process_page_text: "Prozessseite (Text)",
-  process_page_graphic: "Prozessseite (Grafik)",
-  procedure_instruction: "Verfahrensanweisung",
-  use_case: "Use Case",
-  policy: "Richtlinie / Policy",
-  role_profile: "Rollen-/Stellenprofil",
-  dashboard: "Dashboard",
-  system_documentation: "Systemdokumentation",
-  glossary: "Glossar",
-  work_instruction: "Arbeitsanweisung",
-  checklist: "Checkliste / Formularvorlage",
-  faq: "FAQ / Wissensartikel",
-  interface_description: "Schnittstellenbeschreibung",
-  meeting_protocol: "Meeting- / Entscheidungsprotokoll",
-  training_resource: "Schulung / Lernressource",
-  audit_object: "Kontroll- / Prüfobjekt",
-};
+import { PAGE_TYPE_REGISTRY as _PTR } from "@workspace/shared/page-types";
+
+export const PAGE_TYPE_LABELS: Record<string, string> = Object.fromEntries(
+  Object.values(_PTR).map((def) => [def.type, def.labelDe]),
+);
 
 export const STATUS_LABELS: Record<string, string> = {
   draft: "Entwurf",
@@ -74,26 +64,9 @@ export const STATUS_COLORS: Record<string, string> = {
   deleted: "bg-red-100 text-red-800",
 };
 
-export const PAGE_TYPE_ICON_MAP: Record<string, string> = {
-  core_process_overview: "Workflow",
-  area_overview: "Building2",
-  process_page_text: "FileText",
-  process_page_graphic: "GitBranchPlus",
-  procedure_instruction: "ListChecks",
-  use_case: "Users",
-  policy: "Shield",
-  role_profile: "UserCog",
-  dashboard: "LayoutDashboard",
-  system_documentation: "Server",
-  glossary: "BookOpen",
-  work_instruction: "ClipboardCheck",
-  checklist: "CheckSquare",
-  faq: "HelpCircle",
-  interface_description: "ArrowLeftRight",
-  meeting_protocol: "MessageSquare",
-  training_resource: "GraduationCap",
-  audit_object: "SearchCheck",
-};
+export const PAGE_TYPE_ICON_MAP: Record<string, string> = Object.fromEntries(
+  Object.values(_PTR).map((def) => [def.type, def.icon]),
+);
 
 export const CONFIDENTIALITY_LABELS: Record<string, string> = {
   public: "Öffentlich",

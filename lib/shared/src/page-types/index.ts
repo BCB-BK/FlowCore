@@ -12,8 +12,12 @@ export {
   getPublicationReadiness,
   getFieldsByRequirement,
   getSectionsByRequirement,
+  getDisplayProfile,
+  getDisplayIdPrefix,
+  getPageTypesByDisplayProfile,
   METADATA_GROUP_LABELS,
   PAGE_TYPE_CATEGORIES,
+  DISPLAY_PROFILE_LABELS,
 } from "./registry";
 
 export type {
@@ -23,6 +27,7 @@ export type {
   PageTypeSection,
   PageTypeDefinition,
   PageTypeCategory,
+  DisplayProfile,
   TemplateVariant,
   FieldRequirement,
   PublicationRules,

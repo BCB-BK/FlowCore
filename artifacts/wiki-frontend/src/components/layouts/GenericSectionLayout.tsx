@@ -1,11 +1,13 @@
 import { getPageType } from "@/lib/types";
-import { FileText } from "lucide-react";
+import type { DisplayProfile } from "@/lib/types";
+import { FileText, LayoutDashboard, Shield, Server, BookOpen, Workflow } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 
 interface GenericSectionLayoutProps {
   templateType: string;
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: string) => void;
+  displayProfile?: DisplayProfile;
 }
 
 function str(val: unknown): string {
@@ -14,10 +16,20 @@ function str(val: unknown): string {
   return String(val);
 }
 
+const PROFILE_ICON_MAP: Record<DisplayProfile, React.ReactNode> = {
+  overview_container: <Workflow className="h-4 w-4 text-muted-foreground" />,
+  process_document: <FileText className="h-4 w-4 text-muted-foreground" />,
+  reference_article: <BookOpen className="h-4 w-4 text-muted-foreground" />,
+  governance_document: <Shield className="h-4 w-4 text-muted-foreground" />,
+  system_document: <Server className="h-4 w-4 text-muted-foreground" />,
+  module_page: <LayoutDashboard className="h-4 w-4 text-muted-foreground" />,
+};
+
 export function GenericSectionLayout({
   templateType,
   structuredFields,
   onSectionSave,
+  displayProfile,
 }: GenericSectionLayoutProps) {
   const pageDef = getPageType(templateType);
   if (!pageDef) return null;
@@ -25,6 +37,10 @@ export function GenericSectionLayout({
   const contentSections = pageDef.sections.filter((s) => s.key !== "children");
 
   if (contentSections.length === 0) return null;
+
+  const sectionIcon = displayProfile
+    ? PROFILE_ICON_MAP[displayProfile]
+    : <FileText className="h-4 w-4 text-muted-foreground" />;
 
   return (
     <div className="space-y-4">
@@ -35,7 +51,7 @@ export function GenericSectionLayout({
           label={section.label}
           description={section.description}
           required={section.required}
-          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+          icon={sectionIcon}
           value={str(structuredFields[section.key])}
           onSave={onSectionSave}
         />

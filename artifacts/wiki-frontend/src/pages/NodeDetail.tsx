@@ -52,7 +52,7 @@ import {
   Loader2,
   Eye,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes } from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
@@ -97,7 +97,7 @@ export function NodeDetail() {
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [showEdit, setShowEdit] = useState(false);
   const [showPageAssist, setShowPageAssist] = useState(false);
-  const isOverviewPage = node?.templateType === "core_process_overview" || node?.templateType === "area_overview";
+  const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
   const { toast } = useToast();
 
   const allowedChildTypes = useMemo(() => {
@@ -462,7 +462,7 @@ export function NodeDetail() {
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold">
-                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Unterseiten"}
+                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Untergeordnete Inhalte"}
                 </h3>
                 <Button
                   variant="outline"
@@ -668,7 +668,7 @@ export function NodeDetail() {
                     <CardContent className="flex flex-col items-center justify-center py-8 text-center">
                       <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        Noch keine {node.templateType === "core_process_overview" ? "Bereiche oder Prozesse" : "Unterseiten"} vorhanden
+                        Noch keine {node.templateType === "core_process_overview" ? "Bereiche oder Prozesse" : "untergeordneten Inhalte"} vorhanden
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         Nutzen Sie die Kacheln oben oder den Button, um die erste Unterseite anzulegen.
