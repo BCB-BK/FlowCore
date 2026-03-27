@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { InlineTextDiff } from "./InlineTextDiff";
-import { formatFieldLabel, formatValueForDisplay } from "@/lib/text-diff";
+import { formatFieldLabel, formatValueForDisplay, detectCompoundType, formatCompoundForDisplay } from "@/lib/text-diff";
 
 interface RevisionDiffViewProps {
   revisionIdA: string;
@@ -78,28 +78,51 @@ function DiffFieldRow({
   oldVal: unknown;
   newVal: unknown;
 }) {
-  const oldStr = formatValueForDisplay(oldVal);
-  const newStr = formatValueForDisplay(newVal);
+  const compoundTypeOld = detectCompoundType(oldVal);
+  const compoundTypeNew = detectCompoundType(newVal);
+  const compoundType = compoundTypeNew || compoundTypeOld;
+
+  const oldStr = compoundType
+    ? formatCompoundForDisplay(oldVal, compoundType)
+    : formatValueForDisplay(oldVal);
+  const newStr = compoundType
+    ? formatCompoundForDisplay(newVal, compoundType)
+    : formatValueForDisplay(newVal);
+
   const isAdded = oldVal === null || oldVal === undefined;
   const isRemoved = newVal === null || newVal === undefined;
-  const isTextual = typeof oldVal === "string" && typeof newVal === "string";
+  const isTextual = typeof oldStr === "string" && typeof newStr === "string" && !isAdded && !isRemoved;
+
+  const compoundLabels: Record<string, string> = {
+    sipoc_cards: "SIPOC-Tabelle",
+    raci_matrix: "RACI-Matrix",
+    qa_repeater: "Fragen & Antworten",
+    term_repeater: "Begriffe",
+    check_items: "Prüfpunkte",
+    competency_areas: "Kompetenzbereiche",
+  };
 
   return (
     <div className="rounded-lg border overflow-hidden">
-      <div className="px-3 py-1.5 bg-muted/50 border-b">
+      <div className="px-3 py-1.5 bg-muted/50 border-b flex items-center gap-2">
         <span className="text-sm font-medium">{formatFieldLabel(label)}</span>
+        {compoundType && (
+          <Badge variant="outline" className="text-[10px] h-4 text-blue-600 border-blue-300">
+            {compoundLabels[compoundType] || compoundType}
+          </Badge>
+        )}
         {isAdded && (
-          <Badge variant="outline" className="ml-2 text-[10px] h-4 text-green-600 border-green-300">
+          <Badge variant="outline" className="text-[10px] h-4 text-green-600 border-green-300">
             Hinzugefügt
           </Badge>
         )}
         {isRemoved && (
-          <Badge variant="outline" className="ml-2 text-[10px] h-4 text-red-600 border-red-300">
+          <Badge variant="outline" className="text-[10px] h-4 text-red-600 border-red-300">
             Entfernt
           </Badge>
         )}
       </div>
-      {isTextual && !isAdded && !isRemoved ? (
+      {isTextual && !compoundType ? (
         <div className="p-3">
           <InlineTextDiff oldText={oldStr} newText={newStr} />
         </div>
@@ -273,7 +296,7 @@ export function RevisionDiffView({
                 <div>
                   <DiffSectionHeader
                     icon={Layers}
-                    title="Governance-Felder"
+                    title="Strukturierte Felder"
                     count={Object.keys(diff.structuredFieldChanges).length}
                   />
                   <div className="space-y-2">

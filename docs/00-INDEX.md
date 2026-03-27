@@ -36,11 +36,16 @@
 ## Templates
 - [Cluster Report Template](./templates/CLUSTER-REPORT-TEMPLATE.md)
 
+## Migration & Acceptance
+- [Migration Matrix](./MIGRATION-MATRIX.md)
+- [E2E Acceptance Protocol](./E2E-ACCEPTANCE.md)
+
 ## Reports
 - [Cluster 1 Report](./reports/CLUSTER-1-REPORT.md)
 - [Cluster 1 Audit](./reports/CLUSTER-1-AUDIT.md)
 - [Cluster 2 Report](./reports/CLUSTER-2-REPORT.md)
 - [Cluster 2 Audit](./reports/CLUSTER-2-AUDIT.md)
+- [Cluster 33 Report](./reports/CLUSTER-33-REPORT.md)
 
 ## Provider Abstractions
 - [lib/shared/src/providers/](../lib/shared/src/providers/) – TypeScript interfaces for Auth, Storage, Search, AI, Connector, Notification providers

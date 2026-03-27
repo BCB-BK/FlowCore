@@ -7,6 +7,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Cluster 33: Regression, Migration und formale Abnahme
+  - Migrationsmatrix pro Seitentyp (docs/MIGRATION-MATRIX.md): Mapping bestehender Inhalte auf neue strukturierte Felder, Compound-Typ-Migrationsregeln (SIPOC, RACI, Q&A, Terme, Checkliste, Kompetenzen), Fallback-Regeln, Garantie gegen stille Datenverluste, 3-Phasen-Migrationsstrategie
+  - Diff/Review-Kompatibilität für strukturierte Widgets: `detectCompoundType()` und `formatCompoundForDisplay()` in text-diff.ts für lesbare Darstellung von SIPOC-Tabellen, RACI-Matrizen, Q&A-Repeatern, Term-Repeatern, Check-Items und Kompetenz-Bereichen im Revisionsvergleich
+  - Compound-Typ-Badge im RevisionDiffView: Blauer Badge zeigt Widget-Typ (z.B. "SIPOC-Tabelle", "RACI-Matrix") bei strukturierten Feldern im Diff an
+  - Erweiterte Feldlabels in text-diff.ts: 30+ neue deutsche Übersetzungen für Abschnitts- und Feldnamen (governance, sipoc, process_steps, competencies, etc.)
+  - RevisionDiffView: Abschnitt "Governance-Felder" umbenannt zu "Strukturierte Felder" für korrekte Darstellung aller Feldtypen
+  - E2E-Abnahmeprotokoll (docs/E2E-ACCEPTANCE.md): 48 Prüfpunkte in 7 Bereichen (Seitenerstellung, Seitentypwechsel, strukturierte Felder, KI-Vorschläge, Übersichtsseiten, Publish-Readiness, Versionsvergleich)
+  - Clusterreport (docs/reports/CLUSTER-33-REPORT.md) mit Dateiliste und Ergebnisnachweis
+
 - Cluster 14: Source of Truth, GitHub-Sync und Release-Disziplin
   - Source-of-Truth-Modell dokumentiert (docs/15-SOURCE-OF-TRUTH.md): Führungsquelle je Artefakttyp (Code, DB-Schema, API-Spec, Config, Inhalte, Docs, Templates), Sync-Pfade, Widerspruchsrisiken
   - Konsistenzprüfung im Admin-Bereich (Einstellungen → Konsistenz): Prüft DB-Verbindung, Schema-Drift (erwartete vs. vorhandene Tabellen), DB-Erweiterungen, Konfiguration, Sicherheit, Dokumentation, Backup-Status, Release-Stand
