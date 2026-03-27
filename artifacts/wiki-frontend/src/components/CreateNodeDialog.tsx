@@ -1,9 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import {
   useCreateNode,
-  useCreateRevision,
   useRootNodes,
 } from "@/hooks/use-nodes";
+import {
+  useCreateWorkingCopy,
+  useUpdateWorkingCopy,
+} from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -85,7 +88,8 @@ export function CreateNodeDialog({
   const [ownerName, setOwnerName] = useState<string | undefined>();
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const createNode = useCreateNode();
-  const createRevision = useCreateRevision();
+  const createWorkingCopy = useCreateWorkingCopy();
+  const updateWorkingCopy = useUpdateWorkingCopy();
   const { data: rootNodes } = useRootNodes();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -193,19 +197,20 @@ export function CreateNodeDialog({
         structuredInit._editorContent = buildInitialEditorContent(variantDef.initialBlocks);
       }
 
-      await createRevision.mutateAsync({
-        nodeId: node.id,
+      const wc = await createWorkingCopy.mutateAsync({ nodeId: node.id });
+
+      await updateWorkingCopy.mutateAsync({
+        workingCopyId: wc.id,
         data: {
           title: title.trim(),
           content: metadata,
           structuredFields: structuredInit,
           changeType: "editorial",
-          changeSummary: `Erstellt (Vorlage: ${variantDef?.label ?? selectedVariant})`,
         },
       });
 
       resetAndClose();
-      navigate(`/node/${node.id}`);
+      navigate(`/nodes/${node.id}/edit`);
     } catch (err) {
       toast({
         variant: "destructive",
