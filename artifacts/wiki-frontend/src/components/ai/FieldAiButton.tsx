@@ -120,15 +120,24 @@ export function FieldAiButton({
 
       try {
         const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
-        const response = await fetch(`${baseUrl}/api/ai/field-assist`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...getDefaultHeaders(),
-          },
-          body: JSON.stringify({ action, text, fieldKey, pageType, nodeId }),
-          signal: controller.signal,
-        });
+        let response: Response;
+        try {
+          response = await fetch(`${baseUrl}/api/ai/field-assist`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...getDefaultHeaders(),
+            },
+            body: JSON.stringify({ action, text, fieldKey, pageType, nodeId }),
+            signal: controller.signal,
+          });
+        } catch (fetchErr) {
+          if ((fetchErr as Error).name === "AbortError") throw fetchErr;
+          setSuggestion(
+            "Server nicht erreichbar — bitte Seite neu laden.",
+          );
+          return;
+        }
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -165,9 +174,16 @@ export function FieldAiButton({
         }
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
-          setSuggestion(
-            "Fehler bei der KI-Verarbeitung. Bitte versuchen Sie es erneut.",
-          );
+          const errMsg = (err as Error).message ?? "";
+          if (errMsg.startsWith("HTTP ")) {
+            setSuggestion(
+              "Fehler bei der KI-Verarbeitung. Bitte versuchen Sie es erneut.",
+            );
+          } else {
+            setSuggestion(
+              "Server nicht erreichbar — bitte Seite neu laden.",
+            );
+          }
         }
       } finally {
         setIsStreaming(false);

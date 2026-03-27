@@ -6,26 +6,58 @@ import { startBackupScheduler } from "./services/backup.service";
 import { startReviewCycleChecker } from "./services/review-cycle.service";
 import { Server } from "http";
 
-async function start() {
-  const server: Server = app.listen(appConfig.port, (err) => {
-    if (err) {
-      logger.error({ err }, "Error listening on port");
-      process.exit(1);
-    }
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 500;
 
-    logger.info(
-      {
-        port: appConfig.port,
-        env: appConfig.nodeEnv,
-        authDevMode: appConfig.authDevMode,
-      },
-      "Server listening",
-    );
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-    startSyncScheduler();
-    startBackupScheduler();
-    startReviewCycleChecker();
+async function startServer(port: number, attempt = 1): Promise<Server> {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, () => {
+      logger.info(
+        {
+          port,
+          env: appConfig.nodeEnv,
+          authDevMode: appConfig.authDevMode,
+        },
+        "Server listening",
+      );
+      resolve(server);
+    });
+
+    server.on("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE" && attempt < MAX_RETRIES) {
+        logger.warn(
+          { port, attempt, maxRetries: MAX_RETRIES },
+          `Port ${port} already in use, retrying in ${RETRY_DELAY_MS}ms...`,
+        );
+        server.close();
+        sleep(RETRY_DELAY_MS)
+          .then(() => startServer(port, attempt + 1))
+          .then(resolve)
+          .catch(reject);
+      } else {
+        reject(err);
+      }
+    });
   });
+}
+
+async function start() {
+  let server: Server;
+
+  try {
+    server = await startServer(appConfig.port);
+  } catch (err) {
+    logger.error({ err }, "Failed to start server after retries");
+    process.exit(1);
+  }
+
+  startSyncScheduler();
+  startBackupScheduler();
+  startReviewCycleChecker();
 
   let isShuttingDown = false;
 

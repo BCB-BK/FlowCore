@@ -168,15 +168,24 @@ export function PageAssistant({
 
       try {
         const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
-        const response = await fetch(`${baseUrl}/api/ai/page-assist`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...getDefaultHeaders(),
-          },
-          body: JSON.stringify({ action, text, nodeId }),
-          signal: controller.signal,
-        });
+        let response: Response;
+        try {
+          response = await fetch(`${baseUrl}/api/ai/page-assist`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...getDefaultHeaders(),
+            },
+            body: JSON.stringify({ action, text, nodeId }),
+            signal: controller.signal,
+          });
+        } catch (fetchErr) {
+          if ((fetchErr as Error).name === "AbortError") throw fetchErr;
+          setResult(
+            "Server nicht erreichbar — bitte Seite neu laden.",
+          );
+          return;
+        }
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -213,9 +222,16 @@ export function PageAssistant({
         }
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
-          setResult(
-            "Fehler bei der KI-Verarbeitung. Bitte versuchen Sie es erneut.",
-          );
+          const errMsg = (err as Error).message ?? "";
+          if (errMsg.startsWith("HTTP ")) {
+            setResult(
+              "Fehler bei der KI-Verarbeitung. Bitte versuchen Sie es erneut.",
+            );
+          } else {
+            setResult(
+              "Server nicht erreichbar — bitte Seite neu laden.",
+            );
+          }
         }
       } finally {
         setIsStreaming(false);
