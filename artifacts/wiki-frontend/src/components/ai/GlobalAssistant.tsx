@@ -231,7 +231,7 @@ export function GlobalAssistant() {
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-[420px] h-[560px] shadow-2xl z-50 flex flex-col">
+    <Card className="fixed bottom-6 right-6 w-[calc(100vw-2rem)] sm:w-[420px] max-h-[80vh] h-[560px] shadow-2xl z-50 flex flex-col">
       <CardHeader className="py-3 px-4 border-b flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Bot className="h-4 w-4 text-primary" />

@@ -282,17 +282,17 @@ export function QualityDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <BarChart3 className="h-6 w-6" />
+            <BarChart3 className="h-6 w-6 shrink-0" />
             Prozessmanagement Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">
             Qualitätsmetriken und Wartungsübersicht
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate("/my-work")}>
+        <Button variant="outline" className="self-start sm:self-auto shrink-0" onClick={() => navigate("/my-work")}>
           Meine Aufgaben
           <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
@@ -410,8 +410,8 @@ export function QualityDashboard() {
       ) : null}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="overflow-x-auto">
-        <TabsList>
+        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+        <TabsList className="inline-flex w-max">
           <TabsTrigger value="overview">Seitenqualität</TabsTrigger>
           <TabsTrigger value="pages">Seitenliste</TabsTrigger>
           <TabsTrigger value="hints">

@@ -179,7 +179,7 @@ export function AuditTrailTab() {
                 <Filter className="h-3 w-3" /> Aktion
               </label>
               <Select value={selectedAction} onValueChange={(v) => { setSelectedAction(v); setPage(0); }}>
-                <SelectTrigger className="w-[220px]">
+                <SelectTrigger className="w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

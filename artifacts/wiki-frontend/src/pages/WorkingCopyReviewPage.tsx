@@ -330,7 +330,7 @@ export function WorkingCopyReviewPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       <NodeBreadcrumbs nodeId={nodeId} />
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <PageTypeIcon iconName={node.templateType} />
@@ -339,14 +339,14 @@ export function WorkingCopyReviewPage() {
               <Badge variant="secondary">Nur Ansicht</Badge>
             )}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight break-words">
             {activeWC.title || node.title}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {node.displayCode}
           </p>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 shrink-0 flex-wrap">
           {canReview && (
             <Button
               variant="outline"
@@ -505,20 +505,22 @@ export function WorkingCopyReviewPage() {
         value={reviewMode}
         onValueChange={(v) => setReviewMode(v as ReviewMode)}
       >
-        <TabsList>
-          <TabsTrigger value="changes" className="gap-1.5">
-            <ArrowLeftRight className="h-3.5 w-3.5" />
-            Nur Änderungen
-          </TabsTrigger>
-          <TabsTrigger value="before_after" className="gap-1.5">
-            <Eye className="h-3.5 w-3.5" />
-            Vorher / Nachher
-          </TabsTrigger>
-          <TabsTrigger value="full" className="gap-1.5">
-            <FileText className="h-3.5 w-3.5" />
-            Komplette Arbeitskopie
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+          <TabsList className="inline-flex w-max">
+            <TabsTrigger value="changes" className="gap-1.5 whitespace-nowrap">
+              <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
+              Änderungen
+            </TabsTrigger>
+            <TabsTrigger value="before_after" className="gap-1.5 whitespace-nowrap">
+              <Eye className="h-3.5 w-3.5 shrink-0" />
+              Vorher / Nachher
+            </TabsTrigger>
+            <TabsTrigger value="full" className="gap-1.5 whitespace-nowrap">
+              <FileText className="h-3.5 w-3.5 shrink-0" />
+              Komplette Arbeitskopie
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="changes" className="mt-4 space-y-4">
           <Card>

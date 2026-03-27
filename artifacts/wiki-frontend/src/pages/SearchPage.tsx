@@ -147,7 +147,7 @@ export function SearchPage() {
 
       <div className="flex flex-wrap gap-2 items-center">
         <Select value={templateType} onValueChange={setTemplateType}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Seitentyp" />
           </SelectTrigger>
           <SelectContent>
@@ -160,7 +160,7 @@ export function SearchPage() {
         </Select>
 
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[calc(50%-4px)] sm:w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -175,7 +175,7 @@ export function SearchPage() {
         </Select>
 
         <Select value={tagId} onValueChange={setTagId}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[calc(50%-4px)] sm:w-[160px]">
             <SelectValue placeholder="Tag" />
           </SelectTrigger>
           <SelectContent>
@@ -190,7 +190,7 @@ export function SearchPage() {
 
         <Input
           type="text"
-          className="w-[160px] h-9 text-xs"
+          className="w-full sm:w-[160px] h-9 text-xs"
           value={ownerId}
           onChange={(e) => setOwnerId(e.target.value)}
           placeholder="Eigentümer-ID"

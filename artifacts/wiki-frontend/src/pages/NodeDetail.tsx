@@ -266,7 +266,7 @@ export function NodeDetail() {
     <div className="max-w-4xl mx-auto space-y-6">
       <NodeBreadcrumbs nodeId={nodeId} />
 
-      <div className="flex items-center justify-end gap-2 shrink-0 overflow-x-auto">
+      <div className="flex items-center justify-end gap-2 shrink-0 flex-wrap">
         {nodeId && (
           <ShareToTeams
             nodeId={nodeId}

@@ -245,16 +245,16 @@ export function AiFieldProfilesPanel() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 flex-1">
-            <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+            <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
             <Select
               value={filterPageType || "__all__"}
               onValueChange={(v) =>
                 setFilterPageType(v === "__all__" ? "" : v)
               }
             >
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue placeholder="Alle Seitentypen" />
               </SelectTrigger>
               <SelectContent>
@@ -272,7 +272,7 @@ export function AiFieldProfilesPanel() {
                 placeholder="Feld filtern..."
                 value={filterFieldKey}
                 onChange={(e) => setFilterFieldKey(e.target.value)}
-                className="pl-7 w-[180px]"
+                className="pl-7 w-full sm:w-[180px]"
               />
             </div>
           </div>
