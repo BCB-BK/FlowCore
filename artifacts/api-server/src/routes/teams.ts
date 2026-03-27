@@ -53,7 +53,7 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
 
     const principalId = await upsertPrincipal({
       principalType: "user",
-      externalProvider: "entra_id",
+      externalProvider: "entra",
       externalId: tokenResult.externalId,
       displayName: tokenResult.displayName,
       email: tokenResult.email,
