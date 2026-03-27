@@ -4,6 +4,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface AreaOverviewLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: string) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -14,6 +16,8 @@ function str(val: unknown): string {
 export function AreaOverviewLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: AreaOverviewLayoutProps) {
   return (
     <div className="space-y-4">
@@ -24,6 +28,8 @@ export function AreaOverviewLayout({
         icon={<Building2 className="h-4 w-4 text-primary" />}
         value={str(structuredFields.description)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Beschreibung"
       />
 
@@ -34,6 +40,8 @@ export function AreaOverviewLayout({
         icon={<Users className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.structure)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Aufbauorganisation dokumentiert"
       />
 
@@ -44,6 +52,8 @@ export function AreaOverviewLayout({
         icon={<ArrowLeftRight className="h-4 w-4 text-cyan-600" />}
         value={str(structuredFields.interfaces)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Schnittstellen dokumentiert"
       />
     </div>

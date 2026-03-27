@@ -20,9 +20,11 @@ import { DashboardLayout } from "./DashboardLayout";
 import { GlossaryLayout } from "./GlossaryLayout";
 import { GenericSectionLayout } from "./GenericSectionLayout";
 
-interface LayoutComponentProps {
+export interface LayoutComponentProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 interface ProfileLayoutStrategy {
@@ -79,12 +81,16 @@ interface PageLayoutProps {
   templateType: string;
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 export function PageLayout({
   templateType,
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: PageLayoutProps) {
   const profile = getDisplayProfile(templateType);
 
@@ -98,6 +104,8 @@ export function PageLayout({
         <LayoutComponent
           structuredFields={structuredFields}
           onSectionSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         />
       );
     }
@@ -108,6 +116,8 @@ export function PageLayout({
         structuredFields={structuredFields}
         onSectionSave={onSectionSave}
         displayProfile={profile}
+        pageType={pageType}
+        nodeId={nodeId}
       />
     );
   }
@@ -117,6 +127,8 @@ export function PageLayout({
       templateType={templateType}
       structuredFields={structuredFields}
       onSectionSave={onSectionSave}
+      pageType={pageType}
+      nodeId={nodeId}
     />
   );
 }

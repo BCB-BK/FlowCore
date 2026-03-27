@@ -10,6 +10,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface UseCaseLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: string) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -20,6 +22,8 @@ function str(val: unknown): string {
 export function UseCaseLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: UseCaseLayoutProps) {
   return (
     <div className="space-y-4">
@@ -31,6 +35,8 @@ export function UseCaseLayout({
           icon={<Users className="h-4 w-4 text-primary" />}
           value={str(structuredFields.actors)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           required
           emptyText="Noch keine Akteure definiert"
         />
@@ -42,6 +48,8 @@ export function UseCaseLayout({
           icon={<CheckCircle2 className="h-4 w-4 text-green-600" />}
           value={str(structuredFields.preconditions)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           required
           emptyText="Noch keine Vorbedingungen definiert"
         />
@@ -54,6 +62,8 @@ export function UseCaseLayout({
         icon={<ArrowRight className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.main_flow)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         required
         emptyText="Noch kein Normalablauf dokumentiert"
       />
@@ -65,6 +75,8 @@ export function UseCaseLayout({
         icon={<GitBranch className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.alternative_flows)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Alternativabläufe dokumentiert"
       />
 
@@ -75,6 +87,8 @@ export function UseCaseLayout({
         icon={<Flag className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.postconditions)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Nachbedingungen definiert"
       />
     </div>

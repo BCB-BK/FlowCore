@@ -6,6 +6,8 @@ import { getPageType } from "@/lib/types";
 interface FaqLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -16,6 +18,8 @@ function str(val: unknown): string {
 export function FaqLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: FaqLayoutProps) {
   const def = getPageType("faq");
   const contentSection = def?.sections.find(s => s.key === "content");
@@ -30,6 +34,8 @@ export function FaqLayout({
         icon={<FileText className="h-4 w-4 text-primary" />}
         value={str(structuredFields.summary)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Zusammenfassung"
         help={summarySection?.help}
         helpText={summarySection?.helpText}
@@ -52,6 +58,8 @@ export function FaqLayout({
         icon={<Link2 className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.related_topics)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine verwandten Themen verknüpft"
         requirement="recommended"
       />

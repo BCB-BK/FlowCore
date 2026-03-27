@@ -19,6 +19,8 @@ import type {
 import type {
   ActiveSourceSystem,
   AiAskBody,
+  AiFieldAssistBody,
+  AiFieldProfile,
   AiPageAssistBody,
   AiSettings,
   AiUsageStats,
@@ -44,6 +46,7 @@ import type {
   ContentRelation,
   ContentRevision,
   ContentTemplate,
+  CreateAiFieldProfileBody,
   CreateGlossaryTerm,
   CreateNodeInput,
   CreatePrincipalInput,
@@ -59,6 +62,7 @@ import type {
   EffectivePermissions,
   ErrorResponse,
   ForwardLink,
+  GetAiFieldProfilesParams,
   GetAiUsageStatsParams,
   GetNotificationsParams,
   GetOwnershipMonitorParams,
@@ -10565,6 +10569,448 @@ export function useGetAiUsageStats<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary AI field-level writing assistant (SSE stream)
+ */
+export const getAiFieldAssistUrl = () => {
+  return `/api/ai/field-assist`;
+};
+
+export const aiFieldAssist = async (
+  aiFieldAssistBody: AiFieldAssistBody,
+  options?: RequestInit,
+): Promise<string> => {
+  return customFetch<string>(getAiFieldAssistUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(aiFieldAssistBody),
+  });
+};
+
+export const getAiFieldAssistMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aiFieldAssist>>,
+    TError,
+    { data: BodyType<AiFieldAssistBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof aiFieldAssist>>,
+  TError,
+  { data: BodyType<AiFieldAssistBody> },
+  TContext
+> => {
+  const mutationKey = ["aiFieldAssist"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof aiFieldAssist>>,
+    { data: BodyType<AiFieldAssistBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return aiFieldAssist(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AiFieldAssistMutationResult = NonNullable<
+  Awaited<ReturnType<typeof aiFieldAssist>>
+>;
+export type AiFieldAssistMutationBody = BodyType<AiFieldAssistBody>;
+export type AiFieldAssistMutationError = ErrorType<unknown>;
+
+/**
+ * @summary AI field-level writing assistant (SSE stream)
+ */
+export const useAiFieldAssist = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aiFieldAssist>>,
+    TError,
+    { data: BodyType<AiFieldAssistBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof aiFieldAssist>>,
+  TError,
+  { data: BodyType<AiFieldAssistBody> },
+  TContext
+> => {
+  return useMutation(getAiFieldAssistMutationOptions(options));
+};
+
+/**
+ * @summary List all AI field profiles
+ */
+export const getGetAiFieldProfilesUrl = (params?: GetAiFieldProfilesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/ai/field-profiles?${stringifiedParams}`
+    : `/api/ai/field-profiles`;
+};
+
+export const getAiFieldProfiles = async (
+  params?: GetAiFieldProfilesParams,
+  options?: RequestInit,
+): Promise<AiFieldProfile[]> => {
+  return customFetch<AiFieldProfile[]>(getGetAiFieldProfilesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAiFieldProfilesQueryKey = (
+  params?: GetAiFieldProfilesParams,
+) => {
+  return [`/api/ai/field-profiles`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetAiFieldProfilesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAiFieldProfiles>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetAiFieldProfilesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAiFieldProfiles>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAiFieldProfilesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAiFieldProfiles>>
+  > = ({ signal }) => getAiFieldProfiles(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAiFieldProfiles>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAiFieldProfilesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAiFieldProfiles>>
+>;
+export type GetAiFieldProfilesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all AI field profiles
+ */
+
+export function useGetAiFieldProfiles<
+  TData = Awaited<ReturnType<typeof getAiFieldProfiles>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetAiFieldProfilesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAiFieldProfiles>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAiFieldProfilesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new AI field profile
+ */
+export const getCreateAiFieldProfileUrl = () => {
+  return `/api/ai/field-profiles`;
+};
+
+export const createAiFieldProfile = async (
+  createAiFieldProfileBody: CreateAiFieldProfileBody,
+  options?: RequestInit,
+): Promise<AiFieldProfile> => {
+  return customFetch<AiFieldProfile>(getCreateAiFieldProfileUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createAiFieldProfileBody),
+  });
+};
+
+export const getCreateAiFieldProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAiFieldProfile>>,
+    TError,
+    { data: BodyType<CreateAiFieldProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAiFieldProfile>>,
+  TError,
+  { data: BodyType<CreateAiFieldProfileBody> },
+  TContext
+> => {
+  const mutationKey = ["createAiFieldProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAiFieldProfile>>,
+    { data: BodyType<CreateAiFieldProfileBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createAiFieldProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAiFieldProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAiFieldProfile>>
+>;
+export type CreateAiFieldProfileMutationBody =
+  BodyType<CreateAiFieldProfileBody>;
+export type CreateAiFieldProfileMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new AI field profile
+ */
+export const useCreateAiFieldProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAiFieldProfile>>,
+    TError,
+    { data: BodyType<CreateAiFieldProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createAiFieldProfile>>,
+  TError,
+  { data: BodyType<CreateAiFieldProfileBody> },
+  TContext
+> => {
+  return useMutation(getCreateAiFieldProfileMutationOptions(options));
+};
+
+/**
+ * @summary Update an AI field profile
+ */
+export const getUpdateAiFieldProfileUrl = (id: string) => {
+  return `/api/ai/field-profiles/${id}`;
+};
+
+export const updateAiFieldProfile = async (
+  id: string,
+  createAiFieldProfileBody: CreateAiFieldProfileBody,
+  options?: RequestInit,
+): Promise<AiFieldProfile> => {
+  return customFetch<AiFieldProfile>(getUpdateAiFieldProfileUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createAiFieldProfileBody),
+  });
+};
+
+export const getUpdateAiFieldProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAiFieldProfile>>,
+    TError,
+    { id: string; data: BodyType<CreateAiFieldProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAiFieldProfile>>,
+  TError,
+  { id: string; data: BodyType<CreateAiFieldProfileBody> },
+  TContext
+> => {
+  const mutationKey = ["updateAiFieldProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAiFieldProfile>>,
+    { id: string; data: BodyType<CreateAiFieldProfileBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateAiFieldProfile(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAiFieldProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAiFieldProfile>>
+>;
+export type UpdateAiFieldProfileMutationBody =
+  BodyType<CreateAiFieldProfileBody>;
+export type UpdateAiFieldProfileMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an AI field profile
+ */
+export const useUpdateAiFieldProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAiFieldProfile>>,
+    TError,
+    { id: string; data: BodyType<CreateAiFieldProfileBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateAiFieldProfile>>,
+  TError,
+  { id: string; data: BodyType<CreateAiFieldProfileBody> },
+  TContext
+> => {
+  return useMutation(getUpdateAiFieldProfileMutationOptions(options));
+};
+
+/**
+ * @summary Delete an AI field profile
+ */
+export const getDeleteAiFieldProfileUrl = (id: string) => {
+  return `/api/ai/field-profiles/${id}`;
+};
+
+export const deleteAiFieldProfile = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteAiFieldProfileUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteAiFieldProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAiFieldProfile>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAiFieldProfile>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteAiFieldProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAiFieldProfile>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteAiFieldProfile(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAiFieldProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteAiFieldProfile>>
+>;
+
+export type DeleteAiFieldProfileMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete an AI field profile
+ */
+export const useDeleteAiFieldProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAiFieldProfile>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAiFieldProfile>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteAiFieldProfileMutationOptions(options));
+};
 
 /**
  * @summary Get quality metrics overview

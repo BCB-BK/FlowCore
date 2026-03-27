@@ -13,6 +13,8 @@ import { getPageType } from "@/lib/types";
 interface ProcessOverviewLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -23,6 +25,8 @@ function str(val: unknown): string {
 export function ProcessOverviewLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: ProcessOverviewLayoutProps) {
   const sipocData =
     structuredFields.sipoc != null && typeof structuredFields.sipoc === "object"
@@ -44,6 +48,8 @@ export function ProcessOverviewLayout({
         icon={<ClipboardList className="h-4 w-4 text-primary" />}
         value={str(structuredFields.overview)}
         onSave={onSectionSave}
+        pageType={pageType}
+        nodeId={nodeId}
         help={overviewSection?.help}
         helpText={overviewSection?.helpText}
         guidingQuestions={overviewSection?.guidingQuestions}
@@ -69,6 +75,8 @@ export function ProcessOverviewLayout({
         icon={<ShieldCheck className="h-4 w-4 text-red-600" />}
         value={str(structuredFields.compliance)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Kein Normbezug definiert"
         help={complianceSection?.help}
         helpText={complianceSection?.helpText}

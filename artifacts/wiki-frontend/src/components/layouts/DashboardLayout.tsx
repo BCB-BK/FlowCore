@@ -4,6 +4,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface DashboardLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: string) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -15,6 +17,8 @@ function str(val: unknown): string {
 export function DashboardLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: DashboardLayoutProps) {
   return (
     <div className="space-y-4">
@@ -25,6 +29,8 @@ export function DashboardLayout({
         icon={<FileText className="h-4 w-4 text-primary" />}
         value={str(structuredFields.description)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Beschreibung"
       />
 
@@ -35,6 +41,8 @@ export function DashboardLayout({
         icon={<LayoutDashboard className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.widgets)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Widgets konfiguriert"
       />
     </div>

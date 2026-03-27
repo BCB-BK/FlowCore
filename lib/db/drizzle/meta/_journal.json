@@ -43,6 +43,13 @@
       "when": 1774559324771,
       "tag": "0006_add_commented_event_type",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774596229233,
+      "tag": "0007_short_sinister_six",
+      "breakpoints": true
     }
   ]
 }

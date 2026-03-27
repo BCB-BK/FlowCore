@@ -12,6 +12,8 @@ import { InterfacesSystemsTable } from "@/components/qm";
 interface InterfaceDescriptionLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -22,6 +24,8 @@ function str(val: unknown): string {
 export function InterfaceDescriptionLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: InterfaceDescriptionLayoutProps) {
   return (
     <div className="space-y-4">
@@ -32,6 +36,8 @@ export function InterfaceDescriptionLayout({
         icon={<ArrowLeftRight className="h-4 w-4 text-primary" />}
         value={str(structuredFields.overview)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Übersicht erfasst"
       />
 
@@ -48,6 +54,8 @@ export function InterfaceDescriptionLayout({
         icon={<Database className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.data_flow)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Datenfluss beschrieben"
       />
 
@@ -59,6 +67,8 @@ export function InterfaceDescriptionLayout({
           icon={<Cpu className="h-4 w-4 text-purple-600" />}
           value={str(structuredFields.protocol)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine technischen Details"
         />
 
@@ -69,6 +79,8 @@ export function InterfaceDescriptionLayout({
           icon={<AlertCircle className="h-4 w-4 text-red-600" />}
           value={str(structuredFields.error_handling)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Fehlerbehandlung definiert"
         />
       </div>
@@ -80,6 +92,8 @@ export function InterfaceDescriptionLayout({
         icon={<Clock className="h-4 w-4 text-green-600" />}
         value={str(structuredFields.sla)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine SLAs definiert"
       />
 
@@ -90,6 +104,8 @@ export function InterfaceDescriptionLayout({
         icon={<Users className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.responsibilities)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Verantwortlichkeiten zugeordnet"
       />
     </div>

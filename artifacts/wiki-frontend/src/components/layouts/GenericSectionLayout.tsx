@@ -8,6 +8,8 @@ interface GenericSectionLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
   displayProfile?: DisplayProfile;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -30,6 +32,8 @@ export function GenericSectionLayout({
   structuredFields,
   onSectionSave,
   displayProfile,
+  pageType,
+  nodeId,
 }: GenericSectionLayoutProps) {
   const pageDef = getPageType(templateType);
   if (!pageDef) return null;
@@ -54,6 +58,8 @@ export function GenericSectionLayout({
           icon={sectionIcon}
           value={str(structuredFields[section.key])}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         />
       ))}
     </div>

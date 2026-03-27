@@ -1435,6 +1435,58 @@ export interface AiUsageStats {
   byDay: AiUsageStatsByDayItem[];
 }
 
+export type AiFieldAssistBodyAction =
+  (typeof AiFieldAssistBodyAction)[keyof typeof AiFieldAssistBodyAction];
+
+export const AiFieldAssistBodyAction = {
+  reformulate: "reformulate",
+  professionalize: "professionalize",
+  expand: "expand",
+  shorten: "shorten",
+  grammar: "grammar",
+  from_bullets: "from_bullets",
+} as const;
+
+export interface AiFieldAssistBody {
+  action: AiFieldAssistBodyAction;
+  /**
+   * @minLength 1
+   * @maxLength 10000
+   */
+  text: string;
+  fieldKey: string;
+  pageType: string;
+  nodeId?: string;
+}
+
+export interface AiFieldProfile {
+  id: string;
+  pageType: string;
+  fieldKey: string;
+  label: string;
+  purpose?: string | null;
+  promptInstruction?: string | null;
+  style?: string | null;
+  guardrails?: string | null;
+  allowedOperations: string[];
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: string | null;
+}
+
+export interface CreateAiFieldProfileBody {
+  pageType: string;
+  fieldKey: string;
+  label: string;
+  purpose?: string | null;
+  promptInstruction?: string | null;
+  style?: string | null;
+  guardrails?: string | null;
+  allowedOperations?: string[];
+  isActive?: boolean;
+}
+
 export interface QualityOverview {
   totalPages: number;
   publishedPages: number;
@@ -2257,6 +2309,11 @@ export type ListSharePointDriveItemsParams = {
 
 export type GetAiUsageStatsParams = {
   days?: number;
+};
+
+export type GetAiFieldProfilesParams = {
+  pageType?: string;
+  fieldKey?: string;
 };
 
 export type GetQualityPagesParams = {

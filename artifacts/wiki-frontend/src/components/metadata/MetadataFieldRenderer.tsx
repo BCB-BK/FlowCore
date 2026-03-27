@@ -10,9 +10,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PeoplePicker } from "@/components/PeoplePicker";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ENUM_LABELS, type FieldHelp } from "@/lib/types";
 import { FieldHelpTooltip } from "./FieldHelpTooltip";
+import { FieldAiButton } from "@/components/ai/FieldAiButton";
 
 interface MetadataFieldRendererProps {
   fieldKey: string;
@@ -29,6 +30,9 @@ interface MetadataFieldRendererProps {
   requirement?: "required" | "recommended" | "conditional";
   publishRequired?: boolean;
   conditionDescription?: string;
+  pageType?: string;
+  nodeId?: string;
+  showAiAssist?: boolean;
 }
 
 function RequirementBadge({ requirement, publishRequired, conditionDescription }: { requirement?: string; publishRequired?: boolean; conditionDescription?: string }) {
@@ -59,10 +63,27 @@ export function MetadataFieldRenderer({
   requirement,
   publishRequired,
   conditionDescription,
+  pageType,
+  nodeId,
+  showAiAssist = true,
 }: MetadataFieldRendererProps) {
   const [tagInput, setTagInput] = useState("");
 
   const placeholder = help?.placeholder;
+
+  const getTextValue = useCallback(() => {
+    return (value as string) ?? "";
+  }, [value]);
+
+  const handleAiApply = useCallback(
+    (newValue: string) => {
+      onChange(fieldKey, newValue);
+    },
+    [onChange, fieldKey],
+  );
+
+  const isTextType = type === "text" || type === "string";
+  const canShowAi = showAiAssist && isTextType && !readOnly && pageType;
 
   const labelRow = (
     <div className="flex items-center gap-1.5">
@@ -79,7 +100,6 @@ export function MetadataFieldRenderer({
       />
     </div>
   );
-
   if (type === "person") {
     return (
       <div className="space-y-1.5">
@@ -242,7 +262,18 @@ export function MetadataFieldRenderer({
 
   return (
     <div className="space-y-1.5">
-      {labelRow}
+      <div className="flex items-center justify-between">
+        {labelRow}
+        {canShowAi && (
+          <FieldAiButton
+            fieldKey={fieldKey}
+            pageType={pageType!}
+            nodeId={nodeId}
+            getValue={getTextValue}
+            onApply={handleAiApply}
+          />
+        )}
+      </div>
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>
       )}

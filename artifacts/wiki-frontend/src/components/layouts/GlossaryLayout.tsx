@@ -4,6 +4,8 @@ import { getPageType } from "@/lib/types";
 interface GlossaryLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: string) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -15,6 +17,8 @@ function str(val: unknown): string {
 export function GlossaryLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: GlossaryLayoutProps) {
   const def = getPageType("glossary");
   const termsSection = def?.sections.find(s => s.key === "terms");

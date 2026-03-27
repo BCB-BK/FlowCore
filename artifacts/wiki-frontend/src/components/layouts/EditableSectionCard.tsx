@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Check, X } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import type { FieldHelp } from "@/lib/types";
+import { FieldAiButton } from "@/components/ai/FieldAiButton";
 
 interface EditableSectionCardProps {
   sectionKey: string;
@@ -22,6 +23,9 @@ interface EditableSectionCardProps {
   guidingQuestions?: string[];
   requirement?: "required" | "recommended" | "conditional";
   publishRequired?: boolean;
+  pageType?: string;
+  nodeId?: string;
+  showAiAssist?: boolean;
 }
 
 function RequirementBadge({ requirement, publishRequired }: { requirement?: string; publishRequired?: boolean }) {
@@ -52,6 +56,9 @@ export function EditableSectionCard({
   guidingQuestions,
   requirement,
   publishRequired,
+  pageType,
+  nodeId,
+  showAiAssist = true,
 }: EditableSectionCardProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -77,6 +84,20 @@ export function EditableSectionCard({
     setDraft(value);
     setEditing(false);
   };
+
+  const handleAiApply = useCallback(
+    (newValue: string) => {
+      setDraft(newValue);
+      if (!editing) {
+        onSave?.(sectionKey, newValue);
+      }
+    },
+    [editing, onSave, sectionKey],
+  );
+
+  const getFieldValue = useCallback(() => {
+    return editing ? draft : value;
+  }, [editing, draft, value]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
@@ -104,38 +125,49 @@ export function EditableSectionCard({
               guidingQuestions={guidingQuestions}
             />
           </div>
-          {onSave && !editing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => setEditing(true)}
-            >
-              <Pencil className="h-3 w-3 mr-1" />
-              Bearbeiten
-            </Button>
-          )}
-          {editing && (
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+            {showAiAssist && onSave && pageType && (
+              <FieldAiButton
+                fieldKey={sectionKey}
+                pageType={pageType}
+                nodeId={nodeId}
+                getValue={getFieldValue}
+                onApply={handleAiApply}
+              />
+            )}
+            {onSave && !editing && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={handleCancel}
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setEditing(true)}
               >
-                <X className="h-3 w-3 mr-1" />
-                Abbrechen
+                <Pencil className="h-3 w-3 mr-1" />
+                Bearbeiten
               </Button>
-              <Button
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={handleSave}
-              >
-                <Check className="h-3 w-3 mr-1" />
-                Speichern
-              </Button>
-            </div>
-          )}
+            )}
+            {editing && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleCancel}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Abbrechen
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleSave}
+                >
+                  <Check className="h-3 w-3 mr-1" />
+                  Speichern
+                </Button>
+              </>
+            )}
+          </div>
         </div>
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>

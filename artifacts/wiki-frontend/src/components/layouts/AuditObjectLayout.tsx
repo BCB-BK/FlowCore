@@ -12,6 +12,8 @@ import { RisksControlsTable } from "@/components/qm";
 interface AuditObjectLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -22,6 +24,8 @@ function str(val: unknown): string {
 export function AuditObjectLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: AuditObjectLayoutProps) {
   return (
     <div className="space-y-4">
@@ -32,6 +36,8 @@ export function AuditObjectLayout({
         icon={<SearchCheck className="h-4 w-4 text-red-600" />}
         value={str(structuredFields.finding)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Feststellung dokumentiert"
       />
 
@@ -42,6 +48,8 @@ export function AuditObjectLayout({
         icon={<FileCheck className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.evidence)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Nachweise dokumentiert"
       />
 
@@ -52,6 +60,8 @@ export function AuditObjectLayout({
         icon={<GitBranch className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.root_cause)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Ursachenanalyse durchgeführt"
       />
 
@@ -63,6 +73,8 @@ export function AuditObjectLayout({
           icon={<Wrench className="h-4 w-4 text-orange-600" />}
           value={str(structuredFields.corrective_action)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Korrekturmaßnahme definiert"
         />
 
@@ -73,6 +85,8 @@ export function AuditObjectLayout({
           icon={<Shield className="h-4 w-4 text-green-600" />}
           value={str(structuredFields.preventive_action)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Vorbeugemaßnahme definiert"
         />
       </div>
@@ -90,6 +104,8 @@ export function AuditObjectLayout({
         icon={<CheckCircle className="h-4 w-4 text-emerald-600" />}
         value={str(structuredFields.effectiveness_check)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Wirksamkeitsprüfung definiert"
       />
     </div>

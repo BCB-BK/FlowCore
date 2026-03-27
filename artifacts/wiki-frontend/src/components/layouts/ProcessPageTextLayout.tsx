@@ -4,6 +4,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface ProcessPageTextLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -14,6 +16,8 @@ function str(val: unknown): string {
 export function ProcessPageTextLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: ProcessPageTextLayoutProps) {
   return (
     <div className="space-y-4">
@@ -24,6 +28,8 @@ export function ProcessPageTextLayout({
         icon={<Zap className="h-4 w-4 text-yellow-600" />}
         value={str(structuredFields.trigger)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Auslöser definiert"
       />
 
@@ -34,6 +40,8 @@ export function ProcessPageTextLayout({
         icon={<ListChecks className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.procedure)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Verfahrensschritte dokumentiert"
       />
 
@@ -45,6 +53,8 @@ export function ProcessPageTextLayout({
           icon={<PackageCheck className="h-4 w-4 text-green-600" />}
           value={str(structuredFields.outputs)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Ergebnisse definiert"
         />
 
@@ -55,6 +65,8 @@ export function ProcessPageTextLayout({
           icon={<ArrowLeftRight className="h-4 w-4 text-purple-600" />}
           value={str(structuredFields.interfaces)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Schnittstellen definiert"
         />
       </div>

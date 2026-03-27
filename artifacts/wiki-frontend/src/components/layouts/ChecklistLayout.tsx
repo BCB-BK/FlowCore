@@ -6,6 +6,8 @@ import { getPageType } from "@/lib/types";
 interface ChecklistLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -16,6 +18,8 @@ function str(val: unknown): string {
 export function ChecklistLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: ChecklistLayoutProps) {
   const def = getPageType("checklist");
   const purposeSection = def?.sections.find(s => s.key === "purpose");
@@ -32,6 +36,8 @@ export function ChecklistLayout({
         icon={<Target className="h-4 w-4 text-primary" />}
         value={str(structuredFields.purpose)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Zweck definiert"
         help={purposeSection?.help}
         helpText={purposeSection?.helpText}
@@ -45,6 +51,8 @@ export function ChecklistLayout({
         icon={<Info className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.instructions)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Durchführungshinweise"
         help={instructionsSection?.help}
         helpText={instructionsSection?.helpText}
@@ -66,6 +74,8 @@ export function ChecklistLayout({
         icon={<Flag className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.completion_criteria)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Abschlusskriterien definiert"
         help={completionSection?.help}
         helpText={completionSection?.helpText}

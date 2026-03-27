@@ -7,6 +7,7 @@ import {
   integer,
   jsonb,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -53,6 +54,43 @@ export const aiUsageLogsTable = pgTable(
   ],
 );
 
+export const aiFieldProfilesTable = pgTable(
+  "ai_field_profiles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    pageType: text("page_type").notNull(),
+    fieldKey: text("field_key").notNull(),
+    label: text("label").notNull(),
+    purpose: text("purpose"),
+    promptInstruction: text("prompt_instruction"),
+    style: text("style"),
+    guardrails: text("guardrails"),
+    allowedOperations: jsonb("allowed_operations")
+      .$type<string[]>()
+      .notNull()
+      .default([
+        "reformulate",
+        "professionalize",
+        "expand",
+        "shorten",
+        "grammar",
+      ]),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedBy: text("updated_by"),
+  },
+  (table) => [
+    index("idx_ai_field_profiles_page_type").on(table.pageType),
+    index("idx_ai_field_profiles_field_key").on(table.fieldKey),
+    uniqueIndex("idx_ai_field_profiles_page_field_unique").on(table.pageType, table.fieldKey),
+  ],
+);
+
 export const insertAiSettingsSchema = createInsertSchema(aiSettingsTable).omit({
   id: true,
   updatedAt: true,
@@ -66,3 +104,14 @@ export const insertAiUsageLogSchema = createInsertSchema(aiUsageLogsTable).omit(
 );
 export type AiUsageLog = typeof aiUsageLogsTable.$inferSelect;
 export type InsertAiUsageLog = z.infer<typeof insertAiUsageLogSchema>;
+
+export const insertAiFieldProfileSchema = createInsertSchema(
+  aiFieldProfilesTable,
+).omit({ id: true, createdAt: true, updatedAt: true });
+export const selectAiFieldProfileSchema = createSelectSchema(
+  aiFieldProfilesTable,
+);
+export type AiFieldProfile = typeof aiFieldProfilesTable.$inferSelect;
+export type InsertAiFieldProfile = z.infer<
+  typeof insertAiFieldProfileSchema
+>;

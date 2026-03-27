@@ -5,6 +5,8 @@ import { SwimlaneDiagram } from "@/components/qm";
 interface ProcessPageGraphicLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -15,6 +17,8 @@ function str(val: unknown): string {
 export function ProcessPageGraphicLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: ProcessPageGraphicLayoutProps) {
   return (
     <div className="space-y-4">
@@ -31,6 +35,8 @@ export function ProcessPageGraphicLayout({
         icon={<FileText className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.description)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Erläuterung"
       />
 
@@ -41,6 +47,8 @@ export function ProcessPageGraphicLayout({
         icon={<List className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.legend)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Legende definiert"
       />
     </div>

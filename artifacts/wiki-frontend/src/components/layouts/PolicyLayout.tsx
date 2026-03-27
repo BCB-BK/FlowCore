@@ -4,6 +4,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface PolicyLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -14,6 +16,8 @@ function str(val: unknown): string {
 export function PolicyLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: PolicyLayoutProps) {
   return (
     <div className="space-y-4">
@@ -24,6 +28,8 @@ export function PolicyLayout({
         icon={<Target className="h-4 w-4 text-primary" />}
         value={str(structuredFields.purpose)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Zweck erfasst"
       />
 
@@ -34,6 +40,8 @@ export function PolicyLayout({
         icon={<BookOpen className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.scope)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Geltungsbereich definiert"
       />
 
@@ -44,6 +52,8 @@ export function PolicyLayout({
         icon={<BookMarked className="h-4 w-4 text-indigo-600" />}
         value={str(structuredFields.definitions)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Begriffe definiert"
       />
 
@@ -54,6 +64,8 @@ export function PolicyLayout({
         icon={<Shield className="h-4 w-4 text-red-600" />}
         value={str(structuredFields.policy_text)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Richtlinientext erfasst"
       />
 
@@ -64,6 +76,8 @@ export function PolicyLayout({
         icon={<Gavel className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.enforcement)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Durchsetzungsmaßnahmen definiert"
       />
 
@@ -74,6 +88,8 @@ export function PolicyLayout({
         icon={<FileStack className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.references)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Referenzen angegeben"
       />
     </div>

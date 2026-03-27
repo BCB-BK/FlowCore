@@ -571,6 +571,8 @@ export function WorkingCopyEditorPage() {
             templateType={node.templateType}
             structuredFields={wcStructuredFields}
             onSectionSave={canEdit ? handleSectionSave : undefined}
+            pageType={node.templateType}
+            nodeId={node.id}
           />
 
           <div className="mt-6">

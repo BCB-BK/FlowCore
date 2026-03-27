@@ -16,6 +16,8 @@ import { getPageType } from "@/lib/types";
 interface ProcedureLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -26,6 +28,8 @@ function str(val: unknown): string {
 export function ProcedureLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: ProcedureLayoutProps) {
   const def = getPageType("procedure_instruction");
   const purposeSection = def?.sections.find(s => s.key === "purpose");
@@ -50,6 +54,8 @@ export function ProcedureLayout({
         icon={<Target className="h-4 w-4 text-primary" />}
         value={str(structuredFields.purpose)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Zweck definiert"
         help={purposeSection?.help}
         helpText={purposeSection?.helpText}
@@ -64,6 +70,8 @@ export function ProcedureLayout({
         icon={<BookOpen className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.scope)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch kein Geltungsbereich definiert"
         help={scopeSection?.help}
         helpText={scopeSection?.helpText}
@@ -79,6 +87,8 @@ export function ProcedureLayout({
           icon={<Zap className="h-4 w-4 text-yellow-600" />}
           value={str(structuredFields.trigger)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Noch keine Auslöser definiert"
           help={triggerSection?.help}
           helpText={triggerSection?.helpText}
@@ -92,6 +102,8 @@ export function ProcedureLayout({
           icon={<PackageOpen className="h-4 w-4 text-indigo-600" />}
           value={str(structuredFields.inputs)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Noch keine Eingaben definiert"
           help={inputsSection?.help}
           helpText={inputsSection?.helpText}
@@ -106,6 +118,8 @@ export function ProcedureLayout({
         icon={<ListChecks className="h-4 w-4 text-orange-600" />}
         value={str(structuredFields.procedure)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Schritte dokumentiert"
         help={procedureSection?.help}
         helpText={procedureSection?.helpText}
@@ -138,6 +152,8 @@ export function ProcedureLayout({
         icon={<PackageCheck className="h-4 w-4 text-green-600" />}
         value={str(structuredFields.outputs)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Ergebnisse definiert"
         help={outputsSection?.help}
         helpText={outputsSection?.helpText}
@@ -163,6 +179,8 @@ export function ProcedureLayout({
         icon={<FileStack className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.documents)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine mitgeltenden Unterlagen"
         help={documentsSection?.help}
         helpText={documentsSection?.helpText}
@@ -176,6 +194,8 @@ export function ProcedureLayout({
         icon={<History className="h-4 w-4 text-gray-500" />}
         value={str(structuredFields.changelog)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Änderungen dokumentiert"
         help={changelogSection?.help}
         helpText={changelogSection?.helpText}

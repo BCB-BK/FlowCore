@@ -2,10 +2,11 @@ import { db } from "@workspace/db";
 import {
   aiSettingsTable,
   aiUsageLogsTable,
+  aiFieldProfilesTable,
   contentNodesTable,
   contentRevisionsTable,
 } from "@workspace/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, ilike } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import type { Response } from "express";
 import {
@@ -776,6 +777,265 @@ export async function streamPageAssist(
 
   res.write(`data: ${JSON.stringify({ type: "done", done: true })}\n\n`);
   res.end();
+}
+
+export type FieldAssistAction =
+  | "reformulate"
+  | "professionalize"
+  | "expand"
+  | "shorten"
+  | "grammar"
+  | "from_bullets";
+
+const FIELD_ACTION_PROMPTS: Record<FieldAssistAction, string> = {
+  reformulate:
+    "Formuliere den folgenden Feldinhalt um, behalte die Bedeutung bei, verbessere Klarheit und Lesbarkeit:",
+  professionalize:
+    "Überarbeite den folgenden Feldinhalt in einen professionellen, formellen Ton, passend für eine Unternehmensdokumentation:",
+  expand:
+    "Erweitere den folgenden Feldinhalt mit zusätzlichen Details und Erklärungen:",
+  shorten:
+    "Kürze den folgenden Feldinhalt auf das Wesentliche, ohne wichtige Informationen zu verlieren:",
+  grammar:
+    "Korrigiere Grammatik, Rechtschreibung und Stil im folgenden Feldinhalt. Gib den korrigierten Text zurück:",
+  from_bullets:
+    "Formuliere die folgenden Stichpunkte zu einem zusammenhängenden, professionellen Fließtext aus:",
+};
+
+const DEFAULT_FIELD_GUARDRAILS: Record<string, string> = {
+  raci: "Du darfst die Rollen-/Verantwortungslogik strukturieren, aber KEINE konkreten Personen erfinden oder halluzinieren. Verwende nur die im Text genannten Personen und Rollen.",
+  kpis: "Du darfst Definitionen sprachlich verbessern, aber KEINE neuen Kennzahlen, Zielwerte oder Messformeln erfinden. Verwende nur die im Text genannten KPIs.",
+  risks: "Du darfst Formulierungen verbessern, aber KEINE falschen Kontrollen, Maßnahmen oder Risikobewertungen ergänzen. Bleibe bei den im Text genannten Risiken und Kontrollen.",
+  responsibilities: "Du darfst Stichpunkte zu Fließtext ausformulieren, aber KEINE neuen Verantwortlichkeiten, Befugnisse oder Organisationsstrukturen erfinden.",
+  role_profile: "Du darfst Stichpunkte strukturieren und sprachlich verbessern, aber KEINE HR-Daten, Gehaltsangaben, Qualifikationen oder Personalinformationen erfinden.",
+  compliance: "Du darfst Normbezüge sprachlich verbessern, aber KEINE neuen Normen, Gesetze oder Compliance-Anforderungen erfinden.",
+  sipoc: "Du darfst die SIPOC-Struktur sprachlich verbessern, aber KEINE neuen Supplier, Inputs, Outputs oder Customers erfinden.",
+};
+
+function getDefaultGuardrailForField(fieldKey: string): string | undefined {
+  const key = fieldKey.toLowerCase();
+  for (const [pattern, guardrail] of Object.entries(DEFAULT_FIELD_GUARDRAILS)) {
+    if (key.includes(pattern)) return guardrail;
+  }
+  return undefined;
+}
+
+export async function streamFieldAssist(
+  action: FieldAssistAction,
+  text: string,
+  fieldKey: string,
+  pageType: string,
+  nodeId: string | undefined,
+  principalId: string,
+  res: Response,
+) {
+  const startTime = Date.now();
+  const settings = await getAiSettings();
+
+  if (!settings.enabled) {
+    res.status(400).json({ error: "AI assistant is disabled" });
+    return;
+  }
+
+  if (nodeId) {
+    const canRead = await hasPermission(principalId, "read_page", nodeId);
+    if (!canRead) {
+      res.status(403).json({ error: "No read access to this page" });
+      return;
+    }
+  }
+
+  const actionPrompt = FIELD_ACTION_PROMPTS[action];
+  if (!actionPrompt) {
+    res.status(400).json({ error: "Invalid action" });
+    return;
+  }
+
+  const profile = await getFieldProfile(pageType, fieldKey);
+
+  if (profile && Array.isArray(profile.allowedOperations) && profile.allowedOperations.length > 0) {
+    if (!profile.allowedOperations.includes(action)) {
+      res.status(400).json({ error: `Action "${action}" is not allowed for this field profile` });
+      return;
+    }
+  }
+
+  let systemInstruction = `Du bist der FlowCore-Feldassistent — der KI-Assistent für feldbezogene Inhaltsbearbeitung der Wissensplattform des Bildungscampus Backnang. Antworte auf Deutsch.`;
+
+  if (profile) {
+    if (profile.purpose) {
+      systemInstruction += `\n\nZweck dieses Feldes: ${profile.purpose}`;
+    }
+    if (profile.promptInstruction) {
+      systemInstruction += `\n\nSpezifische Anweisung: ${profile.promptInstruction}`;
+    }
+    if (profile.style) {
+      systemInstruction += `\n\nGewünschter Stil: ${profile.style}`;
+    }
+    if (profile.guardrails) {
+      systemInstruction += `\n\nGUARDRAILS (UNBEDINGT BEACHTEN): ${profile.guardrails}`;
+    }
+  } else {
+    const defaultGuardrail = getDefaultGuardrailForField(fieldKey);
+    if (defaultGuardrail) {
+      systemInstruction += `\n\nGUARDRAILS (UNBEDINGT BEACHTEN): ${defaultGuardrail}`;
+    }
+  }
+
+  systemInstruction += `\n\nFeldkontext: Seitentyp "${pageType}", Feld "${fieldKey}".`;
+  systemInstruction += `\n\nGib NUR den verbesserten Feldinhalt zurück, ohne Einleitungssatz oder Erklärung. Der Text soll direkt als Feldwert übernommen werden können.`;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  let hasError = false;
+  let errorMessage: string | undefined;
+
+  try {
+    const client = await getOpenAI();
+
+    const stream = await client.responses.create({
+      model: settings.model,
+      instructions: systemInstruction,
+      input: `${actionPrompt}\n\n${text}`,
+      max_output_tokens: settings.maxCompletionTokens,
+      stream: true,
+    });
+
+    for await (const event of stream) {
+      if (event.type === "response.output_text.delta") {
+        res.write(
+          `data: ${JSON.stringify({ type: "content", content: event.delta })}\n\n`,
+        );
+      }
+    }
+  } catch (err) {
+    hasError = true;
+    errorMessage = err instanceof Error ? err.message : String(err);
+    logger.error({ err }, "AI field-assist streaming error");
+    res.write(
+      `data: ${JSON.stringify({ type: "error", error: "AI request failed" })}\n\n`,
+    );
+  }
+
+  const latencyMs = Date.now() - startTime;
+
+  await db
+    .insert(aiUsageLogsTable)
+    .values({
+      principalId,
+      action: `field_assist:${action}`,
+      model: settings.model,
+      sourceMode: settings.sourceMode,
+      webSearchUsed: false,
+      sourcesCount: 0,
+      latencyMs,
+      hasError,
+      errorMessage: hasError ? errorMessage : undefined,
+      zeroResults: false,
+      nodeId,
+    })
+    .catch((e) => logger.error({ err: e }, "Failed to log AI field-assist usage"));
+
+  res.write(`data: ${JSON.stringify({ type: "done", done: true })}\n\n`);
+  res.end();
+}
+
+async function getFieldProfile(pageType: string, fieldKey: string) {
+  const rows = await db
+    .select()
+    .from(aiFieldProfilesTable)
+    .where(
+      and(
+        eq(aiFieldProfilesTable.pageType, pageType),
+        eq(aiFieldProfilesTable.fieldKey, fieldKey),
+        eq(aiFieldProfilesTable.isActive, true),
+      ),
+    )
+    .orderBy(aiFieldProfilesTable.updatedAt)
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function listFieldProfiles(pageType?: string, fieldKey?: string) {
+  const conditions = [];
+  if (pageType) {
+    conditions.push(eq(aiFieldProfilesTable.pageType, pageType));
+  }
+  if (fieldKey) {
+    conditions.push(ilike(aiFieldProfilesTable.fieldKey, `%${fieldKey}%`));
+  }
+  return db
+    .select()
+    .from(aiFieldProfilesTable)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(aiFieldProfilesTable.pageType, aiFieldProfilesTable.fieldKey);
+}
+
+export async function createFieldProfile(
+  data: {
+    pageType: string;
+    fieldKey: string;
+    label: string;
+    purpose?: string | null;
+    promptInstruction?: string | null;
+    style?: string | null;
+    guardrails?: string | null;
+    allowedOperations?: string[];
+    isActive?: boolean;
+  },
+  updatedBy: string,
+) {
+  const [row] = await db
+    .insert(aiFieldProfilesTable)
+    .values({
+      ...data,
+      allowedOperations: data.allowedOperations ?? [
+        "reformulate",
+        "professionalize",
+        "expand",
+        "shorten",
+        "grammar",
+      ],
+      isActive: data.isActive ?? true,
+      updatedBy,
+    })
+    .returning();
+  return row;
+}
+
+export async function updateFieldProfile(
+  id: string,
+  data: {
+    pageType: string;
+    fieldKey: string;
+    label: string;
+    purpose?: string | null;
+    promptInstruction?: string | null;
+    style?: string | null;
+    guardrails?: string | null;
+    allowedOperations?: string[];
+    isActive?: boolean;
+  },
+  updatedBy: string,
+) {
+  const [row] = await db
+    .update(aiFieldProfilesTable)
+    .set({
+      ...data,
+      updatedBy,
+      updatedAt: new Date(),
+    })
+    .where(eq(aiFieldProfilesTable.id, id))
+    .returning();
+  return row;
+}
+
+export async function deleteFieldProfile(id: string) {
+  await db
+    .delete(aiFieldProfilesTable)
+    .where(eq(aiFieldProfilesTable.id, id));
 }
 
 export async function getUsageStats(days = 30) {

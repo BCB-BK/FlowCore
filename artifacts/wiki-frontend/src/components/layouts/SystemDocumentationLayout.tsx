@@ -11,6 +11,8 @@ import { InterfacesSystemsTable } from "@/components/qm";
 interface SystemDocumentationLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -21,6 +23,8 @@ function str(val: unknown): string {
 export function SystemDocumentationLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: SystemDocumentationLayoutProps) {
   return (
     <div className="space-y-4">
@@ -31,6 +35,8 @@ export function SystemDocumentationLayout({
         icon={<Server className="h-4 w-4 text-primary" />}
         value={str(structuredFields.system_info)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Systeminformationen erfasst"
       />
 
@@ -41,6 +47,8 @@ export function SystemDocumentationLayout({
         icon={<Layers className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.architecture)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Architektur dokumentiert"
       />
 
@@ -57,6 +65,8 @@ export function SystemDocumentationLayout({
         icon={<Database className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.data_objects)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Datenobjekte dokumentiert"
       />
 
@@ -67,6 +77,8 @@ export function SystemDocumentationLayout({
         icon={<Lock className="h-4 w-4 text-red-600" />}
         value={str(structuredFields.access_rights)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Berechtigungen dokumentiert"
       />
 
@@ -77,6 +89,8 @@ export function SystemDocumentationLayout({
         icon={<Settings className="h-4 w-4 text-green-600" />}
         value={str(structuredFields.operations)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Kein Betriebskonzept dokumentiert"
       />
     </div>

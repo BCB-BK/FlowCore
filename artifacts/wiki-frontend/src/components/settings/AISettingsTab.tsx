@@ -28,6 +28,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { AiFieldProfilesPanel } from "./AiFieldProfilesPanel";
 
 export function AISettingsTab() {
   const queryClient = useQueryClient();
@@ -320,6 +321,8 @@ export function AISettingsTab() {
           </Button>
         </CardContent>
       </Card>
+
+      <AiFieldProfilesPanel />
 
       {stats && (
         <Card>

@@ -11,6 +11,8 @@ import { getPageType } from "@/lib/types";
 interface RoleProfileLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -21,6 +23,8 @@ function str(val: unknown): string {
 export function RoleProfileLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: RoleProfileLayoutProps) {
   const def = getPageType("role_profile");
   const roleDefSection = def?.sections.find(s => s.key === "role_definition");
@@ -38,6 +42,8 @@ export function RoleProfileLayout({
         icon={<UserCog className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.role_definition)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Rollendefinition"
         help={roleDefSection?.help}
         helpText={roleDefSection?.helpText}
@@ -52,6 +58,7 @@ export function RoleProfileLayout({
         help={respSection?.help}
         helpText={respSection?.helpText}
         guidingQuestions={respSection?.guidingQuestions}
+        emptyText="Noch keine Verantwortlichkeiten definiert"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -62,6 +69,8 @@ export function RoleProfileLayout({
           icon={<GraduationCap className="h-4 w-4 text-blue-600" />}
           value={str(structuredFields.qualifications)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="—"
           help={qualSection?.help}
           helpText={qualSection?.helpText}
@@ -75,6 +84,8 @@ export function RoleProfileLayout({
           icon={<Key className="h-4 w-4 text-amber-600" />}
           value={str(structuredFields.authority)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="—"
           help={authSection?.help}
           helpText={authSection?.helpText}
@@ -89,6 +100,8 @@ export function RoleProfileLayout({
         icon={<ArrowLeftRight className="h-4 w-4 text-cyan-600" />}
         value={str(structuredFields.interfaces)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Schnittstellen dokumentiert"
         help={ifSection?.help}
         helpText={ifSection?.helpText}

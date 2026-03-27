@@ -2507,6 +2507,106 @@ paths:
               schema:
                 $ref: "#/components/schemas/AiUsageStats"
 
+  /ai/field-assist:
+    post:
+      operationId: aiFieldAssist
+      tags: [ai]
+      summary: AI field-level writing assistant (SSE stream)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiFieldAssistBody"
+      responses:
+        "200":
+          description: SSE stream with field-specific AI suggestion
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /ai/field-profiles:
+    get:
+      operationId: getAiFieldProfiles
+      tags: [ai]
+      summary: List all AI field profiles
+      parameters:
+        - name: pageType
+          in: query
+          schema:
+            type: string
+        - name: fieldKey
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of field profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiFieldProfile"
+    post:
+      operationId: createAiFieldProfile
+      tags: [ai]
+      summary: Create a new AI field profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAiFieldProfileBody"
+      responses:
+        "201":
+          description: Created field profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiFieldProfile"
+
+  /ai/field-profiles/{id}:
+    put:
+      operationId: updateAiFieldProfile
+      tags: [ai]
+      summary: Update an AI field profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAiFieldProfileBody"
+      responses:
+        "200":
+          description: Updated field profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiFieldProfile"
+    delete:
+      operationId: deleteAiFieldProfile
+      tags: [ai]
+      summary: Delete an AI field profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Field profile deleted
+
   /quality/overview:
     get:
       operationId: getQualityOverview
@@ -5464,6 +5564,114 @@ components:
         - summary
         - byAction
         - byDay
+
+    AiFieldAssistBody:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - reformulate
+            - professionalize
+            - expand
+            - shorten
+            - grammar
+            - from_bullets
+        text:
+          type: string
+          minLength: 1
+          maxLength: 10000
+        fieldKey:
+          type: string
+        pageType:
+          type: string
+        nodeId:
+          type: string
+          format: uuid
+      required:
+        - action
+        - text
+        - fieldKey
+        - pageType
+
+    AiFieldProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        pageType:
+          type: string
+        fieldKey:
+          type: string
+        label:
+          type: string
+        purpose:
+          type: string
+          nullable: true
+        promptInstruction:
+          type: string
+          nullable: true
+        style:
+          type: string
+          nullable: true
+        guardrails:
+          type: string
+          nullable: true
+        allowedOperations:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          nullable: true
+      required:
+        - id
+        - pageType
+        - fieldKey
+        - label
+        - allowedOperations
+        - isActive
+
+    CreateAiFieldProfileBody:
+      type: object
+      properties:
+        pageType:
+          type: string
+        fieldKey:
+          type: string
+        label:
+          type: string
+        purpose:
+          type: string
+          nullable: true
+        promptInstruction:
+          type: string
+          nullable: true
+        style:
+          type: string
+          nullable: true
+        guardrails:
+          type: string
+          nullable: true
+        allowedOperations:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+      required:
+        - pageType
+        - fieldKey
+        - label
 
     QualityOverview:
       type: object

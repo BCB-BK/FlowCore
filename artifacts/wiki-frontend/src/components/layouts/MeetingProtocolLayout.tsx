@@ -11,6 +11,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface MeetingProtocolLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -21,6 +23,8 @@ function str(val: unknown): string {
 export function MeetingProtocolLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: MeetingProtocolLayoutProps) {
   return (
     <div className="space-y-4">
@@ -32,6 +36,8 @@ export function MeetingProtocolLayout({
           icon={<Users className="h-4 w-4 text-primary" />}
           value={str(structuredFields.participants)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Teilnehmer erfasst"
         />
 
@@ -42,6 +48,8 @@ export function MeetingProtocolLayout({
           icon={<List className="h-4 w-4 text-blue-600" />}
           value={str(structuredFields.agenda)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Keine Tagesordnung erfasst"
         />
       </div>
@@ -53,6 +61,8 @@ export function MeetingProtocolLayout({
         icon={<MessageSquare className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.discussion)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Besprechungspunkte dokumentiert"
       />
 
@@ -63,6 +73,8 @@ export function MeetingProtocolLayout({
         icon={<Gavel className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.decisions)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Entscheidungen erfasst"
       />
 
@@ -73,6 +85,8 @@ export function MeetingProtocolLayout({
         icon={<ClipboardList className="h-4 w-4 text-orange-600" />}
         value={str(structuredFields.action_items)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Maßnahmen definiert"
       />
 
@@ -83,6 +97,8 @@ export function MeetingProtocolLayout({
         icon={<Calendar className="h-4 w-4 text-green-600" />}
         value={str(structuredFields.next_meeting)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Kein nächster Termin festgelegt"
       />
     </div>

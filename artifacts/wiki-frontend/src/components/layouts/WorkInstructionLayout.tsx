@@ -12,6 +12,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface WorkInstructionLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -22,6 +24,8 @@ function str(val: unknown): string {
 export function WorkInstructionLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: WorkInstructionLayoutProps) {
   return (
     <div className="space-y-4">
@@ -33,6 +37,8 @@ export function WorkInstructionLayout({
           icon={<Target className="h-4 w-4 text-primary" />}
           value={str(structuredFields.purpose)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Noch kein Zweck definiert"
         />
 
@@ -43,6 +49,8 @@ export function WorkInstructionLayout({
           icon={<BookOpen className="h-4 w-4 text-blue-600" />}
           value={str(structuredFields.scope)}
           onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
           emptyText="Noch kein Geltungsbereich definiert"
         />
       </div>
@@ -54,6 +62,8 @@ export function WorkInstructionLayout({
         icon={<ShieldAlert className="h-4 w-4 text-red-600" />}
         value={str(structuredFields.safety)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Sicherheitshinweise"
       />
 
@@ -64,6 +74,8 @@ export function WorkInstructionLayout({
         icon={<Wrench className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.materials)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Werkzeuge/Materialien angegeben"
       />
 
@@ -74,6 +86,8 @@ export function WorkInstructionLayout({
         icon={<ListOrdered className="h-4 w-4 text-orange-600" />}
         value={str(structuredFields.steps)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Arbeitsschritte dokumentiert"
       />
 
@@ -84,6 +98,8 @@ export function WorkInstructionLayout({
         icon={<CheckCircle className="h-4 w-4 text-green-600" />}
         value={str(structuredFields.quality_criteria)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Qualitätskriterien definiert"
       />
 
@@ -94,6 +110,8 @@ export function WorkInstructionLayout({
         icon={<FileStack className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.documents)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine mitgeltenden Unterlagen"
       />
     </div>

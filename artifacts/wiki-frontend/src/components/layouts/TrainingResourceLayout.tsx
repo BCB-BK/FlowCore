@@ -11,6 +11,8 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface TrainingResourceLayoutProps {
   structuredFields: Record<string, unknown>;
   onSectionSave?: (key: string, value: unknown) => void;
+  pageType?: string;
+  nodeId?: string;
 }
 
 function str(val: unknown): string {
@@ -21,6 +23,8 @@ function str(val: unknown): string {
 export function TrainingResourceLayout({
   structuredFields,
   onSectionSave,
+  pageType,
+  nodeId,
 }: TrainingResourceLayoutProps) {
   return (
     <div className="space-y-4">
@@ -31,6 +35,8 @@ export function TrainingResourceLayout({
         icon={<Target className="h-4 w-4 text-primary" />}
         value={str(structuredFields.objectives)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Lernziele definiert"
       />
 
@@ -41,6 +47,8 @@ export function TrainingResourceLayout({
         icon={<BookOpen className="h-4 w-4 text-blue-600" />}
         value={str(structuredFields.prerequisites)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Voraussetzungen angegeben"
       />
 
@@ -51,6 +59,8 @@ export function TrainingResourceLayout({
         icon={<GraduationCap className="h-4 w-4 text-purple-600" />}
         value={str(structuredFields.content)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Noch keine Schulungsinhalte dokumentiert"
       />
 
@@ -61,6 +71,8 @@ export function TrainingResourceLayout({
         icon={<Dumbbell className="h-4 w-4 text-orange-600" />}
         value={str(structuredFields.exercises)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Übungen vorhanden"
       />
 
@@ -71,6 +83,8 @@ export function TrainingResourceLayout({
         icon={<ClipboardCheck className="h-4 w-4 text-green-600" />}
         value={str(structuredFields.assessment)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Lernkontrolle definiert"
       />
 
@@ -81,6 +95,8 @@ export function TrainingResourceLayout({
         icon={<FileStack className="h-4 w-4 text-amber-600" />}
         value={str(structuredFields.materials)}
         onSave={onSectionSave}
+          pageType={pageType}
+          nodeId={nodeId}
         emptyText="Keine Materialien angegeben"
       />
     </div>

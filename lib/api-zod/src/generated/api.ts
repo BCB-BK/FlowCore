@@ -3122,6 +3122,110 @@ export const GetAiUsageStatsResponse = zod.object({
 });
 
 /**
+ * @summary AI field-level writing assistant (SSE stream)
+ */
+export const aiFieldAssistBodyTextMax = 10000;
+
+export const AiFieldAssistBody = zod.object({
+  action: zod.enum([
+    "reformulate",
+    "professionalize",
+    "expand",
+    "shorten",
+    "grammar",
+    "from_bullets",
+  ]),
+  text: zod.string().min(1).max(aiFieldAssistBodyTextMax),
+  fieldKey: zod.string(),
+  pageType: zod.string(),
+  nodeId: zod.string().uuid().optional(),
+});
+
+/**
+ * @summary List all AI field profiles
+ */
+export const GetAiFieldProfilesQueryParams = zod.object({
+  pageType: zod.coerce.string().optional(),
+  fieldKey: zod.coerce.string().optional(),
+});
+
+export const GetAiFieldProfilesResponseItem = zod.object({
+  id: zod.string().uuid(),
+  pageType: zod.string(),
+  fieldKey: zod.string(),
+  label: zod.string(),
+  purpose: zod.string().nullish(),
+  promptInstruction: zod.string().nullish(),
+  style: zod.string().nullish(),
+  guardrails: zod.string().nullish(),
+  allowedOperations: zod.array(zod.string()),
+  isActive: zod.boolean(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+  updatedBy: zod.string().nullish(),
+});
+export const GetAiFieldProfilesResponse = zod.array(
+  GetAiFieldProfilesResponseItem,
+);
+
+/**
+ * @summary Create a new AI field profile
+ */
+export const CreateAiFieldProfileBody = zod.object({
+  pageType: zod.string(),
+  fieldKey: zod.string(),
+  label: zod.string(),
+  purpose: zod.string().nullish(),
+  promptInstruction: zod.string().nullish(),
+  style: zod.string().nullish(),
+  guardrails: zod.string().nullish(),
+  allowedOperations: zod.array(zod.string()).optional(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update an AI field profile
+ */
+export const UpdateAiFieldProfileParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+export const UpdateAiFieldProfileBody = zod.object({
+  pageType: zod.string(),
+  fieldKey: zod.string(),
+  label: zod.string(),
+  purpose: zod.string().nullish(),
+  promptInstruction: zod.string().nullish(),
+  style: zod.string().nullish(),
+  guardrails: zod.string().nullish(),
+  allowedOperations: zod.array(zod.string()).optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateAiFieldProfileResponse = zod.object({
+  id: zod.string().uuid(),
+  pageType: zod.string(),
+  fieldKey: zod.string(),
+  label: zod.string(),
+  purpose: zod.string().nullish(),
+  promptInstruction: zod.string().nullish(),
+  style: zod.string().nullish(),
+  guardrails: zod.string().nullish(),
+  allowedOperations: zod.array(zod.string()),
+  isActive: zod.boolean(),
+  createdAt: zod.date().optional(),
+  updatedAt: zod.date().optional(),
+  updatedBy: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete an AI field profile
+ */
+export const DeleteAiFieldProfileParams = zod.object({
+  id: zod.coerce.string().uuid(),
+});
+
+/**
  * @summary Get quality metrics overview
  */
 export const GetQualityOverviewResponse = zod.object({
