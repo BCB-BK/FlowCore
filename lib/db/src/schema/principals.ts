@@ -5,6 +5,7 @@ import {
   timestamp,
   boolean,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import {
   principalTypeEnum,
@@ -43,74 +44,101 @@ export const principalsTable = pgTable(
   ],
 );
 
-export const roleAssignmentsTable = pgTable("role_assignments", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  principalId: uuid("principal_id")
-    .notNull()
-    .references(() => principalsTable.id),
-  role: wikiRoleEnum("role").notNull(),
-  scope: text("scope").notNull().default("global"),
-  grantedBy: uuid("granted_by").references(() => principalsTable.id),
-  grantedAt: timestamp("granted_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }),
-  isActive: boolean("is_active").notNull().default(true),
-});
+export const roleAssignmentsTable = pgTable(
+  "role_assignments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    principalId: uuid("principal_id")
+      .notNull()
+      .references(() => principalsTable.id),
+    role: wikiRoleEnum("role").notNull(),
+    scope: text("scope").notNull().default("global"),
+    grantedBy: uuid("granted_by").references(() => principalsTable.id),
+    grantedAt: timestamp("granted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    isActive: boolean("is_active").notNull().default(true),
+  },
+  (table) => [
+    index("idx_role_assignments_principal").on(table.principalId),
+  ],
+);
 
-export const pagePermissionsTable = pgTable("page_permissions", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  nodeId: uuid("node_id")
-    .notNull()
-    .references(() => contentNodesTable.id),
-  principalId: uuid("principal_id")
-    .notNull()
-    .references(() => principalsTable.id),
-  permission: wikiPermissionEnum("permission").notNull(),
-  isInherited: boolean("is_inherited").notNull().default(false),
-  grantedBy: uuid("granted_by").references(() => principalsTable.id),
-  grantedAt: timestamp("granted_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const pagePermissionsTable = pgTable(
+  "page_permissions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    nodeId: uuid("node_id")
+      .notNull()
+      .references(() => contentNodesTable.id),
+    principalId: uuid("principal_id")
+      .notNull()
+      .references(() => principalsTable.id),
+    permission: wikiPermissionEnum("permission").notNull(),
+    isInherited: boolean("is_inherited").notNull().default(false),
+    grantedBy: uuid("granted_by").references(() => principalsTable.id),
+    grantedAt: timestamp("granted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_page_permissions_node").on(table.nodeId),
+    index("idx_page_permissions_principal").on(table.principalId),
+  ],
+);
 
-export const nodeOwnershipTable = pgTable("node_ownership", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  nodeId: uuid("node_id")
-    .notNull()
-    .references(() => contentNodesTable.id),
-  ownerId: uuid("owner_id")
-    .notNull()
-    .references(() => principalsTable.id),
-  deputyId: uuid("deputy_id").references(() => principalsTable.id),
-  reviewerId: uuid("reviewer_id").references(() => principalsTable.id),
-  approverId: uuid("approver_id").references(() => principalsTable.id),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const nodeOwnershipTable = pgTable(
+  "node_ownership",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    nodeId: uuid("node_id")
+      .notNull()
+      .references(() => contentNodesTable.id),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => principalsTable.id),
+    deputyId: uuid("deputy_id").references(() => principalsTable.id),
+    reviewerId: uuid("reviewer_id").references(() => principalsTable.id),
+    approverId: uuid("approver_id").references(() => principalsTable.id),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_node_ownership_node").on(table.nodeId),
+    index("idx_node_ownership_owner").on(table.ownerId),
+  ],
+);
 
-export const deputyDelegationsTable = pgTable("deputy_delegations", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  principalId: uuid("principal_id")
-    .notNull()
-    .references(() => principalsTable.id),
-  deputyId: uuid("deputy_id")
-    .notNull()
-    .references(() => principalsTable.id),
-  scope: text("scope").notNull().default("global"),
-  reason: text("reason"),
-  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
-  endsAt: timestamp("ends_at", { withTimezone: true }),
-  isActive: boolean("is_active").notNull().default(true),
-  createdBy: uuid("created_by").references(() => principalsTable.id),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const deputyDelegationsTable = pgTable(
+  "deputy_delegations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    principalId: uuid("principal_id")
+      .notNull()
+      .references(() => principalsTable.id),
+    deputyId: uuid("deputy_id")
+      .notNull()
+      .references(() => principalsTable.id),
+    scope: text("scope").notNull().default("global"),
+    reason: text("reason"),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    isActive: boolean("is_active").notNull().default(true),
+    createdBy: uuid("created_by").references(() => principalsTable.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_deputy_delegations_principal").on(table.principalId),
+    index("idx_deputy_delegations_deputy").on(table.deputyId),
+  ],
+);
 
 export const sodConfigTable = pgTable("sod_config", {
   id: uuid("id").defaultRandom().primaryKey(),

@@ -56,6 +56,7 @@ export const contentWorkingCopiesTable = pgTable(
       .where(
         sql`status NOT IN ('cancelled', 'published')`,
       ),
+    index("idx_working_copies_base_rev").on(table.baseRevisionId),
   ],
 );
 

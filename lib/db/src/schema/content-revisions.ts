@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import { changeTypeEnum, nodeStatusEnum, revisionEventTypeEnum } from "./enums";
 import { contentNodesTable } from "./content-nodes";
@@ -44,6 +45,10 @@ export const contentRevisionsTable = pgTable(
       table.nodeId,
       table.revisionNo,
     ),
+    index("idx_content_revisions_node").on(table.nodeId),
+    index("idx_content_revisions_author").on(table.authorId),
+    index("idx_content_revisions_reviewer").on(table.reviewerId),
+    index("idx_content_revisions_approver").on(table.approverId),
   ],
 );
 

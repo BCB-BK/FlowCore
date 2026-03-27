@@ -54,6 +54,8 @@ export const contentNodesTable = pgTable(
       .on(table.displayCode)
       .where(sql`is_deleted = false`),
     index("idx_content_nodes_search").using("gin", table.searchVector),
+    index("idx_content_nodes_parent").on(table.parentNodeId),
+    index("idx_content_nodes_owner").on(table.ownerId),
   ],
 );
 
