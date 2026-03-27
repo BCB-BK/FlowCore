@@ -25,4 +25,5 @@ export interface ContentNode {
   deletedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  childCount?: number;
 }

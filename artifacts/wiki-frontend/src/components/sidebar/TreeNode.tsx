@@ -49,8 +49,9 @@ export function TreeNode({ node, level }: TreeNodeProps) {
   const isActive = location === `/node/${node.id}`;
   const isContainer = CONTAINER_TYPES.has(node.templateType);
   const Icon = isContainer ? FolderOpen : FileText;
+  const hasChildren = (node.childCount ?? 0) > 0;
 
-  if (!isContainer || level >= MAX_DEPTH) {
+  if (!hasChildren || level >= MAX_DEPTH) {
     return (
       <SidebarMenuItem>
         <SidebarMenuButton

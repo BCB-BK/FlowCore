@@ -69,9 +69,42 @@ router.get(
   requireAuth,
   requirePermission("read_page"),
   async (_req, res) => {
+    const childrenAlias = db
+      .$with("children_count")
+      .as(
+        db
+          .select({
+            parentNodeId: contentNodesTable.parentNodeId,
+            count: sql<number>`count(*)::int`.as("count"),
+          })
+          .from(contentNodesTable)
+          .where(eq(contentNodesTable.isDeleted, false))
+          .groupBy(contentNodesTable.parentNodeId),
+      );
+
     const roots = await db
-      .select()
+      .with(childrenAlias)
+      .select({
+        id: contentNodesTable.id,
+        immutableId: contentNodesTable.immutableId,
+        displayCode: contentNodesTable.displayCode,
+        title: contentNodesTable.title,
+        templateType: contentNodesTable.templateType,
+        templateId: contentNodesTable.templateId,
+        parentNodeId: contentNodesTable.parentNodeId,
+        sortOrder: contentNodesTable.sortOrder,
+        status: contentNodesTable.status,
+        currentRevisionId: contentNodesTable.currentRevisionId,
+        publishedRevisionId: contentNodesTable.publishedRevisionId,
+        ownerId: contentNodesTable.ownerId,
+        isDeleted: contentNodesTable.isDeleted,
+        deletedAt: contentNodesTable.deletedAt,
+        createdAt: contentNodesTable.createdAt,
+        updatedAt: contentNodesTable.updatedAt,
+        childCount: sql<number>`coalesce(${childrenAlias.count}, 0)`.as("childCount"),
+      })
       .from(contentNodesTable)
+      .leftJoin(childrenAlias, eq(contentNodesTable.id, sql`${childrenAlias.parentNodeId}`))
       .where(
         and(
           isNull(contentNodesTable.parentNodeId),
@@ -255,7 +288,51 @@ router.get(
   requirePermission("read_page", (req) => req.params.id),
   async (req, res) => {
     const id = req.params.id as string;
-    const children = await getNodeChildren(id);
+
+    const grandchildrenCount = db
+      .$with("grandchildren_count")
+      .as(
+        db
+          .select({
+            parentNodeId: contentNodesTable.parentNodeId,
+            count: sql<number>`count(*)::int`.as("count"),
+          })
+          .from(contentNodesTable)
+          .where(eq(contentNodesTable.isDeleted, false))
+          .groupBy(contentNodesTable.parentNodeId),
+      );
+
+    const children = await db
+      .with(grandchildrenCount)
+      .select({
+        id: contentNodesTable.id,
+        immutableId: contentNodesTable.immutableId,
+        displayCode: contentNodesTable.displayCode,
+        title: contentNodesTable.title,
+        templateType: contentNodesTable.templateType,
+        templateId: contentNodesTable.templateId,
+        parentNodeId: contentNodesTable.parentNodeId,
+        sortOrder: contentNodesTable.sortOrder,
+        status: contentNodesTable.status,
+        currentRevisionId: contentNodesTable.currentRevisionId,
+        publishedRevisionId: contentNodesTable.publishedRevisionId,
+        ownerId: contentNodesTable.ownerId,
+        isDeleted: contentNodesTable.isDeleted,
+        deletedAt: contentNodesTable.deletedAt,
+        createdAt: contentNodesTable.createdAt,
+        updatedAt: contentNodesTable.updatedAt,
+        childCount: sql<number>`coalesce(${grandchildrenCount.count}, 0)`.as("childCount"),
+      })
+      .from(contentNodesTable)
+      .leftJoin(grandchildrenCount, eq(contentNodesTable.id, sql`${grandchildrenCount.parentNodeId}`))
+      .where(
+        and(
+          eq(contentNodesTable.parentNodeId, id),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      )
+      .orderBy(contentNodesTable.sortOrder);
+
     res.json(children);
   },
 );

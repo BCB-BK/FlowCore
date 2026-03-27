@@ -3405,6 +3405,9 @@ components:
         updatedAt:
           type: string
           format: date-time
+        childCount:
+          type: integer
+          description: Number of direct child nodes
       required:
         - id
         - immutableId

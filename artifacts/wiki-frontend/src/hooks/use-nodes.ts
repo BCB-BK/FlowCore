@@ -88,6 +88,16 @@ export function useCreateNode() {
           queryClient.invalidateQueries({
             queryKey: getGetNodeChildrenQueryKey(variables.data.parentNodeId),
           });
+          const parentNode = queryClient
+            .getQueriesData<import("@workspace/api-client-react").ContentNode>({
+              queryKey: getGetNodeQueryKey(variables.data.parentNodeId),
+            })
+            .flatMap(([, data]) => (data ? [data] : []))[0];
+          if (parentNode?.parentNodeId) {
+            queryClient.invalidateQueries({
+              queryKey: getGetNodeChildrenQueryKey(parentNode.parentNodeId),
+            });
+          }
         }
       },
     },

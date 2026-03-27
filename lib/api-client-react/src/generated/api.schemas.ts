@@ -83,6 +83,7 @@ export interface ContentNode {
   deletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  childCount?: number;
 }
 
 export type CreateNodeInputTemplateType =
