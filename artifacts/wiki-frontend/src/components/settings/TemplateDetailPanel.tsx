@@ -72,34 +72,59 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
             Sektionen ({template.sections.length})
           </h4>
           <div className="space-y-1.5">
-            {template.sections.map((section) => (
-              <div
-                key={section.key}
-                className="flex items-center justify-between p-2.5 rounded-md border bg-muted/30"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{section.label}</span>
-                    {section.required && (
-                      <Badge
-                        variant="destructive"
-                        className="text-[10px] px-1.5 py-0"
-                      >
-                        Pflicht
-                      </Badge>
+            {template.sections.map((section) => {
+              const req = section.requirement ?? (section.required ? "required" : undefined);
+              return (
+                <div
+                  key={section.key}
+                  className="flex items-center justify-between p-2.5 rounded-md border bg-muted/30"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium">{section.label}</span>
+                      {req === "required" && (
+                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                          Pflicht
+                        </Badge>
+                      )}
+                      {req === "recommended" && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700">
+                          Empfohlen
+                        </Badge>
+                      )}
+                      {req === "conditional" && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          Bedingt
+                        </Badge>
+                      )}
+                      {section.publishRequired && req !== "required" && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-600">
+                          Publish
+                        </Badge>
+                      )}
+                      {section.compoundType && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                          {section.compoundType}
+                        </Badge>
+                      )}
+                    </div>
+                    {section.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {section.description}
+                      </p>
+                    )}
+                    {section.help?.fillHelp && (
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5 italic">
+                        {section.help.fillHelp}
+                      </p>
                     )}
                   </div>
-                  {section.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {section.description}
-                    </p>
-                  )}
+                  <Badge variant="outline" className="text-[10px] font-mono shrink-0 ml-2">
+                    {section.key}
+                  </Badge>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">
-                  {section.key}
-                </Badge>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -117,24 +142,36 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                   {METADATA_GROUP_LABELS[group] || group}
                 </p>
                 <div className="space-y-1">
-                  {fields.map((field) => (
-                    <div
-                      key={field.key}
-                      className="flex items-center justify-between px-2.5 py-1.5 rounded border bg-muted/20 text-sm"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{field.label}</span>
-                        {field.required && (
-                          <span className="text-destructive text-xs">*</span>
-                        )}
+                  {fields.map((field) => {
+                    const req = field.requirement ?? (field.required ? "required" : undefined);
+                    return (
+                      <div
+                        key={field.key}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded border bg-muted/20 text-sm"
+                      >
+                        <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+                          <span>{field.label}</span>
+                          {req === "required" && (
+                            <span className="text-destructive text-xs">*</span>
+                          )}
+                          {req === "recommended" && (
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-amber-100 text-amber-700">Empf.</Badge>
+                          )}
+                          {req === "conditional" && (
+                            <Badge variant="outline" className="text-[9px] px-1 py-0">Bed.</Badge>
+                          )}
+                          {field.publishRequired && req !== "required" && (
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-red-50 text-red-600">Pub</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant="outline" className="text-[10px]">
+                            {FIELD_TYPE_LABELS[field.type] || field.type}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px]">
-                          {FIELD_TYPE_LABELS[field.type] || field.type}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}

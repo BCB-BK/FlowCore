@@ -27,6 +27,14 @@ export type MetadataGroupKey =
 
 export type FieldRequirement = "required" | "recommended" | "conditional";
 
+export interface FieldHelp {
+  fillHelp?: string;
+  example?: string;
+  badExample?: string;
+  placeholder?: string;
+  expectedFormat?: string;
+}
+
 export interface MetadataFieldDef {
   key: string;
   label: string;
@@ -39,6 +47,7 @@ export interface MetadataFieldDef {
   conditionDescription?: string;
   publishRequired?: boolean;
   errorMessage?: string;
+  help?: FieldHelp;
 }
 
 export interface PageTypeSection {
@@ -54,6 +63,8 @@ export interface PageTypeSection {
   minContentLength?: number;
   guidedModeStep?: number;
   errorMessage?: string;
+  help?: FieldHelp;
+  compoundType?: "sipoc_cards" | "raci_matrix" | "qa_repeater" | "term_repeater" | "check_items" | "competency_areas";
 }
 
 export interface TemplateVariant {
@@ -156,6 +167,10 @@ const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
     ],
     description: "Art des Dokuments gemäß Dokumentenklassifikation",
     errorMessage: "Bitte wählen Sie eine Dokumentenart aus.",
+    help: {
+      fillHelp: "Wählen Sie die Dokumentenart, die den Inhalt am besten beschreibt. Dies hilft bei der Filterung und Suche.",
+      example: "Verfahrensanweisung, Richtlinie",
+    },
   },
 ];
 
@@ -170,6 +185,11 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     group: "governance",
     description: "Verantwortlicher für den Inhalt",
     errorMessage: "Ein Prozesseigner muss zugewiesen werden.",
+    help: {
+      fillHelp: "Wählen Sie die Person aus, die fachlich für diesen Inhalt verantwortlich ist und Änderungen freigibt.",
+      example: "Dr. Maria Müller (Abteilungsleiterin QM)",
+      badExample: "Team / Abteilung (keine konkrete Person)",
+    },
   },
   {
     key: "deputy",
@@ -191,6 +211,11 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     group: "governance",
     description: "Fachliche Prüfung",
     errorMessage: "Für die Veröffentlichung muss ein Prüfer benannt werden.",
+    help: {
+      fillHelp: "Wählen Sie eine Person, die den Inhalt fachlich prüft, bevor er veröffentlicht wird. Muss eine andere Person als der Autor sein (Vier-Augen-Prinzip).",
+      example: "Thomas Schmidt (QM-Beauftragter)",
+      badExample: "Dieselbe Person wie der Prozesseigner",
+    },
   },
   {
     key: "approver",
@@ -308,6 +333,11 @@ const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
     options: ["public", "internal", "confidential", "strictly_confidential"],
     description: "Vertraulichkeitsstufe des Dokuments",
     errorMessage: "Bitte stufen Sie die Vertraulichkeit ein.",
+    help: {
+      fillHelp: "Legen Sie fest, wer dieses Dokument einsehen darf. Die Vertraulichkeitsstufe steuert die Sichtbarkeit im Wiki.",
+      example: "Intern – für alle Mitarbeitenden sichtbar",
+      badExample: "Keine Angabe bei sensiblen Inhalten",
+    },
   },
   {
     key: "risk_level",
@@ -400,6 +430,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         minContentLength: 30,
         guidedModeStep: 2,
         errorMessage: "Bitte füllen Sie die SIPOC-Analyse aus.",
+        compoundType: "sipoc_cards",
+        help: {
+          fillHelp: "Füllen Sie jede Spalte einzeln aus. Beginnen Sie mit den Hauptschritten (Process) und arbeiten Sie sich nach außen.",
+          example: "Suppliers: Einkauf, Lieferant X | Inputs: Bestellung, Spezifikation | Process: Wareneingang, Prüfung, Einlagerung | Outputs: Prüfbericht, Buchung | Customers: Produktion, Lager",
+          badExample: "Nur einen Freitext ohne klare Zuordnung zu den 5 Spalten",
+        },
       },
       {
         key: "kpis",
@@ -881,6 +917,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Wer muss informiert werden (Informed)?",
         ],
         required: true,
+        compoundType: "raci_matrix",
+        help: {
+          fillHelp: "Erstellen Sie eine Matrix mit Aktivitäten in den Zeilen und Rollen in den Spalten. Vergeben Sie pro Zelle R, A, C oder I.",
+          example: "Bestellung aufgeben: Einkäufer=R, Abteilungsleiter=A, Controlling=I",
+          badExample: "Nur ‚Team ist verantwortlich' ohne klare Rollenzuordnung",
+          expectedFormat: "Aktivität | Rolle1=R | Rolle2=A | Rolle3=C | Rolle4=I",
+        },
       },
       {
         key: "interfaces",
@@ -1294,6 +1337,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Welche Prozesse werden verantwortet?",
         ],
         required: true,
+        compoundType: "competency_areas",
+        help: {
+          fillHelp: "Gliedern Sie die Verantwortlichkeiten in Kompetenzbereiche. Jeder Bereich sollte einen Titel und die zugehörigen Aufgaben enthalten.",
+          example: "Bereich: Qualitätssicherung | Aufgaben: Prüfpläne erstellen, Audits durchführen, Abweichungen dokumentieren",
+          badExample: "Nur eine Aufzählung ohne Gruppierung nach Kompetenzbereichen",
+        },
       },
       {
         key: "qualifications",
@@ -1444,6 +1493,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         minContentLength: 20,
         guidedModeStep: 1,
         errorMessage: "Bitte definieren Sie mindestens einen Glossarbegriff.",
+        compoundType: "term_repeater",
+        help: {
+          fillHelp: "Erfassen Sie jeden Begriff einzeln mit Definition und optionalen Synonymen. Nutzen Sie die strukturierten Eingabefelder.",
+          example: "Begriff: SLA | Definition: Service Level Agreement – vertragliche Vereinbarung über Dienstleistungsqualität | Synonyme: Dienstgütevereinbarung",
+          badExample: "Nur eine lange Textliste ohne klare Zuordnung von Begriff und Definition",
+          expectedFormat: "Begriff | Definition | Synonyme (optional)",
+        },
       },
     ],
     publicationRules: {
@@ -1800,6 +1856,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Was ist das erwartete Ergebnis?",
         ],
         required: true,
+        compoundType: "check_items",
+        help: {
+          fillHelp: "Fügen Sie jeden Prüfpunkt einzeln hinzu. Formulieren Sie ihn so, dass er mit Ja/Nein/OK beantwortet werden kann.",
+          example: "☐ Feuerlöscher vorhanden und zugänglich | ☐ Prüfplakette aktuell | ☐ Fluchtweg frei",
+          badExample: "Allgemeine Beschreibungen wie ‚Sicherheit prüfen' ohne konkrete Prüfpunkte",
+        },
       },
       {
         key: "completion_criteria",
@@ -1901,6 +1963,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "Welche Schritte sind erforderlich?",
         ],
         required: true,
+        compoundType: "qa_repeater",
+        help: {
+          fillHelp: "Fügen Sie Frage-Antwort-Paare einzeln hinzu. Jede Frage sollte konkret und die Antwort verständlich formuliert sein.",
+          example: "F: Wie beantrage ich Urlaub? A: Über das Portal unter Personal > Anträge den Urlaubsantrag stellen und vom Vorgesetzten genehmigen lassen.",
+          badExample: "Alles in einem einzigen Textblock ohne klare Trennung von Fragen und Antworten",
+        },
       },
       {
         key: "related_topics",
@@ -2731,9 +2799,92 @@ function isNonEmpty(val: unknown): boolean {
 
 function contentLength(val: unknown): number {
   if (val === undefined || val === null) return 0;
-  if (typeof val === "string") return val.trim().length;
-  if (typeof val === "object") return JSON.stringify(val).length;
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return effectiveContentLength(parsed);
+      } catch {
+        // not JSON
+      }
+    }
+    return trimmed.length;
+  }
+  if (typeof val === "object") return effectiveContentLength(val);
   return String(val).length;
+}
+
+function effectiveContentLength(val: unknown): number {
+  if (val === undefined || val === null) return 0;
+  if (typeof val === "string") return val.trim().length;
+  if (Array.isArray(val)) {
+    if (val.length === 0) return 0;
+    let total = 0;
+    for (const item of val) {
+      if (typeof item === "object" && item !== null) {
+        const obj = item as Record<string, unknown>;
+        for (const v of Object.values(obj)) {
+          if (typeof v === "string") total += v.trim().length;
+        }
+      } else if (typeof item === "string") {
+        total += item.trim().length;
+      }
+    }
+    return total;
+  }
+  if (typeof val === "object") {
+    let total = 0;
+    for (const v of Object.values(val as Record<string, unknown>)) {
+      if (typeof v === "string") total += v.trim().length;
+    }
+    return total;
+  }
+  return String(val).length;
+}
+
+const PSEUDO_CONTENT_PATTERNS = [
+  /^(todo|tbd|xxx|n\/a|tba|placeholder|test|hier\s+einfügen|folgt|wird\s+ergänzt|noch\s+offen|offen|\.{3,}|—+|-+)$/i,
+  /^(lorem\s+ipsum)/i,
+  /^\.+$/,
+]
+
+function isStringPseudo(s: string): boolean {
+  const trimmed = s.trim();
+  if (!trimmed) return true;
+  return PSEUDO_CONTENT_PATTERNS.some(p => p.test(trimmed));
+}
+
+function isPseudoContent(val: unknown): boolean {
+  if (typeof val !== "string") return false;
+  const trimmed = val.trim();
+  if (!trimmed) return true;
+  if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return isPseudoStructured(parsed);
+    } catch {
+      // not JSON, treat as plain string
+    }
+  }
+  return PSEUDO_CONTENT_PATTERNS.some(p => p.test(trimmed));
+}
+
+function isPseudoStructured(val: unknown): boolean {
+  if (val === null || val === undefined) return true;
+  if (typeof val === "string") return isStringPseudo(val);
+  if (Array.isArray(val)) {
+    if (val.length === 0) return true;
+    return val.every((item: unknown) => isPseudoStructured(item));
+  }
+  if (typeof val === "object") {
+    const values = Object.values(val as Record<string, unknown>);
+    if (values.length === 0) return true;
+    const stringValues = values.filter((v): v is string => typeof v === "string");
+    if (stringValues.length === 0) return false;
+    return stringValues.every(s => isStringPseudo(s));
+  }
+  return false;
 }
 
 export function validateForPublication(
@@ -2787,6 +2938,13 @@ export function validateForPublication(
         message: section.errorMessage ?? `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
         type: "missing_required",
       });
+    } else if (isPseudoContent(val)) {
+      errors.push({
+        field: sectionKey,
+        fieldLabel: section.label,
+        message: `Der Abschnitt „${section.label}" enthält nur Platzhaltertext. Bitte füllen Sie ihn mit echtem Inhalt.`,
+        type: "content_too_short",
+      });
     } else {
       const minLen = section.minContentLength ?? rules.minSectionContentLength;
       if (contentLength(val) < minLen) {
@@ -2802,12 +2960,20 @@ export function validateForPublication(
 
   for (const section of def.sections) {
     if (section.publishRequired && !rules.minimumSections.includes(section.key)) {
-      if (!isNonEmpty(sectionData[section.key])) {
+      const val = sectionData[section.key];
+      if (!isNonEmpty(val)) {
         errors.push({
           field: section.key,
           fieldLabel: section.label,
           message: section.errorMessage ?? `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
           type: "missing_required",
+        });
+      } else if (isPseudoContent(val)) {
+        errors.push({
+          field: section.key,
+          fieldLabel: section.label,
+          message: `Der Abschnitt „${section.label}" enthält nur Platzhaltertext. Bitte füllen Sie ihn mit echtem Inhalt.`,
+          type: "content_too_short",
         });
       }
     }

@@ -61,6 +61,10 @@ export function MetadataPanel({
                   displayValue={displayValues[field.key]}
                   onChange={onChange}
                   readOnly={readOnly}
+                  help={field.help}
+                  requirement={field.requirement}
+                  publishRequired={field.publishRequired}
+                  conditionDescription={field.conditionDescription}
                 />
               ))}
             </div>
@@ -95,6 +99,10 @@ export function MetadataPanel({
                   displayValue={displayValues[field.key]}
                   onChange={onChange}
                   readOnly={readOnly}
+                  help={field.help}
+                  requirement={field.requirement}
+                  publishRequired={field.publishRequired}
+                  conditionDescription={field.conditionDescription}
                 />
               ))}
             </div>

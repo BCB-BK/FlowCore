@@ -5,11 +5,13 @@ import {
   Target,
   Zap,
   PackageOpen,
+  ArrowLeftRight,
   PackageCheck,
   History,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 import { RACIMatrix, RisksControlsTable, KPITable, InterfacesSystemsTable, SwimlaneDiagram } from "@/components/qm";
+import { getPageType } from "@/lib/types";
 
 interface ProcedureLayoutProps {
   structuredFields: Record<string, unknown>;
@@ -25,6 +27,20 @@ export function ProcedureLayout({
   structuredFields,
   onSectionSave,
 }: ProcedureLayoutProps) {
+  const def = getPageType("procedure_instruction");
+  const purposeSection = def?.sections.find(s => s.key === "purpose");
+  const scopeSection = def?.sections.find(s => s.key === "scope");
+  const triggerSection = def?.sections.find(s => s.key === "trigger");
+  const inputsSection = def?.sections.find(s => s.key === "inputs");
+  const procedureSection = def?.sections.find(s => s.key === "procedure");
+  const respSection = def?.sections.find(s => s.key === "responsibilities");
+  const interfacesSection = def?.sections.find(s => s.key === "interfaces");
+  const outputsSection = def?.sections.find(s => s.key === "outputs");
+  const risksSection = def?.sections.find(s => s.key === "risks");
+  const kpisSection = def?.sections.find(s => s.key === "kpis");
+  const documentsSection = def?.sections.find(s => s.key === "documents");
+  const changelogSection = def?.sections.find(s => s.key === "changelog");
+
   return (
     <div className="space-y-4">
       <EditableSectionCard
@@ -35,6 +51,10 @@ export function ProcedureLayout({
         value={str(structuredFields.purpose)}
         onSave={onSectionSave}
         emptyText="Noch kein Zweck definiert"
+        help={purposeSection?.help}
+        helpText={purposeSection?.helpText}
+        guidingQuestions={purposeSection?.guidingQuestions}
+        requirement="required"
       />
 
       <EditableSectionCard
@@ -45,6 +65,10 @@ export function ProcedureLayout({
         value={str(structuredFields.scope)}
         onSave={onSectionSave}
         emptyText="Noch kein Geltungsbereich definiert"
+        help={scopeSection?.help}
+        helpText={scopeSection?.helpText}
+        guidingQuestions={scopeSection?.guidingQuestions}
+        requirement="required"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -56,6 +80,9 @@ export function ProcedureLayout({
           value={str(structuredFields.trigger)}
           onSave={onSectionSave}
           emptyText="Noch keine Auslöser definiert"
+          help={triggerSection?.help}
+          helpText={triggerSection?.helpText}
+          guidingQuestions={triggerSection?.guidingQuestions}
         />
 
         <EditableSectionCard
@@ -66,6 +93,9 @@ export function ProcedureLayout({
           value={str(structuredFields.inputs)}
           onSave={onSectionSave}
           emptyText="Noch keine Eingaben definiert"
+          help={inputsSection?.help}
+          helpText={inputsSection?.helpText}
+          guidingQuestions={inputsSection?.guidingQuestions}
         />
       </div>
 
@@ -77,6 +107,10 @@ export function ProcedureLayout({
         value={str(structuredFields.procedure)}
         onSave={onSectionSave}
         emptyText="Noch keine Schritte dokumentiert"
+        help={procedureSection?.help}
+        helpText={procedureSection?.helpText}
+        guidingQuestions={procedureSection?.guidingQuestions}
+        requirement="required"
       />
 
       <SwimlaneDiagram
@@ -105,6 +139,9 @@ export function ProcedureLayout({
         value={str(structuredFields.outputs)}
         onSave={onSectionSave}
         emptyText="Keine Ergebnisse definiert"
+        help={outputsSection?.help}
+        helpText={outputsSection?.helpText}
+        guidingQuestions={outputsSection?.guidingQuestions}
       />
 
       <RisksControlsTable
@@ -127,6 +164,9 @@ export function ProcedureLayout({
         value={str(structuredFields.documents)}
         onSave={onSectionSave}
         emptyText="Keine mitgeltenden Unterlagen"
+        help={documentsSection?.help}
+        helpText={documentsSection?.helpText}
+        guidingQuestions={documentsSection?.guidingQuestions}
       />
 
       <EditableSectionCard
@@ -137,6 +177,9 @@ export function ProcedureLayout({
         value={str(structuredFields.changelog)}
         onSave={onSectionSave}
         emptyText="Keine Änderungen dokumentiert"
+        help={changelogSection?.help}
+        helpText={changelogSection?.helpText}
+        requirement="recommended"
       />
     </div>
   );

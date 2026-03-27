@@ -1,5 +1,7 @@
-import { FileText, HelpCircle, Link2 } from "lucide-react";
+import { FileText, Link2 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { QaRepeater } from "@/components/compound/QaRepeater";
+import { getPageType } from "@/lib/types";
 
 interface FaqLayoutProps {
   structuredFields: Record<string, unknown>;
@@ -15,6 +17,10 @@ export function FaqLayout({
   structuredFields,
   onSectionSave,
 }: FaqLayoutProps) {
+  const def = getPageType("faq");
+  const contentSection = def?.sections.find(s => s.key === "content");
+  const summarySection = def?.sections.find(s => s.key === "summary");
+
   return (
     <div className="space-y-4">
       <EditableSectionCard
@@ -25,16 +31,18 @@ export function FaqLayout({
         value={str(structuredFields.summary)}
         onSave={onSectionSave}
         emptyText="Noch keine Zusammenfassung"
+        help={summarySection?.help}
+        helpText={summarySection?.helpText}
+        requirement="required"
       />
 
-      <EditableSectionCard
-        sectionKey="content"
-        label="Inhalt / Fragen & Antworten"
-        description="Hauptinhalt mit Fragen und Antworten oder Erklärungen"
-        icon={<HelpCircle className="h-4 w-4 text-yellow-600" />}
+      <QaRepeater
         value={str(structuredFields.content)}
         onSave={onSectionSave}
-        emptyText="Noch keine Inhalte vorhanden"
+        sectionKey="content"
+        help={contentSection?.help}
+        helpText={contentSection?.helpText}
+        guidingQuestions={contentSection?.guidingQuestions}
       />
 
       <EditableSectionCard
@@ -45,6 +53,7 @@ export function FaqLayout({
         value={str(structuredFields.related_topics)}
         onSave={onSectionSave}
         emptyText="Keine verwandten Themen verknüpft"
+        requirement="recommended"
       />
     </div>
   );

@@ -30,6 +30,7 @@ export type {
   DisplayProfile,
   TemplateVariant,
   FieldRequirement,
+  FieldHelp,
   PublicationRules,
   PublicationRule,
   ValidationError,

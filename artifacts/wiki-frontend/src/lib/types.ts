@@ -34,6 +34,7 @@ export type {
   PageTypeCategory,
   DisplayProfile,
   FieldRequirement,
+  FieldHelp,
   PublicationRules,
   ValidationError,
   ValidationWarning,

@@ -1,11 +1,12 @@
 import {
   UserCog,
-  ClipboardList,
   GraduationCap,
   Key,
   ArrowLeftRight,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { CompetencyAreas } from "@/components/compound/CompetencyAreas";
+import { getPageType } from "@/lib/types";
 
 interface RoleProfileLayoutProps {
   structuredFields: Record<string, unknown>;
@@ -21,6 +22,13 @@ export function RoleProfileLayout({
   structuredFields,
   onSectionSave,
 }: RoleProfileLayoutProps) {
+  const def = getPageType("role_profile");
+  const roleDefSection = def?.sections.find(s => s.key === "role_definition");
+  const respSection = def?.sections.find(s => s.key === "responsibilities");
+  const qualSection = def?.sections.find(s => s.key === "qualifications");
+  const authSection = def?.sections.find(s => s.key === "authority");
+  const ifSection = def?.sections.find(s => s.key === "interfaces");
+
   return (
     <div className="space-y-4">
       <EditableSectionCard
@@ -31,16 +39,19 @@ export function RoleProfileLayout({
         value={str(structuredFields.role_definition)}
         onSave={onSectionSave}
         emptyText="Noch keine Rollendefinition"
+        help={roleDefSection?.help}
+        helpText={roleDefSection?.helpText}
+        guidingQuestions={roleDefSection?.guidingQuestions}
+        requirement="required"
       />
 
-      <EditableSectionCard
-        sectionKey="responsibilities"
-        label="Aufgaben & Verantwortlichkeiten"
-        description="Kernaufgaben und Verantwortungsbereiche"
-        icon={<ClipboardList className="h-4 w-4 text-primary" />}
+      <CompetencyAreas
         value={str(structuredFields.responsibilities)}
         onSave={onSectionSave}
-        emptyText="Noch keine Verantwortlichkeiten definiert"
+        sectionKey="responsibilities"
+        help={respSection?.help}
+        helpText={respSection?.helpText}
+        guidingQuestions={respSection?.guidingQuestions}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -52,6 +63,9 @@ export function RoleProfileLayout({
           value={str(structuredFields.qualifications)}
           onSave={onSectionSave}
           emptyText="—"
+          help={qualSection?.help}
+          helpText={qualSection?.helpText}
+          guidingQuestions={qualSection?.guidingQuestions}
         />
 
         <EditableSectionCard
@@ -62,6 +76,9 @@ export function RoleProfileLayout({
           value={str(structuredFields.authority)}
           onSave={onSectionSave}
           emptyText="—"
+          help={authSection?.help}
+          helpText={authSection?.helpText}
+          guidingQuestions={authSection?.guidingQuestions}
         />
       </div>
 
@@ -73,6 +90,10 @@ export function RoleProfileLayout({
         value={str(structuredFields.interfaces)}
         onSave={onSectionSave}
         emptyText="Keine Schnittstellen dokumentiert"
+        help={ifSection?.help}
+        helpText={ifSection?.helpText}
+        guidingQuestions={ifSection?.guidingQuestions}
+        requirement="recommended"
       />
     </div>
   );

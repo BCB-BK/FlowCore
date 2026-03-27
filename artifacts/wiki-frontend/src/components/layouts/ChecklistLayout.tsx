@@ -1,5 +1,7 @@
-import { Target, Info, CheckSquare, Flag } from "lucide-react";
+import { Target, Info, Flag } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { CheckItemsEditor } from "@/components/compound/CheckItemsEditor";
+import { getPageType } from "@/lib/types";
 
 interface ChecklistLayoutProps {
   structuredFields: Record<string, unknown>;
@@ -15,6 +17,12 @@ export function ChecklistLayout({
   structuredFields,
   onSectionSave,
 }: ChecklistLayoutProps) {
+  const def = getPageType("checklist");
+  const purposeSection = def?.sections.find(s => s.key === "purpose");
+  const instructionsSection = def?.sections.find(s => s.key === "instructions");
+  const itemsSection = def?.sections.find(s => s.key === "checklist_items");
+  const completionSection = def?.sections.find(s => s.key === "completion_criteria");
+
   return (
     <div className="space-y-4">
       <EditableSectionCard
@@ -25,6 +33,9 @@ export function ChecklistLayout({
         value={str(structuredFields.purpose)}
         onSave={onSectionSave}
         emptyText="Noch kein Zweck definiert"
+        help={purposeSection?.help}
+        helpText={purposeSection?.helpText}
+        requirement="required"
       />
 
       <EditableSectionCard
@@ -35,16 +46,17 @@ export function ChecklistLayout({
         value={str(structuredFields.instructions)}
         onSave={onSectionSave}
         emptyText="Keine Durchführungshinweise"
+        help={instructionsSection?.help}
+        helpText={instructionsSection?.helpText}
       />
 
-      <EditableSectionCard
-        sectionKey="checklist_items"
-        label="Prüfpunkte"
-        description="Die eigentlichen Prüf-/Checklisten-Punkte"
-        icon={<CheckSquare className="h-4 w-4 text-green-600" />}
+      <CheckItemsEditor
         value={str(structuredFields.checklist_items)}
         onSave={onSectionSave}
-        emptyText="Noch keine Prüfpunkte definiert"
+        sectionKey="checklist_items"
+        help={itemsSection?.help}
+        helpText={itemsSection?.helpText}
+        guidingQuestions={itemsSection?.guidingQuestions}
       />
 
       <EditableSectionCard
@@ -55,6 +67,9 @@ export function ChecklistLayout({
         value={str(structuredFields.completion_criteria)}
         onSave={onSectionSave}
         emptyText="Keine Abschlusskriterien definiert"
+        help={completionSection?.help}
+        helpText={completionSection?.helpText}
+        requirement="recommended"
       />
     </div>
   );

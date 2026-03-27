@@ -1,6 +1,14 @@
-import { ClipboardList, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  BarChart3,
+  ClipboardList,
+  ShieldCheck,
+  AlertTriangle,
+} from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { SipocEditor } from "@/components/compound/SipocEditor";
 import { SIPOCTable, KPITable, RisksControlsTable, InterfacesSystemsTable, ProcessStepsTable } from "@/components/qm";
+import { getPageType } from "@/lib/types";
 
 interface ProcessOverviewLayoutProps {
   structuredFields: Record<string, unknown>;
@@ -16,6 +24,18 @@ export function ProcessOverviewLayout({
   structuredFields,
   onSectionSave,
 }: ProcessOverviewLayoutProps) {
+  const sipocData =
+    structuredFields.sipoc != null && typeof structuredFields.sipoc === "object"
+      ? (structuredFields.sipoc as Record<string, unknown>)
+      : null;
+
+  const def = getPageType("core_process_overview");
+  const sipocSection = def?.sections.find(s => s.key === "sipoc");
+  const overviewSection = def?.sections.find(s => s.key === "overview");
+  const kpisSection = def?.sections.find(s => s.key === "kpis");
+  const complianceSection = def?.sections.find(s => s.key === "compliance");
+  const risksSection = def?.sections.find(s => s.key === "risks");
+
   return (
     <div className="space-y-4">
       <EditableSectionCard
@@ -24,6 +44,11 @@ export function ProcessOverviewLayout({
         icon={<ClipboardList className="h-4 w-4 text-primary" />}
         value={str(structuredFields.overview)}
         onSave={onSectionSave}
+        help={overviewSection?.help}
+        helpText={overviewSection?.helpText}
+        guidingQuestions={overviewSection?.guidingQuestions}
+        requirement={overviewSection?.requirement}
+        publishRequired={overviewSection?.publishRequired}
       />
 
       <SIPOCTable
@@ -45,6 +70,10 @@ export function ProcessOverviewLayout({
         value={str(structuredFields.compliance)}
         onSave={onSectionSave}
         emptyText="Kein Normbezug definiert"
+        help={complianceSection?.help}
+        helpText={complianceSection?.helpText}
+        guidingQuestions={complianceSection?.guidingQuestions}
+        requirement={complianceSection?.requirement}
       />
 
       <RisksControlsTable

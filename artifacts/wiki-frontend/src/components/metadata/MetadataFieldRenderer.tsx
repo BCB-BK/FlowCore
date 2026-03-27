@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { PeoplePicker } from "@/components/PeoplePicker";
 import { X } from "lucide-react";
 import { useState } from "react";
-import { ENUM_LABELS } from "@/lib/types";
+import { ENUM_LABELS, type FieldHelp } from "@/lib/types";
+import { FieldHelpTooltip } from "./FieldHelpTooltip";
 
 interface MetadataFieldRendererProps {
   fieldKey: string;
@@ -24,6 +25,23 @@ interface MetadataFieldRendererProps {
   displayValue?: string;
   onChange: (key: string, value: unknown, displayValue?: string) => void;
   readOnly?: boolean;
+  help?: FieldHelp;
+  requirement?: "required" | "recommended" | "conditional";
+  publishRequired?: boolean;
+  conditionDescription?: string;
+}
+
+function RequirementBadge({ requirement, publishRequired, conditionDescription }: { requirement?: string; publishRequired?: boolean; conditionDescription?: string }) {
+  if (requirement === "required" || publishRequired) {
+    return <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>;
+  }
+  if (requirement === "recommended") {
+    return <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 leading-none bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Empfohlen</Badge>;
+  }
+  if (requirement === "conditional" && conditionDescription) {
+    return <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 leading-none">Bedingt</Badge>;
+  }
+  return null;
 }
 
 export function MetadataFieldRenderer({
@@ -37,19 +55,51 @@ export function MetadataFieldRenderer({
   displayValue,
   onChange,
   readOnly,
+  help,
+  requirement,
+  publishRequired,
+  conditionDescription,
 }: MetadataFieldRendererProps) {
   const [tagInput, setTagInput] = useState("");
 
+  const placeholder = help?.placeholder;
+
+  const labelRow = (
+    <div className="flex items-center gap-1.5">
+      <Label className="text-sm">
+        {label}
+        {required && <span className="text-destructive ml-0.5">*</span>}
+      </Label>
+      <RequirementBadge requirement={requirement} publishRequired={publishRequired} conditionDescription={conditionDescription} />
+      <FieldHelpTooltip
+        fillHelp={help?.fillHelp}
+        example={help?.example}
+        badExample={help?.badExample}
+        expectedFormat={help?.expectedFormat}
+      />
+    </div>
+  );
+
   if (type === "person") {
     return (
-      <PeoplePicker
-        label={label}
-        description={description}
-        value={value as string | undefined}
-        displayValue={displayValue}
-        onChange={(id, name) => onChange(fieldKey, id, name)}
-        required={required}
-      />
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <RequirementBadge requirement={requirement} publishRequired={publishRequired} conditionDescription={conditionDescription} />
+          <FieldHelpTooltip
+            fillHelp={help?.fillHelp}
+            example={help?.example}
+            badExample={help?.badExample}
+          />
+        </div>
+        <PeoplePicker
+          label={label}
+          description={description}
+          value={value as string | undefined}
+          displayValue={displayValue}
+          onChange={(id, name) => onChange(fieldKey, id, name)}
+          required={required}
+        />
+      </div>
     );
   }
 
@@ -57,10 +107,7 @@ export function MetadataFieldRenderer({
     const labelMap = ENUM_LABELS[fieldKey] ?? {};
     return (
       <div className="space-y-1.5">
-        <Label className="text-sm">
-          {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
-        </Label>
+        {labelRow}
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -70,7 +117,7 @@ export function MetadataFieldRenderer({
           disabled={readOnly}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Auswählen..." />
+            <SelectValue placeholder={placeholder ?? "Auswählen..."} />
           </SelectTrigger>
           <SelectContent>
             {(options ?? []).map((opt) => (
@@ -101,7 +148,7 @@ export function MetadataFieldRenderer({
     };
     return (
       <div className="space-y-1.5">
-        <Label className="text-sm">{label}</Label>
+        {labelRow}
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -123,7 +170,7 @@ export function MetadataFieldRenderer({
         </div>
         {!readOnly && (
           <Input
-            placeholder="Schlagwort eingeben + Enter"
+            placeholder={placeholder ?? "Schlagwort eingeben + Enter"}
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={(e) => {
@@ -141,10 +188,7 @@ export function MetadataFieldRenderer({
   if (type === "date") {
     return (
       <div className="space-y-1.5">
-        <Label className="text-sm">
-          {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
-        </Label>
+        {labelRow}
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -161,16 +205,14 @@ export function MetadataFieldRenderer({
   if (type === "number") {
     return (
       <div className="space-y-1.5">
-        <Label className="text-sm">
-          {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
-        </Label>
+        {labelRow}
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
         <Input
           type="number"
           value={(value as number) ?? ""}
+          placeholder={placeholder}
           onChange={(e) =>
             onChange(
               fieldKey,
@@ -193,25 +235,20 @@ export function MetadataFieldRenderer({
           disabled={readOnly}
           className="h-4 w-4 rounded border-gray-300"
         />
-        <Label className="text-sm">
-          {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
-        </Label>
+        {labelRow}
       </div>
     );
   }
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm">
-        {label}
-        {required && <span className="text-destructive ml-0.5">*</span>}
-      </Label>
+      {labelRow}
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
       <Input
         value={(value as string) ?? ""}
+        placeholder={placeholder}
         onChange={(e) => onChange(fieldKey, e.target.value)}
         disabled={readOnly}
       />

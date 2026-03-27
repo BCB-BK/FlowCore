@@ -1,5 +1,5 @@
-import { BookOpen } from "lucide-react";
-import { EditableSectionCard } from "./EditableSectionCard";
+import { TermRepeater } from "@/components/compound/TermRepeater";
+import { getPageType } from "@/lib/types";
 
 interface GlossaryLayoutProps {
   structuredFields: Record<string, unknown>;
@@ -16,17 +16,18 @@ export function GlossaryLayout({
   structuredFields,
   onSectionSave,
 }: GlossaryLayoutProps) {
+  const def = getPageType("glossary");
+  const termsSection = def?.sections.find(s => s.key === "terms");
+
   return (
     <div className="space-y-4">
-      <EditableSectionCard
-        sectionKey="terms"
-        label="Begriffe & Definitionen"
-        description="Glossarbegriffe alphabetisch mit Definitionen"
-        icon={<BookOpen className="h-4 w-4 text-primary" />}
+      <TermRepeater
         value={str(structuredFields.terms)}
         onSave={onSectionSave}
-        required
-        emptyText="Noch keine Glossarbegriffe definiert"
+        sectionKey="terms"
+        help={termsSection?.help}
+        helpText={termsSection?.helpText}
+        guidingQuestions={termsSection?.guidingQuestions}
       />
     </div>
   );
