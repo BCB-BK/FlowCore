@@ -103,22 +103,26 @@ router.post(
 
     const { upsertPrincipal: upsert } =
       await import("../services/principal.service");
-    const principalId = await upsert({
-      principalType: principalType as "user" | "group",
-      externalProvider: "entra",
-      externalId: externalId.trim(),
-      displayName: displayName.trim(),
-      email: typeof email === "string" ? email.trim() : undefined,
-      upn: typeof upn === "string" ? upn.trim() : undefined,
-    });
+    const principalId = await db.transaction(async (tx) => {
+      const id = await upsert({
+        principalType: principalType as "user" | "group",
+        externalProvider: "entra",
+        externalId: externalId.trim(),
+        displayName: displayName.trim(),
+        email: typeof email === "string" ? email.trim() : undefined,
+        upn: typeof upn === "string" ? upn.trim() : undefined,
+      }, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "principal_created",
-      actorId: req.user!.principalId,
-      resourceType: "principal",
-      resourceId: principalId,
-      details: { externalId, principalType, displayName },
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "principal_created",
+        actorId: req.user!.principalId,
+        resourceType: "principal",
+        resourceId: id,
+        details: { externalId, principalType, displayName },
+      });
+
+      return id;
     });
 
     const principal = await getPrincipalById(principalId);
@@ -171,20 +175,24 @@ router.post(
   requirePermission("manage_permissions"),
   async (req, res) => {
     const id = req.params.id as string;
-    const assignmentId = await assignRole({
-      principalId: id,
-      role: req.body.role,
-      scope: req.body.scope,
-      grantedBy: req.user!.principalId,
-    });
+    const assignmentId = await db.transaction(async (tx) => {
+      const aId = await assignRole({
+        principalId: id,
+        role: req.body.role,
+        scope: req.body.scope,
+        grantedBy: req.user!.principalId,
+      }, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "role_assigned",
-      actorId: req.user!.principalId,
-      resourceType: "principal",
-      resourceId: id,
-      details: { role: req.body.role, scope: req.body.scope },
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "role_assigned",
+        actorId: req.user!.principalId,
+        resourceType: "principal",
+        resourceId: id,
+        details: { role: req.body.role, scope: req.body.scope },
+      });
+
+      return aId;
     });
 
     res.status(201).json({ assignmentId });
@@ -197,14 +205,16 @@ router.delete(
   requirePermission("manage_permissions"),
   async (req, res) => {
     const assignmentId = req.params.assignmentId as string;
-    await revokeRole(assignmentId);
+    await db.transaction(async (tx) => {
+      await revokeRole(assignmentId, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "role_revoked",
-      actorId: req.user!.principalId,
-      resourceType: "role_assignment",
-      resourceId: assignmentId,
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "role_revoked",
+        actorId: req.user!.principalId,
+        resourceType: "role_assignment",
+        resourceId: assignmentId,
+      });
     });
 
     res.status(204).send();
@@ -271,23 +281,27 @@ router.post(
   requirePermission("manage_permissions", (req) => req.params.nodeId),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
-    const id = await grantPagePermission({
-      nodeId,
-      principalId: req.body.principalId,
-      permission: req.body.permission,
-      grantedBy: req.user!.principalId,
-    });
-
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "page_permission_granted",
-      actorId: req.user!.principalId,
-      resourceType: "content_node",
-      resourceId: nodeId,
-      details: {
+    const id = await db.transaction(async (tx) => {
+      const permId = await grantPagePermission({
+        nodeId,
         principalId: req.body.principalId,
         permission: req.body.permission,
-      },
+        grantedBy: req.user!.principalId,
+      }, tx);
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "page_permission_granted",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: nodeId,
+        details: {
+          principalId: req.body.principalId,
+          permission: req.body.permission,
+        },
+      });
+
+      return permId;
     });
 
     res.status(201).json({ id });
@@ -300,14 +314,16 @@ router.delete(
   requirePermission("manage_permissions", (req) => req.params.nodeId),
   async (req, res) => {
     const permId = req.params.permId as string;
-    await revokePagePermission(permId);
+    await db.transaction(async (tx) => {
+      await revokePagePermission(permId, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "page_permission_revoked",
-      actorId: req.user!.principalId,
-      resourceType: "page_permission",
-      resourceId: permId,
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "page_permission_revoked",
+        actorId: req.user!.principalId,
+        resourceType: "page_permission",
+        resourceId: permId,
+      });
     });
 
     res.status(204).send();
@@ -331,24 +347,28 @@ router.put(
   requirePermission("manage_permissions", (req) => req.params.nodeId),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
-    const id = await setNodeOwnership({
-      nodeId,
-      ownerId: req.body.ownerId,
-      deputyId: req.body.deputyId,
-      reviewerId: req.body.reviewerId,
-      approverId: req.body.approverId,
-    });
-
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "ownership_updated",
-      actorId: req.user!.principalId,
-      resourceType: "content_node",
-      resourceId: nodeId,
-      details: {
+    const id = await db.transaction(async (tx) => {
+      const ownershipId = await setNodeOwnership({
+        nodeId,
         ownerId: req.body.ownerId,
         deputyId: req.body.deputyId,
-      },
+        reviewerId: req.body.reviewerId,
+        approverId: req.body.approverId,
+      }, tx);
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "ownership_updated",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: nodeId,
+        details: {
+          ownerId: req.body.ownerId,
+          deputyId: req.body.deputyId,
+        },
+      });
+
+      return ownershipId;
     });
 
     res.json({ id });
@@ -380,15 +400,17 @@ router.put(
       res.status(400).json({ error: "isEnabled must be a boolean" });
       return;
     }
-    await updateSodConfig(ruleKey, isEnabled, req.user!.principalId);
+    await db.transaction(async (tx) => {
+      await updateSodConfig(ruleKey, isEnabled, req.user!.principalId, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "sod_config_updated",
-      actorId: req.user!.principalId,
-      resourceType: "sod_config",
-      resourceId: ruleKey,
-      details: { ruleKey, isEnabled },
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "sod_config_updated",
+        actorId: req.user!.principalId,
+        resourceType: "sod_config",
+        resourceId: ruleKey,
+        details: { ruleKey, isEnabled },
+      });
     });
 
     res.json({ ruleKey, isEnabled });
@@ -477,23 +499,27 @@ router.post(
       }
     }
 
-    const delegationId = await createDelegation({
-      principalId,
-      deputyId,
-      scope: validScope,
-      reason,
-      startsAt: parsedStartsAt,
-      endsAt: parsedEndsAt,
-      createdBy: req.user!.principalId,
-    });
+    const delegationId = await db.transaction(async (tx) => {
+      const dId = await createDelegation({
+        principalId,
+        deputyId,
+        scope: validScope,
+        reason,
+        startsAt: parsedStartsAt,
+        endsAt: parsedEndsAt,
+        createdBy: req.user!.principalId,
+      }, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "delegation_created",
-      actorId: req.user!.principalId,
-      resourceType: "deputy_delegation",
-      resourceId: delegationId,
-      details: { principalId, deputyId, scope, startsAt, endsAt, reason },
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "delegation_created",
+        actorId: req.user!.principalId,
+        resourceType: "deputy_delegation",
+        resourceId: dId,
+        details: { principalId, deputyId, scope, startsAt, endsAt, reason },
+      });
+
+      return dId;
     });
 
     res.status(201).json({ id: delegationId });
@@ -523,14 +549,16 @@ router.delete(
       }
     }
 
-    await revokeDelegation(delegationId);
+    await db.transaction(async (tx) => {
+      await revokeDelegation(delegationId, tx);
 
-    await db.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "delegation_revoked",
-      actorId: req.user!.principalId,
-      resourceType: "deputy_delegation",
-      resourceId: delegationId,
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "delegation_revoked",
+        actorId: req.user!.principalId,
+        resourceType: "deputy_delegation",
+        resourceId: delegationId,
+      });
     });
 
     res.status(204).send();

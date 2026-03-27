@@ -164,24 +164,50 @@ export async function restoreRevision(
     throw new Error(`Source revision ${sourceRevisionId} not found`);
   }
 
-  const newRevisionId = await createRevision({
-    nodeId: source.nodeId,
-    title: source.title,
-    content: source.content as Record<string, unknown> | undefined,
-    structuredFields: source.structuredFields as
-      | Record<string, unknown>
-      | undefined,
-    changeType: "editorial",
-    changeSummary: `Restored from revision ${source.revisionNo}`,
-    basedOnRevisionId: sourceRevisionId,
-    authorId,
-  });
+  const newRevisionId = await db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${source.nodeId}))`,
+    );
+    const maxResult = await tx
+      .select({
+        maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
+      })
+      .from(contentRevisionsTable)
+      .where(eq(contentRevisionsTable.nodeId, source.nodeId));
+    const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
 
-  await db.insert(contentRevisionEventsTable).values({
-    revisionId: newRevisionId,
-    eventType: "restored",
-    actorId: authorId,
-    metadata: { restoredFromRevisionId: sourceRevisionId },
+    const [revision] = await tx
+      .insert(contentRevisionsTable)
+      .values({
+        nodeId: source.nodeId,
+        revisionNo,
+        title: source.title,
+        content: source.content as Record<string, unknown> | undefined,
+        structuredFields: source.structuredFields as
+          | Record<string, unknown>
+          | undefined,
+        changeType: "editorial",
+        changeSummary: `Restored from revision ${source.revisionNo}`,
+        basedOnRevisionId: sourceRevisionId,
+        authorId,
+        status: "draft",
+      })
+      .returning({ id: contentRevisionsTable.id });
+
+    await tx.insert(contentRevisionEventsTable).values({
+      revisionId: revision.id,
+      eventType: "created",
+      actorId: authorId,
+    });
+
+    await tx.insert(contentRevisionEventsTable).values({
+      revisionId: revision.id,
+      eventType: "restored",
+      actorId: authorId,
+      metadata: { restoredFromRevisionId: sourceRevisionId },
+    });
+
+    return revision.id;
   });
 
   logger.info(

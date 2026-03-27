@@ -192,27 +192,31 @@ connectorsRouter.post(
       return;
     }
 
-    const [system] = await db
-      .insert(sourceSystemsTable)
-      .values({
-        name,
-        slug,
-        systemType,
-        purpose: purpose || "knowledge_source",
-        accessMode: accessMode || "read_only",
-        connectionConfig: connectionConfig || null,
-        syncEnabled: syncEnabled ?? false,
-        syncIntervalMinutes: syncIntervalMinutes ?? 60,
-      })
-      .returning();
+    const system = await db.transaction(async (tx) => {
+      const [s] = await tx
+        .insert(sourceSystemsTable)
+        .values({
+          name,
+          slug,
+          systemType,
+          purpose: purpose || "knowledge_source",
+          accessMode: accessMode || "read_only",
+          connectionConfig: connectionConfig || null,
+          syncEnabled: syncEnabled ?? false,
+          syncIntervalMinutes: syncIntervalMinutes ?? 60,
+        })
+        .returning();
 
-    await db.insert(auditEventsTable).values({
-      eventType: "connector",
-      action: "source_system_created",
-      actorId: req.user!.principalId,
-      resourceType: "source_system",
-      resourceId: system.id,
-      details: { name, systemType },
+      await tx.insert(auditEventsTable).values({
+        eventType: "connector",
+        action: "source_system_created",
+        actorId: req.user!.principalId,
+        resourceType: "source_system",
+        resourceId: s.id,
+        details: { name, systemType },
+      });
+
+      return s;
     });
 
     res.status(201).json(redactSystem(system));
@@ -279,25 +283,31 @@ connectorsRouter.patch(
 
     updates.updatedAt = new Date();
 
-    const [system] = await db
-      .update(sourceSystemsTable)
-      .set(updates)
-      .where(eq(sourceSystemsTable.id, id))
-      .returning();
+    const system = await db.transaction(async (tx) => {
+      const [s] = await tx
+        .update(sourceSystemsTable)
+        .set(updates)
+        .where(eq(sourceSystemsTable.id, id))
+        .returning();
+
+      if (!s) return null;
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "connector",
+        action: "source_system_updated",
+        actorId: req.user!.principalId,
+        resourceType: "source_system",
+        resourceId: id,
+        details: { updatedFields: Object.keys(updates) },
+      });
+
+      return s;
+    });
 
     if (!system) {
       res.status(404).json({ error: "Source system not found" });
       return;
     }
-
-    await db.insert(auditEventsTable).values({
-      eventType: "connector",
-      action: "source_system_updated",
-      actorId: req.user!.principalId,
-      resourceType: "source_system",
-      resourceId: id,
-      details: { updatedFields: Object.keys(updates) },
-    });
 
     res.json(redactSystem(system));
   },
@@ -326,14 +336,16 @@ connectorsRouter.delete(
       return;
     }
 
-    await db.delete(sourceSystemsTable).where(eq(sourceSystemsTable.id, id));
+    await db.transaction(async (tx) => {
+      await tx.delete(sourceSystemsTable).where(eq(sourceSystemsTable.id, id));
 
-    await db.insert(auditEventsTable).values({
-      eventType: "connector",
-      action: "source_system_deleted",
-      actorId: req.user!.principalId,
-      resourceType: "source_system",
-      resourceId: id,
+      await tx.insert(auditEventsTable).values({
+        eventType: "connector",
+        action: "source_system_deleted",
+        actorId: req.user!.principalId,
+        resourceType: "source_system",
+        resourceId: id,
+      });
     });
 
     res.status(204).send();
@@ -410,33 +422,37 @@ connectorsRouter.post(
       return;
     }
 
-    if (isDefault) {
-      await db
-        .update(storageProvidersTable)
-        .set({ isDefault: false })
-        .where(eq(storageProvidersTable.isDefault, true));
-    }
+    const provider = await db.transaction(async (tx) => {
+      if (isDefault) {
+        await tx
+          .update(storageProvidersTable)
+          .set({ isDefault: false })
+          .where(eq(storageProvidersTable.isDefault, true));
+      }
 
-    const [provider] = await db
-      .insert(storageProvidersTable)
-      .values({
-        name,
-        slug,
-        providerType,
-        purpose: purpose || "media_archive",
-        accessMode: accessMode || "read_write",
-        config: config || null,
-        isDefault: isDefault ?? false,
-      })
-      .returning();
+      const [p] = await tx
+        .insert(storageProvidersTable)
+        .values({
+          name,
+          slug,
+          providerType,
+          purpose: purpose || "media_archive",
+          accessMode: accessMode || "read_write",
+          config: config || null,
+          isDefault: isDefault ?? false,
+        })
+        .returning();
 
-    await db.insert(auditEventsTable).values({
-      eventType: "connector",
-      action: "storage_provider_created",
-      actorId: req.user!.principalId,
-      resourceType: "storage_provider",
-      resourceId: provider.id,
-      details: { name, providerType },
+      await tx.insert(auditEventsTable).values({
+        eventType: "connector",
+        action: "storage_provider_created",
+        actorId: req.user!.principalId,
+        resourceType: "storage_provider",
+        resourceId: p.id,
+        details: { name, providerType },
+      });
+
+      return p;
     });
 
     res.status(201).json({

@@ -8,7 +8,7 @@ import {
   contentTemplatesTable,
   auditEventsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, isNull, sql, ne } from "drizzle-orm";
+import { eq, and, desc, isNull, sql } from "drizzle-orm";
 import { createContentNode, moveNode } from "../services/identity.service";
 import {
   getVersionTree,
@@ -191,25 +191,31 @@ router.patch(
 
     updates.updatedAt = new Date();
 
-    const [updated] = await db
-      .update(contentNodesTable)
-      .set(updates)
-      .where(eq(contentNodesTable.id, id))
-      .returning();
+    const updated = await db.transaction(async (tx) => {
+      const [result] = await tx
+        .update(contentNodesTable)
+        .set(updates)
+        .where(eq(contentNodesTable.id, id))
+        .returning();
+
+      if (!result) return null;
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "node_updated",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: id,
+        details: updates,
+      });
+
+      return result;
+    });
 
     if (!updated) {
       res.status(404).json({ error: "Node not found" });
       return;
     }
-
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "node_updated",
-      actorId: req.user!.principalId,
-      resourceType: "content_node",
-      resourceId: id,
-      details: updates,
-    });
 
     res.json(updated);
   },
@@ -222,20 +228,17 @@ router.post(
   validateBody(CreateNodeBody),
   async (req, res) => {
     try {
-      const nodeId = await createContentNode(req.body);
-      const [node] = await db
-        .select()
-        .from(contentNodesTable)
-        .where(eq(contentNodesTable.id, nodeId));
-
-      await db.insert(auditEventsTable).values({
+      const nodeId = await createContentNode(req.body, {
         eventType: "content",
         action: "node_created",
         actorId: req.user!.principalId,
         resourceType: "content_node",
-        resourceId: nodeId,
         details: { title: req.body.title, templateType: req.body.templateType },
       });
+      const [node] = await db
+        .select()
+        .from(contentNodesTable)
+        .where(eq(contentNodesTable.id, nodeId));
 
       res.status(201).json(node);
     } catch (err) {
@@ -256,20 +259,19 @@ router.post(
         id,
         req.body.newParentNodeId ?? null,
         req.user!.principalId,
+        {
+          eventType: "content",
+          action: "node_moved",
+          actorId: req.user!.principalId,
+          resourceType: "content_node",
+          resourceId: id,
+          details: { newParentNodeId: req.body.newParentNodeId },
+        },
       );
       const [node] = await db
         .select()
         .from(contentNodesTable)
         .where(eq(contentNodesTable.id, id));
-
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "node_moved",
-        actorId: req.user!.principalId,
-        resourceType: "content_node",
-        resourceId: id,
-        details: { newParentNodeId: req.body.newParentNodeId },
-      });
 
       res.json(node);
     } catch (err) {
@@ -284,17 +286,19 @@ router.delete(
   requirePermission("archive_page", (req) => req.params.id),
   async (req, res) => {
     const id = req.params.id as string;
-    await db
-      .update(contentNodesTable)
-      .set({ isDeleted: true, deletedAt: new Date(), status: "deleted" })
-      .where(eq(contentNodesTable.id, id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(contentNodesTable)
+        .set({ isDeleted: true, deletedAt: new Date(), status: "deleted" })
+        .where(eq(contentNodesTable.id, id));
 
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "node_deleted",
-      actorId: req.user!.principalId,
-      resourceType: "content_node",
-      resourceId: id,
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "node_deleted",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: id,
+      });
     });
 
     res.status(204).send();
@@ -507,19 +511,16 @@ router.post(
   validateBody(CreateRelationBody),
   async (req, res) => {
     try {
-      const relationId = await createRelation(req.body);
-      const [relation] = await db
-        .select()
-        .from(contentRelationsTable)
-        .where(eq(contentRelationsTable.id, relationId));
-
-      await db.insert(auditEventsTable).values({
+      const relationId = await createRelation(req.body, {
         eventType: "content",
         action: "relation_created",
         actorId: req.user!.principalId,
         resourceType: "content_relation",
-        resourceId: relationId,
       });
+      const [relation] = await db
+        .select()
+        .from(contentRelationsTable)
+        .where(eq(contentRelationsTable.id, relationId));
 
       res.status(201).json(relation);
     } catch (err) {
@@ -545,9 +546,7 @@ router.delete(
   requirePermission("manage_relations"),
   async (req, res) => {
     const id = req.params.id as string;
-    await removeRelation(id);
-
-    await db.insert(auditEventsTable).values({
+    await removeRelation(id, {
       eventType: "content",
       action: "relation_deleted",
       actorId: req.user!.principalId,

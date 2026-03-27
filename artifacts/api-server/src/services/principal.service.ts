@@ -14,8 +14,8 @@ export async function upsertPrincipal(input: {
   displayName: string;
   email?: string;
   upn?: string;
-}): Promise<string> {
-  const [existing] = await db
+}, txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db): Promise<string> {
+  const [existing] = await txOrDb
     .select({ id: principalsTable.id })
     .from(principalsTable)
     .where(
@@ -26,7 +26,7 @@ export async function upsertPrincipal(input: {
     );
 
   if (existing) {
-    await db
+    await txOrDb
       .update(principalsTable)
       .set({
         displayName: input.displayName,
@@ -39,7 +39,7 @@ export async function upsertPrincipal(input: {
     return existing.id;
   }
 
-  const [principal] = await db
+  const [principal] = await txOrDb
     .insert(principalsTable)
     .values({
       principalType: input.principalType,
@@ -161,8 +161,8 @@ export async function assignRole(input: {
         | "compliance_manager";
   scope?: string;
   grantedBy?: string;
-}) {
-  const existing = await db
+}, txOrDb: Pick<typeof db, "select" | "insert"> = db) {
+  const existing = await txOrDb
     .select({ id: roleAssignmentsTable.id })
     .from(roleAssignmentsTable)
     .where(
@@ -178,7 +178,7 @@ export async function assignRole(input: {
     return existing[0].id;
   }
 
-  const [assignment] = await db
+  const [assignment] = await txOrDb
     .insert(roleAssignmentsTable)
     .values({
       principalId: input.principalId,
@@ -195,8 +195,8 @@ export async function assignRole(input: {
   return assignment.id;
 }
 
-export async function revokeRole(assignmentId: string) {
-  await db
+export async function revokeRole(assignmentId: string, txOrDb: Pick<typeof db, "update"> = db) {
+  await txOrDb
     .update(roleAssignmentsTable)
     .set({ isActive: false })
     .where(eq(roleAssignmentsTable.id, assignmentId));

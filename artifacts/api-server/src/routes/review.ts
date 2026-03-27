@@ -97,50 +97,55 @@ router.post(
         return;
       }
 
-      const [workflow] = await db
-        .insert(reviewWorkflowsTable)
-        .values({
-          revisionId,
-          status: "pending",
-          requiredApprovals: 1,
-          currentStep: 1,
-          initiatedBy: req.user!.principalId,
-        })
-        .returning();
-
-      await db.insert(approvalsTable).values({
-        workflowId: workflow.id,
-        revisionId,
-        stepNumber: 1,
-        reviewerId: reviewerId || null,
-      });
-
-      await db
-        .update(contentRevisionsTable)
-        .set({ status: "in_review", reviewerId: reviewerId || null })
-        .where(eq(contentRevisionsTable.id, revisionId));
-
       const nodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
-      await db
-        .update(contentNodesTable)
-        .set({ status: "in_review", updatedAt: new Date() })
-        .where(eq(contentNodesTable.id, nodeId));
 
-      await db.insert(contentRevisionEventsTable).values({
-        revisionId,
-        eventType: "submitted_for_review",
-        actorId: req.user!.principalId,
-        comment: comment || null,
-        metadata: reviewerId ? { reviewerId } : {},
-      });
+      const workflow = await db.transaction(async (tx) => {
+        const [wf] = await tx
+          .insert(reviewWorkflowsTable)
+          .values({
+            revisionId,
+            status: "pending",
+            requiredApprovals: 1,
+            currentStep: 1,
+            initiatedBy: req.user!.principalId,
+          })
+          .returning();
 
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "submitted_for_review",
-        actorId: req.user!.principalId,
-        resourceType: "content_revision",
-        resourceId: revisionId,
-        details: { reviewerId },
+        await tx.insert(approvalsTable).values({
+          workflowId: wf.id,
+          revisionId,
+          stepNumber: 1,
+          reviewerId: reviewerId || null,
+        });
+
+        await tx
+          .update(contentRevisionsTable)
+          .set({ status: "in_review", reviewerId: reviewerId || null })
+          .where(eq(contentRevisionsTable.id, revisionId));
+
+        await tx
+          .update(contentNodesTable)
+          .set({ status: "in_review", updatedAt: new Date() })
+          .where(eq(contentNodesTable.id, nodeId));
+
+        await tx.insert(contentRevisionEventsTable).values({
+          revisionId,
+          eventType: "submitted_for_review",
+          actorId: req.user!.principalId,
+          comment: comment || null,
+          metadata: reviewerId ? { reviewerId } : {},
+        });
+
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "submitted_for_review",
+          actorId: req.user!.principalId,
+          resourceType: "content_revision",
+          resourceId: revisionId,
+          details: { reviewerId },
+        });
+
+        return wf;
       });
 
       res.status(201).json(workflow);
@@ -217,82 +222,87 @@ router.post(
         }
       }
 
-      const [workflow] = await db
-        .select()
-        .from(reviewWorkflowsTable)
-        .where(
-          and(
-            eq(reviewWorkflowsTable.revisionId, revisionId),
-            eq(reviewWorkflowsTable.status, "pending"),
-          ),
-        )
-        .orderBy(desc(reviewWorkflowsTable.createdAt))
-        .limit(1);
+      const approveNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
 
-      if (workflow) {
-        await db
-          .update(reviewWorkflowsTable)
-          .set({
-            status: "approved",
-            completedAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .where(eq(reviewWorkflowsTable.id, workflow.id));
-
-        await db
-          .update(approvalsTable)
-          .set({
-            decision: "approved",
-            reviewerId: req.user!.principalId,
-            comment: comment || null,
-            decidedAt: new Date(),
-          })
+      const revision = await db.transaction(async (tx) => {
+        const [workflow] = await tx
+          .select()
+          .from(reviewWorkflowsTable)
           .where(
             and(
-              eq(approvalsTable.workflowId, workflow.id),
-              eq(approvalsTable.stepNumber, workflow.currentStep),
+              eq(reviewWorkflowsTable.revisionId, revisionId),
+              eq(reviewWorkflowsTable.status, "pending"),
             ),
-          );
-      }
+          )
+          .orderBy(desc(reviewWorkflowsTable.createdAt))
+          .limit(1);
 
-      const updateFields: Record<string, unknown> = {
-        status: "approved",
-        approverId: req.user!.principalId,
-      };
-      if (nextReviewDate) {
-        updateFields.nextReviewDate = new Date(nextReviewDate);
-      }
-      await db
-        .update(contentRevisionsTable)
-        .set(updateFields)
-        .where(eq(contentRevisionsTable.id, revisionId));
+        if (workflow) {
+          await tx
+            .update(reviewWorkflowsTable)
+            .set({
+              status: "approved",
+              completedAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(reviewWorkflowsTable.id, workflow.id));
 
-      const approveNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
-      await db
-        .update(contentNodesTable)
-        .set({ status: "approved", updatedAt: new Date() })
-        .where(eq(contentNodesTable.id, approveNodeId));
+          await tx
+            .update(approvalsTable)
+            .set({
+              decision: "approved",
+              reviewerId: req.user!.principalId,
+              comment: comment || null,
+              decidedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(approvalsTable.workflowId, workflow.id),
+                eq(approvalsTable.stepNumber, workflow.currentStep),
+              ),
+            );
+        }
 
-      await db.insert(contentRevisionEventsTable).values({
-        revisionId,
-        eventType: "review_approved",
-        actorId: req.user!.principalId,
-        comment: comment || null,
-        metadata: nextReviewDate ? { nextReviewDate } : {},
+        const updateFields: Record<string, unknown> = {
+          status: "approved",
+          approverId: req.user!.principalId,
+        };
+        if (nextReviewDate) {
+          updateFields.nextReviewDate = new Date(nextReviewDate);
+        }
+        await tx
+          .update(contentRevisionsTable)
+          .set(updateFields)
+          .where(eq(contentRevisionsTable.id, revisionId));
+
+        await tx
+          .update(contentNodesTable)
+          .set({ status: "approved", updatedAt: new Date() })
+          .where(eq(contentNodesTable.id, approveNodeId));
+
+        await tx.insert(contentRevisionEventsTable).values({
+          revisionId,
+          eventType: "review_approved",
+          actorId: req.user!.principalId,
+          comment: comment || null,
+          metadata: nextReviewDate ? { nextReviewDate } : {},
+        });
+
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "revision_approved",
+          actorId: req.user!.principalId,
+          resourceType: "content_revision",
+          resourceId: revisionId,
+        });
+
+        const [rev] = await tx
+          .select()
+          .from(contentRevisionsTable)
+          .where(eq(contentRevisionsTable.id, revisionId));
+        return rev;
       });
 
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "revision_approved",
-        actorId: req.user!.principalId,
-        resourceType: "content_revision",
-        resourceId: revisionId,
-      });
-
-      const [revision] = await db
-        .select()
-        .from(contentRevisionsTable)
-        .where(eq(contentRevisionsTable.id, revisionId));
       res.json(revision);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -318,79 +328,84 @@ router.post(
         return;
       }
 
-      const [workflow] = await db
-        .select()
-        .from(reviewWorkflowsTable)
-        .where(
-          and(
-            eq(reviewWorkflowsTable.revisionId, revisionId),
-            eq(reviewWorkflowsTable.status, "pending"),
-          ),
-        )
-        .orderBy(desc(reviewWorkflowsTable.createdAt))
-        .limit(1);
+      const rejectNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
 
-      if (workflow) {
-        await db
-          .update(reviewWorkflowsTable)
-          .set({
-            status: "rejected",
-            completedAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .where(eq(reviewWorkflowsTable.id, workflow.id));
-
-        await db
-          .update(approvalsTable)
-          .set({
-            decision:
-              decision === "returned_for_changes"
-                ? "returned_for_changes"
-                : "rejected",
-            reviewerId: req.user!.principalId,
-            comment: comment || null,
-            decidedAt: new Date(),
-          })
+      const revision = await db.transaction(async (tx) => {
+        const [workflow] = await tx
+          .select()
+          .from(reviewWorkflowsTable)
           .where(
             and(
-              eq(approvalsTable.workflowId, workflow.id),
-              eq(approvalsTable.stepNumber, workflow.currentStep),
+              eq(reviewWorkflowsTable.revisionId, revisionId),
+              eq(reviewWorkflowsTable.status, "pending"),
             ),
-          );
-      }
+          )
+          .orderBy(desc(reviewWorkflowsTable.createdAt))
+          .limit(1);
 
-      await db
-        .update(contentRevisionsTable)
-        .set({ status: "draft" })
-        .where(eq(contentRevisionsTable.id, revisionId));
+        if (workflow) {
+          await tx
+            .update(reviewWorkflowsTable)
+            .set({
+              status: "rejected",
+              completedAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(reviewWorkflowsTable.id, workflow.id));
 
-      const rejectNodeId = (req as RevisionResolvedRequest)._resolvedNodeId;
-      await db
-        .update(contentNodesTable)
-        .set({ status: "draft", updatedAt: new Date() })
-        .where(eq(contentNodesTable.id, rejectNodeId));
+          await tx
+            .update(approvalsTable)
+            .set({
+              decision:
+                decision === "returned_for_changes"
+                  ? "returned_for_changes"
+                  : "rejected",
+              reviewerId: req.user!.principalId,
+              comment: comment || null,
+              decidedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(approvalsTable.workflowId, workflow.id),
+                eq(approvalsTable.stepNumber, workflow.currentStep),
+              ),
+            );
+        }
 
-      await db.insert(contentRevisionEventsTable).values({
-        revisionId,
-        eventType: "review_rejected",
-        actorId: req.user!.principalId,
-        comment: comment || null,
-        metadata: { decision: decision || "rejected" },
+        await tx
+          .update(contentRevisionsTable)
+          .set({ status: "draft" })
+          .where(eq(contentRevisionsTable.id, revisionId));
+
+        await tx
+          .update(contentNodesTable)
+          .set({ status: "draft", updatedAt: new Date() })
+          .where(eq(contentNodesTable.id, rejectNodeId));
+
+        await tx.insert(contentRevisionEventsTable).values({
+          revisionId,
+          eventType: "review_rejected",
+          actorId: req.user!.principalId,
+          comment: comment || null,
+          metadata: { decision: decision || "rejected" },
+        });
+
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "revision_rejected",
+          actorId: req.user!.principalId,
+          resourceType: "content_revision",
+          resourceId: revisionId,
+          details: { decision },
+        });
+
+        const [rev] = await tx
+          .select()
+          .from(contentRevisionsTable)
+          .where(eq(contentRevisionsTable.id, revisionId));
+        return rev;
       });
 
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "revision_rejected",
-        actorId: req.user!.principalId,
-        resourceType: "content_revision",
-        resourceId: revisionId,
-        details: { decision },
-      });
-
-      const [revision] = await db
-        .select()
-        .from(contentRevisionsTable)
-        .where(eq(contentRevisionsTable.id, revisionId));
       res.json(revision);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";

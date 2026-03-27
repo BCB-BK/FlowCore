@@ -3,6 +3,16 @@ import { auditEventsTable, type InsertAuditEvent } from "@workspace/db/schema";
 import { eq, desc, and, gte, lte, sql, type SQL } from "drizzle-orm";
 import { logger } from "./logger";
 
+export type { InsertAuditEvent };
+
+export type TxLike = {
+  insert: typeof db.insert;
+};
+
+export async function auditLogTx(tx: TxLike, event: InsertAuditEvent): Promise<void> {
+  await tx.insert(auditEventsTable).values(event);
+}
+
 export interface AuditQueryOptions {
   resourceType?: string;
   resourceId?: string;

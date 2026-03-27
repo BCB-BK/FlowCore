@@ -759,19 +759,20 @@ export async function updateSodConfig(
   ruleKey: SodRuleKey,
   isEnabled: boolean,
   updatedBy?: string,
+  txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db,
 ): Promise<void> {
-  const [existing] = await db
+  const [existing] = await txOrDb
     .select({ id: sodConfigTable.id })
     .from(sodConfigTable)
     .where(eq(sodConfigTable.ruleKey, ruleKey));
 
   if (existing) {
-    await db
+    await txOrDb
       .update(sodConfigTable)
       .set({ isEnabled, updatedBy, updatedAt: new Date() })
       .where(eq(sodConfigTable.id, existing.id));
   } else {
-    await db.insert(sodConfigTable).values({
+    await txOrDb.insert(sodConfigTable).values({
       ruleKey,
       description: SOD_RULES[ruleKey].description,
       isEnabled,
@@ -785,8 +786,8 @@ export async function grantPagePermission(input: {
   principalId: string;
   permission: WikiPermission;
   grantedBy?: string;
-}) {
-  const [existing] = await db
+}, txOrDb: Pick<typeof db, "select" | "insert"> = db) {
+  const [existing] = await txOrDb
     .select({ id: pagePermissionsTable.id })
     .from(pagePermissionsTable)
     .where(
@@ -799,7 +800,7 @@ export async function grantPagePermission(input: {
 
   if (existing) return existing.id;
 
-  const [perm] = await db
+  const [perm] = await txOrDb
     .insert(pagePermissionsTable)
     .values({
       nodeId: input.nodeId,
@@ -820,8 +821,8 @@ export async function grantPagePermission(input: {
   return perm.id;
 }
 
-export async function revokePagePermission(permissionId: string) {
-  await db
+export async function revokePagePermission(permissionId: string, txOrDb: Pick<typeof db, "delete"> = db) {
+  await txOrDb
     .delete(pagePermissionsTable)
     .where(eq(pagePermissionsTable.id, permissionId));
 }
@@ -839,14 +840,14 @@ export async function setNodeOwnership(input: {
   deputyId?: string;
   reviewerId?: string;
   approverId?: string;
-}) {
-  const [existing] = await db
+}, txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db) {
+  const [existing] = await txOrDb
     .select({ id: nodeOwnershipTable.id })
     .from(nodeOwnershipTable)
     .where(eq(nodeOwnershipTable.nodeId, input.nodeId));
 
   if (existing) {
-    await db
+    await txOrDb
       .update(nodeOwnershipTable)
       .set({
         ownerId: input.ownerId,
@@ -859,7 +860,7 @@ export async function setNodeOwnership(input: {
     return existing.id;
   }
 
-  const [ownership] = await db
+  const [ownership] = await txOrDb
     .insert(nodeOwnershipTable)
     .values({
       nodeId: input.nodeId,
@@ -923,8 +924,8 @@ export async function createDelegation(input: {
   startsAt: Date;
   endsAt?: Date;
   createdBy?: string;
-}): Promise<string> {
-  const [delegation] = await db
+}, txOrDb: Pick<typeof db, "insert"> = db): Promise<string> {
+  const [delegation] = await txOrDb
     .insert(deputyDelegationsTable)
     .values({
       principalId: input.principalId,
@@ -952,8 +953,8 @@ export async function createDelegation(input: {
   return delegation.id;
 }
 
-export async function revokeDelegation(delegationId: string): Promise<void> {
-  await db
+export async function revokeDelegation(delegationId: string, txOrDb: Pick<typeof db, "update"> = db): Promise<void> {
+  await txOrDb
     .update(deputyDelegationsTable)
     .set({ isActive: false, updatedAt: new Date() })
     .where(eq(deputyDelegationsTable.id, delegationId));

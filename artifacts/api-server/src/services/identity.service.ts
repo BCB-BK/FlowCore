@@ -2,11 +2,13 @@ import { db } from "@workspace/db";
 import {
   contentNodesTable,
   contentAliasesTable,
+  auditEventsTable,
   type InsertContentNode,
 } from "@workspace/db/schema";
 import { eq, and, isNull, sql, asc } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { logger } from "../lib/logger";
+import { type InsertAuditEvent } from "../lib/audit";
 import crypto from "node:crypto";
 import { getDisplayIdPrefix } from "@workspace/shared/page-types";
 
@@ -82,6 +84,7 @@ export interface CreateContentNodeInput {
 
 export async function createContentNode(
   input: CreateContentNodeInput,
+  auditEvent?: Omit<InsertAuditEvent, "resourceId">,
 ): Promise<string> {
   const immutableId = generateImmutableId();
 
@@ -106,6 +109,13 @@ export async function createContentNode(
         status: "draft",
       })
       .returning({ id: contentNodesTable.id });
+
+    if (auditEvent) {
+      await tx.insert(auditEventsTable).values({
+        ...auditEvent,
+        resourceId: node.id,
+      });
+    }
 
     logger.info(
       { nodeId: node.id, immutableId, displayCode },
@@ -192,6 +202,7 @@ export async function moveNode(
   nodeId: string,
   newParentNodeId: string | null,
   actorId?: string,
+  auditEvent?: InsertAuditEvent,
 ): Promise<void> {
   await db.transaction(async (tx) => {
     const [node] = await tx
@@ -240,6 +251,10 @@ export async function moveNode(
       .where(eq(contentNodesTable.id, nodeId));
 
     await recomputeDescendantCodes(tx, nodeId, actorId);
+
+    if (auditEvent) {
+      await tx.insert(auditEventsTable).values(auditEvent);
+    }
 
     logger.info(
       { nodeId, oldDisplayCode, newDisplayCode },

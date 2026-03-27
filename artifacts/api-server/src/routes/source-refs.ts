@@ -170,30 +170,34 @@ sourceRefsRouter.post(
       return;
     }
 
-    const [ref] = await db
-      .insert(sourceReferencesTable)
-      .values({
-        nodeId,
-        sourceSystemId,
-        externalId,
-        externalUrl: externalUrl || null,
-        externalTitle: externalTitle || null,
-        externalMimeType: externalMimeType || null,
-        externalModifiedAt: externalModifiedAt
-          ? new Date(externalModifiedAt)
-          : null,
-        metadata: metadata || null,
-        createdBy: req.user!.principalId,
-      })
-      .returning();
+    const ref = await db.transaction(async (tx) => {
+      const [r] = await tx
+        .insert(sourceReferencesTable)
+        .values({
+          nodeId,
+          sourceSystemId,
+          externalId,
+          externalUrl: externalUrl || null,
+          externalTitle: externalTitle || null,
+          externalMimeType: externalMimeType || null,
+          externalModifiedAt: externalModifiedAt
+            ? new Date(externalModifiedAt)
+            : null,
+          metadata: metadata || null,
+          createdBy: req.user!.principalId,
+        })
+        .returning();
 
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "source_reference_created",
-      actorId: req.user!.principalId,
-      resourceType: "source_reference",
-      resourceId: ref.id,
-      details: { nodeId, sourceSystemId, externalId, externalTitle },
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "source_reference_created",
+        actorId: req.user!.principalId,
+        resourceType: "source_reference",
+        resourceId: r.id,
+        details: { nodeId, sourceSystemId, externalId, externalTitle },
+      });
+
+      return r;
     });
 
     res.status(201).json(ref);
@@ -230,17 +234,19 @@ sourceRefsRouter.delete(
       return;
     }
 
-    await db
-      .delete(sourceReferencesTable)
-      .where(eq(sourceReferencesTable.id, refId));
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(sourceReferencesTable)
+        .where(eq(sourceReferencesTable.id, refId));
 
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "source_reference_deleted",
-      actorId: req.user!.principalId,
-      resourceType: "source_reference",
-      resourceId: refId,
-      details: { nodeId: ref.nodeId, externalId: ref.externalId },
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "source_reference_deleted",
+        actorId: req.user!.principalId,
+        resourceType: "source_reference",
+        resourceId: refId,
+        details: { nodeId: ref.nodeId, externalId: ref.externalId },
+      });
     });
 
     res.status(204).send();

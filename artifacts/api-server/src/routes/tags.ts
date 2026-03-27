@@ -179,18 +179,22 @@ router.post(
     }
 
     try {
-      const [assignment] = await db
-        .insert(contentNodeTagsTable)
-        .values({ nodeId, tagId })
-        .returning();
+      const assignment = await db.transaction(async (tx) => {
+        const [result] = await tx
+          .insert(contentNodeTagsTable)
+          .values({ nodeId, tagId })
+          .returning();
 
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "tag_assigned",
-        actorId: req.user!.principalId,
-        resourceType: "content_node",
-        resourceId: nodeId,
-        details: { tagId },
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "tag_assigned",
+          actorId: req.user!.principalId,
+          resourceType: "content_node",
+          resourceId: nodeId,
+          details: { tagId },
+        });
+
+        return result;
       });
 
       res.status(201).json(assignment);
@@ -212,22 +216,24 @@ router.delete(
     const nodeId = req.params.nodeId as string;
     const tagId = req.params.tagId as string;
 
-    await db
-      .delete(contentNodeTagsTable)
-      .where(
-        and(
-          eq(contentNodeTagsTable.nodeId, nodeId),
-          eq(contentNodeTagsTable.tagId, tagId),
-        ),
-      );
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(contentNodeTagsTable)
+        .where(
+          and(
+            eq(contentNodeTagsTable.nodeId, nodeId),
+            eq(contentNodeTagsTable.tagId, tagId),
+          ),
+        );
 
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "tag_removed",
-      actorId: req.user!.principalId,
-      resourceType: "content_node",
-      resourceId: nodeId,
-      details: { tagId },
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "tag_removed",
+        actorId: req.user!.principalId,
+        resourceType: "content_node",
+        resourceId: nodeId,
+        details: { tagId },
+      });
     });
 
     res.status(204).send();

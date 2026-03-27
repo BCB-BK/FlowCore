@@ -1,7 +1,8 @@
 import { db } from "@workspace/db";
-import { contentRelationsTable, contentNodesTable } from "@workspace/db/schema";
+import { contentRelationsTable, contentNodesTable, auditEventsTable } from "@workspace/db/schema";
 import { eq, and, or, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { type InsertAuditEvent } from "../lib/audit";
 
 const DIRECTED_RELATION_TYPES = new Set([
   "depends_on",
@@ -29,6 +30,7 @@ export interface CreateRelationInput {
 
 export async function createRelation(
   input: CreateRelationInput,
+  auditEvent?: Omit<InsertAuditEvent, "resourceId">,
 ): Promise<string> {
   if (input.sourceNodeId === input.targetNodeId) {
     throw new Error("Self-referencing relations are not allowed");
@@ -47,20 +49,31 @@ export async function createRelation(
     }
   }
 
-  const [relation] = await db
-    .insert(contentRelationsTable)
-    .values({
-      sourceNodeId: input.sourceNodeId,
-      targetNodeId: input.targetNodeId,
-      relationType: input.relationType,
-      description: input.description,
-      createdBy: input.createdBy,
-    })
-    .returning({ id: contentRelationsTable.id });
+  const relationId = await db.transaction(async (tx) => {
+    const [relation] = await tx
+      .insert(contentRelationsTable)
+      .values({
+        sourceNodeId: input.sourceNodeId,
+        targetNodeId: input.targetNodeId,
+        relationType: input.relationType,
+        description: input.description,
+        createdBy: input.createdBy,
+      })
+      .returning({ id: contentRelationsTable.id });
+
+    if (auditEvent) {
+      await tx.insert(auditEventsTable).values({
+        ...auditEvent,
+        resourceId: relation.id,
+      });
+    }
+
+    return relation.id;
+  });
 
   logger.info(
     {
-      relationId: relation.id,
+      relationId,
       source: input.sourceNodeId,
       target: input.targetNodeId,
       type: input.relationType,
@@ -68,7 +81,7 @@ export async function createRelation(
     "Relation created",
   );
 
-  return relation.id;
+  return relationId;
 }
 
 async function detectCycle(
@@ -98,10 +111,19 @@ async function detectCycle(
   return (result.rows[0] as { has_cycle: boolean })?.has_cycle === true;
 }
 
-export async function removeRelation(relationId: string): Promise<void> {
-  await db
-    .delete(contentRelationsTable)
-    .where(eq(contentRelationsTable.id, relationId));
+export async function removeRelation(
+  relationId: string,
+  auditEvent?: InsertAuditEvent,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(contentRelationsTable)
+      .where(eq(contentRelationsTable.id, relationId));
+
+    if (auditEvent) {
+      await tx.insert(auditEventsTable).values(auditEvent);
+    }
+  });
 }
 
 export async function getNodeRelations(nodeId: string) {

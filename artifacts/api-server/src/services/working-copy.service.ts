@@ -209,51 +209,53 @@ export async function updateWorkingCopy(
     updateData.status = "in_review";
   }
 
-  const [updated] = await db
-    .update(contentWorkingCopiesTable)
-    .set(updateData)
-    .where(eq(contentWorkingCopiesTable.id, id))
-    .returning();
+  return await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(contentWorkingCopiesTable)
+      .set(updateData)
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
 
-  if (isReviewPhase && wc.status === "submitted") {
-    await db.insert(workingCopyEventsTable).values({
-      workingCopyId: id,
-      eventType: "review_started",
-      actorId,
-    });
-  }
+    if (isReviewPhase && wc.status === "submitted") {
+      await tx.insert(workingCopyEventsTable).values({
+        workingCopyId: id,
+        eventType: "review_started",
+        actorId,
+      });
+    }
 
-  if (isReviewerEdit) {
-    await db.insert(workingCopyEventsTable).values({
-      workingCopyId: id,
-      eventType: "amended_by_reviewer",
-      actorId,
-    });
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "working_copy_amended_by_reviewer",
-      actorId,
-      resourceType: "working_copy",
-      resourceId: id,
-      details: { nodeId: wc.nodeId },
-    });
-  } else if (!isReviewPhase) {
-    await db.insert(workingCopyEventsTable).values({
-      workingCopyId: id,
-      eventType: "updated",
-      actorId,
-    });
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "working_copy_updated",
-      actorId,
-      resourceType: "working_copy",
-      resourceId: id,
-      details: { nodeId: wc.nodeId },
-    });
-  }
+    if (isReviewerEdit) {
+      await tx.insert(workingCopyEventsTable).values({
+        workingCopyId: id,
+        eventType: "amended_by_reviewer",
+        actorId,
+      });
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "working_copy_amended_by_reviewer",
+        actorId,
+        resourceType: "working_copy",
+        resourceId: id,
+        details: { nodeId: wc.nodeId },
+      });
+    } else if (!isReviewPhase) {
+      await tx.insert(workingCopyEventsTable).values({
+        workingCopyId: id,
+        eventType: "updated",
+        actorId,
+      });
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "working_copy_updated",
+        actorId,
+        resourceType: "working_copy",
+        resourceId: id,
+        details: { nodeId: wc.nodeId },
+      });
+    }
 
-  return updated;
+    return updated;
+  });
 }
 
 export async function submitWorkingCopy(
@@ -295,27 +297,31 @@ export async function submitWorkingCopy(
   if (input.changeType) updateData.changeType = input.changeType;
   if (input.changeSummary) updateData.changeSummary = input.changeSummary;
 
-  const [updated] = await db
-    .update(contentWorkingCopiesTable)
-    .set(updateData)
-    .where(eq(contentWorkingCopiesTable.id, id))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(contentWorkingCopiesTable)
+      .set(updateData)
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
 
-  await db.insert(workingCopyEventsTable).values({
-    workingCopyId: id,
-    eventType: "submitted",
-    actorId,
-    comment: input.comment || null,
-    metadata: { changeType: input.changeType },
-  });
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "submitted",
+      actorId,
+      comment: input.comment || null,
+      metadata: { changeType: input.changeType },
+    });
 
-  await db.insert(auditEventsTable).values({
-    eventType: "content",
-    action: "working_copy_submitted",
-    actorId,
-    resourceType: "working_copy",
-    resourceId: id,
-    details: { nodeId: wc.nodeId },
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_submitted",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId },
+    });
+
+    return result;
   });
 
   logger.info({ workingCopyId: id, actorId }, "Working copy submitted for review");
@@ -335,30 +341,34 @@ export async function returnWorkingCopyForChanges(
     );
   }
 
-  const [updated] = await db
-    .update(contentWorkingCopiesTable)
-    .set({
-      status: "changes_requested",
-      reviewerId: actorId,
-      updatedAt: new Date(),
-    })
-    .where(eq(contentWorkingCopiesTable.id, id))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(contentWorkingCopiesTable)
+      .set({
+        status: "changes_requested",
+        reviewerId: actorId,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
 
-  await db.insert(workingCopyEventsTable).values({
-    workingCopyId: id,
-    eventType: "returned_for_changes",
-    actorId,
-    comment: comment || null,
-  });
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "returned_for_changes",
+      actorId,
+      comment: comment || null,
+    });
 
-  await db.insert(auditEventsTable).values({
-    eventType: "content",
-    action: "working_copy_returned",
-    actorId,
-    resourceType: "working_copy",
-    resourceId: id,
-    details: { nodeId: wc.nodeId, comment },
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_returned",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId, comment },
+    });
+
+    return result;
   });
 
   logger.info(
@@ -381,30 +391,34 @@ export async function approveWorkingCopy(
     );
   }
 
-  const [updated] = await db
-    .update(contentWorkingCopiesTable)
-    .set({
-      status: "approved_for_publish",
-      approverId: actorId,
-      updatedAt: new Date(),
-    })
-    .where(eq(contentWorkingCopiesTable.id, id))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(contentWorkingCopiesTable)
+      .set({
+        status: "approved_for_publish",
+        approverId: actorId,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
 
-  await db.insert(workingCopyEventsTable).values({
-    workingCopyId: id,
-    eventType: "approved",
-    actorId,
-    comment: comment || null,
-  });
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "approved",
+      actorId,
+      comment: comment || null,
+    });
 
-  await db.insert(auditEventsTable).values({
-    eventType: "content",
-    action: "working_copy_approved",
-    actorId,
-    resourceType: "working_copy",
-    resourceId: id,
-    details: { nodeId: wc.nodeId },
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_approved",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId },
+    });
+
+    return result;
   });
 
   logger.info({ workingCopyId: id, actorId }, "Working copy approved");
@@ -602,29 +616,33 @@ export async function cancelWorkingCopy(
     );
   }
 
-  const [updated] = await db
-    .update(contentWorkingCopiesTable)
-    .set({
-      status: "cancelled",
-      updatedAt: new Date(),
-    })
-    .where(eq(contentWorkingCopiesTable.id, id))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(contentWorkingCopiesTable)
+      .set({
+        status: "cancelled",
+        updatedAt: new Date(),
+      })
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
 
-  await db.insert(workingCopyEventsTable).values({
-    workingCopyId: id,
-    eventType: "cancelled",
-    actorId,
-    comment: comment || null,
-  });
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "cancelled",
+      actorId,
+      comment: comment || null,
+    });
 
-  await db.insert(auditEventsTable).values({
-    eventType: "content",
-    action: "working_copy_cancelled",
-    actorId,
-    resourceType: "working_copy",
-    resourceId: id,
-    details: { nodeId: wc.nodeId },
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_cancelled",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId },
+    });
+
+    return result;
   });
 
   logger.info({ workingCopyId: id, actorId }, "Working copy cancelled");
@@ -638,29 +656,33 @@ export async function unlockWorkingCopy(
   const wc = await getWorkingCopyById(id);
   if (!wc) throw new Error("Working copy not found");
 
-  const [updated] = await db
-    .update(contentWorkingCopiesTable)
-    .set({
-      lockedBy: null,
-      updatedAt: new Date(),
-    })
-    .where(eq(contentWorkingCopiesTable.id, id))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(contentWorkingCopiesTable)
+      .set({
+        lockedBy: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
 
-  await db.insert(workingCopyEventsTable).values({
-    workingCopyId: id,
-    eventType: "unlocked",
-    actorId,
-    metadata: { previousLockedBy: wc.lockedBy },
-  });
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "unlocked",
+      actorId,
+      metadata: { previousLockedBy: wc.lockedBy },
+    });
 
-  await db.insert(auditEventsTable).values({
-    eventType: "content",
-    action: "working_copy_unlocked",
-    actorId,
-    resourceType: "working_copy",
-    resourceId: id,
-    details: { nodeId: wc.nodeId },
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_unlocked",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId },
+    });
+
+    return result;
   });
 
   logger.info({ workingCopyId: id, actorId }, "Working copy unlocked");
@@ -774,20 +796,22 @@ export async function addWorkingCopyComment(
     throw new Error(`Kommentar nicht möglich im Status "${wc.status}"`);
   }
 
-  await db.insert(workingCopyEventsTable).values({
-    workingCopyId: id,
-    eventType: "commented",
-    actorId,
-    comment,
-  });
+  await db.transaction(async (tx) => {
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "commented",
+      actorId,
+      comment,
+    });
 
-  await db.insert(auditEventsTable).values({
-    eventType: "content",
-    action: "working_copy_commented",
-    actorId,
-    resourceType: "working_copy",
-    resourceId: id,
-    details: { nodeId: wc.nodeId, comment },
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_commented",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId, comment },
+    });
   });
 
   logger.info({ workingCopyId: id, actorId }, "Comment added to working copy");

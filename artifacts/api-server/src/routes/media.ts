@@ -160,33 +160,37 @@ router.post(
 
       const classification = getClassification(file.mimetype);
 
-      const [asset] = await db
-        .insert(mediaAssetsTable)
-        .values({
-          filename: storageKey,
-          originalFilename: (req.body.title as string) || file.originalname,
-          mimeType: file.mimetype,
-          sizeBytes: result.sizeBytes,
-          storageKey: result.storageKey,
-          storageProviderId: defaultProviderId,
-          altText: (req.body.altText as string) || null,
-          caption: (req.body.caption as string) || null,
-          classification,
-          nodeId: (req.body.nodeId as string) || null,
-          sourceUrl: (req.body.sourceUrl as string) || null,
-          sourceLibrary: (req.body.copyright as string) || null,
-          sourcePath: (req.body.source as string) || null,
-          uploadedBy: req.user!.principalId,
-        })
-        .returning();
+      const asset = await db.transaction(async (tx) => {
+        const [a] = await tx
+          .insert(mediaAssetsTable)
+          .values({
+            filename: storageKey,
+            originalFilename: (req.body.title as string) || file.originalname,
+            mimeType: file.mimetype,
+            sizeBytes: result.sizeBytes,
+            storageKey: result.storageKey,
+            storageProviderId: defaultProviderId,
+            altText: (req.body.altText as string) || null,
+            caption: (req.body.caption as string) || null,
+            classification,
+            nodeId: (req.body.nodeId as string) || null,
+            sourceUrl: (req.body.sourceUrl as string) || null,
+            sourceLibrary: (req.body.copyright as string) || null,
+            sourcePath: (req.body.source as string) || null,
+            uploadedBy: req.user!.principalId,
+          })
+          .returning();
 
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "media_uploaded",
-        actorId: req.user!.principalId,
-        resourceType: "media_asset",
-        resourceId: asset.id,
-        details: { filename: file.originalname, mimeType: file.mimetype },
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "media_uploaded",
+          actorId: req.user!.principalId,
+          resourceType: "media_asset",
+          resourceId: a.id,
+          details: { filename: file.originalname, mimeType: file.mimetype },
+        });
+
+        return a;
       });
 
       res.status(201).json({
@@ -261,28 +265,32 @@ router.post(
 
       const classification = getClassification(content.mimeType);
 
-      const [asset] = await db
-        .insert(mediaAssetsTable)
-        .values({
-          filename: storageKey,
-          originalFilename: filename,
-          mimeType: content.mimeType,
-          sizeBytes: result.sizeBytes,
-          storageKey: result.storageKey,
-          storageProviderId: defaultProviderId,
-          classification,
-          nodeId: nodeId || null,
-          uploadedBy: req.user!.principalId,
-        })
-        .returning();
+      const asset = await db.transaction(async (tx) => {
+        const [a] = await tx
+          .insert(mediaAssetsTable)
+          .values({
+            filename: storageKey,
+            originalFilename: filename,
+            mimeType: content.mimeType,
+            sizeBytes: result.sizeBytes,
+            storageKey: result.storageKey,
+            storageProviderId: defaultProviderId,
+            classification,
+            nodeId: nodeId || null,
+            uploadedBy: req.user!.principalId,
+          })
+          .returning();
 
-      await db.insert(auditEventsTable).values({
-        eventType: "content",
-        action: "media_imported_sharepoint",
-        actorId: req.user!.principalId,
-        resourceType: "media_asset",
-        resourceId: asset.id,
-        details: { filename, driveId, itemId, mimeType: content.mimeType },
+        await tx.insert(auditEventsTable).values({
+          eventType: "content",
+          action: "media_imported_sharepoint",
+          actorId: req.user!.principalId,
+          resourceType: "media_asset",
+          resourceId: a.id,
+          details: { filename, driveId, itemId, mimeType: content.mimeType },
+        });
+
+        return a;
       });
 
       res.status(201).json({
@@ -369,17 +377,19 @@ router.delete(
   requirePermission("manage_media"),
   async (req, res) => {
     const id = req.params.id as string;
-    await db
-      .update(mediaAssetsTable)
-      .set({ isDeleted: true })
-      .where(eq(mediaAssetsTable.id, id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(mediaAssetsTable)
+        .set({ isDeleted: true })
+        .where(eq(mediaAssetsTable.id, id));
 
-    await db.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "media_deleted",
-      actorId: req.user!.principalId,
-      resourceType: "media_asset",
-      resourceId: id,
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "media_deleted",
+        actorId: req.user!.principalId,
+        resourceType: "media_asset",
+        resourceId: id,
+      });
     });
 
     res.status(204).send();
