@@ -91,7 +91,7 @@ export function StatusBadge({
   const isMissingOwner = !ownerId && status === "published";
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
       <Badge variant={config.variant} className={config.className}>
         <Icon className="h-3 w-3 mr-1" />
         {compact ? undefined : config.label}

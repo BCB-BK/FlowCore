@@ -266,106 +266,104 @@ export function NodeDetail() {
     <div className="max-w-4xl mx-auto space-y-6">
       <NodeBreadcrumbs nodeId={nodeId} />
 
-      <div className="flex items-start justify-between gap-4">
-        <PageHeader
-          title={node.title}
-          displayCode={node.displayCode}
-          templateType={node.templateType}
-          status={node.status}
-          metadata={metadata}
-          structuredFields={structuredFields}
-          nextReviewDate={governanceFields.nextReviewDate}
-          ownerId={node.ownerId}
-        />
-
-        <div className="flex items-center gap-2 shrink-0">
-          {nodeId && (
-            <ShareToTeams
-              nodeId={nodeId}
-              pageTitle={node.title}
-              displayCode={node.displayCode ?? undefined}
-            />
-          )}
-          {nodeId && <WatchButton nodeId={nodeId} />}
-          {!wcLoading && (() => {
-            const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
-            const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
-            const wcReviewable = activeWC && (activeWC.status === "submitted" || activeWC.status === "in_review");
-            if (activeWC && wcReviewable) {
-              return (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => navigate(`/nodes/${nodeId}/review`)}
-                >
-                  <Eye className="mr-1 h-4 w-4" />
-                  Prüfen
-                </Button>
-              );
-            }
-            if (activeWC && !isOwnWc && !wcReviewable) {
-              return (
-                <Button variant="outline" size="sm" disabled>
-                  <FileEdit className="mr-1 h-4 w-4" />
-                  Arbeitskopie gesperrt
-                </Button>
-              );
-            }
-            if (activeWC && !wcEditable) {
-              return null;
-            }
+      <div className="flex items-center justify-end gap-2 flex-wrap">
+        {nodeId && (
+          <ShareToTeams
+            nodeId={nodeId}
+            pageTitle={node.title}
+            displayCode={node.displayCode ?? undefined}
+          />
+        )}
+        {nodeId && <WatchButton nodeId={nodeId} />}
+        {!wcLoading && (() => {
+          const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
+          const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
+          const wcReviewable = activeWC && (activeWC.status === "submitted" || activeWC.status === "in_review");
+          if (activeWC && wcReviewable) {
             return (
               <Button
-                variant={activeWC ? "default" : "outline"}
+                variant="default"
                 size="sm"
-                onClick={activeWC ? () => navigate(`/nodes/${nodeId}/edit`) : handleCreateOrResumeWC}
-                disabled={createWorkingCopy.isPending}
+                onClick={() => navigate(`/nodes/${nodeId}/review`)}
               >
-                {createWorkingCopy.isPending ? (
-                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                ) : (
-                  <FileEdit className="mr-1 h-4 w-4" />
-                )}
-                {activeWC ? "Arbeitskopie fortsetzen" : "Arbeitskopie erstellen"}
+                <Eye className="mr-1 h-4 w-4" />
+                Prüfen
               </Button>
             );
-          })()}
-          <Button variant="outline" size="sm" onClick={openEditDialog}>
-            <Pencil className="mr-1 h-4 w-4" />
-            Eigenschaften
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            Unterseite
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-destructive">
-                <Trash2 className="h-4 w-4" />
+          }
+          if (activeWC && !isOwnWc && !wcReviewable) {
+            return (
+              <Button variant="outline" size="sm" disabled>
+                <FileEdit className="mr-1 h-4 w-4" />
+                Arbeitskopie gesperrt
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Seite archivieren?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Die Seite &quot;{node.title}&quot; wird archiviert. Dieser
-                  Vorgang kann rückgängig gemacht werden.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>
-                  Archivieren
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+            );
+          }
+          if (activeWC && !wcEditable) {
+            return null;
+          }
+          return (
+            <Button
+              variant={activeWC ? "default" : "outline"}
+              size="sm"
+              onClick={activeWC ? () => navigate(`/nodes/${nodeId}/edit`) : handleCreateOrResumeWC}
+              disabled={createWorkingCopy.isPending}
+            >
+              {createWorkingCopy.isPending ? (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <FileEdit className="mr-1 h-4 w-4" />
+              )}
+              {activeWC ? "Arbeitskopie fortsetzen" : "Arbeitskopie erstellen"}
+            </Button>
+          );
+        })()}
+        <Button variant="outline" size="sm" onClick={openEditDialog}>
+          <Pencil className="mr-1 h-4 w-4" />
+          Eigenschaften
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowCreate(true)}
+        >
+          <Plus className="mr-1 h-4 w-4" />
+          Unterseite
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm" className="text-destructive">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Seite archivieren?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Die Seite &quot;{node.title}&quot; wird archiviert. Dieser
+                Vorgang kann rückgängig gemacht werden.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>
+                Archivieren
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
+
+      <PageHeader
+        title={node.title}
+        displayCode={node.displayCode}
+        templateType={node.templateType}
+        status={node.status}
+        metadata={metadata}
+        structuredFields={structuredFields}
+        nextReviewDate={governanceFields.nextReviewDate}
+        ownerId={node.ownerId}
+      />
 
       {showQuickFacts && (
         <QuickFactsStrip

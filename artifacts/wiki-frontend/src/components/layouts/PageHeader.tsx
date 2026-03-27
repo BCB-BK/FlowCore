@@ -29,7 +29,7 @@ export function PageHeader({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
         {pageDef && (
           <div
             className="flex h-7 w-7 items-center justify-center rounded-md text-white shrink-0"
