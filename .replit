@@ -55,3 +55,15 @@ channel = "stable-25_05"
 ENTRA_CLIENT_ID = "218a8391-173e-4e4a-b722-cdeed93f82cb"
 ENTRA_TENANT_ID = "e2bcd5c2-8503-4dbc-ae9a-7c681d3a29cb"
 ENTRA_REDIRECT_URI = "https://flowcore.bildungscampus-backnang.de/api/auth/callback"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 21605
+externalPort = 80
