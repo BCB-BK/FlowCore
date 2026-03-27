@@ -68,7 +68,7 @@ export function WatchButton({ nodeId }: WatchButtonProps) {
       size="sm"
       onClick={toggleWatch}
       disabled={loading}
-      className="gap-1.5"
+      className="gap-1.5 min-w-[150px]"
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

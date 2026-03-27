@@ -266,7 +266,7 @@ export function NodeDetail() {
     <div className="max-w-4xl mx-auto space-y-6">
       <NodeBreadcrumbs nodeId={nodeId} />
 
-      <div className="flex items-center justify-end gap-2 flex-wrap">
+      <div className="flex items-center justify-end gap-2 shrink-0 overflow-x-auto">
         {nodeId && (
           <ShareToTeams
             nodeId={nodeId}
@@ -275,7 +275,12 @@ export function NodeDetail() {
           />
         )}
         {nodeId && <WatchButton nodeId={nodeId} />}
-        {!wcLoading && (() => {
+        {wcLoading ? (
+          <Button variant="outline" size="sm" disabled className="min-w-[180px]">
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            Laden…
+          </Button>
+        ) : (() => {
           const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
           const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
           const wcReviewable = activeWC && (activeWC.status === "submitted" || activeWC.status === "in_review");
@@ -375,7 +380,7 @@ export function NodeDetail() {
         />
       )}
 
-      <Tabs defaultValue="content" className="w-full">
+      <Tabs defaultValue="content" className="w-full min-h-[300px]">
         <TabsList>
           <TabsTrigger value="content">Inhalt</TabsTrigger>
           <TabsTrigger value="metadata">Metadaten</TabsTrigger>
