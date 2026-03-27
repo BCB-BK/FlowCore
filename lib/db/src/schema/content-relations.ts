@@ -16,10 +16,10 @@ export const contentRelationsTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     sourceNodeId: uuid("source_node_id")
       .notNull()
-      .references(() => contentNodesTable.id),
+      .references(() => contentNodesTable.id, { onDelete: "cascade" }),
     targetNodeId: uuid("target_node_id")
       .notNull()
-      .references(() => contentNodesTable.id),
+      .references(() => contentNodesTable.id, { onDelete: "cascade" }),
     relationType: relationTypeEnum("relation_type").notNull(),
     description: text("description"),
     createdBy: text("created_by"),

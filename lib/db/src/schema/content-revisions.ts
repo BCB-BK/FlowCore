@@ -19,7 +19,7 @@ export const contentRevisionsTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     nodeId: uuid("node_id")
       .notNull()
-      .references(() => contentNodesTable.id),
+      .references(() => contentNodesTable.id, { onDelete: "cascade" }),
     revisionNo: integer("revision_no").notNull(),
     versionLabel: text("version_label"),
     status: nodeStatusEnum("status").notNull().default("draft"),

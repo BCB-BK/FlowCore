@@ -71,7 +71,7 @@ export const pagePermissionsTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     nodeId: uuid("node_id")
       .notNull()
-      .references(() => contentNodesTable.id),
+      .references(() => contentNodesTable.id, { onDelete: "cascade" }),
     principalId: uuid("principal_id")
       .notNull()
       .references(() => principalsTable.id),
@@ -94,7 +94,7 @@ export const nodeOwnershipTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     nodeId: uuid("node_id")
       .notNull()
-      .references(() => contentNodesTable.id),
+      .references(() => contentNodesTable.id, { onDelete: "cascade" }),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => principalsTable.id),

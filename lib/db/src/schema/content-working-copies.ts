@@ -20,7 +20,7 @@ export const contentWorkingCopiesTable = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     nodeId: uuid("node_id")
       .notNull()
-      .references(() => contentNodesTable.id),
+      .references(() => contentNodesTable.id, { onDelete: "cascade" }),
     baseRevisionId: uuid("base_revision_id").references(
       () => contentRevisionsTable.id,
     ),
@@ -64,7 +64,7 @@ export const workingCopyEventsTable = pgTable("working_copy_events", {
   id: uuid("id").defaultRandom().primaryKey(),
   workingCopyId: uuid("working_copy_id")
     .notNull()
-    .references(() => contentWorkingCopiesTable.id),
+    .references(() => contentWorkingCopiesTable.id, { onDelete: "cascade" }),
   eventType: workingCopyEventTypeEnum("event_type").notNull(),
   actorId: text("actor_id"),
   comment: text("comment"),

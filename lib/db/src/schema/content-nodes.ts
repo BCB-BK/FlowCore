@@ -33,6 +33,7 @@ export const contentNodesTable = pgTable(
     templateId: uuid("template_id").references(() => contentTemplatesTable.id),
     parentNodeId: uuid("parent_node_id").references(
       (): AnyPgColumn => contentNodesTable.id,
+      { onDelete: "set null" },
     ),
     sortOrder: integer("sort_order").notNull().default(0),
     status: nodeStatusEnum("status").notNull().default("draft"),
