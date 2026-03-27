@@ -294,34 +294,49 @@ export async function getEffectivePermissions(
   return permissions;
 }
 
+const nodeScopeCache = new Map<string, { scopes: Set<string>; expiresAt: number }>();
+const NODE_SCOPE_CACHE_TTL_MS = 30_000;
+
 async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
+  const cached = nodeScopeCache.get(nodeId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return new Set(cached.scopes);
+  }
+
+  const rows = (await db.execute(sql`
+    WITH RECURSIVE ancestors AS (
+      SELECT id, parent_node_id, display_code, 0 AS depth
+      FROM content_nodes
+      WHERE id = ${nodeId}::uuid
+      UNION
+      SELECT cn.id, cn.parent_node_id, cn.display_code, a.depth + 1
+      FROM content_nodes cn
+      JOIN ancestors a ON cn.id = a.parent_node_id
+      WHERE a.depth < 100
+    )
+    SELECT id, display_code FROM ancestors
+  `)).rows as Array<{ id: string; display_code: string | null }>;
+
   const scopes = new Set<string>();
-  scopes.add(`node:${nodeId}`);
-
-  let currentId: string | null = nodeId;
-  const visited = new Set<string>();
-
-  while (currentId && !visited.has(currentId)) {
-    visited.add(currentId);
-    const [node] = await db
-      .select({
-        parentNodeId: contentNodesTable.parentNodeId,
-        displayCode: contentNodesTable.displayCode,
-      })
-      .from(contentNodesTable)
-      .where(eq(contentNodesTable.id, currentId));
-
-    if (!node) break;
-
-    if (node.displayCode) {
-      scopes.add(`code:${node.displayCode}`);
+  for (const row of rows) {
+    scopes.add(`node:${row.id}`);
+    if (row.display_code) {
+      scopes.add(`code:${row.display_code}`);
     }
+  }
+  scopes.add("global");
 
-    if (node.parentNodeId) {
-      scopes.add(`node:${node.parentNodeId}`);
-      currentId = node.parentNodeId;
-    } else {
-      currentId = null;
+  nodeScopeCache.set(nodeId, { scopes: new Set(scopes), expiresAt: Date.now() + NODE_SCOPE_CACHE_TTL_MS });
+
+  if (nodeScopeCache.size > 500) {
+    const now = Date.now();
+    for (const [key, val] of nodeScopeCache) {
+      if (val.expiresAt <= now) nodeScopeCache.delete(key);
+    }
+    if (nodeScopeCache.size > 1000) {
+      const entries = [...nodeScopeCache.entries()].sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+      const toRemove = entries.slice(0, entries.length - 500);
+      for (const [key] of toRemove) nodeScopeCache.delete(key);
     }
   }
 
@@ -558,30 +573,30 @@ async function resolvePagePermissions(
   principalId: string,
   nodeId: string,
 ): Promise<WikiPermission[]> {
-  const directPerms = await db
-    .select({ permission: pagePermissionsTable.permission })
-    .from(pagePermissionsTable)
-    .where(
-      and(
-        eq(pagePermissionsTable.nodeId, nodeId),
-        eq(pagePermissionsTable.principalId, principalId),
-      ),
-    );
+  const rows = (await db.execute(sql`
+    WITH RECURSIVE ancestors AS (
+      SELECT id, parent_node_id, 0 AS depth
+      FROM content_nodes
+      WHERE id = ${nodeId}::uuid
+      UNION
+      SELECT cn.id, cn.parent_node_id, a.depth + 1
+      FROM content_nodes cn
+      JOIN ancestors a ON cn.id = a.parent_node_id
+      WHERE a.depth < 100
+    )
+    SELECT pp.permission, a.depth
+    FROM page_permissions pp
+    JOIN ancestors a ON pp.node_id = a.id
+    WHERE pp.principal_id = ${principalId}::uuid
+    ORDER BY a.depth ASC
+  `)).rows as Array<{ permission: string; depth: number }>;
 
-  if (directPerms.length > 0) {
-    return directPerms.map((p) => p.permission as WikiPermission);
-  }
+  if (rows.length === 0) return [];
 
-  const [node] = await db
-    .select({ parentNodeId: contentNodesTable.parentNodeId })
-    .from(contentNodesTable)
-    .where(eq(contentNodesTable.id, nodeId));
-
-  if (node?.parentNodeId) {
-    return resolvePagePermissions(principalId, node.parentNodeId);
-  }
-
-  return [];
+  const closestDepth = rows[0].depth;
+  return rows
+    .filter((r) => r.depth === closestDepth)
+    .map((r) => r.permission as WikiPermission);
 }
 
 async function resolveDeputyPermissions(
