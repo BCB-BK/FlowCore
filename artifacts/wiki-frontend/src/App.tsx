@@ -19,7 +19,32 @@ import { WorkingCopyReviewPage } from "@/pages/WorkingCopyReviewPage";
 import { TeamsTabConfig } from "@/pages/TeamsTabConfig";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
+import { LoginPage } from "@/pages/LoginPage";
+import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { data: user, isLoading } = useAuth();
+
+  if (import.meta.env.DEV) {
+    return <>{children}</>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return <>{children}</>;
+}
 
 function Router() {
   return (
@@ -54,7 +79,9 @@ function App() {
       <TooltipProvider>
         <TeamsProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
+            <AuthGate>
+              <Router />
+            </AuthGate>
           </WouterRouter>
         </TeamsProvider>
         <Toaster />

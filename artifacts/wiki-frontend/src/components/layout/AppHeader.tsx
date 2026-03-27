@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthLogout } from "@workspace/api-client-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -10,17 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut, Search } from "lucide-react";
+import { LogOut, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { NotificationBell } from "@/components/NotificationBell";
 
 export function AppHeader() {
-  const { data: user, isLoading } = useAuth();
+  const { data: user } = useAuth();
   const [, navigate] = useLocation();
   const logout = useAuthLogout();
-  const [loggingIn, setLoggingIn] = useState(false);
 
   const initials = user?.displayName
     ? user.displayName
@@ -30,22 +27,6 @@ export function AppHeader() {
         .slice(0, 2)
         .toUpperCase()
     : "?";
-
-  const handleLogin = async () => {
-    setLoggingIn(true);
-    try {
-      const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
-      const res = await fetch(`${baseUrl}/api/auth/login`, { credentials: "include" });
-      const data = await res.json();
-      if (data.loginUrl) {
-        window.location.href = data.loginUrl;
-      } else if (data.devMode) {
-        setLoggingIn(false);
-      }
-    } catch {
-      setLoggingIn(false);
-    }
-  };
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -75,7 +56,7 @@ export function AppHeader() {
 
       {user && <NotificationBell />}
 
-      {user ? (
+      {user && (
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-accent outline-none">
             <Avatar className="h-7 w-7">
@@ -100,18 +81,7 @@ export function AppHeader() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : !isLoading ? (
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleLogin}
-          disabled={loggingIn}
-          className="gap-2"
-        >
-          <LogIn className="h-4 w-4" />
-          <span className="hidden sm:inline">Anmelden</span>
-        </Button>
-      ) : null}
+      )}
     </header>
   );
 }
