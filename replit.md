@@ -61,6 +61,6 @@ Key page types like `procedure_instruction`, `core_process_overview`, `role_prof
 - **API Codegen:** Orval
 - **E2E Testing:** Playwright
 - **Logging:** pino
-- **Authentication/Identity:** Microsoft Entra ID (OIDC)
+- **Authentication/Identity:** Microsoft Entra ID (OIDC), API Bearer Tokens (SHA-256 hashed)
 - **External Services Integration:** Microsoft Graph API (for SharePoint, Teams notifications)
 - **AI Services:** OpenAI

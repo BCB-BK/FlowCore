@@ -91,7 +91,7 @@ app.use(
 
 app.use("/api", router);
 
-app.use("/api/*", notFoundHandler);
+app.use("/api/{*path}", notFoundHandler);
 app.use(errorHandler);
 
 export async function ensureSessionTable(): Promise<void> {
