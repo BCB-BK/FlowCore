@@ -63,9 +63,15 @@ export async function searchPeople(
     const client = getGraphClient(token);
     const result = await client
       .api("/users")
-      .filter(`(startswith(displayName,'${safe}') or startswith(surname,'${safe}') or startswith(givenName,'${safe}') or startswith(mail,'${safe}')) and accountEnabled eq true`)
+      .header("ConsistencyLevel", "eventual")
+      .filter(
+        `(startswith(displayName,'${safe}') or startswith(surname,'${safe}') or startswith(givenName,'${safe}') or startswith(mail,'${safe}')) and accountEnabled eq true`,
+      )
+      .count(true)
       .top(top)
-      .select("id,displayName,mail,userPrincipalName,jobTitle,department,surname,givenName,accountEnabled")
+      .select(
+        "id,displayName,mail,userPrincipalName,jobTitle,department,surname,givenName",
+      )
       .get();
 
     return (result.value ?? []).map(mapGraphUser);
