@@ -22,12 +22,14 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { useState, useMemo } from "react";
 
-const IA_CATEGORY_ORDER = ["process", "governance", "knowledge", "system"];
+const IA_CATEGORY_ORDER = ["process", "documentation", "governance", "knowledge", "quality", "system"];
 
 const IA_CATEGORY_LABELS: Record<string, string> = {
   process: "Prozesse & Bereiche",
+  documentation: "Dokumentation & Bereiche",
   governance: "Governance & Richtlinien",
   knowledge: "Wissen & Dokumentation",
+  quality: "Qualitätsmanagement",
   system: "Systeme & Technik",
 };
 
