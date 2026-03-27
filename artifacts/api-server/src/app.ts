@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -23,6 +24,17 @@ declare module "express-session" {
 }
 
 const isProduction = appConfig.nodeEnv === "production";
+
+const PgStore = connectPgSimple(session);
+
+const sessionStore = isProduction
+  ? new PgStore({
+      conString: appConfig.databaseUrl,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+      pruneSessionInterval: 60 * 15,
+    })
+  : undefined;
 
 const app: Express = express();
 
@@ -52,12 +64,18 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(apiRateLimit);
 app.use(
   session({
+    store: sessionStore,
     secret: appConfig.sessionSecret,
     resave: false,
     saveUninitialized: false,
