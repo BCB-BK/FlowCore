@@ -26,7 +26,7 @@ import {
 } from "../services/graph.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
-import { hasPermission } from "../services/rbac.service";
+import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
 import {
   PAGE_TYPE_REGISTRY,
   ALL_TEMPLATE_TYPES,
@@ -345,12 +345,9 @@ router.get(
     const id = req.params.id as string;
     const siblings = await getSiblings(id);
     const principalId = req.user!.principalId;
-    const filtered = [];
-    for (const sib of siblings) {
-      if (await hasPermission(principalId, "read_page", sib.id)) {
-        filtered.push(sib);
-      }
-    }
+    const siblingIds = siblings.map((sib) => sib.id);
+    const permMap = await hasPermissionBatch(principalId, "read_page", siblingIds);
+    const filtered = siblings.filter((sib) => permMap.get(sib.id) === true);
     res.json(filtered);
   },
 );
@@ -606,12 +603,9 @@ router.get(
       );
 
     const principalId = req.user!.principalId;
-    const filtered = [];
-    for (const link of backlinks) {
-      if (await hasPermission(principalId, "read_page", link.sourceId)) {
-        filtered.push(link);
-      }
-    }
+    const sourceIds = backlinks.map((link) => link.sourceId);
+    const permMap = await hasPermissionBatch(principalId, "read_page", sourceIds);
+    const filtered = backlinks.filter((link) => permMap.get(link.sourceId) === true);
 
     res.json(filtered);
   },
@@ -647,12 +641,9 @@ router.get(
       );
 
     const principalId = req.user!.principalId;
-    const filtered = [];
-    for (const link of forwardLinks) {
-      if (await hasPermission(principalId, "read_page", link.targetId)) {
-        filtered.push(link);
-      }
-    }
+    const targetIds = forwardLinks.map((link) => link.targetId);
+    const permMap = await hasPermissionBatch(principalId, "read_page", targetIds);
+    const filtered = forwardLinks.filter((link) => permMap.get(link.targetId) === true);
 
     res.json(filtered);
   },
@@ -685,12 +676,11 @@ router.get(
         )`,
       );
 
-    const filteredRelations = [];
-    for (const rel of brokenRelations) {
-      if (await hasPermission(principalId, "read_page", rel.sourceNodeId)) {
-        filteredRelations.push(rel);
-      }
-    }
+    const brokenSourceIds = brokenRelations.map((rel) => rel.sourceNodeId);
+    const brokenPermMap = await hasPermissionBatch(principalId, "read_page", brokenSourceIds);
+    const filteredRelations = brokenRelations.filter(
+      (rel) => brokenPermMap.get(rel.sourceNodeId) === true,
+    );
 
     const orphanedNodes = await db
       .select({
@@ -710,12 +700,11 @@ router.get(
         ),
       );
 
-    const filteredOrphans = [];
-    for (const node of orphanedNodes) {
-      if (await hasPermission(principalId, "read_page", node.id)) {
-        filteredOrphans.push(node);
-      }
-    }
+    const orphanIds = orphanedNodes.map((node) => node.id);
+    const orphanPermMap = await hasPermissionBatch(principalId, "read_page", orphanIds);
+    const filteredOrphans = orphanedNodes.filter(
+      (node) => orphanPermMap.get(node.id) === true,
+    );
 
     res.json({
       brokenRelations: filteredRelations,

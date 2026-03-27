@@ -7,6 +7,7 @@ import {
   getPrincipalById,
   assignRole,
   getRolesForPrincipal,
+  getRolesForPrincipalsBatch,
   revokeRole,
 } from "../services/principal.service";
 import {
@@ -52,12 +53,12 @@ router.get(
       const offset = parseInt((req.query.offset as string) ?? "0", 10);
       principals = await listPrincipals(limit, offset);
     }
-    const withRoles = await Promise.all(
-      principals.map(async (p) => {
-        const roles = await getRolesForPrincipal(p.id);
-        return { ...p, roles };
-      }),
-    );
+    const principalIds = principals.map((p) => p.id);
+    const rolesMap = await getRolesForPrincipalsBatch(principalIds);
+    const withRoles = principals.map((p) => ({
+      ...p,
+      roles: rolesMap.get(p.id) ?? [],
+    }));
     res.json(withRoles);
   },
 );

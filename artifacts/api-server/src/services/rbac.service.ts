@@ -7,7 +7,7 @@ import {
   deputyDelegationsTable,
   sodConfigTable,
 } from "@workspace/db/schema";
-import { eq, and, or, sql } from "drizzle-orm";
+import { eq, and, or, sql, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 export type WikiRole =
@@ -335,6 +335,223 @@ export async function hasPermission(
 ): Promise<boolean> {
   const perms = await getEffectivePermissions(principalId, nodeId);
   return perms.has(permission);
+}
+
+export async function hasPermissionBatch(
+  principalId: string,
+  permission: WikiPermission,
+  nodeIds: string[],
+): Promise<Map<string, boolean>> {
+  if (nodeIds.length === 0) return new Map();
+
+  const uniqueNodeIds = [...new Set(nodeIds)];
+
+  const roles = await db
+    .select({
+      role: roleAssignmentsTable.role,
+      scope: roleAssignmentsTable.scope,
+    })
+    .from(roleAssignmentsTable)
+    .where(
+      and(
+        eq(roleAssignmentsTable.principalId, principalId),
+        eq(roleAssignmentsTable.isActive, true),
+        or(
+          sql`${roleAssignmentsTable.expiresAt} IS NULL`,
+          sql`${roleAssignmentsTable.expiresAt} > NOW()`,
+        ),
+      ),
+    );
+
+  const globalGranted = roles.some(
+    (r) =>
+      r.scope === "global" &&
+      (ROLE_PERMISSIONS[r.role as WikiRole] ?? []).includes(permission),
+  );
+
+  if (globalGranted) {
+    return new Map(uniqueNodeIds.map((id) => [id, true]));
+  }
+
+  const ancestorRows: Array<{
+    origin_node_id: string;
+    id: string;
+    display_code: string | null;
+    depth: number;
+  }> = (
+    await db.execute(sql`
+    WITH RECURSIVE ancestors AS (
+      SELECT id, parent_node_id, display_code, id AS origin_node_id, 0 AS depth
+      FROM content_nodes
+      WHERE id = ANY(${uniqueNodeIds}::uuid[])
+      UNION
+      SELECT cn.id, cn.parent_node_id, cn.display_code, a.origin_node_id, a.depth + 1
+      FROM content_nodes cn
+      JOIN ancestors a ON cn.id = a.parent_node_id
+      WHERE a.depth < 100
+    )
+    SELECT origin_node_id, id, display_code, depth FROM ancestors
+  `)
+  ).rows as Array<{
+    origin_node_id: string;
+    id: string;
+    display_code: string | null;
+    depth: number;
+  }>;
+
+  const nodeScopeMaps = new Map<string, Set<string>>();
+  const nodeAncestorChains = new Map<
+    string,
+    Array<{ id: string; depth: number }>
+  >();
+  for (const nodeId of uniqueNodeIds) {
+    nodeScopeMaps.set(nodeId, new Set(["global", `node:${nodeId}`]));
+    nodeAncestorChains.set(nodeId, [{ id: nodeId, depth: -1 }]);
+  }
+  for (const row of ancestorRows) {
+    const scopes = nodeScopeMaps.get(row.origin_node_id)!;
+    scopes.add(`node:${row.id}`);
+    if (row.display_code) scopes.add(`code:${row.display_code}`);
+    nodeAncestorChains.get(row.origin_node_id)!.push({
+      id: row.id,
+      depth: row.depth,
+    });
+  }
+  for (const chain of nodeAncestorChains.values()) {
+    chain.sort((a, b) => a.depth - b.depth);
+  }
+
+  const result = new Map<string, boolean>();
+  for (const nodeId of uniqueNodeIds) {
+    const scopes = nodeScopeMaps.get(nodeId)!;
+    let granted = false;
+    for (const { role, scope } of roles) {
+      if (!scopes.has(scope)) continue;
+      if ((ROLE_PERMISSIONS[role as WikiRole] ?? []).includes(permission)) {
+        granted = true;
+        break;
+      }
+    }
+    result.set(nodeId, granted);
+  }
+
+  const ungrantedNodeIds = uniqueNodeIds.filter((id) => !result.get(id));
+  if (ungrantedNodeIds.length > 0) {
+    const allAncestorIds = new Set<string>();
+    for (const nodeId of ungrantedNodeIds) {
+      for (const ancestor of nodeAncestorChains.get(nodeId)!) {
+        allAncestorIds.add(ancestor.id);
+      }
+    }
+
+    if (allAncestorIds.size > 0) {
+      const pagePerms = await db
+        .select({
+          nodeId: pagePermissionsTable.nodeId,
+          permission: pagePermissionsTable.permission,
+        })
+        .from(pagePermissionsTable)
+        .where(
+          and(
+            eq(pagePermissionsTable.principalId, principalId),
+            inArray(pagePermissionsTable.nodeId, [...allAncestorIds]),
+          ),
+        );
+
+      const permsByNode = new Map<string, string[]>();
+      for (const pp of pagePerms) {
+        if (!permsByNode.has(pp.nodeId)) permsByNode.set(pp.nodeId, []);
+        permsByNode.get(pp.nodeId)!.push(pp.permission);
+      }
+
+      for (const nodeId of ungrantedNodeIds) {
+        const chain = nodeAncestorChains.get(nodeId)!;
+        for (const ancestor of chain) {
+          const permsForAncestor = permsByNode.get(ancestor.id);
+          if (permsForAncestor && permsForAncestor.length > 0) {
+            if (permsForAncestor.includes(permission)) {
+              result.set(nodeId, true);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  const stillUngrantedNodeIds = uniqueNodeIds.filter((id) => !result.get(id));
+  if (stillUngrantedNodeIds.length > 0) {
+    const delegations = await db
+      .select({
+        delegatorId: deputyDelegationsTable.principalId,
+        scope: deputyDelegationsTable.scope,
+      })
+      .from(deputyDelegationsTable)
+      .where(
+        and(
+          eq(deputyDelegationsTable.deputyId, principalId),
+          eq(deputyDelegationsTable.isActive, true),
+          sql`${deputyDelegationsTable.startsAt} <= NOW()`,
+          or(
+            sql`${deputyDelegationsTable.endsAt} IS NULL`,
+            sql`${deputyDelegationsTable.endsAt} > NOW()`,
+          ),
+        ),
+      );
+
+    if (delegations.length > 0) {
+      const delegatorIds = [
+        ...new Set(delegations.map((d) => d.delegatorId)),
+      ];
+      const delegatorRoles = await db
+        .select({
+          principalId: roleAssignmentsTable.principalId,
+          role: roleAssignmentsTable.role,
+          scope: roleAssignmentsTable.scope,
+        })
+        .from(roleAssignmentsTable)
+        .where(
+          and(
+            inArray(roleAssignmentsTable.principalId, delegatorIds),
+            eq(roleAssignmentsTable.isActive, true),
+            or(
+              sql`${roleAssignmentsTable.expiresAt} IS NULL`,
+              sql`${roleAssignmentsTable.expiresAt} > NOW()`,
+            ),
+          ),
+        );
+
+      for (const nodeId of stillUngrantedNodeIds) {
+        const nodeScopes = nodeScopeMaps.get(nodeId)!;
+        let granted = false;
+        for (const delegation of delegations) {
+          const delegationScopeOk =
+            delegation.scope === "global" ||
+            nodeScopes.has(delegation.scope);
+          if (!delegationScopeOk) continue;
+
+          for (const dr of delegatorRoles) {
+            if (dr.principalId !== delegation.delegatorId) continue;
+            if (!nodeScopes.has(dr.scope)) continue;
+            if (
+              (ROLE_PERMISSIONS[dr.role as WikiRole] ?? []).includes(permission)
+            ) {
+              granted = true;
+              break;
+            }
+          }
+          if (granted) break;
+        }
+        if (granted) result.set(nodeId, true);
+      }
+    }
+  }
+
+  for (const nodeId of uniqueNodeIds) {
+    if (!result.has(nodeId)) result.set(nodeId, false);
+  }
+
+  return result;
 }
 
 async function resolvePagePermissions(

@@ -4,7 +4,7 @@ import {
   roleAssignmentsTable,
   type InsertPrincipal,
 } from "@workspace/db/schema";
-import { eq, and, ilike, or, sql } from "drizzle-orm";
+import { eq, and, ilike, or, sql, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 export async function upsertPrincipal(input: {
@@ -119,6 +119,32 @@ export async function getRolesForPrincipal(principalId: string) {
         eq(roleAssignmentsTable.isActive, true),
       ),
     );
+}
+
+export async function getRolesForPrincipalsBatch(principalIds: string[]) {
+  if (principalIds.length === 0) return new Map<string, typeof roleAssignmentsTable.$inferSelect[]>();
+
+  const allRoles = await db
+    .select()
+    .from(roleAssignmentsTable)
+    .where(
+      and(
+        inArray(roleAssignmentsTable.principalId, principalIds),
+        eq(roleAssignmentsTable.isActive, true),
+      ),
+    );
+
+  const grouped = new Map<string, typeof roleAssignmentsTable.$inferSelect[]>();
+  for (const id of principalIds) {
+    grouped.set(id, []);
+  }
+  for (const role of allRoles) {
+    const list = grouped.get(role.principalId);
+    if (list) {
+      list.push(role);
+    }
+  }
+  return grouped;
 }
 
 export async function assignRole(input: {
