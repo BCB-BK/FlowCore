@@ -4,6 +4,7 @@ export {
   REGISTRY_VERSION,
   getPageType,
   getAllowedChildTypes,
+  getRecommendedChildTypes,
   getMetadataGroups,
   calculateCompleteness,
   validateForPublication,
@@ -12,12 +13,15 @@ export {
   getPublicationReadiness,
   getFieldsByRequirement,
   getSectionsByRequirement,
+  getVariantsByCategory,
+  buildInitialEditorContent,
   getDisplayProfile,
   getDisplayIdPrefix,
   getPageTypesByDisplayProfile,
   METADATA_GROUP_LABELS,
   PAGE_TYPE_CATEGORIES,
   DISPLAY_PROFILE_LABELS,
+  VARIANT_CATEGORY_LABELS,
 } from "./registry";
 
 export type {
@@ -29,6 +33,8 @@ export type {
   PageTypeCategory,
   DisplayProfile,
   TemplateVariant,
+  VariantCategory,
+  InitialBlock,
   FieldRequirement,
   FieldHelp,
   PublicationRules,

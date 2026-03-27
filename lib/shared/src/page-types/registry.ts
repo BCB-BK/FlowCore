@@ -67,11 +67,31 @@ export interface PageTypeSection {
   compoundType?: "sipoc_cards" | "raci_matrix" | "qa_repeater" | "term_repeater" | "check_items" | "competency_areas";
 }
 
+export type VariantCategory = "schlank" | "standard" | "qm_detail" | "grafisch" | "container";
+
+export const VARIANT_CATEGORY_LABELS: Record<VariantCategory, { label: string; description: string }> = {
+  schlank: { label: "Schlank", description: "Minimale Struktur – nur das Nötigste" },
+  standard: { label: "Standard", description: "Bewährte Grundstruktur für den Regelbetrieb" },
+  qm_detail: { label: "QM-detailliert", description: "Vollständig nach QM-Standard mit allen Pflichtfeldern" },
+  grafisch: { label: "Grafisch", description: "Visuelle Darstellung im Vordergrund" },
+  container: { label: "Container", description: "Übersichtsseite zur Bündelung von Unterseiten" },
+};
+
 export interface TemplateVariant {
   key: string;
   label: string;
   description: string;
   prefilledSections?: string[];
+  variantCategory?: VariantCategory;
+  initialBlocks?: InitialBlock[];
+}
+
+export interface InitialBlock {
+  type: "heading" | "paragraph" | "bulletList" | "table" | "callout" | "divider";
+  content?: string;
+  level?: number;
+  items?: string[];
+  rows?: string[][];
 }
 
 export type PageTypeCategory =
@@ -137,6 +157,7 @@ export interface PageTypeDefinition {
   color: string;
   displayProfile: DisplayProfile;
   allowedChildTypes: TemplateType[];
+  recommendedChildTypes?: TemplateType[];
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   category: PageTypeCategory;
@@ -386,6 +407,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "interface_description",
       "checklist",
     ],
+    recommendedChildTypes: [
+      "process_page_text",
+      "procedure_instruction",
+      "work_instruction",
+    ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -543,23 +569,72 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
+        label: "Schlank",
         description:
-          "Leere Kernprozess-Übersicht ohne vorausgefüllte Abschnitte",
+          "Minimale Kernprozess-Übersicht – nur Zweck & Geltungsbereich",
+        variantCategory: "schlank",
+        prefilledSections: ["overview"],
+        initialBlocks: [
+          { type: "heading", content: "Zweck & Geltungsbereich", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "standard",
         label: "Standard",
         description:
           "Prozessschritte, SIPOC, KPIs und Compliance vorstrukturiert",
+        variantCategory: "standard",
         prefilledSections: ["overview", "process_steps", "sipoc", "sub_processes", "kpis", "compliance"],
+        initialBlocks: [
+          { type: "heading", content: "Zweck & Geltungsbereich", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "SIPOC", level: 2 },
+          { type: "table", rows: [["Suppliers", "Inputs", "Process", "Outputs", "Customers"], ["", "", "", "", ""]] },
+          { type: "divider" },
+          { type: "heading", content: "KPIs & Kennzahlen", level: 2 },
+          { type: "bulletList", items: ["KPI 1: ", "KPI 2: "] },
+          { type: "divider" },
+          { type: "heading", content: "Normbezug & Compliance", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "full",
-        label: "Vollständig",
+        label: "QM-detailliert",
         description:
           "Alle Abschnitte inkl. Schnittstellen und Risiken vorausgefüllt",
+        variantCategory: "qm_detail",
         prefilledSections: ["overview", "process_steps", "sipoc", "sub_processes", "kpis", "interfaces_systems", "compliance", "risks"],
+        initialBlocks: [
+          { type: "heading", content: "Zweck & Geltungsbereich", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "SIPOC", level: 2 },
+          { type: "table", rows: [["Suppliers", "Inputs", "Process", "Outputs", "Customers"], ["", "", "", "", ""]] },
+          { type: "divider" },
+          { type: "heading", content: "KPIs & Kennzahlen", level: 2 },
+          { type: "bulletList", items: ["KPI 1: ", "KPI 2: ", "KPI 3: "] },
+          { type: "divider" },
+          { type: "heading", content: "Normbezug & Compliance", level: 2 },
+          { type: "bulletList", items: ["Norm/Gesetz: ", "Anforderung: "] },
+          { type: "divider" },
+          { type: "heading", content: "Prozessrisiken", level: 2 },
+          { type: "table", rows: [["Risiko", "Eintrittswahrscheinlichkeit", "Auswirkung", "Gegenmaßnahme"], ["", "", "", ""]] },
+        ],
+      },
+      {
+        key: "container",
+        label: "Container",
+        description:
+          "Reine Übersichtsseite zum Bündeln von Unterprozessen – minimaler eigener Inhalt",
+        variantCategory: "container",
+        prefilledSections: ["overview"],
+        initialBlocks: [
+          { type: "heading", content: "Übersicht", level: 2 },
+          { type: "callout", content: "Diese Seite dient als Sammelpunkt für die nachfolgenden Teilprozesse." },
+        ],
       },
     ],
   },
@@ -584,6 +659,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "role_profile",
       "system_documentation",
       "faq",
+    ],
+    recommendedChildTypes: [
+      "core_process_overview",
+      "process_page_text",
+      "policy",
     ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -649,14 +729,42 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Bereichsübersicht",
+        label: "Schlank",
+        description: "Minimale Bereichsübersicht – nur Beschreibung",
+        variantCategory: "schlank",
+        prefilledSections: ["description"],
+        initialBlocks: [
+          { type: "heading", content: "Beschreibung", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "standard",
         label: "Standard",
-        description: "Mit Beschreibung und Aufbauorganisation",
-        prefilledSections: ["description", "structure"],
+        description: "Mit Beschreibung, Aufbauorganisation und Schnittstellen",
+        variantCategory: "standard",
+        prefilledSections: ["description", "structure", "interfaces"],
+        initialBlocks: [
+          { type: "heading", content: "Beschreibung", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Aufbauorganisation", level: 2 },
+          { type: "bulletList", items: ["Team/Gruppe: ", "Leitung: "] },
+          { type: "divider" },
+          { type: "heading", content: "Schnittstellen", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
+      },
+      {
+        key: "container",
+        label: "Container",
+        description: "Reine Sammelseite für untergeordnete Bereiche und Prozesse",
+        variantCategory: "container",
+        prefilledSections: ["description"],
+        initialBlocks: [
+          { type: "heading", content: "Übersicht", level: 2 },
+          { type: "callout", content: "Diese Seite bündelt die zugehörigen Prozesse und Dokumente des Bereichs." },
+        ],
       },
     ],
   },
@@ -754,20 +862,48 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere textbasierte Prozessseite",
+        label: "Schlank",
+        description: "Minimale Prozessseite – nur Ablauf",
+        variantCategory: "schlank",
+        prefilledSections: ["procedure"],
+        initialBlocks: [
+          { type: "heading", content: "Ablauf", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "standard",
         label: "Standard",
-        description: "Mit Ablauf und Schnittstellenabschnitt",
+        description: "Ablauf mit Schnittstellen – bewährte Grundstruktur",
+        variantCategory: "standard",
         prefilledSections: ["procedure", "interfaces"],
+        initialBlocks: [
+          { type: "heading", content: "Ablauf", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Schnittstellen", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "detailed",
-        label: "Detailliert",
-        description: "Alle Abschnitte inkl. Auslöser und Ergebnisse",
+        label: "QM-detailliert",
+        description: "Alle Abschnitte inkl. Auslöser, Ergebnisse und Schnittstellen",
+        variantCategory: "qm_detail",
         prefilledSections: ["trigger", "procedure", "outputs", "interfaces"],
+        initialBlocks: [
+          { type: "heading", content: "Auslöser & Eingaben", level: 2 },
+          { type: "bulletList", items: ["Auslöser: ", "Eingaben: ", "Vorbedingungen: "] },
+          { type: "divider" },
+          { type: "heading", content: "Ablauf", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Ergebnisse & Ausgaben", level: 2 },
+          { type: "bulletList", items: ["Ergebnis: ", "Dokument: "] },
+          { type: "divider" },
+          { type: "heading", content: "Schnittstellen", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
     ],
   },
@@ -835,14 +971,31 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere grafische Prozessseite",
+        label: "Schlank",
+        description: "Minimale grafische Prozessseite – nur Diagramm",
+        variantCategory: "schlank",
+        prefilledSections: ["diagram"],
+        initialBlocks: [
+          { type: "heading", content: "Diagramm", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "swimlane",
-        label: "Swimlane",
-        description: "Vorlage mit Swimlane-Diagramm und Erläuterung",
-        prefilledSections: ["diagram", "description"],
+        label: "Grafisch (Swimlane)",
+        description: "Swimlane-Diagramm mit textueller Erläuterung und Legende",
+        variantCategory: "grafisch",
+        prefilledSections: ["diagram", "description", "legend"],
+        initialBlocks: [
+          { type: "heading", content: "Swimlane-Diagramm", level: 2 },
+          { type: "callout", content: "Fügen Sie hier Ihr Swimlane-Diagramm ein oder erstellen Sie es direkt." },
+          { type: "divider" },
+          { type: "heading", content: "Erläuterung", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Legende & Symbole", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
     ],
   },
@@ -1165,19 +1318,46 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Verfahrensanweisung",
+        label: "Schlank",
+        description: "Minimale Verfahrensanweisung – nur Zweck und Ablauf",
+        variantCategory: "schlank",
+        prefilledSections: ["purpose", "procedure"],
+        initialBlocks: [
+          { type: "heading", content: "Zweck", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Ablauf", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "standard",
         label: "Standard",
         description: "Kernabschnitte: Zweck, Geltungsbereich, Ablauf, RACI, Unterlagen",
+        variantCategory: "standard",
         prefilledSections: ["purpose", "scope", "procedure", "responsibilities", "documents"],
+        initialBlocks: [
+          { type: "heading", content: "Zweck", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Geltungsbereich", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Ablauf", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Verantwortlichkeiten", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Mitgeltende Unterlagen", level: 2 },
+          { type: "bulletList", items: ["Dokument: "] },
+        ],
       },
       {
         key: "detailed",
         label: "Vollständig (QM)",
         description: "Alle Abschnitte nach QM-Muster inkl. SIPOC, Swimlane, KPI, Compliance",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
           "scope",
@@ -1277,6 +1457,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "standard",
         label: "Standard",
         description: "Use Case mit vorstrukturierten Abschnitten",
+        variantCategory: "standard",
         prefilledSections: [
           "actors",
           "preconditions",
@@ -1410,13 +1591,23 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Richtlinie",
+        label: "Schlank",
+        description: "Minimale Richtlinie – nur Zweck und Richtlinientext",
+        variantCategory: "schlank",
+        prefilledSections: ["purpose", "policy_text"],
+        initialBlocks: [
+          { type: "heading", content: "Zweck", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Richtlinientext", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "full",
-        label: "Vollständig",
-        description: "Alle Pflichtabschnitte vorstrukturiert",
+        label: "QM-detailliert",
+        description: "Alle Pflichtabschnitte nach QM-Standard vorstrukturiert",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
           "scope",
@@ -1424,6 +1615,25 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "policy_text",
           "enforcement",
           "references",
+        ],
+        initialBlocks: [
+          { type: "heading", content: "Zweck", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Geltungsbereich", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Begriffe & Definitionen", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Richtlinientext", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Durchsetzung", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Referenzen", level: 2 },
+          { type: "bulletList", items: ["Referenz: "] },
         ],
       },
     ],
@@ -1737,13 +1947,20 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leeres Stellenprofil",
+        label: "Schlank",
+        description: "Minimales Rollenprofil – nur Rollendefinition",
+        variantCategory: "schlank",
+        prefilledSections: ["role_definition"],
+        initialBlocks: [
+          { type: "heading", content: "Rollendefinition", level: 2 },
+          { type: "paragraph", content: "" },
+        ],
       },
       {
         key: "standard",
         label: "Standard",
         description: "Kernabschnitte: Zielsetzung, Aufgaben, Verantwortlichkeiten, Kompetenzen",
+        variantCategory: "standard",
         prefilledSections: [
           "role_definition",
           "core_tasks",
@@ -1773,6 +1990,22 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "data_protection",
           "working_model",
           "interfaces",
+        ],
+        initialBlocks: [
+          { type: "heading", content: "Rollendefinition", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Aufgaben & Verantwortlichkeiten", level: 2 },
+          { type: "bulletList", items: ["Aufgabe: "] },
+          { type: "divider" },
+          { type: "heading", content: "Qualifikationen", level: 2 },
+          { type: "bulletList", items: ["Qualifikation: "] },
+          { type: "divider" },
+          { type: "heading", content: "Befugnisse", level: 2 },
+          { type: "paragraph", content: "" },
+          { type: "divider" },
+          { type: "heading", content: "Schnittstellen", level: 2 },
+          { type: "paragraph", content: "" },
         ],
       },
     ],
@@ -1822,6 +2055,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "standard",
         label: "Standard",
         description: "Standard-Dashboard mit Widgets und Beschreibung",
+        variantCategory: "standard",
         prefilledSections: ["widgets", "description"],
       },
     ],
@@ -1877,8 +2111,9 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Glossarseite",
+        label: "Schlank",
+        description: "Minimale Glossarseite",
+        variantCategory: "schlank",
       },
     ],
   },
@@ -1997,13 +2232,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Systemdokumentation",
+        label: "Schlank",
+        description: "Minimale Systemdokumentation",
+        variantCategory: "schlank",
       },
       {
         key: "detailed",
-        label: "Detailliert",
-        description: "Alle Abschnitte vorstrukturiert",
+        label: "QM-detailliert",
+        description: "Alle Abschnitte nach QM-Standard vorstrukturiert",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "system_info",
           "architecture",
@@ -2128,19 +2365,22 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Arbeitsanweisung",
+        label: "Schlank",
+        description: "Minimale Arbeitsanweisung",
+        variantCategory: "schlank",
       },
       {
         key: "standard",
         label: "Standard",
         description: "Kernabschnitte vorstrukturiert",
+        variantCategory: "standard",
         prefilledSections: ["purpose", "scope", "steps", "quality_criteria"],
       },
       {
         key: "safety",
-        label: "Mit Sicherheitshinweisen",
-        description: "Inkl. Sicherheitshinweise und Materialien",
+        label: "QM-detailliert (Sicherheit)",
+        description: "Alle Abschnitte inkl. Sicherheitshinweise und Materialien",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
           "scope",
@@ -2247,19 +2487,22 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Checkliste",
+        label: "Schlank",
+        description: "Minimale Checkliste",
+        variantCategory: "schlank",
       },
       {
         key: "standard",
         label: "Standard",
         description: "Checkliste mit Zweck und Prüfpunkten",
+        variantCategory: "standard",
         prefilledSections: ["purpose", "checklist_items"],
       },
       {
         key: "audit",
-        label: "Audit-Checkliste",
+        label: "Audit-Checkliste (QM)",
         description: "Vollständige Audit-Checkliste mit Anleitung",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
           "instructions",
@@ -2356,12 +2599,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "faq",
         label: "FAQ",
         description: "Häufig gestellte Fragen",
+        variantCategory: "schlank",
         prefilledSections: ["summary", "content"],
       },
       {
         key: "knowledge_article",
         label: "Wissensartikel",
-        description: "Strukturierter Wissensartikel",
+        description: "Strukturierter Wissensartikel mit verwandten Themen",
+        variantCategory: "standard",
         prefilledSections: ["summary", "content", "related_topics"],
       },
     ],
@@ -2479,13 +2724,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Schnittstellenbeschreibung",
+        label: "Schlank",
+        description: "Minimale Schnittstellenbeschreibung",
+        variantCategory: "schlank",
       },
       {
         key: "technical",
         label: "Technisch",
         description: "Technische Schnittstelle mit Protokolldetails",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "overview",
           "data_flow",
@@ -2498,6 +2745,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "organizational",
         label: "Organisatorisch",
         description: "Organisatorische Schnittstelle zwischen Bereichen",
+        variantCategory: "standard",
         prefilledSections: ["overview", "data_flow", "responsibilities"],
       },
     ],
@@ -2625,13 +2873,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leeres Protokoll",
+        label: "Schlank",
+        description: "Minimales Protokoll",
+        variantCategory: "schlank",
       },
       {
         key: "standard",
         label: "Standard",
         description: "Standardprotokoll mit allen Kernabschnitten",
+        variantCategory: "standard",
         prefilledSections: [
           "participants",
           "agenda",
@@ -2644,6 +2894,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "decision",
         label: "Entscheidungsprotokoll",
         description: "Fokus auf Entscheidungen und Maßnahmen",
+        variantCategory: "schlank",
         prefilledSections: ["participants", "decisions", "action_items"],
       },
     ],
@@ -2776,19 +3027,22 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leere Schulungsressource",
+        label: "Schlank",
+        description: "Minimale Schulungsressource",
+        variantCategory: "schlank",
       },
       {
         key: "training",
         label: "Schulung",
         description: "Strukturierte Schulungsunterlage",
+        variantCategory: "standard",
         prefilledSections: ["objectives", "content", "exercises", "assessment"],
       },
       {
         key: "onboarding",
         label: "Einarbeitung",
         description: "Einarbeitungsplan mit Checkliste",
+        variantCategory: "standard",
         prefilledSections: [
           "objectives",
           "prerequisites",
@@ -2929,13 +3183,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     variants: [
       {
         key: "blank",
-        label: "Leer",
-        description: "Leeres Prüfobjekt",
+        label: "Schlank",
+        description: "Minimales Prüfobjekt",
+        variantCategory: "schlank",
       },
       {
         key: "audit_finding",
         label: "Audit-Feststellung",
         description: "Vollständige Audit-Feststellung mit Maßnahmenplan",
+        variantCategory: "qm_detail",
         prefilledSections: [
           "finding",
           "evidence",
@@ -2949,6 +3205,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "quality_check",
         label: "Qualitätsprüfung",
         description: "Qualitätsprüfpunkt mit Feststellung und Korrektur",
+        variantCategory: "standard",
         prefilledSections: ["finding", "evidence", "corrective_action"],
       },
     ],
@@ -3527,4 +3784,81 @@ export function getSectionsByRequirement(
   }
 
   return { required, recommended, conditional };
+}
+
+export function getRecommendedChildTypes(parentType: string): TemplateType[] {
+  const def = getPageType(parentType);
+  if (!def) return [];
+  return def.recommendedChildTypes ?? def.allowedChildTypes.slice(0, 3);
+}
+
+export function getVariantsByCategory(type: string): Record<VariantCategory, TemplateVariant[]> {
+  const def = getPageType(type);
+  const result: Record<VariantCategory, TemplateVariant[]> = {
+    schlank: [],
+    standard: [],
+    qm_detail: [],
+    grafisch: [],
+    container: [],
+  };
+  if (!def) return result;
+  for (const v of def.variants) {
+    const cat = v.variantCategory ?? "standard";
+    result[cat].push(v);
+  }
+  return result;
+}
+
+export function buildInitialEditorContent(blocks: InitialBlock[]): Record<string, unknown> {
+  const content: Record<string, unknown>[] = [];
+  for (const block of blocks) {
+    switch (block.type) {
+      case "heading":
+        content.push({
+          type: "heading",
+          attrs: { level: block.level ?? 2 },
+          content: block.content ? [{ type: "text", text: block.content }] : [],
+        });
+        break;
+      case "paragraph":
+        content.push({
+          type: "paragraph",
+          content: block.content ? [{ type: "text", text: block.content }] : [],
+        });
+        break;
+      case "bulletList":
+        content.push({
+          type: "bulletList",
+          content: (block.items ?? []).map((item) => ({
+            type: "listItem",
+            content: [{ type: "paragraph", content: item ? [{ type: "text", text: item }] : [] }],
+          })),
+        });
+        break;
+      case "table":
+        if (block.rows && block.rows.length > 0) {
+          content.push({
+            type: "table",
+            content: block.rows.map((row, rowIdx) => ({
+              type: "tableRow",
+              content: row.map((cell) => ({
+                type: rowIdx === 0 ? "tableHeader" : "tableCell",
+                content: [{ type: "paragraph", content: cell ? [{ type: "text", text: cell }] : [] }],
+              })),
+            })),
+          });
+        }
+        break;
+      case "callout":
+        content.push({
+          type: "blockquote",
+          content: [{ type: "paragraph", content: block.content ? [{ type: "text", text: block.content }] : [] }],
+        });
+        break;
+      case "divider":
+        content.push({ type: "horizontalRule" });
+        break;
+    }
+  }
+  return { type: "doc", content };
 }

@@ -31,17 +31,41 @@ import { PeoplePicker } from "@/components/PeoplePicker";
 import {
   PAGE_TYPE_REGISTRY,
   getAllowedChildTypes,
+  getRecommendedChildTypes,
+  getVariantsByCategory,
   PAGE_TYPE_CATEGORIES,
+  VARIANT_CATEGORY_LABELS,
+  buildInitialEditorContent,
   type TemplateType,
+  type VariantCategory,
 } from "@/lib/types";
 import type { CreateNodeInput } from "@workspace/api-client-react";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Star,
+  Zap,
+  Settings2,
+  ClipboardCheck,
+  Image,
+  FolderOpen,
+} from "lucide-react";
+
+const VARIANT_CATEGORY_ICONS: Record<VariantCategory, React.ReactNode> = {
+  schlank: <Zap className="h-4 w-4" />,
+  standard: <Settings2 className="h-4 w-4" />,
+  qm_detail: <ClipboardCheck className="h-4 w-4" />,
+  grafisch: <Image className="h-4 w-4" />,
+  container: <FolderOpen className="h-4 w-4" />,
+};
 
 interface CreateNodeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parentNodeId: string | null;
   parentTemplateType?: string;
+  presetType?: string;
 }
 
 export function CreateNodeDialog({
@@ -49,6 +73,7 @@ export function CreateNodeDialog({
   onOpenChange,
   parentNodeId,
   parentTemplateType,
+  presetType,
 }: CreateNodeDialogProps) {
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
@@ -72,34 +97,67 @@ export function CreateNodeDialog({
     return Object.keys(PAGE_TYPE_REGISTRY) as TemplateType[];
   }, [parentTemplateType]);
 
-  useEffect(() => {
-    if (allowedTypes.length > 0) {
-      setTemplateType(allowedTypes[0] as CreateNodeInput["templateType"]);
+  const recommendedTypes = useMemo(() => {
+    if (parentTemplateType) {
+      return getRecommendedChildTypes(parentTemplateType);
     }
-  }, [allowedTypes]);
+    return [];
+  }, [parentTemplateType]);
+
+  useEffect(() => {
+    if (presetType && allowedTypes.includes(presetType as TemplateType)) {
+      setTemplateType(presetType as CreateNodeInput["templateType"]);
+      setStep(1);
+    } else if (allowedTypes.length > 0) {
+      const firstRecommended = recommendedTypes.length > 0 ? recommendedTypes[0] : allowedTypes[0];
+      setTemplateType(firstRecommended as CreateNodeInput["templateType"]);
+    }
+  }, [allowedTypes, presetType, recommendedTypes]);
 
   useEffect(() => {
     const def = PAGE_TYPE_REGISTRY[templateType as TemplateType];
     if (def?.variants?.length) {
+      const standardVariant = def.variants.find((v) => v.variantCategory === "standard");
       const hasBlank = def.variants.some((v) => v.key === "blank");
-      setSelectedVariant(hasBlank ? "blank" : def.variants[0].key);
+      setSelectedVariant(
+        standardVariant?.key ?? (hasBlank ? "blank" : def.variants[0].key)
+      );
     }
   }, [templateType]);
 
   const groupedTypes = useMemo(() => {
-    const groups: Record<string, TemplateType[]> = {};
+    const recommended = new Set(recommendedTypes);
+    const groups: Record<string, { types: TemplateType[]; isRecommended: boolean }> = {};
+
+    if (recommended.size > 0) {
+      const recTypes = allowedTypes.filter((t) => recommended.has(t));
+      if (recTypes.length > 0) {
+        groups["__recommended__"] = { types: recTypes, isRecommended: true };
+      }
+    }
+
     for (const t of allowedTypes) {
+      if (recommended.has(t)) continue;
       const def = PAGE_TYPE_REGISTRY[t];
       if (def) {
         const cat = def.category;
-        if (!groups[cat]) groups[cat] = [];
-        groups[cat].push(t);
+        if (!groups[cat]) groups[cat] = { types: [], isRecommended: false };
+        groups[cat].types.push(t);
       }
     }
     return groups;
-  }, [allowedTypes]);
+  }, [allowedTypes, recommendedTypes]);
 
   const selectedDef = PAGE_TYPE_REGISTRY[templateType as TemplateType];
+
+  const variantsByCat = useMemo(() => {
+    if (!selectedDef) return [];
+    const grouped = getVariantsByCategory(templateType as string);
+    const order: VariantCategory[] = ["schlank", "standard", "qm_detail", "grafisch", "container"];
+    return order
+      .filter((c) => grouped[c].length > 0)
+      .map((c) => ({ category: c, variants: grouped[c] }));
+  }, [selectedDef, templateType]);
 
   const handleCreate = async () => {
     if (!title.trim()) return;
@@ -129,6 +187,10 @@ export function CreateNodeDialog({
         for (const sKey of variantDef.prefilledSections) {
           structuredInit[sKey] = "";
         }
+      }
+
+      if (variantDef?.initialBlocks && variantDef.initialBlocks.length > 0) {
+        structuredInit._editorContent = buildInitialEditorContent(variantDef.initialBlocks);
       }
 
       await createRevision.mutateAsync({
@@ -217,18 +279,26 @@ export function CreateNodeDialog({
             <p className="text-sm text-muted-foreground">
               Wählen Sie den Seitentyp für die neue Seite.
             </p>
-            {Object.entries(groupedTypes).map(([category, types]) => (
+            {Object.entries(groupedTypes).map(([category, { types, isRecommended }]) => (
               <div key={category}>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  {PAGE_TYPE_CATEGORIES[
-                    category as keyof typeof PAGE_TYPE_CATEGORIES
-                  ]?.labelDe ?? category}
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  {isRecommended ? (
+                    <>
+                      <Star className="h-3 w-3 text-amber-500" />
+                      <span className="text-amber-700 dark:text-amber-400">Empfohlen</span>
+                    </>
+                  ) : (
+                    PAGE_TYPE_CATEGORIES[
+                      category as keyof typeof PAGE_TYPE_CATEGORIES
+                    ]?.labelDe ?? category
+                  )}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {types.map((t) => {
                     const def = PAGE_TYPE_REGISTRY[t];
                     if (!def) return null;
                     const isSelected = templateType === t;
+                    const isRec = recommendedTypes.includes(t);
                     return (
                       <Card
                         key={t}
@@ -236,7 +306,7 @@ export function CreateNodeDialog({
                           isSelected
                             ? "ring-2 ring-primary border-primary"
                             : "hover:border-primary/40"
-                        }`}
+                        } ${isRec && !isRecommended ? "border-amber-200 dark:border-amber-800" : ""}`}
                         onClick={() =>
                           setTemplateType(t as CreateNodeInput["templateType"])
                         }
@@ -252,7 +322,12 @@ export function CreateNodeDialog({
                             />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-sm">{def.labelDe}</p>
+                            <p className="font-medium text-sm flex items-center gap-1.5">
+                              {def.labelDe}
+                              {isRec && !isRecommended && (
+                                <Star className="h-3 w-3 text-amber-500 shrink-0" />
+                              )}
+                            </p>
                             <p className="text-xs text-muted-foreground line-clamp-2">
                               {def.descriptionDe}
                             </p>
@@ -273,55 +348,76 @@ export function CreateNodeDialog({
         {step === 1 && selectedDef && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              Wählen Sie eine Vorlage für <strong>{selectedDef.labelDe}</strong>
-              .
+              Wählen Sie eine Vorlage für <strong>{selectedDef.labelDe}</strong>.
             </p>
-            <div className="grid gap-2">
-              {selectedDef.variants.map((variant) => {
-                const isActive = selectedVariant === variant.key;
-                return (
-                  <Card
-                    key={variant.key}
-                    className={`cursor-pointer transition-all ${
-                      isActive
-                        ? "border-primary ring-1 ring-primary"
-                        : "hover:border-muted-foreground/30"
-                    }`}
-                    onClick={() => setSelectedVariant(variant.key)}
-                  >
-                    <CardContent className="flex items-center gap-3 p-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">{variant.label}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {variant.description}
-                        </p>
-                        {variant.prefilledSections &&
-                          variant.prefilledSections.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {variant.prefilledSections.map((sKey) => {
-                                const sec = selectedDef.sections.find(
-                                  (s) => s.key === sKey,
-                                );
-                                return (
-                                  <Badge
-                                    key={sKey}
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    {sec?.label ?? sKey}
-                                  </Badge>
-                                );
-                              })}
+            <div className="space-y-4">
+              {variantsByCat.map(({ category, variants }) => (
+                <div key={category}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-muted-foreground">
+                      {VARIANT_CATEGORY_ICONS[category]}
+                    </span>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {VARIANT_CATEGORY_LABELS[category].label}
+                    </h4>
+                    <span className="text-[10px] text-muted-foreground">
+                      — {VARIANT_CATEGORY_LABELS[category].description}
+                    </span>
+                  </div>
+                  <div className="grid gap-2">
+                    {variants.map((variant) => {
+                      const isActive = selectedVariant === variant.key;
+                      return (
+                        <Card
+                          key={variant.key}
+                          className={`cursor-pointer transition-all ${
+                            isActive
+                              ? "border-primary ring-1 ring-primary"
+                              : "hover:border-muted-foreground/30"
+                          }`}
+                          onClick={() => setSelectedVariant(variant.key)}
+                        >
+                          <CardContent className="flex items-center gap-3 p-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm">{variant.label}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {variant.description}
+                              </p>
+                              {variant.prefilledSections &&
+                                variant.prefilledSections.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {variant.prefilledSections.map((sKey) => {
+                                      const sec = selectedDef.sections.find(
+                                        (s) => s.key === sKey,
+                                      );
+                                      return (
+                                        <Badge
+                                          key={sKey}
+                                          variant="secondary"
+                                          className="text-xs"
+                                        >
+                                          {sec?.label ?? sKey}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              {variant.initialBlocks && variant.initialBlocks.length > 0 && (
+                                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
+                                  ✓ Vorstrukturierte Blöcke werden angelegt
+                                </p>
+                              )}
                             </div>
-                          )}
-                      </div>
-                      {isActive && (
-                        <Check className="h-4 w-4 text-primary shrink-0" />
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                            {isActive && (
+                              <Check className="h-4 w-4 text-primary shrink-0" />
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {selectedDef.helpText && (
@@ -519,6 +615,26 @@ export function CreateNodeDialog({
                   </div>
                 </>
               )}
+
+              {(() => {
+                const variantDef = selectedDef?.variants.find((v) => v.key === selectedVariant);
+                if (variantDef?.initialBlocks && variantDef.initialBlocks.length > 0) {
+                  return (
+                    <>
+                      <Separator />
+                      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
+                        <p className="font-medium mb-1">Vorstrukturierter Inhalt</p>
+                        <p className="text-xs">
+                          Die Seite wird mit {variantDef.initialBlocks.length} vorbereiteten
+                          Inhaltsbausteinen angelegt (Überschriften, Listen, Tabellen).
+                          Sie können sofort mit dem Ausfüllen beginnen.
+                        </p>
+                      </div>
+                    </>
+                  );
+                }
+                return null;
+              })()}
             </div>
           </div>
         )}

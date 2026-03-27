@@ -12,6 +12,7 @@ export {
   REGISTRY_VERSION,
   getPageType,
   getAllowedChildTypes,
+  getRecommendedChildTypes,
   getMetadataGroups,
   calculateCompleteness,
   validateForPublication,
@@ -20,12 +21,15 @@ export {
   getPublicationReadiness,
   getFieldsByRequirement,
   getSectionsByRequirement,
+  getVariantsByCategory,
+  buildInitialEditorContent,
   getDisplayProfile,
   getDisplayIdPrefix,
   getPageTypesByDisplayProfile,
   METADATA_GROUP_LABELS,
   PAGE_TYPE_CATEGORIES,
   DISPLAY_PROFILE_LABELS,
+  VARIANT_CATEGORY_LABELS,
 } from "@workspace/shared/page-types";
 
 export type {
@@ -33,6 +37,8 @@ export type {
   MetadataGroupKey,
   PageTypeCategory,
   DisplayProfile,
+  VariantCategory,
+  InitialBlock,
   FieldRequirement,
   FieldHelp,
   PublicationRules,

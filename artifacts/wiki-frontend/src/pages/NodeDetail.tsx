@@ -830,6 +830,7 @@ export function NodeDetail() {
         onOpenChange={setShowCreate}
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
+        presetType={createPresetType}
       />
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
