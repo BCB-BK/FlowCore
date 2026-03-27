@@ -9,6 +9,7 @@ import { correlationId } from "./middlewares/correlation-id";
 import { securityHeaders } from "./middlewares/security-headers";
 import { apiRateLimit } from "./middlewares/rate-limit";
 import { appConfig } from "./lib/config";
+import { pool } from "@workspace/db";
 
 declare module "express-session" {
   interface SessionData {
@@ -31,7 +32,6 @@ const sessionStore = isProduction
   ? new PgStore({
       conString: appConfig.databaseUrl,
       tableName: "user_sessions",
-      createTableIfMissing: true,
       pruneSessionInterval: 60 * 15,
     })
   : undefined;
@@ -89,5 +89,17 @@ app.use(
 );
 
 app.use("/api", router);
+
+export async function ensureSessionTable(): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      sid VARCHAR NOT NULL PRIMARY KEY,
+      sess JSON NOT NULL,
+      expire TIMESTAMP(6) NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS user_sessions_expire_idx ON user_sessions (expire);
+  `);
+  logger.info("user_sessions table ensured");
+}
 
 export default app;

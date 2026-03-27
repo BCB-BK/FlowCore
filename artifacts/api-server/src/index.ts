@@ -1,4 +1,4 @@
-import app from "./app";
+import app, { ensureSessionTable } from "./app";
 import { appConfig } from "./lib/config";
 import { logger } from "./lib/logger";
 import { startSyncScheduler } from "./services/sync-scheduler.service";
@@ -47,6 +47,15 @@ async function startServer(port: number, attempt = 1): Promise<Server> {
 
 async function start() {
   let server: Server;
+
+  if (appConfig.nodeEnv === "production") {
+    try {
+      await ensureSessionTable();
+    } catch (err) {
+      logger.error({ err }, "Failed to ensure user_sessions table — aborting");
+      process.exit(1);
+    }
+  }
 
   try {
     server = await startServer(appConfig.port);
