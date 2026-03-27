@@ -121,10 +121,15 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
       ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
     });
 
-    res.json({ principalId, displayName: tokenResult.displayName });
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        logger.error({ err: saveErr }, "Failed to save session after login");
+      }
+      res.redirect("/");
+    });
   } catch (err) {
     logger.error({ err }, "Auth callback failed");
-    res.status(401).json({ error: "Authentication failed" });
+    res.redirect("/?auth_error=1");
   }
 });
 

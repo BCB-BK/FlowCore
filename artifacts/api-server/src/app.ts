@@ -83,7 +83,7 @@ app.use(
       secure: isProduction,
       httpOnly: true,
       maxAge: 8 * 60 * 60 * 1000,
-      sameSite: isProduction ? "none" : "lax",
+      sameSite: "lax",
     },
   }),
 );
