@@ -16,6 +16,7 @@ import {
 import { eq, and, desc, ilike } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { hasPermission } from "../services/rbac.service";
 import {
   getDefaultStorageProvider,
   getDefaultProviderId,
@@ -407,6 +408,14 @@ router.get("/files/:key", requireAuth, async (req, res) => {
     if (!asset) {
       res.status(404).json({ error: "File not found" });
       return;
+    }
+
+    if (asset.nodeId) {
+      const canRead = await hasPermission(req.user!.principalId, "read_page", asset.nodeId);
+      if (!canRead) {
+        res.status(403).json({ error: "Keine Berechtigung" });
+        return;
+      }
     }
 
     const provider = asset.storageProviderId
