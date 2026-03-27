@@ -5,18 +5,15 @@ import {
   Target,
   Zap,
   PackageOpen,
-  Users,
-  ArrowLeftRight,
   PackageCheck,
-  AlertTriangle,
-  BarChart3,
   History,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { RACIMatrix, RisksControlsTable, KPITable, InterfacesSystemsTable, SwimlaneDiagram } from "@/components/qm";
 
 interface ProcedureLayoutProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 function str(val: unknown): string {
@@ -82,59 +79,45 @@ export function ProcedureLayout({
         emptyText="Noch keine Schritte dokumentiert"
       />
 
-      <EditableSectionCard
-        sectionKey="responsibilities"
-        label="Verantwortlichkeiten (RACI)"
-        description="Responsible, Accountable, Consulted, Informed"
-        icon={<Users className="h-4 w-4 text-purple-600" />}
-        value={str(structuredFields.responsibilities)}
-        onSave={onSectionSave}
-        emptyText="Noch keine Verantwortlichkeiten zugeordnet"
+      <SwimlaneDiagram
+        data={structuredFields.swimlane}
+        onSave={onSectionSave ? (data) => onSectionSave("swimlane", data) : undefined}
+        readOnly={!onSectionSave}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <EditableSectionCard
-          sectionKey="interfaces"
-          label="Schnittstellen & Systeme"
-          description="Beteiligte IT-Systeme und organisatorische Schnittstellen"
-          icon={<ArrowLeftRight className="h-4 w-4 text-cyan-600" />}
-          value={str(structuredFields.interfaces)}
-          onSave={onSectionSave}
-          emptyText="Keine Schnittstellen definiert"
-        />
+      <RACIMatrix
+        data={structuredFields.responsibilities}
+        onSave={onSectionSave ? (data) => onSectionSave("responsibilities", data) : undefined}
+        readOnly={!onSectionSave}
+      />
 
-        <EditableSectionCard
-          sectionKey="outputs"
-          label="Ergebnisse & Ausgaben"
-          description="Was wird durch das Verfahren erzeugt?"
-          icon={<PackageCheck className="h-4 w-4 text-green-600" />}
-          value={str(structuredFields.outputs)}
-          onSave={onSectionSave}
-          emptyText="Keine Ergebnisse definiert"
-        />
-      </div>
+      <InterfacesSystemsTable
+        data={structuredFields.interfaces}
+        onSave={onSectionSave ? (data) => onSectionSave("interfaces", data) : undefined}
+        readOnly={!onSectionSave}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <EditableSectionCard
-          sectionKey="risks"
-          label="Risiken & Maßnahmen"
-          description="Identifizierte Risiken und Gegenmaßnahmen"
-          icon={<AlertTriangle className="h-4 w-4 text-red-600" />}
-          value={str(structuredFields.risks)}
-          onSave={onSectionSave}
-          emptyText="Keine Risiken dokumentiert"
-        />
+      <EditableSectionCard
+        sectionKey="outputs"
+        label="Ergebnisse & Ausgaben"
+        description="Was wird durch das Verfahren erzeugt?"
+        icon={<PackageCheck className="h-4 w-4 text-green-600" />}
+        value={str(structuredFields.outputs)}
+        onSave={onSectionSave}
+        emptyText="Keine Ergebnisse definiert"
+      />
 
-        <EditableSectionCard
-          sectionKey="kpis"
-          label="Kennzahlen & Messung"
-          description="Prozesskennzahlen zur Erfolgsmessung"
-          icon={<BarChart3 className="h-4 w-4 text-emerald-600" />}
-          value={str(structuredFields.kpis)}
-          onSave={onSectionSave}
-          emptyText="Keine Kennzahlen definiert"
-        />
-      </div>
+      <RisksControlsTable
+        data={structuredFields.risks}
+        onSave={onSectionSave ? (data) => onSectionSave("risks", data) : undefined}
+        readOnly={!onSectionSave}
+      />
+
+      <KPITable
+        data={structuredFields.kpis}
+        onSave={onSectionSave ? (data) => onSectionSave("kpis", data) : undefined}
+        readOnly={!onSectionSave}
+      />
 
       <EditableSectionCard
         sectionKey="documents"

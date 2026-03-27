@@ -1,9 +1,10 @@
-import { GitBranchPlus, FileText, List } from "lucide-react";
+import { FileText, List } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { SwimlaneDiagram } from "@/components/qm";
 
 interface ProcessPageGraphicLayoutProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 function str(val: unknown): string {
@@ -17,14 +18,10 @@ export function ProcessPageGraphicLayout({
 }: ProcessPageGraphicLayoutProps) {
   return (
     <div className="space-y-4">
-      <EditableSectionCard
-        sectionKey="diagram"
-        label="Diagramm"
-        description="Swimlane-Darstellung"
-        icon={<GitBranchPlus className="h-4 w-4 text-purple-600" />}
-        value={str(structuredFields.diagram)}
-        onSave={onSectionSave}
-        emptyText="Noch kein Diagramm vorhanden"
+      <SwimlaneDiagram
+        data={structuredFields.diagram}
+        onSave={onSectionSave ? (data) => onSectionSave("diagram", data) : undefined}
+        readOnly={!onSectionSave}
       />
 
       <EditableSectionCard

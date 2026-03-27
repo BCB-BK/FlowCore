@@ -258,7 +258,7 @@ export function WorkingCopyEditorPage() {
   );
 
   const handleSectionSave = useCallback(
-    async (sectionKey: string, value: string) => {
+    async (sectionKey: string, value: unknown) => {
       const sf = { ...localStructuredFieldsRef.current, [sectionKey]: value };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);

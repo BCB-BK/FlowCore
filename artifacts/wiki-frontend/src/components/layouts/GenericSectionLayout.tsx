@@ -6,7 +6,7 @@ import { EditableSectionCard } from "./EditableSectionCard";
 interface GenericSectionLayoutProps {
   templateType: string;
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
   displayProfile?: DisplayProfile;
 }
 

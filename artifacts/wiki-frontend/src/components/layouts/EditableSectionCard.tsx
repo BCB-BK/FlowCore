@@ -11,7 +11,7 @@ interface EditableSectionCardProps {
   required?: boolean;
   icon?: React.ReactNode;
   value: string;
-  onSave?: (key: string, value: string) => void;
+  onSave?: (key: string, value: unknown) => void;
   emptyText?: string;
   children?: React.ReactNode;
 }

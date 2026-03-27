@@ -7,10 +7,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { RisksControlsTable } from "@/components/qm";
 
 interface AuditObjectLayoutProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 function str(val: unknown): string {
@@ -75,6 +76,12 @@ export function AuditObjectLayout({
           emptyText="Keine Vorbeugemaßnahme definiert"
         />
       </div>
+
+      <RisksControlsTable
+        data={structuredFields.risks_controls}
+        onSave={onSectionSave ? (data) => onSectionSave("risks_controls", data) : undefined}
+        readOnly={!onSectionSave}
+      />
 
       <EditableSectionCard
         sectionKey="effectiveness_check"

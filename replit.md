@@ -39,6 +39,22 @@ The frontend, `wiki-frontend`, is a React 19 application utilizing Vite, Tailwin
     - **Audit Trail & Evidence:** Complete audit trail for all critical working copy lifecycle events (created, updated, submitted, commented, returned, approved, published, cancelled, unlocked, restored, amended_by_reviewer). Admin API endpoints (`GET /admin/audit-events`, `/admin/audit-events/filters`, `/admin/audit-events/export`) with query/filter/pagination/export (JSON/CSV). Personal data (actorId, ipAddress, comments) is redacted for users without `manage_settings` permission. AuditTrailTab in Settings page for admin viewing. VersionHistoryPanel shows validFrom dates and return/rejection status. Export includes rights check for personal data.
     - **Source of Truth:** Documented model (docs/15-SOURCE-OF-TRUTH.md) defining authoritative sources per artifact type (code, schema, API spec, config, content, docs, templates).
 
+## Structured QM Components
+
+Seven structured QM components live in `artifacts/wiki-frontend/src/components/qm/`:
+
+1. **RACIMatrix** — Editable RACI matrix (rows=process steps, columns=roles, cells=R/A/C/I), color-coded badges, legend
+2. **SIPOCTable** — Structured SIPOC analysis (Trigger, Suppliers, Inputs, Process, Outputs, Customers) with legacy data normalization
+3. **SwimlaneDiagram** — Lane-based diagram with roles, steps, media reference and detail link support
+4. **KPITable** — Structured KPI table (KPI, Definition, Formula, Target, Data Source, Frequency, Owner) with legacy format support
+5. **RisksControlsTable** — Risk/control table (Risk, Impact, Control, Evidence, Owner, Severity) with color-coded severity badges
+6. **InterfacesSystemsTable** — Interface table (Type: upstream/downstream/system/organizational, Counterpart, I/O, Medium, Remark)
+7. **ProcessStepsTable** — Process map/steps (Order, Title, Process-ID, Page Type, Summary, Role, Link) with card-based view mode
+
+All components support edit and view modes. `onSectionSave` type signature updated from `string` to `unknown` across all layouts and the editor page to support structured data persistence.
+
+Integrated into layouts: ProcessOverviewLayout (SIPOC, KPI, Risks, Interfaces, ProcessSteps), ProcedureLayout (Swimlane, RACI, Interfaces, Risks, KPI), AuditObjectLayout (Risks), InterfaceDescriptionLayout (Interfaces), ProcessPageGraphicLayout (Swimlane), SystemDocumentationLayout (Interfaces).
+
 ## External Dependencies
 
 - **Database:** PostgreSQL

@@ -7,10 +7,11 @@ import {
   Users,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { InterfacesSystemsTable } from "@/components/qm";
 
 interface InterfaceDescriptionLayoutProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 function str(val: unknown): string {
@@ -32,6 +33,12 @@ export function InterfaceDescriptionLayout({
         value={str(structuredFields.overview)}
         onSave={onSectionSave}
         emptyText="Noch keine Übersicht erfasst"
+      />
+
+      <InterfacesSystemsTable
+        data={structuredFields.interfaces}
+        onSave={onSectionSave ? (data) => onSectionSave("interfaces", data) : undefined}
+        readOnly={!onSectionSave}
       />
 
       <EditableSectionCard

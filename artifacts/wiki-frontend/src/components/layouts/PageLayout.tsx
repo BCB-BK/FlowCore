@@ -22,7 +22,7 @@ import { GenericSectionLayout } from "./GenericSectionLayout";
 
 interface LayoutComponentProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 interface ProfileLayoutStrategy {
@@ -78,7 +78,7 @@ const PROFILE_LAYOUT_STRATEGIES: Record<DisplayProfile, ProfileLayoutStrategy> =
 interface PageLayoutProps {
   templateType: string;
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 export function PageLayout({

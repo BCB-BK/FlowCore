@@ -1,16 +1,16 @@
 import {
   Server,
   Layers,
-  ArrowLeftRight,
   Database,
   Lock,
   Settings,
 } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
+import { InterfacesSystemsTable } from "@/components/qm";
 
 interface SystemDocumentationLayoutProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 function str(val: unknown): string {
@@ -44,27 +44,21 @@ export function SystemDocumentationLayout({
         emptyText="Keine Architektur dokumentiert"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <EditableSectionCard
-          sectionKey="interfaces"
-          label="Schnittstellen"
-          description="Ein- und ausgehende Schnittstellen"
-          icon={<ArrowLeftRight className="h-4 w-4 text-blue-600" />}
-          value={str(structuredFields.interfaces)}
-          onSave={onSectionSave}
-          emptyText="Keine Schnittstellen dokumentiert"
-        />
+      <InterfacesSystemsTable
+        data={structuredFields.interfaces}
+        onSave={onSectionSave ? (data) => onSectionSave("interfaces", data) : undefined}
+        readOnly={!onSectionSave}
+      />
 
-        <EditableSectionCard
-          sectionKey="data_objects"
-          label="Datenobjekte"
-          description="Verwaltete Daten und Datenmodell"
-          icon={<Database className="h-4 w-4 text-amber-600" />}
-          value={str(structuredFields.data_objects)}
-          onSave={onSectionSave}
-          emptyText="Keine Datenobjekte dokumentiert"
-        />
-      </div>
+      <EditableSectionCard
+        sectionKey="data_objects"
+        label="Datenobjekte"
+        description="Verwaltete Daten und Datenmodell"
+        icon={<Database className="h-4 w-4 text-amber-600" />}
+        value={str(structuredFields.data_objects)}
+        onSave={onSectionSave}
+        emptyText="Keine Datenobjekte dokumentiert"
+      />
 
       <EditableSectionCard
         sectionKey="access_rights"

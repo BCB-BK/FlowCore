@@ -9,7 +9,7 @@ import { EditableSectionCard } from "./EditableSectionCard";
 
 interface RoleProfileLayoutProps {
   structuredFields: Record<string, unknown>;
-  onSectionSave?: (key: string, value: string) => void;
+  onSectionSave?: (key: string, value: unknown) => void;
 }
 
 function str(val: unknown): string {
