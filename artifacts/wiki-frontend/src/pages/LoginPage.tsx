@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
+const BCB_GREEN = "hsl(145, 76%, 38%)";
+const BCB_GREEN_HOVER = "hsl(145, 76%, 32%)";
+
 export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hovered, setHovered] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -52,17 +56,12 @@ export function LoginPage() {
           onClick={handleLogin}
           disabled={loading}
           className="w-full flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors disabled:opacity-60"
-          style={{ backgroundColor: "hsl(145, 76%, 38%)" }}
-          onMouseEnter={(e) =>
-            !loading &&
-            ((e.currentTarget.style.backgroundColor =
-              "hsl(145, 76%, 32%)") as unknown)
-          }
-          onMouseLeave={(e) =>
-            !loading &&
-            ((e.currentTarget.style.backgroundColor =
-              "hsl(145, 76%, 38%)") as unknown)
-          }
+          style={{
+            backgroundColor:
+              hovered && !loading ? BCB_GREEN_HOVER : BCB_GREEN,
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

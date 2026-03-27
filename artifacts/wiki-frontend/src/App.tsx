@@ -1,5 +1,5 @@
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "@/lib/api";
@@ -24,14 +24,38 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 
-function AuthGate({ children }: { children: React.ReactNode }) {
-  const { data: user, isLoading } = useAuth();
+function useAuthConfig() {
+  const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return useQuery({
+    queryKey: ["auth-config"],
+    queryFn: async () => {
+      const res = await fetch(`${baseUrl}/api/auth/config`, { credentials: "include" });
+      return res.json() as Promise<{ devMode: boolean; entraConfigured: boolean }>;
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
+}
 
-  if (import.meta.env.DEV) {
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { data: authConfig, isLoading: configLoading } = useAuthConfig();
+  const { data: user, isLoading: userLoading } = useAuth();
+
+  const isDevMode = authConfig?.devMode === true;
+
+  if (configLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (isDevMode) {
     return <>{children}</>;
   }
 
-  if (isLoading) {
+  if (userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
