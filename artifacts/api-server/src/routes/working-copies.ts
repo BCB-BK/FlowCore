@@ -25,6 +25,7 @@ import {
 } from "../services/working-copy.service";
 import { generateChangeSummary } from "../services/ai.service";
 import { logger } from "../lib/logger";
+import { AppError } from "../lib/app-error";
 import {
   notifyWorkingCopySubmitted,
   notifyWorkingCopyApproved,
@@ -53,6 +54,28 @@ interface WorkingCopyRequest extends Request {
 }
 
 const router: IRouter = Router();
+
+function mapServiceError(err: unknown): Error {
+  if (err instanceof AppError) return err;
+  const message = err instanceof Error ? err.message : "";
+  const code = (err as { code?: string }).code;
+
+  if (message.includes("not found") || message.includes("nicht gefunden")) {
+    return new AppError(404, message);
+  }
+  if (
+    code === "WORKING_COPY_ACTIVE" ||
+    message.includes("bereits") ||
+    message.includes("kann im Status") ||
+    message.includes("ist bereits")
+  ) {
+    return new AppError(409, message, { code });
+  }
+  if (message.includes("nicht erfüllt")) {
+    return new AppError(400, message);
+  }
+  return err instanceof Error ? err : new Error(message);
+}
 
 async function loadWorkingCopy(req: Request, res: Response, next: NextFunction) {
   const wc = await getWorkingCopyById(req.params.id as string);
@@ -97,15 +120,14 @@ router.post(
   requireAuth,
   requirePermission("create_working_copy", (req) => req.params.nodeId),
   async (req, res) => {
+    const nodeId = req.params.nodeId as string;
+    const authorId = req.user!.principalId;
     try {
-      const nodeId = req.params.nodeId as string;
-      const authorId = req.user!.principalId;
       const result = await createWorkingCopy({ nodeId, authorId });
       res.status(result.created ? 201 : 200).json(result.workingCopy);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      logger.warn({ err, nodeId: req.params.nodeId }, "Failed to create working copy");
-      res.status(409).json({ error: message });
+      logger.warn({ err, nodeId }, "Failed to create working copy");
+      throw mapServiceError(err);
     }
   },
 );
@@ -162,8 +184,7 @@ router.patch(
       const updated = await updateWorkingCopy(id, req.body, actorId);
       res.json(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -185,11 +206,10 @@ router.post(
         actorId,
         req.user!.displayName,
         id,
-      ).catch((err) => logger.warn({ err }, "Notification failed after submit"));
+      ).catch((e) => logger.warn({ err: e }, "Notification failed after submit"));
       res.json(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -218,11 +238,10 @@ router.post(
         id,
         wc.authorId,
         req.body.comment,
-      ).catch((err) => logger.warn({ err }, "Notification failed after return"));
+      ).catch((e) => logger.warn({ err: e }, "Notification failed after return"));
       res.json(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -234,39 +253,36 @@ router.post(
   requireWcPermission("review_working_copy"),
   validateBody(ApproveRevisionBody),
   async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      const actorId = req.user!.principalId;
-      const wc = (req as WorkingCopyRequest).workingCopy;
+    const id = req.params.id as string;
+    const actorId = req.user!.principalId;
+    const wc = (req as WorkingCopyRequest).workingCopy;
 
-      const submitter = wc.submittedBy ?? wc.authorId;
-      const sodResult = await checkSeparationOfDuties(
-        "four_eyes_review",
+    const submitter = wc.submittedBy ?? wc.authorId;
+    const sodResult = await checkSeparationOfDuties(
+      "four_eyes_review",
+      actorId,
+      submitter,
+    );
+    if (!sodResult.allowed) {
+      await db.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "sod_violation_blocked",
         actorId,
-        submitter,
-      );
-      if (!sodResult.allowed) {
-        await db.insert(auditEventsTable).values({
-          eventType: "rbac",
-          action: "sod_violation_blocked",
-          actorId,
-          resourceType: "working_copy",
-          resourceId: id,
-          details: {
-            rule: sodResult.rule,
-            reason: sodResult.reason,
-            submittedBy: submitter,
-            authorId: wc.authorId,
-          },
-        });
-        res.status(403).json({
-          error: "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.",
-          sodRule: sodResult.rule,
+        resourceType: "working_copy",
+        resourceId: id,
+        details: {
+          rule: sodResult.rule,
           reason: sodResult.reason,
-        });
-        return;
-      }
+          submittedBy: submitter,
+          authorId: wc.authorId,
+        },
+      });
+      throw new AppError(403, "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.", {
+        details: { sodRule: sodResult.rule, reason: sodResult.reason },
+      });
+    }
 
+    try {
       const updated = await approveWorkingCopy(id, req.body.comment, actorId);
       notifyWorkingCopyApproved(
         updated.nodeId,
@@ -274,11 +290,10 @@ router.post(
         actorId,
         req.user!.displayName,
         id,
-      ).catch((err) => logger.warn({ err }, "Notification failed after approve"));
+      ).catch((e) => logger.warn({ err: e }, "Notification failed after approve"));
       res.json(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -290,47 +305,42 @@ router.post(
   requireWcPermission("publish_working_copy"),
   validateBody(PublishWorkingCopyBody),
   async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      const actorId = req.user!.principalId;
-      const wc = (req as WorkingCopyRequest).workingCopy;
-      const { versionLabel } = req.body;
-      if (!versionLabel || versionLabel.trim().length === 0) {
-        res.status(400).json({
-          error: "Validierungsfehler",
-          details: [{ field: "versionLabel", message: "Versionsbezeichnung darf nicht leer sein" }],
-        });
-        return;
-      }
+    const id = req.params.id as string;
+    const actorId = req.user!.principalId;
+    const wc = (req as WorkingCopyRequest).workingCopy;
+    const { versionLabel } = req.body;
+    if (!versionLabel || versionLabel.trim().length === 0) {
+      throw new AppError(400, "Validierungsfehler", {
+        details: [{ field: "versionLabel", message: "Versionsbezeichnung darf nicht leer sein" }],
+      });
+    }
 
-      const submitter = wc.submittedBy ?? wc.authorId;
-      const sodResult = await checkSeparationOfDuties(
-        "four_eyes_publish",
+    const submitter = wc.submittedBy ?? wc.authorId;
+    const sodResult = await checkSeparationOfDuties(
+      "four_eyes_publish",
+      actorId,
+      submitter,
+    );
+    if (!sodResult.allowed) {
+      await db.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "sod_violation_blocked",
         actorId,
-        submitter,
-      );
-      if (!sodResult.allowed) {
-        await db.insert(auditEventsTable).values({
-          eventType: "rbac",
-          action: "sod_violation_blocked",
-          actorId,
-          resourceType: "working_copy",
-          resourceId: id,
-          details: {
-            rule: sodResult.rule,
-            reason: sodResult.reason,
-            submittedBy: submitter,
-            authorId: wc.authorId,
-          },
-        });
-        res.status(403).json({
-          error: "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.",
-          sodRule: sodResult.rule,
+        resourceType: "working_copy",
+        resourceId: id,
+        details: {
+          rule: sodResult.rule,
           reason: sodResult.reason,
-        });
-        return;
-      }
+          submittedBy: submitter,
+          authorId: wc.authorId,
+        },
+      });
+      throw new AppError(403, "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.", {
+        details: { sodRule: sodResult.rule, reason: sodResult.reason },
+      });
+    }
 
+    try {
       const result = await publishWorkingCopy(id, versionLabel, actorId);
       notifyWorkingCopyPublished(
         wc.nodeId,
@@ -338,11 +348,10 @@ router.post(
         actorId,
         req.user!.displayName,
         versionLabel,
-      ).catch((err) => logger.warn({ err }, "Notification failed after publish"));
+      ).catch((e) => logger.warn({ err: e }, "Notification failed after publish"));
       res.json(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -360,8 +369,7 @@ router.post(
       const updated = await cancelWorkingCopy(id, req.body.comment, actorId);
       res.json(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -378,8 +386,7 @@ router.post(
       const updated = await unlockWorkingCopy(id, actorId);
       res.json(updated);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -391,26 +398,20 @@ router.put(
   requireWcPermission("review_working_copy"),
   validateBody(SummaryBody),
   async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      const wc = (req as WorkingCopyRequest).workingCopy;
-      const reviewStatuses = ["submitted", "in_review", "approved_for_publish"];
-      if (!reviewStatuses.includes(wc.status)) {
-        res.status(409).json({ error: "Zusammenfassung kann nur während der Prüfphase bearbeitet werden." });
-        return;
-      }
-      const { summary } = req.body;
-
-      await db
-        .update(contentWorkingCopiesTable)
-        .set({ lastManualSummary: summary.trim(), updatedAt: new Date() })
-        .where(eq(contentWorkingCopiesTable.id, id));
-
-      res.json({ ok: true });
-    } catch (err) {
-      logger.warn({ err }, "Failed to save manual summary");
-      res.status(500).json({ error: "Failed to save summary" });
+    const id = req.params.id as string;
+    const wc = (req as WorkingCopyRequest).workingCopy;
+    const reviewStatuses = ["submitted", "in_review", "approved_for_publish"];
+    if (!reviewStatuses.includes(wc.status)) {
+      throw new AppError(409, "Zusammenfassung kann nur während der Prüfphase bearbeitet werden.");
     }
+    const { summary } = req.body;
+
+    await db
+      .update(contentWorkingCopiesTable)
+      .set({ lastManualSummary: summary.trim(), updatedAt: new Date() })
+      .where(eq(contentWorkingCopiesTable.id, id));
+
+    res.json({ ok: true });
   },
 );
 
@@ -420,8 +421,8 @@ router.post(
   loadWorkingCopy,
   requireWcOwnerOrPermission("edit_working_copy"),
   async (req, res) => {
+    const id = req.params.id as string;
     try {
-      const id = req.params.id as string;
       const diff = await getWorkingCopyDiff(id);
       const summary = await generateChangeSummary(diff);
 
@@ -435,7 +436,9 @@ router.post(
       const message = err instanceof Error ? err.message : "Unknown error";
       const isDisabled = message.includes("deaktiviert");
       logger.warn({ err }, "Failed to generate AI summary");
-      res.status(isDisabled ? 400 : 500).json({ error: message, code: isDisabled ? "AI_DISABLED" : "AI_ERROR" });
+      throw new AppError(isDisabled ? 400 : 500, isDisabled ? message : "KI-Zusammenfassung fehlgeschlagen", {
+        code: isDisabled ? "AI_DISABLED" : "AI_ERROR",
+      });
     }
   },
 );
@@ -454,8 +457,7 @@ router.post(
       await addWorkingCopyComment(id, comment, actorId);
       res.json({ ok: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -466,14 +468,9 @@ router.get(
   loadWorkingCopy,
   requireWcPermission("read_page"),
   async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      const diff = await getWorkingCopyDiff(id);
-      res.json(diff);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
-    }
+    const id = req.params.id as string;
+    const diff = await getWorkingCopyDiff(id);
+    res.json(diff);
   },
 );
 
@@ -483,14 +480,9 @@ router.get(
   loadWorkingCopy,
   requireWcPermission("read_page"),
   async (req, res) => {
-    try {
-      const id = req.params.id as string;
-      const events = await getWorkingCopyEvents(id);
-      res.json(events);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(500).json({ error: message });
-    }
+    const id = req.params.id as string;
+    const events = await getWorkingCopyEvents(id);
+    res.json(events);
   },
 );
 

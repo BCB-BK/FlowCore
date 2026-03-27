@@ -28,6 +28,7 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
 import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
+import { AppError } from "../lib/app-error";
 import {
   PAGE_TYPE_REGISTRY,
   ALL_TEMPLATE_TYPES,
@@ -41,6 +42,23 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+
+function mapServiceError(err: unknown): Error {
+  if (err instanceof AppError) return err;
+  const message = err instanceof Error ? err.message : "";
+  const code = (err as { code?: string }).code;
+
+  if (message.includes("not found") || message.includes("nicht gefunden")) {
+    return new AppError(404, message);
+  }
+  if (code === "WORKING_COPY_ACTIVE" || message.includes("bereits")) {
+    return new AppError(409, message, { code });
+  }
+  if (message.includes("Cannot move") || message.includes("descendants")) {
+    return new AppError(400, message);
+  }
+  return err instanceof Error ? err : new Error(message);
+}
 
 router.get("/page-types", requireAuth, async (_req, res) => {
   const types = Object.values(PAGE_TYPE_REGISTRY);
@@ -221,8 +239,7 @@ router.post(
 
       res.status(201).json(node);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -256,8 +273,7 @@ router.post(
 
       res.json(node);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );
@@ -469,19 +485,17 @@ router.post(
       (req as unknown as Record<string, string>)._resolvedNodeId as string,
   ),
   async (req, res) => {
+    const sourceRevisionId = req.params.id as string;
+    const actorId = req.user!.principalId;
     try {
-      const sourceRevisionId = req.params.id as string;
-      const actorId = req.user!.principalId;
       const result = await restoreAsWorkingCopy(sourceRevisionId, actorId);
       res.status(201).json(result.workingCopy);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
       const code = (err as { code?: string }).code;
       if (code === "WORKING_COPY_ACTIVE") {
-        res.status(409).json({ error: message, code });
-      } else {
-        res.status(400).json({ error: message });
+        throw new AppError(409, "Es existiert bereits eine aktive Arbeitskopie für diesen Inhalt.", { code });
       }
+      throw err;
     }
   },
 );
@@ -509,8 +523,7 @@ router.post(
 
       res.status(201).json(relation);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      res.status(400).json({ error: message });
+      throw mapServiceError(err);
     }
   },
 );

@@ -8,6 +8,7 @@ import { logger } from "./lib/logger";
 import { correlationId } from "./middlewares/correlation-id";
 import { securityHeaders } from "./middlewares/security-headers";
 import { apiRateLimit } from "./middlewares/rate-limit";
+import { notFoundHandler, errorHandler } from "./middlewares/error-handler";
 import { appConfig } from "./lib/config";
 import { pool } from "@workspace/db";
 
@@ -89,6 +90,9 @@ app.use(
 );
 
 app.use("/api", router);
+
+app.use("/api/*", notFoundHandler);
+app.use(errorHandler);
 
 export async function ensureSessionTable(): Promise<void> {
   await pool.query(`
