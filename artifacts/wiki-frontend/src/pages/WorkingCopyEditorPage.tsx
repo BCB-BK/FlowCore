@@ -48,7 +48,7 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
-import { BlockEditor } from "@/components/editor";
+import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { PageAssistant } from "@/components/ai/PageAssistant";

@@ -33,7 +33,7 @@ import {
   customFetch,
 } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
-import { BlockEditor } from "@/components/editor";
+import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
 import { WorkingCopyTimeline } from "@/components/versioning/WorkingCopyTimeline";

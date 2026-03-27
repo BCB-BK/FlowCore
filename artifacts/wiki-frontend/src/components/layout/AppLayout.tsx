@@ -3,6 +3,7 @@ import { AppHeader } from "./AppHeader";
 import { WikiSidebar } from "../sidebar/WikiSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useTeamsContext } from "@/hooks/useTeamsContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -16,7 +17,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
       <SidebarProvider defaultOpen={false} onOpenChange={setSidebarOpen}>
         <div className="flex h-screen w-full overflow-hidden teams-embedded">
-          {sidebarOpen && <WikiSidebar />}
+          {sidebarOpen && (
+            <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
+              <WikiSidebar />
+            </ErrorBoundary>
+          )}
           <div className="flex flex-1 flex-col overflow-hidden">
             <header className="flex h-10 items-center gap-2 border-b px-3 bg-background">
               <button
@@ -43,7 +48,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                 FlowCore
               </span>
             </header>
-            <main className="flex-1 overflow-auto p-4 [scrollbar-gutter:stable]">{children}</main>
+            <main className="flex-1 overflow-auto p-4 [scrollbar-gutter:stable]">
+              <ErrorBoundary fallbackTitle="Inhaltsfehler" fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden.">
+                {children}
+              </ErrorBoundary>
+            </main>
           </div>
         </div>
       </SidebarProvider>
@@ -53,10 +62,16 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultOpen={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="flex h-screen w-full overflow-hidden">
-        <WikiSidebar />
+        <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
+          <WikiSidebar />
+        </ErrorBoundary>
         <div className="flex flex-1 flex-col overflow-hidden">
           <AppHeader />
-          <main className="flex-1 overflow-auto p-4 sm:p-6 [scrollbar-gutter:stable]">{children}</main>
+          <main className="flex-1 overflow-auto p-4 sm:p-6 [scrollbar-gutter:stable]">
+            <ErrorBoundary fallbackTitle="Inhaltsfehler" fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden.">
+              {children}
+            </ErrorBoundary>
+          </main>
         </div>
       </div>
     </SidebarProvider>

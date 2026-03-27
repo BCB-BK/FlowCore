@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "@/lib/api";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { TeamsProvider } from "@/components/teams/TeamsProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Hub } from "@/pages/Hub";
 import { NodeDetail } from "@/pages/NodeDetail";
 import { SearchPage } from "@/pages/SearchPage";
@@ -99,18 +100,20 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <TeamsProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AuthGate>
-              <Router />
-            </AuthGate>
-          </WouterRouter>
-        </TeamsProvider>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <TeamsProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <AuthGate>
+                <Router />
+              </AuthGate>
+            </WouterRouter>
+          </TeamsProvider>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

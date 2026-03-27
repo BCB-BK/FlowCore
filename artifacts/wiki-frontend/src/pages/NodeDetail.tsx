@@ -68,7 +68,7 @@ import { RelatedContentSidebar } from "@/components/content/RelatedContentSideba
 import { GlossaryTermsPanel } from "@/components/content/GlossaryTermsPanel";
 import { SourceReferencesPanel } from "@/components/content/SourceReferencesPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
-import { BlockEditor } from "@/components/editor";
+import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { WatchButton } from "@/components/versioning/WatchButton";
 import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel";
