@@ -26,12 +26,19 @@ import {
 } from "../services/graph.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { validateBody } from "../middlewares/validate-body";
 import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
 import {
   PAGE_TYPE_REGISTRY,
   ALL_TEMPLATE_TYPES,
   getPageType as getPageTypeDef,
 } from "@workspace/shared/page-types";
+import {
+  CreateNodeBody,
+  UpdateNodeBody,
+  MoveNodeBody,
+  CreateRelationBody,
+} from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
@@ -139,24 +146,15 @@ router.patch(
   "/nodes/:id",
   requireAuth,
   requirePermission("edit_content", (req) => req.params.id),
+  validateBody(UpdateNodeBody),
   async (req, res) => {
     const id = req.params.id as string;
     const { title, templateType } = req.body;
 
-    if (
-      title !== undefined &&
-      (typeof title !== "string" || title.trim().length === 0)
-    ) {
-      res.status(400).json({ error: "title must be a non-empty string" });
-      return;
-    }
-
-    if (
-      templateType !== undefined &&
-      !ALL_TEMPLATE_TYPES.includes(templateType)
-    ) {
+    if (title !== undefined && title.trim().length === 0) {
       res.status(400).json({
-        error: `templateType must be one of: ${ALL_TEMPLATE_TYPES.join(", ")}`,
+        error: "Validierungsfehler",
+        details: [{ field: "title", message: "Titel darf nicht leer sein" }],
       });
       return;
     }
@@ -166,7 +164,10 @@ router.patch(
     if (templateType !== undefined) updates.templateType = templateType;
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No updatable fields provided" });
+      res.status(400).json({
+        error: "Validierungsfehler",
+        details: [{ field: "(root)", message: "Keine aktualisierbaren Felder angegeben" }],
+      });
       return;
     }
 
@@ -200,6 +201,7 @@ router.post(
   "/nodes",
   requireAuth,
   requirePermission("create_page"),
+  validateBody(CreateNodeBody),
   async (req, res) => {
     try {
       const nodeId = await createContentNode(req.body);
@@ -229,6 +231,7 @@ router.post(
   "/nodes/:id/move",
   requireAuth,
   requirePermission("edit_structure", (req) => req.params.id),
+  validateBody(MoveNodeBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -487,6 +490,7 @@ router.post(
   "/relations",
   requireAuth,
   requirePermission("manage_relations"),
+  validateBody(CreateRelationBody),
   async (req, res) => {
     try {
       const relationId = await createRelation(req.body);

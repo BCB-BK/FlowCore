@@ -1,6 +1,8 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
+import { z } from "zod";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { validateBody } from "../middlewares/validate-body";
 import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
 import type { WorkingCopy } from "@workspace/db/schema";
 import { auditEventsTable, contentWorkingCopiesTable } from "@workspace/db/schema";
@@ -29,6 +31,22 @@ import {
   notifyWorkingCopyReturned,
   notifyWorkingCopyPublished,
 } from "../services/notification.service";
+import {
+  UpdateWorkingCopyBody,
+  SubmitForReviewBody,
+  ApproveRevisionBody,
+  RejectRevisionBody,
+  PublishWorkingCopyBody,
+  CancelWorkingCopyBody,
+} from "@workspace/api-zod";
+
+const CommentBody = z.object({
+  comment: z.string().min(1),
+});
+
+const SummaryBody = z.object({
+  summary: z.string(),
+});
 
 interface WorkingCopyRequest extends Request {
   workingCopy: WorkingCopy;
@@ -136,6 +154,7 @@ router.patch(
       await guard(req, res, next);
     }
   },
+  validateBody(UpdateWorkingCopyBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -154,6 +173,7 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcOwnerOrPermission("submit_working_copy"),
+  validateBody(SubmitForReviewBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -179,6 +199,7 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcPermission("review_working_copy"),
+  validateBody(RejectRevisionBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -211,6 +232,7 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcPermission("review_working_copy"),
+  validateBody(ApproveRevisionBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -266,14 +288,18 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcPermission("publish_working_copy"),
+  validateBody(PublishWorkingCopyBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
       const wc = (req as WorkingCopyRequest).workingCopy;
       const { versionLabel } = req.body;
-      if (!versionLabel) {
-        res.status(400).json({ error: "versionLabel is required" });
+      if (!versionLabel || versionLabel.trim().length === 0) {
+        res.status(400).json({
+          error: "Validierungsfehler",
+          details: [{ field: "versionLabel", message: "Versionsbezeichnung darf nicht leer sein" }],
+        });
         return;
       }
 
@@ -326,6 +352,7 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcOwnerOrPermission("cancel_working_copy"),
+  validateBody(CancelWorkingCopyBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -362,6 +389,7 @@ router.put(
   requireAuth,
   loadWorkingCopy,
   requireWcPermission("review_working_copy"),
+  validateBody(SummaryBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -371,11 +399,7 @@ router.put(
         res.status(409).json({ error: "Zusammenfassung kann nur während der Prüfphase bearbeitet werden." });
         return;
       }
-      const { summary } = req.body as { summary: string };
-      if (typeof summary !== "string") {
-        res.status(400).json({ error: "summary is required" });
-        return;
-      }
+      const { summary } = req.body;
 
       await db
         .update(contentWorkingCopiesTable)
@@ -421,15 +445,12 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcOwnerOrPermission("review_working_copy"),
+  validateBody(CommentBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
       const { comment } = req.body;
-      if (!comment || typeof comment !== "string") {
-        res.status(400).json({ error: "comment is required" });
-        return;
-      }
       await addWorkingCopyComment(id, comment, actorId);
       res.json({ ok: true });
     } catch (err) {
