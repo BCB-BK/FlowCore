@@ -3,7 +3,8 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
 import type { WorkingCopy } from "@workspace/db/schema";
-import { auditEventsTable } from "@workspace/db/schema";
+import { auditEventsTable, contentWorkingCopiesTable } from "@workspace/db/schema";
+import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   createWorkingCopy,
@@ -376,9 +377,6 @@ router.put(
         return;
       }
 
-      const { db } = await import("@workspace/db");
-      const { contentWorkingCopiesTable } = await import("@workspace/db/schema");
-      const { eq } = await import("drizzle-orm");
       await db
         .update(contentWorkingCopiesTable)
         .set({ lastManualSummary: summary.trim(), updatedAt: new Date() })
@@ -403,9 +401,6 @@ router.post(
       const diff = await getWorkingCopyDiff(id);
       const summary = await generateChangeSummary(diff);
 
-      const { db } = await import("@workspace/db");
-      const { contentWorkingCopiesTable } = await import("@workspace/db/schema");
-      const { eq } = await import("drizzle-orm");
       await db
         .update(contentWorkingCopiesTable)
         .set({ lastAiSummary: summary, updatedAt: new Date() })
