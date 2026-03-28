@@ -132,7 +132,7 @@ export function WikiSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Wissensstruktur</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu role="tree" aria-label="Wissensstruktur" aria-busy={isLoading}>
               {isLoading ? (
                 <div className="space-y-2 px-2">
                   <Skeleton className="h-6 w-full" />
