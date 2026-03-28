@@ -1,15 +1,15 @@
 import { useState, useCallback, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@workspace/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@workspace/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@workspace/ui/tooltip";
 import {
   Wand2,
   RefreshCw,

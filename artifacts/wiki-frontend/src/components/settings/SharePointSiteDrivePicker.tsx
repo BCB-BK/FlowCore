@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@workspace/ui/input";
+import { Button } from "@workspace/ui/button";
+import { Badge } from "@workspace/ui/badge";
 import {
   Search,
   Globe,

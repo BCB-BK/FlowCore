@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@workspace/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { ScrollArea } from "@workspace/ui/scroll-area";
 import {
   Bot,
   Loader2,
@@ -28,7 +28,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@workspace/ui/tooltip";
 import { getDefaultHeaders } from "@workspace/api-client-react";
 
 type Action =

@@ -5,18 +5,18 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+} from "@workspace/ui/select";
+import { Separator } from "@workspace/ui/separator";
 import {
   User,
   Users,
@@ -39,8 +39,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@workspace/ui/dialog";
+import { Checkbox } from "@workspace/ui/checkbox";
 import {
   useListPrincipals,
   getListPrincipalsQueryKey,

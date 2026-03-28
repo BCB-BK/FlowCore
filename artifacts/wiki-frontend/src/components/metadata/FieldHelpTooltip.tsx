@@ -4,8 +4,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+} from "@workspace/ui/popover";
+import { Button } from "@workspace/ui/button";
 
 interface FieldHelpTooltipProps {
   fillHelp?: string;

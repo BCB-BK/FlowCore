@@ -1,16 +1,16 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthLogout } from "@workspace/api-client-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SidebarTrigger } from "@workspace/ui/sidebar";
+import { Separator } from "@workspace/ui/separator";
+import { Avatar, AvatarFallback } from "@workspace/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@workspace/ui/dropdown-menu";
 import { LogOut, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@workspace/ui/input";
 import { useLocation } from "wouter";
 import { NotificationBell } from "@/components/NotificationBell";
 

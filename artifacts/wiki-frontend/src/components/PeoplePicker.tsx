@@ -5,9 +5,9 @@ import {
   useSearchGroups,
   getSearchGroupsQueryKey,
 } from "@workspace/api-client-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@workspace/ui/input";
+import { Label } from "@workspace/ui/label";
+import { Badge } from "@workspace/ui/badge";
 import { User, Users, X, Search } from "lucide-react";
 
 interface PeoplePickerProps {

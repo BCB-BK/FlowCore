@@ -1,13 +1,13 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@workspace/ui/input";
+import { Label } from "@workspace/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+} from "@workspace/ui/select";
+import { Badge } from "@workspace/ui/badge";
 import { PeoplePicker } from "@/components/PeoplePicker";
 import { X } from "lucide-react";
 import { useState, useCallback } from "react";

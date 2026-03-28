@@ -4,11 +4,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+} from "@workspace/ui/dialog";
+import { Badge } from "@workspace/ui/badge";
+import { Skeleton } from "@workspace/ui/skeleton";
+import { ScrollArea } from "@workspace/ui/scroll-area";
+import { Separator } from "@workspace/ui/separator";
 import {
   ArrowRight,
   Minus,

@@ -4,10 +4,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+} from "@workspace/ui/dialog";
+import { Button } from "@workspace/ui/button";
+import { ScrollArea } from "@workspace/ui/scroll-area";
+import { Badge } from "@workspace/ui/badge";
 import { Check, X, Plus, Loader2, Wand2 } from "lucide-react";
 import { useMemo } from "react";
 

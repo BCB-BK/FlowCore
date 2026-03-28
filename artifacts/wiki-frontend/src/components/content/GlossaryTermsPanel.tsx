@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
 import { BookOpen } from "lucide-react";
 import { useGetGlossaryTermsByNode } from "@workspace/api-client-react";
 

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@workspace/ui/select";
 import { Users, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 

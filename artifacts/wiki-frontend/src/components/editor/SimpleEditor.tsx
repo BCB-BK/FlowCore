@@ -22,13 +22,13 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Toggle } from "@/components/ui/toggle";
+import { Separator } from "@workspace/ui/separator";
+import { Toggle } from "@workspace/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@workspace/ui/tooltip";
 import { VideoBlock } from "./extensions/video-block";
 import { VideoBlockNodeView } from "./NodeViews";
 import { ReactNodeViewRenderer } from "@tiptap/react";

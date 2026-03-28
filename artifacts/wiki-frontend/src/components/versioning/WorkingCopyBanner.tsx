@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
 import {
   FileEdit,
   Send,

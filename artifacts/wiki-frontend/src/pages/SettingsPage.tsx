@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/tabs";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
 import {
   Settings,
   Link2,

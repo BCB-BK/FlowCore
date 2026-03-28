@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNodeRevisions } from "@/hooks/use-nodes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Badge } from "@workspace/ui/badge";
+import { Skeleton } from "@workspace/ui/skeleton";
+import { ScrollArea } from "@workspace/ui/scroll-area";
+import { Separator } from "@workspace/ui/separator";
 import {
   History,
   GitBranch,

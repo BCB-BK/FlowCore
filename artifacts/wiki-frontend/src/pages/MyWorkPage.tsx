@@ -4,10 +4,10 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+} from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Skeleton } from "@workspace/ui/skeleton";
+import { Button } from "@workspace/ui/button";
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@workspace/ui/table";
 import {
   ClipboardList,
   FileEdit,

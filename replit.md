@@ -23,7 +23,7 @@ The frontend (`wiki-frontend`) is a React application built with Vite, TailwindC
 - **API Server (`api-server`):** An Express server providing a RESTful API with structured logging, Zod for configuration validation, and security features. Authentication uses Microsoft Entra ID OIDC, and authorization is handled via a 7-role to 17-permission RBAC matrix with page-level permissions.
 - **Database:** PostgreSQL with Drizzle ORM and Zod for schema validation. The schema includes content nodes (with `tsvector` search index), revisions, relations, tags, glossary terms, search analytics, media assets, audit events, and connector configurations.
 - **API Specification and Codegen:** OpenAPI 3.1 defines the API, with Orval generating client-side code, including React Query hooks and Zod schemas.
-- **Monorepo Structure:** Organized into `artifacts/`, `lib/`, `scripts/`, and `e2e/`.
+- **Monorepo Structure:** Organized into `artifacts/`, `lib/`, `scripts/`, and `e2e/`. Shared UI components live in `lib/ui` (`@workspace/ui`) and are consumed by both `wiki-frontend` and `mockup-sandbox` via `@workspace/ui/component-name` imports. Only `toaster.tsx` remains local to `wiki-frontend` (depends on app-specific `use-toast` hook).
 - **Core Features:**
     - **Content Management:** CRUD operations for content nodes, revisions, relations, templates, and links, using a dual ID system. Navigation includes hierarchy-aware breadcrumbs and a professionalized relation sidebar.
     - **Search:** Full-text search with suggestions and analytics.

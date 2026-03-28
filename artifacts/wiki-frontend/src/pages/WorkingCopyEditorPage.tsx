@@ -3,28 +3,28 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNode, useNodeRevisions } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
+import { Progress } from "@workspace/ui/progress";
+import { Skeleton } from "@workspace/ui/skeleton";
+import { Label } from "@workspace/ui/label";
+import { Textarea } from "@workspace/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@workspace/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from "@workspace/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/tabs";
 import {
   ArrowLeft,
   Send,

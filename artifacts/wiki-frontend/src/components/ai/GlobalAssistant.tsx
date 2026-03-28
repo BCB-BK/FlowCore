@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { ScrollArea } from "@workspace/ui/scroll-area";
+import { Switch } from "@workspace/ui/switch";
 import {
   Bot,
   Send,

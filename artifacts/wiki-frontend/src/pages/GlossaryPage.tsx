@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@workspace/ui/input";
+import { Button } from "@workspace/ui/button";
+import { Card, CardContent } from "@workspace/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+} from "@workspace/ui/dialog";
+import { Label } from "@workspace/ui/label";
+import { Badge } from "@workspace/ui/badge";
 import {
   BookOpen,
   Plus,

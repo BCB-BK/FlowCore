@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@workspace/ui/popover";
 import { Plus, X, Tag } from "lucide-react";
 import {
   useGetNodeTags,

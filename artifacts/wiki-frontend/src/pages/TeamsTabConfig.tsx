@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Label } from "@workspace/ui/label";
+import { Input } from "@workspace/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@workspace/ui/select";
 import { configureTab } from "@/lib/teams";
 import { useTeamsContext } from "@/hooks/useTeamsContext";
 

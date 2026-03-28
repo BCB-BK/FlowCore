@@ -42,7 +42,7 @@ import { ContextualSubpageButton } from "./ContextualSubpageButton";
 import { ContentCompletenessBar } from "./ContentCompletenessBar";
 import { EDITOR_CONFIG } from "@/lib/editor-config";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@workspace/ui/badge";
 import { Save, AlertTriangle } from "lucide-react";
 
 interface BlockEditorProps {

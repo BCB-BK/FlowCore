@@ -4,11 +4,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from "@workspace/ui/dialog";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Label } from "@workspace/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Search, Image, FileText, Video, Loader2, Globe } from "lucide-react";
 import { SharePointMediaBrowser } from "./SharePointMediaBrowser";

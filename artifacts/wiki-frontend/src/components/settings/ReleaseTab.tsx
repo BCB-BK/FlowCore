@@ -5,11 +5,11 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Textarea } from "@workspace/ui/textarea";
 import {
   Plus,
   ChevronRight,

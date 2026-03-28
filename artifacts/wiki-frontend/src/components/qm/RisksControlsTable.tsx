@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Badge } from "@workspace/ui/badge";
 import {
   Table,
   TableBody,
@@ -10,14 +10,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@workspace/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@workspace/ui/select";
 import { Plus, Trash2, Pencil, Check, X, AlertTriangle } from "lucide-react";
 
 export interface RiskControlEntry {

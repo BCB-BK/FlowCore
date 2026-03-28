@@ -2,12 +2,12 @@ import { useRoute, useLocation } from "wouter";
 import { useState, useMemo, useEffect } from "react";
 import { useNode, useNodeRevisions } from "@/hooks/use-nodes";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
+import { Skeleton } from "@workspace/ui/skeleton";
+import { Textarea } from "@workspace/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/tabs";
 import {
   ArrowLeft,
   Eye,
@@ -25,7 +25,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@workspace/ui/collapsible";
 import { getPageType } from "@/lib/types";
 import {
   useGetActiveWorkingCopy,

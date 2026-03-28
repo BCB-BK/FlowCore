@@ -1,24 +1,24 @@
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Button } from "@workspace/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+} from "@workspace/ui/card";
+import { Label } from "@workspace/ui/label";
+import { Switch } from "@workspace/ui/switch";
+import { Textarea } from "@workspace/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+} from "@workspace/ui/select";
+import { Badge } from "@workspace/ui/badge";
 import { Save, BarChart3, AlertCircle, CheckCircle } from "lucide-react";
 import {
   useGetAiSettings,

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@workspace/ui/table";
 import { Plus, Trash2, Pencil, Check, X, BarChart3 } from "lucide-react";
 
 export interface KPIEntry {

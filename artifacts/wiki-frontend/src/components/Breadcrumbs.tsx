@@ -7,7 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
-} from "@/components/ui/breadcrumb";
+} from "@workspace/ui/breadcrumb";
 import { useLocation } from "wouter";
 import { Home } from "lucide-react";
 import { Fragment, useMemo } from "react";

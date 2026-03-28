@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useTeamsContext } from "@/hooks/useTeamsContext";
 import { buildPageDeepLink, getTeamsAppId } from "@/lib/teams";
-import { Button } from "@/components/ui/button";
+import { Button } from "@workspace/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@workspace/ui/dropdown-menu";
 import { Share2, Copy, ExternalLink, Check } from "lucide-react";
 
 interface ShareToTeamsProps {

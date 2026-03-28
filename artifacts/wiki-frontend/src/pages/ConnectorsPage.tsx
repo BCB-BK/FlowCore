@@ -4,32 +4,32 @@ import {
   SharePointSiteDrivePicker,
   type SharePointSelection,
 } from "@/components/settings/SharePointSiteDrivePicker";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Button } from "@workspace/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
+} from "@workspace/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+} from "@workspace/ui/dialog";
+import { Label } from "@workspace/ui/label";
+import { Badge } from "@workspace/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+} from "@workspace/ui/select";
+import { Switch } from "@workspace/ui/switch";
 import {
   Database,
   Plus,

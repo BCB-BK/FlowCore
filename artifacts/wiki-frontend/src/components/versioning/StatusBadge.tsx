@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@workspace/ui/badge";
 import {
   FileCheck,
   FilePen,

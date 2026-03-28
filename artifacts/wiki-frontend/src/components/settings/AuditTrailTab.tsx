@@ -5,18 +5,18 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Badge } from "@workspace/ui/badge";
+import { Input } from "@workspace/ui/input";
+import { ScrollArea } from "@workspace/ui/scroll-area";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@workspace/ui/select";
 import {
   Shield,
   Download,

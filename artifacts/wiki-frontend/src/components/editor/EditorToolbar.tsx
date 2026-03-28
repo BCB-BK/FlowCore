@@ -28,13 +28,13 @@ import {
   Paperclip,
   GalleryHorizontalEnd,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Toggle } from "@/components/ui/toggle";
+import { Separator } from "@workspace/ui/separator";
+import { Toggle } from "@workspace/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@workspace/ui/tooltip";
 
 interface EditorToolbarProps {
   editor: Editor;

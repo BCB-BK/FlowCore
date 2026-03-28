@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { AppHeader } from "./AppHeader";
 import { WikiSidebar } from "../sidebar/WikiSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@workspace/ui/sidebar";
 import { useTeamsContext } from "@/hooks/useTeamsContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 

@@ -6,12 +6,12 @@ import {
   SidebarMenuButton,
   SidebarMenuSub,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
+} from "@workspace/ui/sidebar";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@workspace/ui/collapsible";
 import { ChevronRight, FileText, FolderOpen } from "lucide-react";
 import type { ContentNode } from "@/lib/types";
 import { PAGE_TYPE_LABELS } from "@/lib/types";

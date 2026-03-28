@@ -1,12 +1,12 @@
 import { calculateCompleteness, getFieldsByRequirement, getSectionsByRequirement, validateForPublication } from "@/lib/types";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { Progress } from "@workspace/ui/progress";
+import { Badge } from "@workspace/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@workspace/ui/tooltip";
 import { CheckCircle2, AlertCircle, AlertTriangle, Info } from "lucide-react";
 
 interface CompletenessIndicatorProps {

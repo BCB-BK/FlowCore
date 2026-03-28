@@ -1,9 +1,9 @@
 import { useRootNodes } from "@/hooks/use-nodes";
 import { useAuth } from "@/hooks/use-auth";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Skeleton } from "@workspace/ui/skeleton";
+import { Badge } from "@workspace/ui/badge";
 import { useLocation } from "wouter";
 import {
   BookOpen,

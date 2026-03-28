@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Badge } from "@workspace/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import {
   ExternalLink,
   FileText,

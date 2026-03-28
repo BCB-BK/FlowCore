@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Textarea } from "@workspace/ui/textarea";
+import { Label } from "@workspace/ui/label";
 import { Pencil, Check, X, Plus, Trash2, GitBranch, ExternalLink, ImageIcon } from "lucide-react";
 
 export interface SwimlaneLane {

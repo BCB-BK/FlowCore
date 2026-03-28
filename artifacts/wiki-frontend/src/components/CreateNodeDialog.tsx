@@ -15,20 +15,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+} from "@workspace/ui/dialog";
+import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Label } from "@workspace/ui/label";
+import { Badge } from "@workspace/ui/badge";
+import { Card, CardContent } from "@workspace/ui/card";
+import { Separator } from "@workspace/ui/separator";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@workspace/ui/select";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PeoplePicker } from "@/components/PeoplePicker";
 import {

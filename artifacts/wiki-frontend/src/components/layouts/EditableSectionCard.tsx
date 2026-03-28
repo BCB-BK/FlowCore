@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Button } from "@workspace/ui/button";
+import { Badge } from "@workspace/ui/badge";
+import { Textarea } from "@workspace/ui/textarea";
 import { Pencil, Check, X } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import type { FieldHelp } from "@/lib/types";

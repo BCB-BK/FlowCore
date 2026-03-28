@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@workspace/ui/badge";
 import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { StatusBadge } from "@/components/versioning/StatusBadge";

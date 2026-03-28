@@ -7,7 +7,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarFooter,
-} from "@/components/ui/sidebar";
+} from "@workspace/ui/sidebar";
 import { useRootNodes } from "@/hooks/use-nodes";
 import { useAuth } from "@/hooks/use-auth";
 import { TreeNode } from "./TreeNode";
@@ -22,9 +22,9 @@ import {
   Settings,
   ShieldCheck,
 } from "lucide-react";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { SidebarMenuButton, SidebarMenuItem } from "@workspace/ui/sidebar";
 import { useLocation } from "wouter";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@workspace/ui/skeleton";
 
 export function WikiSidebar() {
   const { data: roots, isLoading } = useRootNodes();

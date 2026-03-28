@@ -1,17 +1,17 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Card, CardContent } from "@workspace/ui/card";
+import { Badge } from "@workspace/ui/badge";
+import { Button } from "@workspace/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+} from "@workspace/ui/select";
+import { Switch } from "@workspace/ui/switch";
+import { Label } from "@workspace/ui/label";
 import {
   Search,
   FileText,
