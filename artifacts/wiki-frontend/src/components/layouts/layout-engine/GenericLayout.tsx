@@ -74,7 +74,6 @@ function FieldRenderer({
           help={sectionDef?.help as never}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}
-          emptyText={field.emptyText ?? "Noch keine Daten"}
         />
       );
     case "check_items_editor":
