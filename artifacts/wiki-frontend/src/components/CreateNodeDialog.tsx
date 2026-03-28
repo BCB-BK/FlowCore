@@ -307,7 +307,10 @@ export function CreateNodeDialog({
                     return (
                       <Card
                         key={t}
-                        className={`cursor-pointer transition-all hover:shadow-sm ${
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        className={`cursor-pointer transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                           isSelected
                             ? "ring-2 ring-primary border-primary"
                             : "hover:border-primary/40"
@@ -315,6 +318,12 @@ export function CreateNodeDialog({
                         onClick={() =>
                           setTemplateType(t as CreateNodeInput["templateType"])
                         }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setTemplateType(t as CreateNodeInput["templateType"]);
+                          }
+                        }}
                       >
                         <CardContent className="flex items-start gap-3 p-3">
                           <div
@@ -375,12 +384,21 @@ export function CreateNodeDialog({
                       return (
                         <Card
                           key={variant.key}
-                          className={`cursor-pointer transition-all ${
+                          role="button"
+                          tabIndex={0}
+                          aria-pressed={isActive}
+                          className={`cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                             isActive
                               ? "border-primary ring-1 ring-primary"
                               : "hover:border-muted-foreground/30"
                           }`}
                           onClick={() => setSelectedVariant(variant.key)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedVariant(variant.key);
+                            }
+                          }}
                         >
                           <CardContent className="flex items-center gap-3 p-3">
                             <div className="min-w-0 flex-1">

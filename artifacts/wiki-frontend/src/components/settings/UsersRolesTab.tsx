@@ -588,12 +588,21 @@ function PrincipalRow({
 
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         isSelected
           ? "border-primary bg-primary/5 ring-1 ring-primary"
           : "hover:bg-muted/50"
       }`}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
     >
       <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted shrink-0">
         {principal.principalType === "group" ? (
@@ -873,8 +882,16 @@ function RoleOverviewSection({
           return (
             <Card
               key={roleKey}
-              className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all"
+              role="button"
+              tabIndex={0}
+              className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => setEditingRole(roleKey)}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                  e.preventDefault();
+                  setEditingRole(roleKey);
+                }
+              }}
             >
               <div className="flex items-start gap-3">
                 <div className={`p-2 rounded-md ${ROLE_COLORS[roleKey]}`}>

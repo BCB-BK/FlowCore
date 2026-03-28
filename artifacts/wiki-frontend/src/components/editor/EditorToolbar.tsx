@@ -61,6 +61,7 @@ function ToolbarButton({
           pressed={isActive}
           onPressedChange={() => onClick()}
           disabled={disabled}
+          aria-label={title}
           className="h-8 w-8 p-0"
         >
           {children}
@@ -75,7 +76,7 @@ function ToolbarButton({
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
   return (
-    <div className="flex items-center gap-0.5 flex-wrap border-b p-1 bg-muted/30">
+    <div role="toolbar" aria-label="Textformatierung" className="flex items-center gap-0.5 flex-wrap border-b p-1 bg-muted/30">
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}

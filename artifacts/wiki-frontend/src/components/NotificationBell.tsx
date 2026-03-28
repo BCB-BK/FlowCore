@@ -143,10 +143,19 @@ export function NotificationBell() {
               {notifications.map((n) => (
                 <div
                   key={n.id}
-                  className={`flex gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors ${
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${TYPE_LABELS[n.type] || n.type}: ${n.title}`}
+                  className={`flex gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
                     n.status === "unread" ? "bg-blue-50/50" : ""
                   }`}
                   onClick={() => handleClick(n.link, n.id, n.status)}
+                  onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                      e.preventDefault();
+                      handleClick(n.link, n.id, n.status);
+                    }
+                  }}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

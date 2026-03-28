@@ -31,12 +31,24 @@ const CONTAINER_TYPES = new Set([
 
 const MAX_DEPTH = 4;
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Entwurf",
+  in_review: "In Prüfung",
+  approved: "Freigegeben",
+  published: "Veröffentlicht",
+  archived: "Archiviert",
+  rejected: "Abgelehnt",
+};
+
 function StatusDot({ status }: { status: string }) {
   const colorClass = getStatusColor(status as NodeStatus);
+  const label = STATUS_LABELS[status] ?? status;
   return (
     <span
+      role="img"
+      aria-label={`Status: ${label}`}
       className={`inline-block h-2 w-2 rounded-full shrink-0 ${colorClass.replace("text-", "bg-")}`}
-      title={status}
+      title={label}
     />
   );
 }
@@ -84,14 +96,28 @@ export function TreeNode({ node, level }: TreeNodeProps) {
               navigate(`/node/${node.id}`);
             }}
           >
-            <ChevronRight
+            <span
               data-chevron
-              className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={open ? "Unterseiten einklappen" : "Unterseiten ausklappen"}
+              className="inline-flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setOpen(!open);
               }}
-            />
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setOpen(!open);
+                }
+              }}
+            >
+              <ChevronRight
+                className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+              />
+            </span>
             <Icon className="h-4 w-4 shrink-0" />
             <span className="truncate">{node.title}</span>
             <StatusDot status={node.status} />

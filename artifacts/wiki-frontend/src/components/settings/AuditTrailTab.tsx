@@ -281,8 +281,17 @@ export function AuditTrailTab() {
               {events.map((evt) => (
                 <div
                   key={evt.id}
-                  className="py-3 px-2 hover:bg-accent/30 cursor-pointer transition-colors"
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={expandedId === evt.id}
+                  className="py-3 px-2 hover:bg-accent/30 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   onClick={() => setExpandedId(expandedId === evt.id ? null : evt.id)}
+                  onKeyDown={(e) => {
+                    if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                      e.preventDefault();
+                      setExpandedId(expandedId === evt.id ? null : evt.id);
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge

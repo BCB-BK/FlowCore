@@ -61,6 +61,7 @@ function MiniToolbarButton({
           pressed={isActive}
           onPressedChange={() => onClick()}
           disabled={disabled}
+          aria-label={title}
           className="h-7 w-7 p-0"
         >
           {children}
@@ -100,7 +101,7 @@ function MiniToolbar({ editor }: { editor: Editor }) {
   }, [editor]);
 
   return (
-    <div className="flex items-center gap-0.5 flex-wrap border-b p-1 bg-muted/30">
+    <div role="toolbar" aria-label="Textformatierung" className="flex items-center gap-0.5 flex-wrap border-b p-1 bg-muted/30">
       <MiniToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}

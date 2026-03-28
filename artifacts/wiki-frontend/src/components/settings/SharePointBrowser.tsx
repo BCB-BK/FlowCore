@@ -274,8 +274,16 @@ function SitesList({
       {sites.map((site) => (
         <div
           key={site.id}
-          className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => onSelectSite(site)}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+              e.preventDefault();
+              onSelectSite(site);
+            }
+          }}
         >
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950 shrink-0">
             <Globe className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -347,8 +355,16 @@ function DrivesList({
       {drives.map((drive) => (
         <div
           key={drive.id}
-          className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => onSelectDrive(drive)}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+              e.preventDefault();
+              onSelectDrive(drive);
+            }
+          }}
         >
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950 shrink-0">
             <HardDrive className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -486,10 +502,18 @@ function ItemRow({
 
   return (
     <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       className={`grid grid-cols-12 gap-2 items-center px-4 py-2.5 text-sm border-b last:border-b-0 hover:bg-muted/50 transition-colors ${
-        onClick ? "cursor-pointer" : ""
+        onClick ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring" : ""
       }`}
       onClick={onClick}
+      onKeyDown={onClick ? (e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
     >
       <div className="col-span-5 flex items-center gap-2 min-w-0">
         <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />

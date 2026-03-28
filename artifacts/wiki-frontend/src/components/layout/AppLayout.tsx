@@ -26,8 +26,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             <header className="flex h-10 items-center gap-2 border-b px-3 bg-background">
               <button
                 onClick={() => setSidebarOpen((s) => !s)}
-                className="p-1 rounded hover:bg-accent text-muted-foreground"
-                aria-label="Toggle sidebar"
+                className="p-1 rounded hover:bg-accent text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Seitenleiste ein-/ausblenden"
+                aria-expanded={sidebarOpen}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

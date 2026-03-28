@@ -178,7 +178,14 @@ export function ContentCompletenessBar({
           <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
         )}
         <div className="flex items-center gap-1.5 flex-1">
-          <div className="h-1.5 flex-1 max-w-24 bg-muted rounded-full overflow-hidden">
+          <div
+            role="progressbar"
+            aria-label="Inhaltsvollständigkeit"
+            aria-valuenow={completenessPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="h-1.5 flex-1 max-w-24 bg-muted rounded-full overflow-hidden"
+          >
             <div
               className={`h-full rounded-full transition-all ${
                 allPassed

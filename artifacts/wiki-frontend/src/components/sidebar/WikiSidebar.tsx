@@ -35,16 +35,17 @@ export function WikiSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-3">
-        <div
-          className="flex items-center cursor-pointer"
+        <button
+          className="flex items-center cursor-pointer bg-transparent border-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           onClick={() => navigate("/")}
+          aria-label="Zur Startseite"
         >
           <img
             src={`${import.meta.env.BASE_URL}bildungscampus-logo.png`}
             alt="BildungsCampus"
             className="h-7 w-auto shrink-0"
           />
-        </div>
+        </button>
       </SidebarHeader>
 
       <SidebarContent>
