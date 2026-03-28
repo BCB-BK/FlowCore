@@ -1,6 +1,7 @@
 import pg from "pg";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const { Pool } = pg;
 
@@ -11,7 +12,7 @@ if (!process.env.DATABASE_URL) {
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function applyTriggers() {
-  const triggerDir = path.dirname(new URL(import.meta.url).pathname);
+  const triggerDir = path.dirname(fileURLToPath(import.meta.url));
   const sqlFiles = fs
     .readdirSync(triggerDir)
     .filter((f) => f.endsWith(".sql"))
