@@ -1,5 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
+export type { PageTypeSection, FieldHelp } from "@workspace/shared/page-types";
+
 export type FieldComponent =
   | "editable"
   | "sipoc_table"

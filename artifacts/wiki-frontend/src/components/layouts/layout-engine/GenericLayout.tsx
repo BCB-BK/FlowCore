@@ -13,7 +13,7 @@ import { CompetencyAreas } from "@/components/compound/CompetencyAreas";
 import { CheckItemsEditor } from "@/components/compound/CheckItemsEditor";
 import { QaRepeater } from "@/components/compound/QaRepeater";
 import { TermRepeater } from "@/components/compound/TermRepeater";
-import type { LayoutConfig, LayoutField, LayoutRow } from "./types";
+import type { LayoutConfig, LayoutField, LayoutRow, PageTypeSection } from "./types";
 
 interface GenericLayoutProps {
   config: LayoutConfig;
@@ -42,7 +42,7 @@ function FieldRenderer({
   onSectionSave?: (key: string, value: unknown) => void;
   pageType?: string;
   nodeId?: string;
-  sectionDef?: { help?: unknown; helpText?: string; guidingQuestions?: string[]; requirement?: string; publishRequired?: boolean };
+  sectionDef?: PageTypeSection;
 }) {
   const data = structuredFields[field.key];
   const saveFn = onSectionSave
@@ -71,7 +71,7 @@ function FieldRenderer({
           value={str(data)}
           onSave={onSectionSave}
           sectionKey={field.key}
-          help={sectionDef?.help as never}
+          help={sectionDef?.help}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}
         />
@@ -82,7 +82,7 @@ function FieldRenderer({
           value={str(data)}
           onSave={onSectionSave}
           sectionKey={field.key}
-          help={sectionDef?.help as never}
+          help={sectionDef?.help}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}
         />
@@ -93,7 +93,7 @@ function FieldRenderer({
           value={str(data)}
           onSave={onSectionSave}
           sectionKey={field.key}
-          help={sectionDef?.help as never}
+          help={sectionDef?.help}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}
         />
@@ -104,7 +104,7 @@ function FieldRenderer({
           value={str(data)}
           onSave={onSectionSave}
           sectionKey={field.key}
-          help={sectionDef?.help as never}
+          help={sectionDef?.help}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}
         />
@@ -123,10 +123,10 @@ function FieldRenderer({
           pageType={pageType}
           nodeId={nodeId}
           emptyText={field.emptyText}
-          help={sectionDef?.help as never}
+          help={sectionDef?.help}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}
-          requirement={field.requirement as never ?? sectionDef?.requirement as never}
+          requirement={field.requirement ?? sectionDef?.requirement}
           publishRequired={sectionDef?.publishRequired}
         />
       );
@@ -149,7 +149,7 @@ function RowRenderer({
   onSectionSave?: (key: string, value: unknown) => void;
   pageType?: string;
   nodeId?: string;
-  sectionDefs: Map<string, unknown>;
+  sectionDefs: Map<string, PageTypeSection>;
 }) {
   if (Array.isArray(row)) {
     return (
@@ -162,7 +162,7 @@ function RowRenderer({
             onSectionSave={onSectionSave}
             pageType={pageType}
             nodeId={nodeId}
-            sectionDef={sectionDefs.get(field.key) as never}
+            sectionDef={sectionDefs.get(field.key)}
           />
         ))}
       </div>
@@ -176,7 +176,7 @@ function RowRenderer({
       onSectionSave={onSectionSave}
       pageType={pageType}
       nodeId={nodeId}
-      sectionDef={sectionDefs.get(row.key) as never}
+      sectionDef={sectionDefs.get(row.key)}
     />
   );
 }
@@ -190,7 +190,7 @@ export function GenericLayout({
 }: GenericLayoutProps) {
   const pageDef = config.pageTypeKey ? getPageType(config.pageTypeKey) : null;
 
-  const sectionDefs = new Map<string, unknown>();
+  const sectionDefs = new Map<string, PageTypeSection>();
   if (pageDef?.sections) {
     for (const s of pageDef.sections) {
       sectionDefs.set(s.key, s);
