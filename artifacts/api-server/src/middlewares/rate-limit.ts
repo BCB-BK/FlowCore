@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { db } from "@workspace/db";
 import { rateLimitHitsTable } from "@workspace/db/schema";
-import { eq, lt, sql } from "drizzle-orm";
+import { lt, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 interface RateLimitOptions {
@@ -37,43 +37,32 @@ export function rateLimit(options: RateLimitOptions) {
     const clientIp = req.ip || "unknown";
     const key = `${keyPrefix}:${clientIp}`;
     const now = new Date();
+    const newResetAt = new Date(now.getTime() + windowMs);
 
     try {
-      const rows = await db
-        .select({ hits: rateLimitHitsTable.hits, resetAt: rateLimitHitsTable.resetAt })
-        .from(rateLimitHitsTable)
-        .where(eq(rateLimitHitsTable.key, key))
-        .limit(1);
+      const rows = await db.execute<{ hits: number; reset_at: Date }>(sql`
+        INSERT INTO rate_limit_hits (key, hits, reset_at)
+        VALUES (${key}, 1, ${newResetAt})
+        ON CONFLICT (key) DO UPDATE SET
+          hits = CASE
+            WHEN rate_limit_hits.reset_at < ${now} THEN 1
+            ELSE rate_limit_hits.hits + 1
+          END,
+          reset_at = CASE
+            WHEN rate_limit_hits.reset_at < ${now} THEN ${newResetAt}
+            ELSE rate_limit_hits.reset_at
+          END
+        RETURNING hits, reset_at
+      `);
 
-      let hits: number;
-      let resetAt: Date;
-
-      if (rows.length === 0 || rows[0].resetAt < now) {
-        hits = 1;
-        resetAt = new Date(now.getTime() + windowMs);
-        await db
-          .insert(rateLimitHitsTable)
-          .values({ key, hits: 1, resetAt })
-          .onConflictDoUpdate({
-            target: rateLimitHitsTable.key,
-            set: { hits: 1, resetAt },
-          });
-      } else {
-        resetAt = rows[0].resetAt;
-        const updated = await db
-          .update(rateLimitHitsTable)
-          .set({ hits: sql`${rateLimitHitsTable.hits} + 1` })
-          .where(eq(rateLimitHitsTable.key, key))
-          .returning({ hits: rateLimitHitsTable.hits });
-        hits = updated[0]?.hits ?? rows[0].hits + 1;
-      }
-
+      const { hits, reset_at: resetAt } = rows.rows[0];
       const remaining = Math.max(0, maxRequests - hits);
-      const retryAfter = Math.ceil((resetAt.getTime() - now.getTime()) / 1000);
+      const resetAtMs = new Date(resetAt).getTime();
+      const retryAfter = Math.ceil((resetAtMs - now.getTime()) / 1000);
 
       res.setHeader("X-RateLimit-Limit", String(maxRequests));
       res.setHeader("X-RateLimit-Remaining", String(remaining));
-      res.setHeader("X-RateLimit-Reset", String(Math.ceil(resetAt.getTime() / 1000)));
+      res.setHeader("X-RateLimit-Reset", String(Math.ceil(resetAtMs / 1000)));
 
       if (hits > maxRequests) {
         logger.warn({ clientIp, key, count: hits }, "Rate limit exceeded");
