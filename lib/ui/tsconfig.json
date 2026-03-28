@@ -7,6 +7,6 @@
     "lib": ["esnext", "dom", "dom.iterable"],
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
-    "types": ["node"]
+    "types": []
   }
 }
