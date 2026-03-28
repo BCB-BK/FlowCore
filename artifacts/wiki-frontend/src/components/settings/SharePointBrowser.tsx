@@ -153,7 +153,7 @@ export function SharePointBrowser() {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         {(selectedSite || selectedDrive || folderStack.length > 0) && (
-          <Button variant="ghost" size="icon" onClick={handleBack}>
+          <Button variant="ghost" size="icon" aria-label="Zur vorherigen Ebene" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
         )}

@@ -800,6 +800,7 @@ function PrincipalDetail({
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                      aria-label="Rolle entfernen"
                       onClick={() => handleRevokeRole(role.id, roleStr)}
                       disabled={revokeRoleMutation.isPending}
                     >
@@ -839,6 +840,7 @@ function PrincipalDetail({
             </Select>
             <Button
               size="sm"
+              aria-label="Rolle zuweisen"
               onClick={handleAssignRole}
               disabled={!newRole || assignRoleMutation.isPending}
             >

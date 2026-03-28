@@ -109,7 +109,7 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Benachrichtigungen öffnen">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
@@ -187,6 +187,7 @@ export function NotificationBell() {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
+                        aria-label="Als gelesen markieren"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkRead(n.id);
