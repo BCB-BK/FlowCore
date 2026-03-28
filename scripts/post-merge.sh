@@ -2,4 +2,5 @@
 set -e
 pnpm install --frozen-lockfile
 pnpm --filter db push
+npx tsx lib/db/src/triggers/apply-triggers.ts
 npx tsx lib/db/src/seed-ai-field-profiles.ts
