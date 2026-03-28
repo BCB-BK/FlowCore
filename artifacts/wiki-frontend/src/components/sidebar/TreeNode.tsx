@@ -10,7 +10,6 @@ import {
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@workspace/ui/collapsible";
 import { ChevronRight, FileText, FolderOpen } from "lucide-react";
 import type { ContentNode } from "@/lib/types";
@@ -45,7 +44,7 @@ function StatusDot({ status }: { status: string }) {
   const label = STATUS_LABELS[status] ?? status;
   return (
     <span
-      role="img"
+      role="status"
       aria-label={`Status: ${label}`}
       className={`inline-block h-2 w-2 rounded-full shrink-0 ${colorClass.replace("text-", "bg-")}`}
       title={label}
@@ -65,7 +64,7 @@ export function TreeNode({ node, level }: TreeNodeProps) {
 
   if (!hasChildren || level >= MAX_DEPTH) {
     return (
-      <SidebarMenuItem>
+      <SidebarMenuItem role="treeitem" aria-selected={isActive}>
         <SidebarMenuButton
           isActive={isActive}
           onClick={() => navigate(`/node/${node.id}`)}
@@ -85,47 +84,31 @@ export function TreeNode({ node, level }: TreeNodeProps) {
       onOpenChange={setOpen}
       className="group/collapsible"
     >
-      <SidebarMenuItem>
-        <CollapsibleTrigger asChild>
+      <SidebarMenuItem role="treeitem" aria-expanded={open} aria-selected={isActive}>
+        <div className="flex items-center">
+          <button
+            type="button"
+            aria-label={open ? "Unterseiten einklappen" : "Unterseiten ausklappen"}
+            className="flex items-center justify-center shrink-0 h-8 w-5 bg-transparent border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+            onClick={() => setOpen(!open)}
+          >
+            <ChevronRight
+              className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+            />
+          </button>
           <SidebarMenuButton
             isActive={isActive}
-            onClick={(e) => {
-              if ((e.target as HTMLElement).closest("[data-chevron]")) {
-                return;
-              }
-              navigate(`/node/${node.id}`);
-            }}
+            onClick={() => navigate(`/node/${node.id}`)}
+            className="flex-1"
           >
-            <span
-              data-chevron
-              role="button"
-              tabIndex={0}
-              aria-label={open ? "Unterseiten einklappen" : "Unterseiten ausklappen"}
-              className="inline-flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpen(!open);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setOpen(!open);
-                }
-              }}
-            >
-              <ChevronRight
-                className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-              />
-            </span>
             <Icon className="h-4 w-4 shrink-0" />
             <span className="truncate">{node.title}</span>
             <StatusDot status={node.status} />
           </SidebarMenuButton>
-        </CollapsibleTrigger>
+        </div>
 
         <CollapsibleContent>
-          <SidebarMenuSub>
+          <SidebarMenuSub role="group">
             {children && children.length > 0 ? (
               children.map((child) => (
                 <SidebarMenuSubItem key={child.id}>

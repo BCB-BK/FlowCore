@@ -18,9 +18,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       <SidebarProvider defaultOpen={false} onOpenChange={setSidebarOpen}>
         <div className="flex h-screen w-full overflow-hidden teams-embedded">
           {sidebarOpen && (
-            <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
-              <WikiSidebar />
-            </ErrorBoundary>
+            <div id="teams-sidebar">
+              <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
+                <WikiSidebar />
+              </ErrorBoundary>
+            </div>
           )}
           <div className="flex flex-1 flex-col overflow-hidden">
             <header className="flex h-10 items-center gap-2 border-b px-3 bg-background">
@@ -29,6 +31,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className="p-1 rounded hover:bg-accent text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Seitenleiste ein-/ausblenden"
                 aria-expanded={sidebarOpen}
+                aria-controls="teams-sidebar"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
