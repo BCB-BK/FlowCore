@@ -4,6 +4,7 @@ import { logger } from "./lib/logger";
 import { startSyncScheduler } from "./services/sync-scheduler.service";
 import { startBackupScheduler } from "./services/backup.service";
 import { startReviewCycleChecker } from "./services/review-cycle.service";
+import { runStartupSeed } from "./services/startup-seed.service";
 import { Server } from "http";
 
 const MAX_RETRIES = 5;
@@ -55,6 +56,12 @@ async function start() {
       logger.error({ err }, "Failed to ensure user_sessions table — aborting");
       process.exit(1);
     }
+  }
+
+  try {
+    await runStartupSeed();
+  } catch (err) {
+    logger.error({ err }, "Startup seed encountered errors (non-fatal)");
   }
 
   try {

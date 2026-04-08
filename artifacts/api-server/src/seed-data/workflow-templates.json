@@ -1,0 +1,27 @@
+[
+  {
+    "template": {
+      "name": "Standard-Freigabe",
+      "description": "Aktualisierter Freigabeprozess",
+      "is_default": true,
+      "enforce_so_d": true,
+      "created_by": "Tobias Wenninger"
+    },
+    "steps": [
+      {
+        "step_number": 1,
+        "name": "Review",
+        "roles": [
+          "reviewer"
+        ]
+      },
+      {
+        "step_number": 2,
+        "name": "Freigabe",
+        "roles": [
+          "approver"
+        ]
+      }
+    ]
+  }
+]
