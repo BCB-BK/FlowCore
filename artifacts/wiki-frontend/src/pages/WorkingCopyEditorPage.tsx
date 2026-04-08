@@ -33,11 +33,15 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  Layers,
+  FolderOpen,
+  Plus,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
-import { parseClusters } from "@/lib/clusters";
+import { parseClusters, groupChildrenByClusters } from "@/lib/clusters";
 import type { Cluster } from "@/lib/clusters";
+import { isFieldEmpty } from "@/lib/field-empty";
 import { ClusterManager } from "@/components/clusters/ClusterManager";
 import { useNodeChildren } from "@/hooks/use-nodes";
 import {
@@ -674,7 +678,124 @@ export function WorkingCopyEditorPage() {
             nodeId={node.id}
           />
 
-          {previewEditorContent && (
+          {isOverviewPage && nodeChildren && nodeChildren.length > 0 && (() => {
+            const previewClusters = parseClusters(previewStructuredFields._clusters);
+            const clusterGroups = previewClusters.length > 0
+              ? groupChildrenByClusters(nodeChildren, previewClusters)
+              : [];
+            return previewClusters.length > 0 ? (
+              <div className="space-y-5">
+                <h3 className="text-base font-semibold">
+                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten"}
+                </h3>
+                {clusterGroups.map(({ cluster, children: groupChildren }) => (
+                  <div key={cluster?.id ?? "__unassigned__"}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Layers className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-sm font-semibold">
+                        {cluster?.title ?? "Sonstige"}
+                      </span>
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                        {groupChildren.length}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {groupChildren.map((child, idx) => {
+                        const childDef = getPageType(child.templateType);
+                        return (
+                          <Card
+                            key={child.id}
+                            className="cursor-pointer hover:shadow-md transition-shadow group"
+                            onClick={() => navigate(`/node/${child.id}`)}
+                          >
+                            <CardContent className="flex items-center gap-4 p-3">
+                              <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+                                {idx + 1}.
+                              </span>
+                              {childDef ? (
+                                <div
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
+                                  style={{ backgroundColor: childDef.color }}
+                                >
+                                  <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                                </div>
+                              ) : (
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                  {child.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {child.displayCode}
+                                </p>
+                              </div>
+                              <StatusBadge
+                                status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
+                                compact
+                              />
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <h3 className="text-base font-semibold">
+                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten"}
+                </h3>
+                <div className="flex flex-col gap-1.5">
+                  {nodeChildren.map((child, idx) => {
+                    const childDef = getPageType(child.templateType);
+                    return (
+                      <Card
+                        key={child.id}
+                        className="cursor-pointer hover:shadow-md transition-shadow group"
+                        onClick={() => navigate(`/node/${child.id}`)}
+                      >
+                        <CardContent className="flex items-center gap-4 p-3">
+                          <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+                            {idx + 1}.
+                          </span>
+                          {childDef ? (
+                            <div
+                              className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
+                              style={{ backgroundColor: childDef.color }}
+                            >
+                              <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                            </div>
+                          ) : (
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                              <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                              {child.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {child.displayCode}
+                            </p>
+                          </div>
+                          <StatusBadge
+                            status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
+                            compact
+                          />
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {!isFieldEmpty(previewEditorContent) && (
             <div className="mt-6">
               <h3 className="text-base font-semibold mb-3">Inhalt</h3>
               <BlockEditor
