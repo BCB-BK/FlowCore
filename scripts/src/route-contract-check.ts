@@ -160,15 +160,24 @@ function extractClientPaths(): Map<string, Set<string>> {
     if (!nameMatch) continue;
     const fnName = nameMatch[1];
 
-    const returnMatch = block.match(/return\s+`([^`]+)`/);
-    if (!returnMatch) continue;
+    const backtickMatches = [...block.matchAll(/`([^`]+)`/g)];
+    let basePath: string | null = null;
+    for (const bm of backtickMatches) {
+      const candidate = bm[1];
+      if (candidate.startsWith("/api/") || candidate.startsWith("/")) {
+        const cleaned = candidate
+          .replace(/\$\{[^}]+\}/g, "{_}")
+          .replace(/\?.*$/, "");
+        if (!basePath || cleaned.length < basePath.length) {
+          basePath = cleaned;
+        }
+      }
+    }
 
-    let path = returnMatch[1]
-      .replace(/\$\{[^}]+\}/g, "{_}")
-      .replace(/\?.*$/, "");
-    if (!path.startsWith("/")) path = "/" + path;
-    path = path.replace(/\/api\//, "/");
-    urlPaths.set(fnName, path);
+    if (!basePath) continue;
+    if (!basePath.startsWith("/")) basePath = "/" + basePath;
+    basePath = basePath.replace(/^\/api/, "");
+    urlPaths.set(fnName, basePath);
   }
 
   const fnBlocks = content.split(/(?=export const \w+\s*=)/);

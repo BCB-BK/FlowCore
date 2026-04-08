@@ -12,7 +12,7 @@ import { execSync, execFileSync } from "node:child_process";
 const ROOT = resolve(import.meta.dirname, "../..");
 const TASKS_DIR = join(ROOT, ".local/tasks");
 const REGISTRY_PATH = join(ROOT, ".local/violations-registry.json");
-const FAIL_THRESHOLD = 0.3;
+const FAIL_THRESHOLD = 0.2;
 
 interface SubCheck {
   name: string;
