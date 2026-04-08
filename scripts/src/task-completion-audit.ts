@@ -152,6 +152,7 @@ const VALIDATOR_CHECKS: Array<{ name: string; script: string }> = [
   { name: "env-check", script: "env-check" },
   { name: "dead-import-check", script: "dead-import-check" },
   { name: "rootfix-audit", script: "rootfix-audit" },
+  { name: "route-contract-check", script: "route-contract-check" },
   { name: "typecheck", script: "typecheck" },
 ];
 

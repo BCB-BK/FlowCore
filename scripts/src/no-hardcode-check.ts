@@ -49,7 +49,7 @@ const PATTERNS: Array<{ regex: RegExp; description: string }> = [
     description: "Hardcoded PostgreSQL URI",
   },
   {
-    regex: /['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"]/,
+    regex: /['"][0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['"]/,
     description: "Hardcoded UUID (potential dev principal ID or secret)",
   },
   {
