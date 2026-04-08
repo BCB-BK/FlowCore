@@ -7,12 +7,24 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/dropdown-menu";
-import { LogOut, Search } from "lucide-react";
+import { LogOut, Search, Shield } from "lucide-react";
 import { Input } from "@workspace/ui/input";
 import { useLocation } from "wouter";
 import { NotificationBell } from "@/components/NotificationBell";
+import { Badge } from "@workspace/ui/badge";
+
+const ROLE_LABELS: Record<string, string> = {
+  system_admin: "System-Admin",
+  process_manager: "Prozess-Manager",
+  editor: "Redakteur",
+  reviewer: "Prüfer",
+  approver: "Genehmiger",
+  viewer: "Betrachter",
+  compliance_manager: "Compliance-Manager",
+};
 
 export function AppHeader() {
   const { data: user } = useAuth();
@@ -65,16 +77,24 @@ export function AppHeader() {
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem className="text-sm font-medium" disabled>
-              {user.displayName}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-muted-foreground text-xs"
-              disabled
-            >
-              {user.email}
-            </DropdownMenuItem>
+          <DropdownMenuContent align="end" className="min-w-[200px]">
+            <div className="px-2 py-1.5">
+              <p className="text-sm font-medium">{user.displayName}</p>
+              {user.email && (
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              )}
+              {user.roles && user.roles.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {user.roles.map((r) => (
+                    <Badge key={r.role} variant="secondary" className="text-[10px] px-1.5 py-0">
+                      <Shield className="mr-0.5 h-2.5 w-2.5" />
+                      {ROLE_LABELS[r.role ?? ""] ?? r.role}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Abmelden

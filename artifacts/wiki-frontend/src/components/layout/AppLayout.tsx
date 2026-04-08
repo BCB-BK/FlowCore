@@ -15,7 +15,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   if (inTeams) {
     return (
-      <SidebarProvider defaultOpen={false} onOpenChange={setSidebarOpen}>
+      <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <div className="flex h-screen w-full overflow-hidden teams-embedded">
           {sidebarOpen && (
             <div id="teams-sidebar">
@@ -64,7 +64,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <SidebarProvider defaultOpen={sidebarOpen} onOpenChange={setSidebarOpen}>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="flex h-screen w-full overflow-hidden">
         <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
           <WikiSidebar />
