@@ -145,7 +145,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+        <div className="overflow-x-auto -mx-4 px-4 pb-1" style={{ scrollbarWidth: "thin" }}>
           <TabsList className="inline-flex w-max">
             {tabs.map((tab) => {
               const Icon = tab.icon;
