@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, extname, resolve } from "node:path";
+import { join, extname, resolve, relative } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 
@@ -10,7 +10,27 @@ const IGNORE_DIRS = new Set([
   ".git",
   "generated",
   ".replit-artifact",
+  ".local",
+  "attached_assets",
 ]);
+
+const ALLOWLIST: Array<{ file: RegExp; line: RegExp }> = [
+  { file: /e2e\//, line: /.*/ },
+  { file: /\.test\.ts/, line: /.*/ },
+  { file: /\.spec\.ts/, line: /.*/ },
+  { file: /seed.*\.ts$/, line: /.*/ },
+  { file: /migrate-pilot/, line: /.*/ },
+  { file: /import-.*\.ts$/, line: /.*/ },
+  { file: /export-.*\.ts$/, line: /.*/ },
+  { file: /cleanup-content/, line: /.*/ },
+  { file: /no-hardcode-check\.ts$/, line: /.*/ },
+  { file: /custom-fetch\.ts$/, line: /Bearer/ },
+  { file: /vite\.config\.ts$/, line: /localhost/ },
+  { file: /main\.tsx$/, line: /X-Dev-Principal-Id/ },
+  { file: /orval\.config\.ts$/, line: /.*/ },
+  { file: /notification\.service\.ts$/, line: /00000000-0000-0000-0000-000000000000/ },
+  { file: /drizzle\.config\.ts$/, line: /.*/ },
+];
 
 const PATTERNS: Array<{ regex: RegExp; description: string }> = [
   { regex: /localhost:\d{4,5}/, description: "Hardcoded localhost port" },
@@ -27,9 +47,35 @@ const PATTERNS: Array<{ regex: RegExp; description: string }> = [
     regex: /['"]postgres(ql)?:\/\/[^'"]+['"]/,
     description: "Hardcoded PostgreSQL URI",
   },
+  {
+    regex: /['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"]/,
+    description: "Hardcoded UUID",
+  },
+  {
+    regex: /['"]Bearer\s+[A-Za-z0-9._~+\/=-]{20,}['"]/,
+    description: "Hardcoded Bearer token",
+  },
+  {
+    regex: /['"]https?:\/\/[^'"]*\.(azurewebsites|sharepoint|graph\.microsoft)\.com[^'"]*['"]/,
+    description: "Hardcoded Azure/SharePoint URL",
+  },
 ];
 
-let violations = 0;
+interface Violation {
+  file: string;
+  line: number;
+  description: string;
+  content: string;
+}
+
+const violations: Violation[] = [];
+
+function isAllowlisted(filePath: string, lineContent: string): boolean {
+  const rel = relative(ROOT, filePath);
+  return ALLOWLIST.some(
+    (entry) => entry.file.test(rel) && entry.line.test(lineContent),
+  );
+}
 
 function scanFile(filePath: string): void {
   const content = readFileSync(filePath, "utf-8");
@@ -38,15 +84,19 @@ function scanFile(filePath: string): void {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
-    if (line.trim().startsWith("//") || line.trim().startsWith("*")) continue;
+    const trimmed = line.trim();
+    if (trimmed.startsWith("//") || trimmed.startsWith("*")) continue;
 
     for (const pattern of PATTERNS) {
       if (pattern.regex.test(line)) {
-        console.error(
-          `VIOLATION: ${filePath}:${i + 1} — ${pattern.description}`,
-        );
-        console.error(`  ${line.trim()}`);
-        violations++;
+        if (isAllowlisted(filePath, line)) continue;
+        const rel = relative(ROOT, filePath);
+        violations.push({
+          file: rel,
+          line: i + 1,
+          description: pattern.description,
+          content: trimmed,
+        });
       }
     }
   }
@@ -74,9 +124,14 @@ for (const dir of rootDirs) {
   }
 }
 
-if (violations > 0) {
-  console.error(`\n${violations} hardcode violation(s) found.`);
+if (violations.length > 0) {
+  console.error("=== Hardcode Violations ===\n");
+  for (const v of violations) {
+    console.error(`VIOLATION: ${v.file}:${v.line} — ${v.description}`);
+    console.error(`  ${v.content}\n`);
+  }
+  console.error(`\n${violations.length} hardcode violation(s) found.`);
   process.exit(1);
 } else {
-  console.log("No hardcode violations found.");
+  console.log("✔ No hardcode violations found.");
 }

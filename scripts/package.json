@@ -6,6 +6,11 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "no-hardcode-check": "tsx ./src/no-hardcode-check.ts",
+    "route-contract-check": "tsx ./src/route-contract-check.ts",
+    "env-check": "tsx ./src/env-check.ts",
+    "dead-import-check": "tsx ./src/dead-import-check.ts",
+    "rootfix-audit": "tsx ./src/rootfix-audit.ts",
+    "task-completion-audit": "tsx ./src/task-completion-audit.ts",
     "docs:check": "tsx ./src/docs-check.ts",
     "migrate-pilot": "tsx ./src/migrate-pilot-content.ts",
     "import-glossary": "tsx ./src/import-glossary.ts",
