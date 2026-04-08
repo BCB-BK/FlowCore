@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -26,15 +26,23 @@ import {
 } from "@workspace/ui/select";
 import { Switch } from "@workspace/ui/switch";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/tooltip";
+import {
   Plus,
   Pencil,
   Trash2,
   GripVertical,
   Star,
-  ArrowUp,
-  ArrowDown,
   CheckCircle,
   Bell,
+  Copy,
+  AlertCircle,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_LABELS, PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -117,19 +125,95 @@ const RECIPIENT_TYPES = [
 
 const CHANNELS = ["in_app", "teams"];
 
-const DEFAULT_WORKFLOW_SENTINEL = "__default__";
+const NOT_ASSIGNED_SENTINEL = "__none__";
 
-function RoleBadges({ roles }: { roles: string[] }) {
+function DraggableStep({
+  step,
+  idx,
+  totalSteps,
+  onUpdate,
+  onRemove,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+  isDragOver,
+}: {
+  step: WorkflowStep;
+  idx: number;
+  totalSteps: number;
+  onUpdate: (field: keyof WorkflowStep, value: unknown) => void;
+  onRemove: () => void;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+  isDragOver: boolean;
+}) {
+  const toggleRole = (role: string) => {
+    const newRoles = step.roles.includes(role)
+      ? step.roles.filter((r) => r !== role)
+      : [...step.roles, role];
+    onUpdate("roles", newRoles);
+  };
+
   return (
-    <div className="flex flex-wrap gap-1">
-      {roles.map((r) => (
-        <Badge key={r} variant="outline" className="text-xs">
-          {AVAILABLE_ROLES.find((x) => x.value === r)?.label ?? r}
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`border rounded-lg p-3 space-y-3 transition-all cursor-grab active:cursor-grabbing ${
+        isDragOver
+          ? "border-primary bg-primary/5 shadow-md"
+          : "border-border bg-card hover:border-muted-foreground/30"
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 cursor-grab" />
+        <Badge variant="secondary" className="shrink-0 text-xs font-mono">
+          {idx + 1}
         </Badge>
-      ))}
-      {roles.length === 0 && (
-        <span className="text-xs text-muted-foreground italic">Keine Rollen</span>
-      )}
+        <Input
+          value={step.name}
+          onChange={(e) => onUpdate("name", e.target.value)}
+          className="h-7 text-sm flex-1"
+          placeholder="Schrittname"
+          onClick={(e) => e.stopPropagation()}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-destructive hover:text-destructive"
+          onClick={onRemove}
+          disabled={totalSteps <= 1}
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+
+      <div>
+        <p className="text-xs text-muted-foreground mb-1.5">
+          Zuständige Rollen:
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {AVAILABLE_ROLES.map((role) => (
+            <button
+              key={role.value}
+              type="button"
+              onClick={() => toggleRole(role.value)}
+              className={`inline-flex items-center px-2 py-0.5 rounded text-xs border transition-colors ${
+                step.roles.includes(role.value)
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-foreground border-border hover:border-primary/50"
+              }`}
+            >
+              {role.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -154,6 +238,8 @@ function WorkflowEditor({
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dragIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const addStep = () => {
     setSteps((prev) => [
@@ -172,31 +258,54 @@ function WorkflowEditor({
     );
   };
 
-  const moveStep = (idx: number, dir: -1 | 1) => {
-    const next = [...steps];
-    const swap = idx + dir;
-    if (swap < 0 || swap >= next.length) return;
-    [next[idx], next[swap]] = [next[swap], next[idx]];
-    setSteps(next.map((s, i) => ({ ...s, stepNumber: i + 1 })));
-  };
-
   const updateStep = (idx: number, field: keyof WorkflowStep, value: unknown) => {
     setSteps((prev) =>
       prev.map((s, i) => (i === idx ? { ...s, [field]: value } : s)),
     );
   };
 
-  const toggleRole = (stepIdx: number, role: string) => {
-    const step = steps[stepIdx];
-    const newRoles = step.roles.includes(role)
-      ? step.roles.filter((r) => r !== role)
-      : [...step.roles, role];
-    updateStep(stepIdx, "roles", newRoles);
+  const handleDragStart = (idx: number) => (e: React.DragEvent) => {
+    dragIdx.current = idx;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(idx));
+  };
+
+  const handleDragOver = (idx: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragIdx.current !== null && dragIdx.current !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDrop = (targetIdx: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    const sourceIdx = dragIdx.current;
+    if (sourceIdx === null || sourceIdx === targetIdx) return;
+
+    setSteps((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(sourceIdx, 1);
+      next.splice(targetIdx, 0, moved);
+      return next.map((s, i) => ({ ...s, stepNumber: i + 1 }));
+    });
+
+    dragIdx.current = null;
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    dragIdx.current = null;
+    setDragOverIdx(null);
   };
 
   const handleSave = async () => {
     if (!name.trim()) {
       setError("Name ist ein Pflichtfeld");
+      return;
+    }
+    if (steps.some((s) => s.roles.length === 0)) {
+      setError("Jeder Schritt muss mindestens eine Rolle haben");
       return;
     }
     setSaving(true);
@@ -234,39 +343,41 @@ function WorkflowEditor({
 
       <div className="space-y-4 py-2">
         {error && (
-          <p className="text-sm text-destructive bg-destructive/10 rounded px-3 py-2">
-            {error}
-          </p>
+          <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="wf-name">Name *</Label>
-          <Input
-            id="wf-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="z.B. Standard-Freigabe"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="wf-name">Name *</Label>
+            <Input
+              id="wf-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="z.B. Standard-Freigabe"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="wf-desc">Beschreibung</Label>
+            <Input
+              id="wf-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Kurze Beschreibung"
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="wf-desc">Beschreibung</Label>
-          <Input
-            id="wf-desc"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Kurze Beschreibung des Workflows"
-          />
-        </div>
-
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 py-1">
           <div className="flex items-center gap-2">
             <Switch
               id="wf-default"
               checked={isDefault}
               onCheckedChange={setIsDefault}
             />
-            <Label htmlFor="wf-default" className="text-sm">
+            <Label htmlFor="wf-default" className="text-sm cursor-pointer">
               Standard-Workflow
             </Label>
           </div>
@@ -276,88 +387,53 @@ function WorkflowEditor({
               checked={enforceSoD}
               onCheckedChange={setEnforceSoD}
             />
-            <Label htmlFor="wf-sod" className="text-sm">
-              Vier-Augen-Prinzip erzwingen (SoD)
+            <Label htmlFor="wf-sod" className="text-sm cursor-pointer">
+              Vier-Augen-Prinzip (SoD)
             </Label>
           </div>
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium">Freigabeschritte</Label>
+            <div>
+              <Label className="text-base font-medium">Freigabeschritte</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Per Drag & Drop die Reihenfolge ändern
+              </p>
+            </div>
             <Button variant="outline" size="sm" onClick={addStep}>
               <Plus className="h-3.5 w-3.5 mr-1" />
-              Schritt hinzufügen
+              Schritt
             </Button>
           </div>
 
-          {steps.map((step, idx) => (
-            <Card key={idx} className="border border-border">
-              <CardContent className="p-3 space-y-3">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Badge variant="secondary" className="shrink-0 text-xs">
-                    Schritt {step.stepNumber}
-                  </Badge>
-                  <Input
-                    value={step.name}
-                    onChange={(e) => updateStep(idx, "name", e.target.value)}
-                    className="h-7 text-sm flex-1"
-                    placeholder="Schrittname"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveStep(idx, -1)}
-                    disabled={idx === 0}
-                  >
-                    <ArrowUp className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveStep(idx, 1)}
-                    disabled={idx === steps.length - 1}
-                  >
-                    <ArrowDown className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-destructive"
-                    onClick={() => removeStep(idx)}
-                    disabled={steps.length <= 1}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+          <div className="space-y-2">
+            {steps.map((step, idx) => (
+              <DraggableStep
+                key={`${step.id ?? "new"}-${idx}`}
+                step={step}
+                idx={idx}
+                totalSteps={steps.length}
+                onUpdate={(field, value) => updateStep(idx, field, value)}
+                onRemove={() => removeStep(idx)}
+                onDragStart={handleDragStart(idx)}
+                onDragOver={handleDragOver(idx)}
+                onDrop={handleDrop(idx)}
+                onDragEnd={handleDragEnd}
+                isDragOver={dragOverIdx === idx}
+              />
+            ))}
+          </div>
 
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">
-                    Zuständige Rollen (mindestens eine):
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {AVAILABLE_ROLES.map((role) => (
-                      <button
-                        key={role.value}
-                        type="button"
-                        onClick={() => toggleRole(idx, role.value)}
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs border transition-colors ${
-                          step.roles.includes(role.value)
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-background text-foreground border-border hover:border-primary"
-                        }`}
-                      >
-                        {role.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
+            <span>Vorschau:</span>
+            {steps.map((s, i) => (
+              <span key={i} className="flex items-center gap-1">
+                {i > 0 && <ChevronRight className="h-3 w-3" />}
+                <span className="font-medium">{s.name || "..."}</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -370,6 +446,123 @@ function WorkflowEditor({
         </Button>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+function WorkflowCard({
+  template,
+  assignedPageTypes,
+  onEdit,
+  onDuplicate,
+  onDelete,
+  isDeleting,
+}: {
+  template: WorkflowTemplate;
+  assignedPageTypes: string[];
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  return (
+    <div className="border rounded-lg overflow-hidden hover:border-muted-foreground/30 transition-colors">
+      <div
+        className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+        onClick={onEdit}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              {template.isDefault && (
+                <Star className="h-4 w-4 text-amber-500 shrink-0 fill-amber-500" />
+              )}
+              <h3 className="font-medium text-sm">{template.name}</h3>
+              {template.isDefault && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Standard</Badge>
+              )}
+              {template.enforceSoD && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">4-Augen</Badge>
+              )}
+            </div>
+            {template.description && (
+              <p className="text-xs text-muted-foreground mb-2">{template.description}</p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-1">
+              {template.steps.map((s, i) => (
+                <span key={s.id ?? i} className="flex items-center gap-0.5">
+                  {i > 0 && (
+                    <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                  )}
+                  <span className="inline-flex items-center gap-1 text-xs bg-muted rounded px-1.5 py-0.5">
+                    <span className="font-medium">{s.name}</span>
+                    <span className="text-muted-foreground">
+                      ({s.roles.map((r) => AVAILABLE_ROLES.find((x) => x.value === r)?.label ?? r).join(", ")})
+                    </span>
+                  </span>
+                </span>
+              ))}
+              {template.steps.length === 0 && (
+                <span className="text-xs text-muted-foreground italic">Keine Schritte definiert</span>
+              )}
+            </div>
+
+            {assignedPageTypes.length > 0 && (
+              <div className="flex items-center gap-1 mt-2">
+                <span className="text-[10px] text-muted-foreground">Zugewiesen an:</span>
+                <div className="flex flex-wrap gap-1">
+                  {assignedPageTypes.slice(0, 4).map((pt) => (
+                    <Badge key={pt} variant="outline" className="text-[10px] px-1 py-0 font-normal">
+                      {PAGE_TYPE_LABELS[pt as keyof typeof PAGE_TYPE_LABELS] ?? pt}
+                    </Badge>
+                  ))}
+                  {assignedPageTypes.length > 4 && (
+                    <Badge variant="outline" className="text-[10px] px-1 py-0 font-normal">
+                      +{assignedPageTypes.length - 4}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onEdit}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Bearbeiten</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDuplicate}>
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Duplizieren</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:text-destructive"
+                    onClick={onDelete}
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Löschen</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -401,7 +594,11 @@ function WorkflowsSection() {
   }, [load]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Workflow wirklich löschen?")) return;
+    const assignedCount = assignments.filter((a) => a.workflowId === id).length;
+    const msg = assignedCount > 0
+      ? `Dieser Workflow ist ${assignedCount} Seitentyp(en) zugewiesen. Wirklich löschen?`
+      : "Workflow wirklich löschen?";
+    if (!confirm(msg)) return;
     setDeletingId(id);
     try {
       await customFetch(`/api/admin/workflows/${id}`, { method: "DELETE" });
@@ -413,10 +610,20 @@ function WorkflowsSection() {
     }
   };
 
+  const handleDuplicate = (t: WorkflowTemplate) => {
+    setEditTemplate({
+      ...t,
+      id: "",
+      name: `${t.name} (Kopie)`,
+      isDefault: false,
+    } as unknown as WorkflowTemplate);
+    setShowEditor(true);
+  };
+
   const handleAssignment = async (pageType: string, workflowId: string) => {
     setAssignmentLoading(pageType);
     try {
-      if (!workflowId) {
+      if (workflowId === NOT_ASSIGNED_SENTINEL || !workflowId) {
         await customFetch(`/api/admin/workflow-assignments/${pageType}`, { method: "DELETE" });
       } else {
         await customFetch(`/api/admin/workflow-assignments/${pageType}`, {
@@ -433,16 +640,18 @@ function WorkflowsSection() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="flex items-center justify-center py-12">
         <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
 
   const pageTypes = Object.keys(PAGE_TYPE_REGISTRY);
+  const getAssignedPageTypes = (workflowId: string) =>
+    assignments.filter((a) => a.workflowId === workflowId).map((a) => a.pageType);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -466,130 +675,96 @@ function WorkflowsSection() {
         </CardHeader>
         <CardContent className="space-y-3">
           {templates.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Keine Workflows konfiguriert
-            </p>
+            <div className="text-center py-8 space-y-3">
+              <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Noch keine Workflows</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Erstelle deinen ersten Freigabe-Workflow, um Inhalte mehrstufig prüfen zu lassen.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setEditTemplate(undefined);
+                  setShowEditor(true);
+                }}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Ersten Workflow anlegen
+              </Button>
+            </div>
           )}
           {templates.map((t) => (
-            <div
+            <WorkflowCard
               key={t.id}
-              className="border rounded-lg p-3 space-y-2"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  {t.isDefault && (
-                    <Star className="h-4 w-4 text-amber-500 shrink-0" />
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{t.name}</p>
-                    {t.description && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {t.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-1 shrink-0">
-                    {t.isDefault && (
-                      <Badge variant="secondary" className="text-xs">Standard</Badge>
-                    )}
-                    {t.enforceSoD && (
-                      <Badge variant="outline" className="text-xs">4-Augen</Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => {
-                      setEditTemplate(t);
-                      setShowEditor(true);
-                    }}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  {!t.isDefault && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => handleDelete(t.id)}
-                      disabled={deletingId === t.id}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-1 items-center">
-                {t.steps.map((s, i) => (
-                  <span key={s.id ?? i} className="flex items-center gap-1">
-                    {i > 0 && (
-                      <span className="text-muted-foreground text-xs">→</span>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-xs bg-muted rounded px-1.5 py-0.5">
-                      <span className="font-medium">{s.name}</span>
-                      <span className="text-muted-foreground">
-                        ({s.roles.map((r) => AVAILABLE_ROLES.find((x) => x.value === r)?.label ?? r).join(" oder ")})
-                      </span>
-                    </span>
-                  </span>
-                ))}
-                {t.steps.length === 0 && (
-                  <span className="text-xs text-muted-foreground italic">Keine Schritte</span>
-                )}
-              </div>
-            </div>
+              template={t}
+              assignedPageTypes={getAssignedPageTypes(t.id)}
+              onEdit={() => {
+                setEditTemplate(t);
+                setShowEditor(true);
+              }}
+              onDuplicate={() => handleDuplicate(t)}
+              onDelete={() => handleDelete(t.id)}
+              isDeleting={deletingId === t.id}
+            />
           ))}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Workflow je Seitentyp</CardTitle>
-          <CardDescription>
-            Welcher Workflow gilt für welchen Seitentyp
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {pageTypes.map((pageType) => {
-              const label = PAGE_TYPE_LABELS[pageType as keyof typeof PAGE_TYPE_LABELS] ?? pageType;
-              const assignment = assignments.find((a) => a.pageType === pageType);
-              const currentWorkflowId = assignment?.workflowId ?? "";
-              return (
-                <div key={pageType} className="flex items-center justify-between gap-4 py-1">
-                  <span className="text-sm min-w-0 truncate">{label}</span>
-                  <Select
-                    value={currentWorkflowId || DEFAULT_WORKFLOW_SENTINEL}
-                    onValueChange={(val) => handleAssignment(pageType, val === DEFAULT_WORKFLOW_SENTINEL ? "" : val)}
-                    disabled={assignmentLoading === pageType}
-                  >
-                    <SelectTrigger className="w-48 h-7 text-xs">
-                      <SelectValue placeholder="Standard-Workflow" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={DEFAULT_WORKFLOW_SENTINEL}>Standard-Workflow</SelectItem>
-                      {templates.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.name}
+      {templates.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Workflow je Seitentyp</CardTitle>
+            <CardDescription>
+              Welcher Workflow gilt für welchen Seitentyp
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {pageTypes.map((pageType) => {
+                const label = PAGE_TYPE_LABELS[pageType as keyof typeof PAGE_TYPE_LABELS] ?? pageType;
+                const assignment = assignments.find((a) => a.pageType === pageType);
+                const currentWorkflowId = assignment?.workflowId ?? "";
+                const defaultWf = templates.find((t) => t.isDefault);
+                return (
+                  <div key={pageType} className="flex items-center justify-between gap-4 py-1.5 hover:bg-muted/30 rounded px-2 -mx-2">
+                    <span className="text-sm min-w-0 truncate">{label}</span>
+                    <Select
+                      value={currentWorkflowId || NOT_ASSIGNED_SENTINEL}
+                      onValueChange={(val) => handleAssignment(pageType, val)}
+                      disabled={assignmentLoading === pageType}
+                    >
+                      <SelectTrigger className="w-52 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NOT_ASSIGNED_SENTINEL}>
+                          {defaultWf ? `Standard (${defaultWf.name})` : "Nicht zugewiesen"}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                        {templates.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            {t.name}
+                            {t.isDefault ? " ★" : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
         {showEditor && (
           <WorkflowEditor
-            template={editTemplate}
+            template={editTemplate?.id ? editTemplate : undefined}
             onSave={load}
             onClose={() => setShowEditor(false)}
           />
@@ -671,7 +846,7 @@ function NotificationRulesSection() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="flex items-center justify-center py-12">
         <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
