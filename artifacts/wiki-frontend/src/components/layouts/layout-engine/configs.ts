@@ -129,7 +129,6 @@ export const policyConfig: LayoutConfig = {
     { key: "purpose", component: "editable", label: "Zweck", description: "Warum existiert diese Richtlinie?", icon: Target, iconColor: "text-primary", emptyText: "Noch kein Zweck erfasst" },
     { key: "scope", component: "editable", label: "Geltungsbereich", description: "Für wen und wo gilt die Richtlinie?", icon: BookOpen, iconColor: "text-blue-600", emptyText: "Noch kein Geltungsbereich definiert" },
     { key: "definitions", component: "editable", label: "Begriffe & Definitionen", description: "Klärung zentraler Begriffe", icon: BookMarked, iconColor: "text-indigo-600", emptyText: "Keine Begriffe definiert" },
-    { key: "policy_text", component: "editable", label: "Richtlinientext", description: "Die eigentlichen Regelungen", icon: Shield, iconColor: "text-red-600", emptyText: "Noch kein Richtlinientext erfasst" },
     { key: "enforcement", component: "editable", label: "Durchsetzung & Konsequenzen", description: "Maßnahmen bei Nichteinhaltung", icon: Gavel, iconColor: "text-amber-600", emptyText: "Noch keine Durchsetzungsmaßnahmen definiert" },
     { key: "references", component: "references_editor", label: "Referenzen & mitgeltende Dokumente", description: "Verknüpfte Normen, Gesetze und Dokumente", icon: FileStack, iconColor: "text-blue-600", emptyText: "Keine Referenzen angegeben" },
   ],

@@ -797,7 +797,7 @@ export function WorkingCopyEditorPage() {
 
           {!isFieldEmpty(previewEditorContent) && (
             <div className="mt-6">
-              <h3 className="text-base font-semibold mb-3">Inhalt</h3>
+              <h3 className="text-base font-semibold mb-3">{node.templateType === "policy" ? "Richtlinientext" : "Inhalt"}</h3>
               <BlockEditor
                 content={previewEditorContent}
                 onSave={() => {}}
@@ -850,7 +850,7 @@ export function WorkingCopyEditorPage() {
 
             <div className="mt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                <h3 className="text-base font-semibold">Inhalt</h3>
+                <h3 className="text-base font-semibold">{node.templateType === "policy" ? "Richtlinientext" : "Inhalt"}</h3>
                 <div className="flex items-center gap-2">
                   <Button
                     variant={showPageAssist ? "default" : "outline"}
