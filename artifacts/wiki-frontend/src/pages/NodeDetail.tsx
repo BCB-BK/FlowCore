@@ -84,6 +84,15 @@ import { Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { isFieldEmpty } from "@/lib/field-empty";
 
+const CONTENT_HEADING_MAP: Record<string, string> = {
+  policy: "Richtlinientext",
+  procedure_instruction: "Ablaufbeschreibung",
+  work_instruction: "Arbeitsschritte",
+  meeting_protocol: "Besprechungspunkte",
+  training_resource: "Schulungsinhalt",
+  use_case: "Normalablauf",
+};
+
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
   const nodeId = params?.id;
@@ -758,7 +767,7 @@ export function NodeDetail() {
           {!isFieldEmpty(editorContent) && (
           <div className="mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-              <h3 className="text-base font-semibold">{node.templateType === "policy" ? "Richtlinientext" : "Inhalt"}</h3>
+              <h3 className="text-base font-semibold">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
               <div className="flex items-center gap-2">
                 <Button
                   variant={showPageAssist ? "default" : "outline"}
