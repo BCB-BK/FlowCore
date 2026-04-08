@@ -2,7 +2,22 @@ export function isFieldEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return true;
 
   if (typeof value === "string") {
-    return value.trim() === "";
+    const trimmed = value.trim();
+    if (trimmed === "") return true;
+
+    if (
+      (trimmed.startsWith("[") && trimmed.endsWith("]")) ||
+      (trimmed.startsWith("{") && trimmed.endsWith("}"))
+    ) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return isFieldEmpty(parsed);
+      } catch {
+        return false;
+      }
+    }
+
+    return false;
   }
 
   if (typeof value === "number" || typeof value === "boolean") {
