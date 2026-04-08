@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createHmac, randomUUID } from "crypto";
 import { appConfig } from "../lib/config";
 import { authRateLimit } from "../middlewares/rate-limit";
 import {
@@ -21,6 +22,31 @@ import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
+
+const STATE_MAX_AGE_MS = 10 * 60 * 1000;
+
+function signOAuthState(nonce: string): string {
+  const ts = Date.now().toString(36);
+  const payload = `${nonce}.${ts}`;
+  const sig = createHmac("sha256", appConfig.sessionSecret)
+    .update(payload)
+    .digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+function verifyOAuthState(state: string): boolean {
+  const parts = state.split(".");
+  if (parts.length !== 3) return false;
+  const [nonce, ts, sig] = parts;
+  const payload = `${nonce}.${ts}`;
+  const expected = createHmac("sha256", appConfig.sessionSecret)
+    .update(payload)
+    .digest("base64url");
+  if (sig !== expected) return false;
+  const created = parseInt(ts, 36);
+  if (isNaN(created) || Date.now() - created > STATE_MAX_AGE_MS) return false;
+  return true;
+}
 
 const router = Router();
 
@@ -48,16 +74,9 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
   }
 
   try {
-    const { randomUUID } = await import("crypto");
-    const state = randomUUID();
-    req.session.oauthState = state;
+    const nonce = randomUUID();
+    const state = signOAuthState(nonce);
     const url = await getAuthUrl(state);
-    await new Promise<void>((resolve, reject) => {
-      req.session.save((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
     res.json({ loginUrl: url });
   } catch (err) {
     logger.error({ err }, "Failed to generate auth URL");
@@ -78,21 +97,17 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
     return;
   }
 
-  const expectedState = req.session.oauthState;
-  if (!expectedState || !state || state !== expectedState) {
+  if (!state || !verifyOAuthState(state)) {
     logger.warn(
       {
-        hasExpectedState: !!expectedState,
         hasState: !!state,
         sessionId: req.sessionID,
-        hasCookie: !!req.headers.cookie,
       },
-      "OAuth state missing or mismatch — possible CSRF",
+      "OAuth state invalid, expired, or tampered",
     );
     res.status(400).json({ error: "Invalid or missing state parameter" });
     return;
   }
-  delete req.session.oauthState;
 
   try {
     const tokenResult = await exchangeCodeForToken(code);
