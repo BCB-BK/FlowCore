@@ -212,6 +212,7 @@ export function Hub() {
               Erstellen Sie den ersten Kernprozess, um die Wissensstruktur
               aufzubauen.
             </p>
+            {(user?.permissions ?? []).includes("create_page") && (
             <Button
               variant="outline"
               className="mt-4"
@@ -220,6 +221,7 @@ export function Hub() {
               <Plus className="mr-2 h-4 w-4" />
               Kernprozess anlegen
             </Button>
+            )}
           </CardContent>
         </Card>
       )}

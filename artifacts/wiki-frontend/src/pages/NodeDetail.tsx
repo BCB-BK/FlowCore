@@ -122,6 +122,13 @@ export function NodeDetail() {
     return groups;
   }, [children]);
 
+  const userPerms = currentUser?.permissions ?? [];
+  const canCreate = userPerms.includes("create_page");
+  const canEdit = userPerms.includes("edit_content");
+  const canArchive = userPerms.includes("archive_page");
+  const canEditStructure = userPerms.includes("edit_structure");
+  const canReview = userPerms.includes("review_page");
+
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
     query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
   });
@@ -284,7 +291,7 @@ export function NodeDetail() {
           const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
           const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
           const wcReviewable = activeWC && (activeWC.status === "submitted" || activeWC.status === "in_review");
-          if (activeWC && wcReviewable) {
+          if (activeWC && wcReviewable && canReview) {
             return (
               <Button
                 variant="default"
@@ -296,6 +303,7 @@ export function NodeDetail() {
               </Button>
             );
           }
+          if (!canEdit) return null;
           if (activeWC && !isOwnWc && !wcReviewable) {
             return (
               <Button variant="outline" size="sm" disabled>
@@ -323,10 +331,13 @@ export function NodeDetail() {
             </Button>
           );
         })()}
+        {canEditStructure && (
         <Button variant="outline" size="sm" onClick={openEditDialog}>
           <Pencil className="mr-1 h-4 w-4" />
           Eigenschaften
         </Button>
+        )}
+        {canCreate && (
         <Button
           variant="outline"
           size="sm"
@@ -335,6 +346,8 @@ export function NodeDetail() {
           <Plus className="mr-1 h-4 w-4" />
           Unterseite
         </Button>
+        )}
+        {canArchive && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="outline" size="sm" className="text-destructive">
@@ -357,6 +370,7 @@ export function NodeDetail() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        )}
       </div>
 
       <PageHeader
@@ -420,6 +434,7 @@ export function NodeDetail() {
                 <h3 className="text-base font-semibold">
                   {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : node.templateType === "area_overview" ? "Zugehörige Seiten" : "Untergeordnete Inhalte"}
                 </h3>
+                {canCreate && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -428,6 +443,7 @@ export function NodeDetail() {
                   <Plus className="mr-1 h-4 w-4" />
                   Hinzufügen
                 </Button>
+                )}
               </div>
 
               {children && children.length > 0 ? (
@@ -455,6 +471,7 @@ export function NodeDetail() {
                               {typeChildren.length}
                             </Badge>
                           </div>
+                          {canCreate && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -464,6 +481,7 @@ export function NodeDetail() {
                             <Plus className="h-3 w-3 mr-1" />
                             Neu
                           </Button>
+                          )}
                         </div>
                         <div className="flex flex-col gap-1.5">
                           {typeChildren.map((child, idx) => {
@@ -585,7 +603,7 @@ export function NodeDetail() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {allowedChildTypes.length > 0 && (
+                  {canCreate && allowedChildTypes.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {allowedChildTypes.slice(0, 6).map((childType) => {
                         const typeDef = getPageType(childType);
@@ -626,9 +644,11 @@ export function NodeDetail() {
                       <p className="text-sm text-muted-foreground">
                         Noch keine {node.templateType === "core_process_overview" ? "Bereiche oder Prozesse" : "untergeordneten Inhalte"} vorhanden
                       </p>
+                      {canCreate && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Nutzen Sie die Kacheln oben oder den Button, um die erste Unterseite anzulegen.
                       </p>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -741,6 +761,7 @@ export function NodeDetail() {
         <TabsContent value="children" className="mt-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Unterseiten</h2>
+            {canCreate && (
             <Button
               variant="outline"
               size="sm"
@@ -749,6 +770,7 @@ export function NodeDetail() {
               <Plus className="mr-1 h-4 w-4" />
               Hinzufügen
             </Button>
+            )}
           </div>
 
           {children && children.length > 0 ? (
@@ -815,6 +837,7 @@ export function NodeDetail() {
                       .join(", ")}
                   </p>
                 )}
+                {canCreate && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -824,6 +847,7 @@ export function NodeDetail() {
                   <Plus className="mr-1 h-4 w-4" />
                   Erste Unterseite anlegen
                 </Button>
+                )}
               </CardContent>
             </Card>
           )}
