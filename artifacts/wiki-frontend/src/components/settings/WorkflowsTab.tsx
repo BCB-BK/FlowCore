@@ -117,6 +117,8 @@ const RECIPIENT_TYPES = [
 
 const CHANNELS = ["in_app", "teams"];
 
+const DEFAULT_WORKFLOW_SENTINEL = "__default__";
+
 function RoleBadges({ roles }: { roles: string[] }) {
   return (
     <div className="flex flex-wrap gap-1">
@@ -561,15 +563,15 @@ function WorkflowsSection() {
                 <div key={pageType} className="flex items-center justify-between gap-4 py-1">
                   <span className="text-sm min-w-0 truncate">{label}</span>
                   <Select
-                    value={currentWorkflowId}
-                    onValueChange={(val) => handleAssignment(pageType, val)}
+                    value={currentWorkflowId || DEFAULT_WORKFLOW_SENTINEL}
+                    onValueChange={(val) => handleAssignment(pageType, val === DEFAULT_WORKFLOW_SENTINEL ? "" : val)}
                     disabled={assignmentLoading === pageType}
                   >
                     <SelectTrigger className="w-48 h-7 text-xs">
                       <SelectValue placeholder="Standard-Workflow" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Standard-Workflow</SelectItem>
+                      <SelectItem value={DEFAULT_WORKFLOW_SENTINEL}>Standard-Workflow</SelectItem>
                       {templates.map((t) => (
                         <SelectItem key={t.id} value={t.id}>
                           {t.name}
