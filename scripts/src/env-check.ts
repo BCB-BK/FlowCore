@@ -33,6 +33,8 @@ const WELL_KNOWN_VARS = new Set([
   "TERM",
   "REPLIT_DEV_DOMAIN",
   "REPL_SLUG",
+  "REPL_HOME",
+  "WORKSPACE_ROOT",
 ]);
 
 function collectEnvRefs(dir: string): Map<string, string[]> {

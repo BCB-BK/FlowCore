@@ -30,9 +30,18 @@ export function LoginPage() {
     }
   };
 
-  const hasAuthError =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("auth_error");
+  const authErrorParam =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("auth_error")
+      : null;
+
+  const authErrorMessage = (() => {
+    if (!authErrorParam) return null;
+    if (authErrorParam === "group_not_authorized") {
+      return "Sie gehören nicht zum Team BildungsCampus und haben keinen Zugang. Bitte wenden Sie sich an Ihren Administrator.";
+    }
+    return "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.";
+  })();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
@@ -76,11 +85,12 @@ export function LoginPage() {
           {loading ? "Weiterleitung…" : "Mit Microsoft anmelden"}
         </button>
 
-        {(error || hasAuthError) && (
-          <p className="text-sm text-red-600 text-center">
-            {error ||
-              "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."}
-          </p>
+        {(error || authErrorMessage) && (
+          <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 w-full">
+            <p className="text-sm text-red-700 text-center">
+              {error || authErrorMessage}
+            </p>
+          </div>
         )}
       </div>
 

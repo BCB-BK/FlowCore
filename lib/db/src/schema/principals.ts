@@ -22,7 +22,7 @@ export const principalsTable = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     principalType: principalTypeEnum("principal_type").notNull(),
-    externalProvider: text("external_provider").notNull().default("entra_id"),
+    externalProvider: text("external_provider").notNull().default("entra"),
     externalId: text("external_id").notNull(),
     displayName: text("display_name").notNull(),
     email: text("email"),

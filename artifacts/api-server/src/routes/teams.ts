@@ -8,11 +8,13 @@ import {
 import {
   upsertPrincipal,
   getRolesForPrincipal,
+  assignRole,
 } from "../services/principal.service";
 import {
   getEffectivePermissions,
   type WikiPermission,
 } from "../services/rbac.service";
+import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
@@ -51,6 +53,41 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
       return;
     }
 
+    if (appConfig.entraRequiredGroupId) {
+      const isMember = await checkGroupMembership(
+        tokenResult.accessToken,
+        tokenResult.externalId,
+        appConfig.entraRequiredGroupId,
+      );
+
+      if (!isMember) {
+        logger.warn(
+          { externalId: tokenResult.externalId, groupId: appConfig.entraRequiredGroupId },
+          "Teams SSO rejected: user not in required Entra group",
+        );
+        await db.insert(auditEventsTable).values({
+          eventType: "auth",
+          action: "login_rejected_group",
+          actorId: null,
+          resourceType: "principal",
+          resourceId: null,
+          details: {
+            reason: "not_in_required_group",
+            externalId: tokenResult.externalId,
+            groupId: appConfig.entraRequiredGroupId,
+            provider: "teams_sso",
+          },
+          ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+        });
+        res.status(403).json({
+          error: "group_not_authorized",
+          message:
+            "Sie gehören nicht zum Team BildungsCampus und haben keinen Zugang.",
+        });
+        return;
+      }
+    }
+
     const principalId = await upsertPrincipal({
       principalType: "user",
       externalProvider: "entra",
@@ -59,6 +96,21 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
       email: tokenResult.email,
       upn: tokenResult.upn,
     });
+
+    const existingRoles = await getRolesForPrincipal(principalId);
+    if (existingRoles.length === 0) {
+      await assignRole({ principalId, role: "viewer", scope: "global" });
+      logger.info({ principalId }, "Auto-assigned Viewer role on first Teams SSO login");
+      await db.insert(auditEventsTable).values({
+        eventType: "auth",
+        action: "auto_role_assigned",
+        actorId: principalId,
+        resourceType: "principal",
+        resourceId: principalId,
+        details: { role: "viewer", scope: "global", reason: "first_login", provider: "teams_sso" },
+        ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
+      });
+    }
 
     req.session.user = {
       principalId,

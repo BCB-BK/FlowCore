@@ -18,6 +18,7 @@ const configSchema = z.object({
     .optional()
     .transform((v) => v === "true"),
   teamsAppId: z.string().optional().default(""),
+  entraRequiredGroupId: z.string().optional().default(""),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -37,6 +38,7 @@ function loadConfig(): AppConfig {
       process.env["AUTH_DEV_MODE"] ??
       (process.env["NODE_ENV"] === "development" ? "true" : "false"),
     teamsAppId: process.env["TEAMS_APP_ID"],
+    entraRequiredGroupId: process.env["ENTRA_REQUIRED_GROUP_ID"],
   });
 
   if (!result.success) {

@@ -176,6 +176,51 @@ export async function getGroupMembers(
     .map(mapGraphUser);
 }
 
+export async function checkGroupMembership(
+  accessToken: string,
+  userId: string,
+  groupId: string,
+): Promise<boolean> {
+  const token = await resolveAccessToken(accessToken);
+  if (!token) {
+    logger.warn("checkGroupMembership: no access token available");
+    return false;
+  }
+
+  try {
+    const client = getGraphClient(token);
+    const result = await client
+      .api(`/users/${userId}/checkMemberGroups`)
+      .post({ groupIds: [groupId] });
+
+    const matchedIds: string[] = result.value ?? [];
+    return matchedIds.includes(groupId);
+  } catch (err) {
+    const status = (err as { statusCode?: number }).statusCode;
+    if (status === 403 || status === 401) {
+      logger.warn(
+        { userId, groupId, status },
+        "checkGroupMembership: user token insufficient, retrying with app token",
+      );
+      try {
+        const appToken = await getAppAccessToken();
+        if (!appToken) return false;
+        const appClient = getGraphClient(appToken);
+        const appResult = await appClient
+          .api(`/users/${userId}/checkMemberGroups`)
+          .post({ groupIds: [groupId] });
+        const appMatchedIds: string[] = appResult.value ?? [];
+        return appMatchedIds.includes(groupId);
+      } catch (fallbackErr) {
+        logger.error({ fallbackErr, userId, groupId }, "checkGroupMembership fallback also failed");
+        return false;
+      }
+    }
+    logger.error({ err, userId, groupId }, "checkGroupMembership failed");
+    return false;
+  }
+}
+
 export async function getPersonPhoto(
   accessToken: string,
   userId: string,
