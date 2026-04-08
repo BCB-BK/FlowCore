@@ -64,3 +64,28 @@ Key page types like `procedure_instruction`, `core_process_overview`, `role_prof
 - **Authentication/Identity:** Microsoft Entra ID (OIDC), API Bearer Tokens (SHA-256 hashed)
 - **External Services Integration:** Microsoft Graph API (for SharePoint, Teams notifications)
 - **AI Services:** OpenAI
+
+## Quality Gates & Validation
+
+**Post-Merge Script** (`scripts/post-merge.sh`): Runs automatically after every task merge. Steps:
+1. `pnpm install --frozen-lockfile` — install dependencies
+2. `pnpm --filter db push` — sync DB schema
+3. Apply triggers + seed AI field profiles
+4. API client codegen (non-blocking)
+5. **Validation checks** (non-blocking warnings):
+   - TypeScript check for api-server and wiki-frontend
+   - Code quality validators (task-completion-audit)
+
+**Registered Validation Commands** (can be run on demand):
+- `typecheck-frontend` — TypeScript check for wiki-frontend
+- `typecheck-api` — TypeScript check for api-server
+- `build-frontend` — Vite build for wiki-frontend
+- `code-quality` — All code quality validators (no-hardcode, route-contract, env-check, dead-import, rootfix-audit)
+
+**Code Quality Validators** (`scripts/src/`):
+- `no-hardcode-check` — Detects hardcoded UUIDs/dev principal IDs
+- `route-contract-check` — Three-way spec↔backend↔client route consistency
+- `env-check` — Environment variable consistency (dot + bracket notation)
+- `dead-import-check` — Unused imports detection
+- `rootfix-audit` — db.write usage audit
+- `task-completion-audit` — Orchestrator running all validators with 20% fail threshold
