@@ -9,6 +9,8 @@ import {
 } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import { Button } from "@workspace/ui/button";
+import { Input } from "@workspace/ui/input";
+import { Label } from "@workspace/ui/label";
 import {
   Settings,
   Link2,
@@ -28,6 +30,7 @@ import {
   Users,
   Eye,
   HardDrive,
+  GitBranch,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -42,6 +45,7 @@ import { BackupTab } from "@/components/settings/BackupTab";
 import { ConsistencyTab } from "@/components/settings/ConsistencyTab";
 import { ReleaseTab } from "@/components/settings/ReleaseTab";
 import { AuditTrailTab } from "@/components/settings/AuditTrailTab";
+import { WorkflowsTab } from "@/components/settings/WorkflowsTab";
 import { useAuth } from "@/hooks/use-auth";
 
 interface SystemInfo {
@@ -105,6 +109,7 @@ export function SettingsPage() {
       t.push({ value: "audit", label: "Audit-Trail", icon: Eye });
     }
     if (perms.has("manage_settings")) {
+      t.push({ value: "workflows", label: "Workflows", icon: GitBranch });
       t.push({ value: "consistency", label: "Konsistenz", icon: ShieldCheck });
       t.push({ value: "releases", label: "Releases", icon: Tag });
     }
@@ -185,6 +190,10 @@ export function SettingsPage() {
 
         <TabsContent value="audit" className="mt-6">
           <AuditTrailTab />
+        </TabsContent>
+
+        <TabsContent value="workflows" className="mt-6">
+          <WorkflowsTab />
         </TabsContent>
 
         <TabsContent value="consistency" className="mt-6">
@@ -323,15 +332,66 @@ function GeneralTab() {
 function ConnectionsTab() {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [flowcoreUpn, setFlowcoreUpn] = useState("flowcore@bildungscampus-backnang.de");
+  const [flowcoreUpnEdit, setFlowcoreUpnEdit] = useState("");
+  const [flowcoreSaving, setFlowcoreSaving] = useState(false);
+  const [flowcoreTesting, setFlowcoreTesting] = useState(false);
+  const [flowcoreTestResult, setFlowcoreTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
-    customFetch<SystemInfo>("/api/admin/system-info")
-      .then((data) => {
-        setInfo(data);
+    Promise.all([
+      customFetch<SystemInfo>("/api/admin/system-info"),
+      customFetch<{ upn: string }>("/api/admin/flowcore-account"),
+    ])
+      .then(([sys, fc]) => {
+        setInfo(sys);
+        setFlowcoreUpn(fc.upn);
+        setFlowcoreUpnEdit(fc.upn);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const handleSaveFlowcoreAccount = async () => {
+    setFlowcoreSaving(true);
+    setFlowcoreTestResult(null);
+    try {
+      await customFetch("/api/admin/flowcore-account", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ upn: flowcoreUpnEdit }),
+      });
+      setFlowcoreUpn(flowcoreUpnEdit);
+    } finally {
+      setFlowcoreSaving(false);
+    }
+  };
+
+  const handleTestFlowcoreAccount = async () => {
+    setFlowcoreTesting(true);
+    setFlowcoreTestResult(null);
+    try {
+      const result = await customFetch<{ success: boolean; message?: string; error?: string }>(
+        "/api/admin/flowcore-account/test",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ upn: flowcoreUpnEdit }),
+        },
+      );
+      setFlowcoreTestResult({
+        success: result.success ?? false,
+        message: result.message ?? result.error ?? "Unbekanntes Ergebnis",
+      });
+    } catch (err) {
+      setFlowcoreTestResult({
+        success: false,
+        message: err instanceof Error ? err.message : "Verbindungstest fehlgeschlagen",
+      });
+    } finally {
+      setFlowcoreTesting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -484,6 +544,82 @@ function ConnectionsTab() {
               <span>{info.integrations.teams.appId || "Nicht gesetzt"}</span>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg">FlowCore-Kommunikationskonto</CardTitle>
+              <Badge variant={flowcoreUpn ? "default" : "secondary"}>
+                {flowcoreUpn ? (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" /> Konfiguriert
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> Nicht konfiguriert
+                  </span>
+                )}
+              </Badge>
+            </div>
+          </div>
+          <CardDescription>
+            Teams-Chat-Benachrichtigungen werden über dieses Konto als Absender verschickt
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="flowcore-upn" className="text-sm">
+              E-Mail / UPN des Absenderkontos
+            </Label>
+            <Input
+              id="flowcore-upn"
+              type="email"
+              value={flowcoreUpnEdit}
+              onChange={(e) => {
+                setFlowcoreUpnEdit(e.target.value);
+                setFlowcoreTestResult(null);
+              }}
+              placeholder="flowcore@bildungscampus-backnang.de"
+              className="max-w-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              size="sm"
+              onClick={handleSaveFlowcoreAccount}
+              disabled={flowcoreSaving || flowcoreUpnEdit === flowcoreUpn}
+            >
+              {flowcoreSaving ? "Speichern..." : "Speichern"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTestFlowcoreAccount}
+              disabled={flowcoreTesting || !flowcoreUpnEdit}
+            >
+              {flowcoreTesting ? "Verbindung wird getestet..." : "Verbindung testen"}
+            </Button>
+            {flowcoreTestResult && (
+              <span
+                className={`text-sm flex items-center gap-1 ${
+                  flowcoreTestResult.success ? "text-green-600" : "text-red-500"
+                }`}
+              >
+                {flowcoreTestResult.success ? (
+                  <CheckCircle className="h-4 w-4 shrink-0" />
+                ) : (
+                  <XCircle className="h-4 w-4 shrink-0" />
+                )}
+                {flowcoreTestResult.message}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Der Test prüft, ob das Konto über die Microsoft Graph API erreichbar ist und Chat-Nachrichten senden darf.
+          </p>
         </CardContent>
       </Card>
     </div>

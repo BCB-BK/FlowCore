@@ -14,6 +14,7 @@ import { aiRouter } from "./ai";
 import { qualityRouter } from "./quality";
 import { teamsRouter } from "./teams";
 import adminRouter from "./admin";
+import { workflowsAdminRouter } from "./workflows-admin";
 import { backupRouter } from "./backup";
 import { workingCopiesRouter } from "./working-copies";
 import { notificationsRouter } from "./notifications";
@@ -23,6 +24,7 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(adminRouter);
+router.use(workflowsAdminRouter);
 router.use("/admin/backups", backupRouter);
 router.use(authRouter);
 router.use(principalsRouter);
