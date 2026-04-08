@@ -52,6 +52,12 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
     const state = randomUUID();
     req.session.oauthState = state;
     const url = await getAuthUrl(state);
+    await new Promise<void>((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
     res.json({ loginUrl: url });
   } catch (err) {
     logger.error({ err }, "Failed to generate auth URL");
@@ -74,7 +80,15 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
 
   const expectedState = req.session.oauthState;
   if (!expectedState || !state || state !== expectedState) {
-    logger.warn("OAuth state missing or mismatch — possible CSRF");
+    logger.warn(
+      {
+        hasExpectedState: !!expectedState,
+        hasState: !!state,
+        sessionId: req.sessionID,
+        hasCookie: !!req.headers.cookie,
+      },
+      "OAuth state missing or mismatch — possible CSRF",
+    );
     res.status(400).json({ error: "Invalid or missing state parameter" });
     return;
   }
