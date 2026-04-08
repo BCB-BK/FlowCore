@@ -31,6 +31,8 @@ import {
   Loader2,
   Save,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections } from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
@@ -114,6 +116,7 @@ export function WorkingCopyEditorPage() {
   const [changeSummary, setChangeSummary] = useState("");
   const [submitComment, setSubmitComment] = useState("");
   const [showPageAssist, setShowPageAssist] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -171,6 +174,19 @@ export function WorkingCopyEditorPage() {
     }
     return null;
   }, [wcStructuredFields]);
+
+  const previewStructuredFields = useMemo(() => {
+    if (!showPreview) return wcStructuredFields;
+    return { ...localStructuredFieldsRef.current };
+  }, [showPreview, wcStructuredFields]);
+
+  const previewEditorContent = useMemo(() => {
+    const sf = showPreview ? localStructuredFieldsRef.current : wcStructuredFields;
+    if (sf._editorContent && typeof sf._editorContent === "object") {
+      return sf._editorContent as JSONContent;
+    }
+    return null;
+  }, [showPreview, wcStructuredFields]);
 
   const [editableMetadata, setEditableMetadata] = useState<Record<string, unknown>>({});
   const [metadataDisplayValues, setMetadataDisplayValues] = useState<Record<string, string>>({});
@@ -463,7 +479,20 @@ export function WorkingCopyEditorPage() {
             <ArrowLeft className="mr-1 h-4 w-4" />
             Zurück
           </Button>
-          {canEdit && (
+          <Button
+            variant={showPreview ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowPreview((v) => !v)}
+            className="gap-1.5"
+          >
+            {showPreview ? (
+              <EyeOff className="h-3.5 w-3.5" />
+            ) : (
+              <Eye className="h-3.5 w-3.5" />
+            )}
+            Vorschau
+          </Button>
+          {canEdit && !showPreview && (
             <>
               <Button
                 variant="outline"
@@ -492,20 +521,45 @@ export function WorkingCopyEditorPage() {
         </div>
       </div>
 
-      <WorkingCopyBanner
-        workingCopy={activeWC}
-        currentUserId={currentUser?.principalId}
-        authorName={wcAuthor?.displayName ?? undefined}
-      />
+      {!showPreview && (
+        <WorkingCopyBanner
+          workingCopy={activeWC}
+          currentUserId={currentUser?.principalId}
+          authorName={wcAuthor?.displayName ?? undefined}
+        />
+      )}
 
-      {lastSavedAt && (
+      {showPreview && (
+        <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 px-4 py-3">
+          <Eye className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              Vorschau
+            </p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">
+              So sieht die Seite nach Ver\u00F6ffentlichung aus. Leere Abschnitte werden ausgeblendet.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPreview(false)}
+            className="shrink-0"
+          >
+            <EyeOff className="h-3.5 w-3.5 mr-1" />
+            Bearbeitung fortsetzen
+          </Button>
+        </div>
+      )}
+
+      {!showPreview && lastSavedAt && (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <CheckCircle2 className="h-3 w-3 text-green-600" />
           Zuletzt gespeichert: {lastSavedAt.toLocaleTimeString("de-DE")}
         </div>
       )}
 
-      {canEdit && node && (() => {
+      {!showPreview && canEdit && node && (() => {
         const readiness = getPublicationReadiness(node.templateType, editableMetadata, validationSFSnapshot);
         const guided = getGuidedSections(node.templateType);
         return (
@@ -560,80 +614,112 @@ export function WorkingCopyEditorPage() {
         );
       })()}
 
-      <Tabs defaultValue="content" className="w-full">
-        <TabsList>
-          <TabsTrigger value="content">Inhalt</TabsTrigger>
-          <TabsTrigger value="metadata">Metadaten</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="content" className="mt-4">
+      {showPreview ? (
+        <div className="space-y-6">
           <PageLayout
             templateType={node.templateType}
-            structuredFields={wcStructuredFields}
-            onSectionSave={canEdit ? handleSectionSave : undefined}
+            structuredFields={previewStructuredFields}
             pageType={node.templateType}
             nodeId={node.id}
           />
 
-          <div className="mt-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-              <h3 className="text-base font-semibold">Inhalt</h3>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={showPageAssist ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setShowPageAssist(!showPageAssist)}
-                >
-                  <Bot className="h-3.5 w-3.5 mr-1" />
-                  FlowCore-Assistent
-                </Button>
-              </div>
-            </div>
-            <div
-              className={
-                showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
-              }
-            >
+          {previewEditorContent && (
+            <div className="mt-6">
+              <h3 className="text-base font-semibold mb-3">Inhalt</h3>
               <BlockEditor
-                content={editorContent}
-                onSave={handleEditorSave}
-                onContentChange={handleEditorContentChange}
-                editable={canEdit}
+                content={previewEditorContent}
+                onSave={() => {}}
+                editable={false}
                 nodeId={nodeId}
-                lastSavedAt={lastSavedAt}
-                onTrackMediaUsage={handleTrackMediaUsage}
-                onCreateSubpage={() => setShowCreate(true)}
                 parentTemplateType={node?.templateType}
               />
-              {showPageAssist && (
-                <PageAssistant
-                  nodeId={nodeId}
-                  getSelectedText={() => {
-                    const sel = window.getSelection();
-                    return sel ? sel.toString() : "";
-                  }}
-                  onClose={() => setShowPageAssist(false)}
-                />
-              )}
             </div>
-          </div>
-        </TabsContent>
+          )}
 
-        <TabsContent value="metadata" className="mt-4 space-y-4">
-          <CompletenessIndicator
-            templateType={node.templateType}
-            metadata={metadata}
-            sectionData={wcStructuredFields}
-          />
           <MetadataPanel
             templateType={node.templateType}
             metadata={metadata}
             displayValues={metadataDisplayValues}
-            onChange={canEdit ? handleMetadataChange : () => {}}
-            readOnly={!canEdit}
+            onChange={() => {}}
+            readOnly
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      ) : (
+        <Tabs defaultValue="content" className="w-full">
+          <TabsList>
+            <TabsTrigger value="content">Inhalt</TabsTrigger>
+            <TabsTrigger value="metadata">Metadaten</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="content" className="mt-4">
+            <PageLayout
+              templateType={node.templateType}
+              structuredFields={wcStructuredFields}
+              onSectionSave={canEdit ? handleSectionSave : undefined}
+              pageType={node.templateType}
+              nodeId={node.id}
+            />
+
+            <div className="mt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <h3 className="text-base font-semibold">Inhalt</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={showPageAssist ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowPageAssist(!showPageAssist)}
+                  >
+                    <Bot className="h-3.5 w-3.5 mr-1" />
+                    FlowCore-Assistent
+                  </Button>
+                </div>
+              </div>
+              <div
+                className={
+                  showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
+                }
+              >
+                <BlockEditor
+                  content={editorContent}
+                  onSave={handleEditorSave}
+                  onContentChange={handleEditorContentChange}
+                  editable={canEdit}
+                  nodeId={nodeId}
+                  lastSavedAt={lastSavedAt}
+                  onTrackMediaUsage={handleTrackMediaUsage}
+                  onCreateSubpage={() => setShowCreate(true)}
+                  parentTemplateType={node?.templateType}
+                />
+                {showPageAssist && (
+                  <PageAssistant
+                    nodeId={nodeId}
+                    getSelectedText={() => {
+                      const sel = window.getSelection();
+                      return sel ? sel.toString() : "";
+                    }}
+                    onClose={() => setShowPageAssist(false)}
+                  />
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="metadata" className="mt-4 space-y-4">
+            <CompletenessIndicator
+              templateType={node.templateType}
+              metadata={metadata}
+              sectionData={wcStructuredFields}
+            />
+            <MetadataPanel
+              templateType={node.templateType}
+              metadata={metadata}
+              displayValues={metadataDisplayValues}
+              onChange={canEdit ? handleMetadataChange : () => {}}
+              readOnly={!canEdit}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
 
       <Dialog open={submitOpen} onOpenChange={setSubmitOpen}>
         <DialogContent className="sm:max-w-xl">
