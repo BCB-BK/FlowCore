@@ -43,6 +43,8 @@ import {
   AlertCircle,
   ChevronRight,
   X,
+  Clock,
+  GitBranch,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_LABELS, PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -89,31 +91,117 @@ const AVAILABLE_ROLES = [
 ];
 
 const RECIPIENT_TYPE_LABELS: Record<string, string> = {
-  owner: "Verantwortlicher (Owner)",
+  owner: "Verantwortlicher",
   deputy: "Stellvertreter",
   reviewer: "Reviewer",
   approver: "Freigeber",
   process_manager: "Process Manager",
-  role_based: "Rollenbasiert",
-  explicit: "Explizite Personen",
 };
 
 const CHANNEL_LABELS: Record<string, string> = {
   in_app: "In-App",
-  teams: "Teams-Chat",
-  email: "E-Mail",
+  teams: "MS Teams",
 };
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  working_copy_submitted: "Arbeitskopie eingereicht",
-  working_copy_approved: "Arbeitskopie freigegeben",
-  working_copy_returned: "Arbeitskopie zurückgegeben",
-  working_copy_published: "Neue Version veröffentlicht",
-  review_overdue: "Review überfällig",
-  review_overdue_escalation: "Review überfällig – Eskalation",
-  task_overdue: "Offene Aufgabe überfällig",
-  open_review_overdue: "Offener Review überfällig",
-};
+interface EventTypeConfig {
+  eventType: string;
+  label: string;
+  category: "workflow" | "schedule";
+  trigger: string;
+  messageTemplate: { title: string; body: string };
+  supportsReminder: boolean;
+}
+
+const NOTIFICATION_EVENT_CONFIG: EventTypeConfig[] = [
+  {
+    eventType: "working_copy_submitted",
+    label: "Arbeitskopie eingereicht",
+    category: "workflow",
+    trigger: "Wird ausgelöst, wenn ein Editor eine Arbeitskopie zur Überprüfung einreicht.",
+    messageTemplate: {
+      title: "Review angefordert",
+      body: `{actor} hat eine Arbeitskopie von \u201E{page}\u201C zur \u00DCberpr\u00FCfung eingereicht.`,
+    },
+    supportsReminder: false,
+  },
+  {
+    eventType: "working_copy_approved",
+    label: "Arbeitskopie freigegeben",
+    category: "workflow",
+    trigger: "Wird ausgelöst, wenn ein Reviewer oder Approver die Arbeitskopie freigibt.",
+    messageTemplate: {
+      title: "Arbeitskopie freigegeben",
+      body: `{actor} hat die Arbeitskopie von \u201E{page}\u201C freigegeben.`,
+    },
+    supportsReminder: false,
+  },
+  {
+    eventType: "working_copy_returned",
+    label: "Arbeitskopie zurückgegeben",
+    category: "workflow",
+    trigger: "Wird ausgelöst, wenn ein Reviewer die Arbeitskopie zur Überarbeitung an den Autor zurückgibt.",
+    messageTemplate: {
+      title: "Überarbeitung erforderlich",
+      body: `{actor} hat die Arbeitskopie von \u201E{page}\u201C zur \u00DCberarbeitung zur\u00FCckgegeben.`,
+    },
+    supportsReminder: false,
+  },
+  {
+    eventType: "working_copy_published",
+    label: "Neue Version veröffentlicht",
+    category: "workflow",
+    trigger: "Wird ausgelöst, wenn eine freigegebene Arbeitskopie als neue Version veröffentlicht wird.",
+    messageTemplate: {
+      title: "Neue Version veröffentlicht",
+      body: `{actor} hat \u201E{page}\u201C als neue Version ver\u00F6ffentlicht.`,
+    },
+    supportsReminder: false,
+  },
+  {
+    eventType: "review_overdue",
+    label: "Review überfällig",
+    category: "schedule",
+    trigger: "Wird automatisch geprüft, wenn das nächste Review-Datum einer Seite überschritten ist.",
+    messageTemplate: {
+      title: "Review überfällig",
+      body: `Die Seite \u201E{page}\u201C ist seit {days} Tagen \u00FCberf\u00E4llig f\u00FCr ein Review.`,
+    },
+    supportsReminder: true,
+  },
+  {
+    eventType: "review_overdue_escalation",
+    label: "Review überfällig \u2014 Eskalation",
+    category: "schedule",
+    trigger: "Wird ausgelöst, wenn ein überfälliges Review nach der konfigurierten Eskalationsfrist weiterhin offen ist.",
+    messageTemplate: {
+      title: "Überfälliges Review \u2014 Eskalation",
+      body: `Die Seite \u201E{page}\u201C ist seit {days} Tagen \u00FCberf\u00E4llig. Eskalation an Process Manager.`,
+    },
+    supportsReminder: false,
+  },
+  {
+    eventType: "task_overdue",
+    label: "Offene Aufgabe überfällig",
+    category: "schedule",
+    trigger: "Wird ausgelöst, wenn eine zugewiesene Aufgabe (z.\u00A0B. Review, Freigabe) die Frist überschreitet.",
+    messageTemplate: {
+      title: "Aufgabe überfällig",
+      body: `Ihre Aufgabe zu \u201E{page}\u201C ist seit {days} Tagen \u00FCberf\u00E4llig.`,
+    },
+    supportsReminder: true,
+  },
+  {
+    eventType: "open_review_overdue",
+    label: "Offener Review-Workflow überfällig",
+    category: "schedule",
+    trigger: "Wird ausgelöst, wenn ein aktiver Review-Workflow (eingereichte Arbeitskopie) zu lange auf Bearbeitung wartet.",
+    messageTemplate: {
+      title: "Offener Review überfällig",
+      body: `Der Review-Workflow f\u00FCr \u201E{page}\u201C wartet seit {days} Tagen auf Bearbeitung.`,
+    },
+    supportsReminder: true,
+  },
+];
 
 const RECIPIENT_TYPES = [
   "owner",
@@ -774,10 +862,199 @@ function WorkflowsSection() {
   );
 }
 
+function NotificationRuleCard({
+  config,
+  rule,
+  saving,
+  onUpdate,
+}: {
+  config: EventTypeConfig;
+  rule: NotificationRule | null;
+  saving: string | null;
+  onUpdate: (rule: NotificationRule) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const isSaving = saving === rule?.id;
+  const isEnabled = rule?.isEnabled ?? false;
+
+  const handleToggleEnabled = () => {
+    if (!rule) return;
+    onUpdate({ ...rule, isEnabled: !rule.isEnabled });
+  };
+
+  const toggleRecipient = (type: string) => {
+    if (!rule) return;
+    const updated = rule.recipientTypes.includes(type)
+      ? rule.recipientTypes.filter((r) => r !== type)
+      : [...rule.recipientTypes, type];
+    onUpdate({ ...rule, recipientTypes: updated });
+  };
+
+  const toggleChannel = (channel: string) => {
+    if (!rule) return;
+    const updated = rule.channels.includes(channel)
+      ? rule.channels.filter((c) => c !== channel)
+      : [...rule.channels, channel];
+    onUpdate({ ...rule, channels: updated });
+  };
+
+  const updateDays = (field: "reminderAfterDays" | "escalationAfterDays", val: string) => {
+    if (!rule) return;
+    const num = val === "" ? null : parseInt(val, 10);
+    onUpdate({ ...rule, [field]: isNaN(num as number) ? null : num });
+  };
+
+  return (
+    <div
+      className={`border rounded-lg transition-all ${
+        !isEnabled ? "opacity-50 bg-muted/30" : "bg-card"
+      }`}
+    >
+      <div
+        className="flex items-center gap-3 p-3 cursor-pointer select-none"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <ChevronRight
+          className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${
+            expanded ? "rotate-90" : ""
+          }`}
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{config.label}</p>
+          <p className="text-xs text-muted-foreground truncate">{config.trigger}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {rule && (
+            <div className="flex gap-1">
+              {rule.channels.map((ch) => (
+                <Badge key={ch} variant="outline" className="text-[10px] px-1.5 py-0">
+                  {CHANNEL_LABELS[ch] ?? ch}
+                </Badge>
+              ))}
+            </div>
+          )}
+          {isSaving && (
+            <div className="animate-spin h-3.5 w-3.5 border-2 border-primary border-t-transparent rounded-full" />
+          )}
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={handleToggleEnabled}
+            disabled={isSaving || !rule}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="px-3 pb-3 space-y-3 border-t pt-3">
+          <div className="rounded-md bg-muted/50 p-2.5 space-y-1">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <Bell className="h-3 w-3" />
+              Nachrichten-Vorlage
+            </p>
+            <p className="text-sm font-medium">{config.messageTemplate.title}</p>
+            <p className="text-xs text-muted-foreground italic">
+              {config.messageTemplate.body}
+            </p>
+          </div>
+
+          {rule && (
+            <>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                  Empfänger
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {RECIPIENT_TYPES.map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => toggleRecipient(type)}
+                      disabled={isSaving}
+                      className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs border transition-colors disabled:opacity-50 ${
+                        rule.recipientTypes.includes(type)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-foreground border-border hover:border-primary"
+                      }`}
+                    >
+                      {RECIPIENT_TYPE_LABELS[type] ?? type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                  Zustellkanäle
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {CHANNELS.map((ch) => (
+                    <button
+                      key={ch}
+                      type="button"
+                      onClick={() => toggleChannel(ch)}
+                      disabled={isSaving}
+                      className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs border transition-colors disabled:opacity-50 ${
+                        rule.channels.includes(ch)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-foreground border-border hover:border-primary"
+                      }`}
+                    >
+                      {CHANNEL_LABELS[ch] ?? ch}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {config.supportsReminder && (
+                <div className="flex gap-4 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                      Erinnerung nach:
+                    </Label>
+                    <div className="flex items-center gap-1">
+                      <Input
+                        type="number"
+                        min={1}
+                        className="h-7 w-16 text-xs"
+                        value={rule.reminderAfterDays ?? ""}
+                        onChange={(e) => updateDays("reminderAfterDays", e.target.value)}
+                        disabled={isSaving}
+                      />
+                      <span className="text-xs text-muted-foreground">Tagen</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                      Eskalation nach:
+                    </Label>
+                    <div className="flex items-center gap-1">
+                      <Input
+                        type="number"
+                        min={1}
+                        className="h-7 w-16 text-xs"
+                        value={rule.escalationAfterDays ?? ""}
+                        onChange={(e) => updateDays("escalationAfterDays", e.target.value)}
+                        disabled={isSaving}
+                      />
+                      <span className="text-xs text-muted-foreground">Tagen</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NotificationRulesSection() {
   const [rules, setRules] = useState<NotificationRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [seeded, setSeeded] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -792,8 +1069,14 @@ function NotificationRulesSection() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    (async () => {
+      if (!seeded) {
+        setSeeded(true);
+        await customFetch("/api/admin/notification-rules/seed", { method: "POST" });
+      }
+      await load();
+    })();
+  }, [load, seeded]);
 
   const updateRule = async (rule: NotificationRule) => {
     setSaving(rule.id);
@@ -815,34 +1098,8 @@ function NotificationRulesSection() {
     }
   };
 
-  const toggleRecipient = (rule: NotificationRule, type: string) => {
-    const updated = {
-      ...rule,
-      recipientTypes: rule.recipientTypes.includes(type)
-        ? rule.recipientTypes.filter((r) => r !== type)
-        : [...rule.recipientTypes, type],
-    };
-    updateRule(updated);
-  };
-
-  const toggleChannel = (rule: NotificationRule, channel: string) => {
-    const updated = {
-      ...rule,
-      channels: rule.channels.includes(channel)
-        ? rule.channels.filter((c) => c !== channel)
-        : [...rule.channels, channel],
-    };
-    updateRule(updated);
-  };
-
-  const toggleEnabled = (rule: NotificationRule) => {
-    updateRule({ ...rule, isEnabled: !rule.isEnabled });
-  };
-
-  const updateDays = (rule: NotificationRule, field: "reminderAfterDays" | "escalationAfterDays", val: string) => {
-    const num = val === "" ? null : parseInt(val, 10);
-    updateRule({ ...rule, [field]: isNaN(num as number) ? null : num });
-  };
+  const ruleByEvent = (eventType: string) =>
+    rules.find((r) => r.eventType === eventType) ?? null;
 
   if (loading) {
     return (
@@ -852,131 +1109,57 @@ function NotificationRulesSection() {
     );
   }
 
+  const workflowEvents = NOTIFICATION_EVENT_CONFIG.filter((c) => c.category === "workflow");
+  const scheduleEvents = NOTIFICATION_EVENT_CONFIG.filter((c) => c.category === "schedule");
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Bell className="h-4 w-4" />
-          Benachrichtigungsregeln
-        </CardTitle>
-        <CardDescription>
-          Konfigurieren Sie für jedes Ereignis die Empfänger, Kanäle und Turnus-Regeln
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {rules.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Keine Benachrichtigungsregeln konfiguriert
-          </p>
-        )}
-        <div className="space-y-4">
-          {rules.map((rule) => (
-            <div
-              key={rule.id}
-              className={`border rounded-lg p-3 space-y-3 transition-opacity ${
-                !rule.isEnabled ? "opacity-60" : ""
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium">
-                  {EVENT_TYPE_LABELS[rule.eventType] ?? rule.eventType}
-                </p>
-                <div className="flex items-center gap-2">
-                  {saving === rule.id && (
-                    <div className="animate-spin h-3.5 w-3.5 border-2 border-primary border-t-transparent rounded-full" />
-                  )}
-                  <Switch
-                    checked={rule.isEnabled}
-                    onCheckedChange={() => toggleEnabled(rule)}
-                    disabled={saving === rule.id}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Empfänger:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {RECIPIENT_TYPES.map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => toggleRecipient(rule, type)}
-                        disabled={saving === rule.id}
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs border transition-colors disabled:opacity-50 ${
-                          rule.recipientTypes.includes(type)
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-background text-foreground border-border hover:border-primary"
-                        }`}
-                      >
-                        {RECIPIENT_TYPE_LABELS[type] ?? type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Kanäle:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {CHANNELS.map((ch) => (
-                      <button
-                        key={ch}
-                        type="button"
-                        onClick={() => toggleChannel(rule, ch)}
-                        disabled={saving === rule.id}
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs border transition-colors disabled:opacity-50 ${
-                          rule.channels.includes(ch)
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-background text-foreground border-border hover:border-primary"
-                        }`}
-                      >
-                        {CHANNEL_LABELS[ch] ?? ch}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {(rule.eventType === "review_overdue" ||
-                rule.eventType === "review_overdue_escalation" ||
-                rule.eventType === "task_overdue" ||
-                rule.eventType === "open_review_overdue") && (
-                <div className="flex gap-4 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground whitespace-nowrap">
-                      Erinnerung nach (Tage):
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      className="h-6 w-16 text-xs"
-                      value={rule.reminderAfterDays ?? ""}
-                      onChange={(e) => updateDays(rule, "reminderAfterDays", e.target.value)}
-                      onBlur={() => updateRule(rule)}
-                      disabled={saving === rule.id}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground whitespace-nowrap">
-                      Eskalation nach (Tage):
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      className="h-6 w-16 text-xs"
-                      value={rule.escalationAfterDays ?? ""}
-                      onChange={(e) => updateDays(rule, "escalationAfterDays", e.target.value)}
-                      onBlur={() => updateRule(rule)}
-                      disabled={saving === rule.id}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <GitBranch className="h-4 w-4" />
+            Workflow-Ereignisse
+          </CardTitle>
+          <CardDescription>
+            Benachrichtigungen bei Statusänderungen im Freigabe-Workflow
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {workflowEvents.map((config) => (
+            <NotificationRuleCard
+              key={config.eventType}
+              config={config}
+              rule={ruleByEvent(config.eventType)}
+              saving={saving}
+              onUpdate={updateRule}
+            />
           ))}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Zeitgesteuerte Ereignisse
+          </CardTitle>
+          <CardDescription>
+            Automatische Erinnerungen und Eskalationen bei Fristüberschreitungen
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {scheduleEvents.map((config) => (
+            <NotificationRuleCard
+              key={config.eventType}
+              config={config}
+              rule={ruleByEvent(config.eventType)}
+              saving={saving}
+              onUpdate={updateRule}
+            />
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

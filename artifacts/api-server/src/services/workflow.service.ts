@@ -259,6 +259,98 @@ export async function removePageTypeAssignment(pageType: string) {
     .where(eq(pageTypeWorkflowAssignmentsTable.pageType, pageType));
 }
 
+export const DEFAULT_NOTIFICATION_RULES: Array<{
+  eventType: string;
+  recipientTypes: string[];
+  channels: string[];
+  reminderAfterDays: number | null;
+  escalationAfterDays: number | null;
+}> = [
+  {
+    eventType: "working_copy_submitted",
+    recipientTypes: ["owner", "reviewer", "approver"],
+    channels: ["in_app", "teams"],
+    reminderAfterDays: null,
+    escalationAfterDays: null,
+  },
+  {
+    eventType: "working_copy_approved",
+    recipientTypes: ["owner"],
+    channels: ["in_app"],
+    reminderAfterDays: null,
+    escalationAfterDays: null,
+  },
+  {
+    eventType: "working_copy_returned",
+    recipientTypes: ["owner"],
+    channels: ["in_app", "teams"],
+    reminderAfterDays: null,
+    escalationAfterDays: null,
+  },
+  {
+    eventType: "working_copy_published",
+    recipientTypes: ["owner", "reviewer", "approver"],
+    channels: ["in_app"],
+    reminderAfterDays: null,
+    escalationAfterDays: null,
+  },
+  {
+    eventType: "review_overdue",
+    recipientTypes: ["owner", "reviewer"],
+    channels: ["in_app", "teams"],
+    reminderAfterDays: 3,
+    escalationAfterDays: 7,
+  },
+  {
+    eventType: "review_overdue_escalation",
+    recipientTypes: ["owner", "process_manager"],
+    channels: ["in_app", "teams"],
+    reminderAfterDays: null,
+    escalationAfterDays: null,
+  },
+  {
+    eventType: "task_overdue",
+    recipientTypes: ["owner", "deputy"],
+    channels: ["in_app"],
+    reminderAfterDays: 2,
+    escalationAfterDays: 5,
+  },
+  {
+    eventType: "open_review_overdue",
+    recipientTypes: ["reviewer", "approver"],
+    channels: ["in_app", "teams"],
+    reminderAfterDays: 3,
+    escalationAfterDays: 7,
+  },
+];
+
+export async function seedNotificationRules(): Promise<{ created: number; existing: number }> {
+  const existing = await db
+    .select({ eventType: notificationRulesTable.eventType })
+    .from(notificationRulesTable);
+  const existingTypes = new Set(existing.map((r) => r.eventType));
+
+  const toCreate = DEFAULT_NOTIFICATION_RULES.filter(
+    (r) => !existingTypes.has(r.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"]),
+  );
+
+  if (toCreate.length > 0) {
+    await db.insert(notificationRulesTable).values(
+      toCreate.map((r) => ({
+        eventType: r.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"],
+        recipientTypes: r.recipientTypes,
+        channels: r.channels,
+        reminderAfterDays: r.reminderAfterDays,
+        escalationAfterDays: r.escalationAfterDays,
+        isEnabled: true,
+      })),
+    );
+    logger.info({ created: toCreate.length }, "Seeded default notification rules");
+  }
+
+  return { created: toCreate.length, existing: existingTypes.size };
+}
+
 export async function listNotificationRules() {
   return db
     .select()

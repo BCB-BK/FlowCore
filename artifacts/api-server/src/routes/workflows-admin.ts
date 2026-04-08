@@ -13,6 +13,7 @@ import {
   listNotificationRules,
   upsertNotificationRule,
   deleteNotificationRule,
+  seedNotificationRules,
   getSystemSetting,
   setSystemSetting,
 } from "../services/workflow.service";
@@ -147,6 +148,16 @@ workflowsAdminRouter.get("/admin/notification-rules", ...auth, async (_req, res)
   try {
     const rules = await listNotificationRules();
     res.json({ rules });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+workflowsAdminRouter.post("/admin/notification-rules/seed", ...auth, async (_req, res) => {
+  try {
+    const result = await seedNotificationRules();
+    res.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: message });
