@@ -34,8 +34,12 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections } from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
+import { parseClusters } from "@/lib/clusters";
+import type { Cluster } from "@/lib/clusters";
+import { ClusterManager } from "@/components/clusters/ClusterManager";
+import { useNodeChildren } from "@/hooks/use-nodes";
 import {
   useGetActiveWorkingCopy,
   useCreateWorkingCopy,
@@ -93,6 +97,8 @@ export function WorkingCopyEditorPage() {
   });
 
   const { data: revisions } = useNodeRevisions(nodeId);
+  const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
+  const { data: nodeChildren } = useNodeChildren(isOverviewPage ? nodeId : undefined);
 
   const publishedSF = useMemo<Record<string, unknown>>(() => {
     if (!revisions || !Array.isArray(revisions) || revisions.length === 0) return {};
@@ -276,6 +282,21 @@ export function WorkingCopyEditorPage() {
   const handleSectionSave = useCallback(
     async (sectionKey: string, value: unknown) => {
       const sf = { ...localStructuredFieldsRef.current, [sectionKey]: value };
+      localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
+      scheduleAutosave({ structuredFields: sf });
+    },
+    [scheduleAutosave],
+  );
+
+  const editorClusters = useMemo(
+    () => parseClusters(validationSFSnapshot._clusters ?? wcStructuredFields._clusters),
+    [validationSFSnapshot._clusters, wcStructuredFields._clusters],
+  );
+
+  const handleClusterChange = useCallback(
+    (updatedClusters: Cluster[]) => {
+      const sf = { ...localStructuredFieldsRef.current, _clusters: updatedClusters };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       scheduleAutosave({ structuredFields: sf });
@@ -659,6 +680,21 @@ export function WorkingCopyEditorPage() {
               pageType={node.templateType}
               nodeId={node.id}
             />
+
+            {isOverviewPage && canEdit && nodeChildren && (
+              <div className="mt-6 rounded-lg border p-4">
+                <ClusterManager
+                  clusters={editorClusters}
+                  children={nodeChildren.map((c) => ({
+                    id: c.id,
+                    title: c.title,
+                    templateType: c.templateType,
+                    displayCode: c.displayCode,
+                  }))}
+                  onChange={handleClusterChange}
+                />
+              </div>
+            )}
 
             <div className="mt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">

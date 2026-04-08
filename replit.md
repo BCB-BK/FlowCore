@@ -35,6 +35,7 @@ The frontend (`wiki-frontend`) is a React application built with Vite, TailwindC
     - **Backup:** Orchestrates `pg_dump`, manifest generation, SharePoint upload, and retention policies, with a dry-run restore endpoint.
     - **Quality Dashboard:** Provides insights into page quality, duplicate detection, maintenance hints, a Review/Working Copy Dashboard, and an Ownership Monitor.
     - **Page Types:** A registry of 18 page types, each with defined metadata fields, sections, guided mode steps, field governance, publication rules, content quality validation, and display profiles. Validation is enforced during submission and publication.
+    - **Cluster Hierarchy:** Overview pages (`core_process_overview`, `area_overview`) support cluster grouping of children. Clusters are stored as `_clusters` JSON array in `structuredFields`. `ClusterManager` component in the editor allows CRUD + child assignment. `NodeDetail` view mode renders children grouped by clusters when defined, falling back to type-grouped view otherwise.
     - **Smart Page Creation Flow:** `CreateNodeDialog` supports context-sensitive type selection, recommended child types, and pre-populated editor blocks.
     - **Ausfüllhilfen (Field Help):** `FieldHelp` interface for guiding users with `fillHelp`, `example`, `badExample`, and `guidingQuestions`.
     - **Compound Field Editors:** Structured sub-field editors for complex sections like SIPOC, Q&A, Glossary, Checklists, RACI, and Competency Areas, storing data as JSON-serialized strings.
