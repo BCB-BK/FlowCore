@@ -70,6 +70,7 @@ interface CreateNodeDialogProps {
   parentNodeId: string | null;
   parentTemplateType?: string;
   presetType?: string;
+  onNodeCreated?: (nodeId: string) => void;
 }
 
 export function CreateNodeDialog({
@@ -78,6 +79,7 @@ export function CreateNodeDialog({
   parentNodeId,
   parentTemplateType,
   presetType,
+  onNodeCreated,
 }: CreateNodeDialogProps) {
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
@@ -213,6 +215,7 @@ export function CreateNodeDialog({
         },
       });
 
+      onNodeCreated?.(node.id);
       resetAndClose();
       navigate(`/nodes/${node.id}/edit`);
     } catch (err) {

@@ -37,6 +37,7 @@ interface ClusterManagerProps {
   clusters: Cluster[];
   children: ChildNode[];
   onChange: (clusters: Cluster[]) => void;
+  onCreateInCluster?: (clusterId: string) => void;
 }
 
 const NOT_ASSIGNED_SENTINEL = "__none__";
@@ -45,6 +46,7 @@ export function ClusterManager({
   clusters,
   children,
   onChange,
+  onCreateInCluster,
 }: ClusterManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
@@ -320,6 +322,17 @@ export function ClusterManager({
                     onAssign={handleAssignChild}
                   />
                 ))
+              )}
+              {onCreateInCluster && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-7 text-xs text-muted-foreground hover:text-foreground mt-1 border border-dashed"
+                  onClick={() => onCreateInCluster(cluster.id)}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Neue Seite in diesem Cluster
+                </Button>
               )}
             </CardContent>
           </Card>

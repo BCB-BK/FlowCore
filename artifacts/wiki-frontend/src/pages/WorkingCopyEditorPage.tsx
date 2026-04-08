@@ -124,6 +124,7 @@ export function WorkingCopyEditorPage() {
   const [showPageAssist, setShowPageAssist] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [pendingClusterId, setPendingClusterId] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
@@ -302,6 +303,35 @@ export function WorkingCopyEditorPage() {
       scheduleAutosave({ structuredFields: sf });
     },
     [scheduleAutosave],
+  );
+
+  const handleCreateInCluster = useCallback(
+    (clusterId: string) => {
+      setPendingClusterId(clusterId);
+      setShowCreate(true);
+    },
+    [],
+  );
+
+  const handleNodeCreatedInCluster = useCallback(
+    (newNodeId: string) => {
+      if (!pendingClusterId) return;
+      const currentClusters = parseClusters(localStructuredFieldsRef.current._clusters);
+      const updated = currentClusters.map((c) =>
+        c.id === pendingClusterId
+          ? { ...c, childNodeIds: [...c.childNodeIds, newNodeId] }
+          : c,
+      );
+      const sf = { ...localStructuredFieldsRef.current, _clusters: updated };
+      localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+      const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
+      pendingPatchRef.current = {};
+      doSave(merged).catch(() => {});
+      setPendingClusterId(null);
+    },
+    [pendingClusterId, doSave],
   );
 
   const handleMetadataChange = useCallback(
@@ -692,6 +722,7 @@ export function WorkingCopyEditorPage() {
                     displayCode: c.displayCode,
                   }))}
                   onChange={handleClusterChange}
+                  onCreateInCluster={handleCreateInCluster}
                 />
               </div>
             )}
@@ -933,9 +964,13 @@ export function WorkingCopyEditorPage() {
 
       <CreateNodeDialog
         open={showCreate}
-        onOpenChange={setShowCreate}
+        onOpenChange={(open) => {
+          setShowCreate(open);
+          if (!open) setPendingClusterId(null);
+        }}
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
+        onNodeCreated={pendingClusterId ? handleNodeCreatedInCluster : undefined}
       />
     </div>
   );
