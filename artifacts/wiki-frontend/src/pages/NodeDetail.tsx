@@ -80,6 +80,7 @@ import { PageAssistant } from "@/components/ai/PageAssistant";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { isFieldEmpty } from "@/lib/field-empty";
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
@@ -674,6 +675,7 @@ export function NodeDetail() {
             </>
           )}
 
+          {!isFieldEmpty(editorContent) && (
           <div className="mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <h3 className="text-base font-semibold">Inhalt</h3>
@@ -712,6 +714,7 @@ export function NodeDetail() {
               )}
             </div>
           </div>
+          )}
 
           {nodeId && <SourceReferencesPanel nodeId={nodeId} />}
         </TabsContent>

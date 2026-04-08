@@ -6,6 +6,7 @@ import {
   type MetadataGroupKey,
 } from "@/lib/types";
 import { IdCard, ShieldCheck, Users, CalendarCheck, Tags } from "lucide-react";
+import { isFieldEmpty } from "@/lib/field-empty";
 
 const GROUP_ICONS: Record<MetadataGroupKey, React.ReactNode> = {
   identity: <IdCard className="h-4 w-4" />,
@@ -34,9 +35,15 @@ export function MetadataPanel({
 }: MetadataPanelProps) {
   const groups = getMetadataGroups(templateType);
 
-  const groupEntries = Object.entries(groups).filter(
+  const allGroupEntries = Object.entries(groups).filter(
     ([, fields]) => fields.length > 0,
   ) as [MetadataGroupKey, (typeof groups)[MetadataGroupKey]][];
+
+  const groupEntries = readOnly
+    ? (allGroupEntries
+        .map(([key, fields]) => [key, fields.filter((f) => !isFieldEmpty(metadata[f.key]))] as const)
+        .filter(([, fields]) => fields.length > 0) as unknown as typeof allGroupEntries)
+    : allGroupEntries;
 
   if (compact) {
     return (

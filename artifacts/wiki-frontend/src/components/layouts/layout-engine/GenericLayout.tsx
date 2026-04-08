@@ -13,6 +13,8 @@ import { CompetencyAreas } from "@/components/compound/CompetencyAreas";
 import { CheckItemsEditor } from "@/components/compound/CheckItemsEditor";
 import { QaRepeater } from "@/components/compound/QaRepeater";
 import { TermRepeater } from "@/components/compound/TermRepeater";
+import { isFieldEmpty } from "@/lib/field-empty";
+import { FileX2 } from "lucide-react";
 import type { LayoutConfig, LayoutField, LayoutRow, PageTypeSection } from "./types";
 
 interface GenericLayoutProps {
@@ -151,10 +153,16 @@ function RowRenderer({
   nodeId?: string;
   sectionDefs: Map<string, PageTypeSection>;
 }) {
+  const isViewMode = !onSectionSave;
+
   if (Array.isArray(row)) {
+    const visibleFields = isViewMode
+      ? row.filter((field) => !isFieldEmpty(structuredFields[field.key]))
+      : row;
+    if (visibleFields.length === 0) return null;
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {row.map((field) => (
+        {visibleFields.map((field) => (
           <FieldRenderer
             key={field.key}
             field={field}
@@ -181,6 +189,13 @@ function RowRenderer({
   );
 }
 
+function isRowEmpty(row: LayoutRow, structuredFields: Record<string, unknown>): boolean {
+  if (Array.isArray(row)) {
+    return row.every((field) => isFieldEmpty(structuredFields[field.key]));
+  }
+  return isFieldEmpty(structuredFields[row.key]);
+}
+
 export function GenericLayout({
   config,
   structuredFields,
@@ -189,6 +204,7 @@ export function GenericLayout({
   nodeId,
 }: GenericLayoutProps) {
   const pageDef = config.pageTypeKey ? getPageType(config.pageTypeKey) : null;
+  const isViewMode = !onSectionSave;
 
   const sectionDefs = new Map<string, PageTypeSection>();
   if (pageDef?.sections) {
@@ -197,9 +213,29 @@ export function GenericLayout({
     }
   }
 
+  const visibleRows = isViewMode
+    ? config.rows.filter((row) => !isRowEmpty(row, structuredFields))
+    : config.rows;
+
+  const visibleLegacy = (config.legacyFields ?? []).filter((legacy) => {
+    if (!legacy.showWhen(structuredFields)) return false;
+    if (isViewMode && isFieldEmpty(structuredFields[legacy.key])) return false;
+    return true;
+  });
+
+  if (isViewMode && visibleRows.length === 0 && visibleLegacy.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+        <FileX2 className="h-10 w-10 mb-3 opacity-40" />
+        <p className="text-sm">Noch keine Inhalte vorhanden</p>
+        <p className="text-xs mt-1">Erstellen Sie eine Arbeitskopie, um Inhalte hinzuzufügen.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {config.rows.map((row, idx) => {
+      {visibleRows.map((row, idx) => {
         const key = Array.isArray(row) ? row.map((f) => f.key).join("-") : row.key;
         return (
           <RowRenderer
@@ -214,8 +250,7 @@ export function GenericLayout({
         );
       })}
 
-      {config.legacyFields?.map((legacy) => {
-        if (!legacy.showWhen(structuredFields)) return null;
+      {visibleLegacy.map((legacy) => {
         const Icon = legacy.icon;
         return (
           <EditableSectionCard
@@ -226,7 +261,7 @@ export function GenericLayout({
             icon={<Icon className={`h-4 w-4 ${legacy.iconColor}`} />}
             value={str(structuredFields[legacy.key])}
             onSave={onSectionSave}
-            emptyText="—"
+            emptyText="\u2014"
           />
         );
       })}
