@@ -34,14 +34,26 @@ function sanitizeODataValue(input: string): string {
   return input.replace(/'/g, "''");
 }
 
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64").toString(),
+    );
+    return typeof payload.exp === "number" && payload.exp * 1000 < Date.now() - 60_000;
+  } catch {
+    return false;
+  }
+}
+
 async function resolveAccessToken(
   sessionToken: string,
 ): Promise<string | null> {
-  if (sessionToken) return sessionToken;
+  if (sessionToken && !isTokenExpired(sessionToken)) return sessionToken;
   if (isAuthConfigured()) {
     const appToken = await getAppAccessToken();
     if (appToken) return appToken;
   }
+  if (sessionToken) return sessionToken;
   return null;
 }
 
