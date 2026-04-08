@@ -22,6 +22,7 @@ export {
   PAGE_TYPE_CATEGORIES,
   DISPLAY_PROFILE_LABELS,
   VARIANT_CATEGORY_LABELS,
+  DISABLED_TEMPLATE_TYPES,
 } from "./registry";
 
 export type {

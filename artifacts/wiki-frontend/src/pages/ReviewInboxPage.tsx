@@ -59,7 +59,6 @@ const TEMPLATE_LABELS: Record<string, string> = {
   checklist_page: "Checkliste",
   form_page: "Formular",
   reference_page: "Referenz",
-  glossary_entry: "Glossar",
   sop_page: "SOP",
   policy_page: "Policy",
   work_instruction: "Arbeitsanweisung",

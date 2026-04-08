@@ -9,7 +9,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Hub } from "@/pages/Hub";
 import { NodeDetail } from "@/pages/NodeDetail";
 import { SearchPage } from "@/pages/SearchPage";
-import { GlossaryPage } from "@/pages/GlossaryPage";
 import { ConnectorsPage } from "@/pages/ConnectorsPage";
 import { AISettingsPage } from "@/pages/AISettingsPage";
 import { QualityDashboard } from "@/pages/QualityDashboard";
@@ -80,7 +79,6 @@ function Router() {
         <Route path="/nodes/:id/edit" component={WorkingCopyEditorPage} />
         <Route path="/nodes/:id/review" component={WorkingCopyReviewPage} />
         <Route path="/search" component={SearchPage} />
-        <Route path="/glossary" component={GlossaryPage} />
         <Route path="/broken-links">
           <Redirect to="/dashboard" />
         </Route>

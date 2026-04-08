@@ -61,7 +61,6 @@ const PAGE_TYPES = [
   { value: "audit_object", label: "Kontroll-/Prüfobjekt" },
   { value: "checklist", label: "Checkliste" },
   { value: "faq", label: "FAQ / Wissensartikel" },
-  { value: "glossary", label: "Glossar" },
   { value: "dashboard", label: "Dashboard" },
   { value: "role_profile", label: "Rollen-/Stellenprofil" },
   { value: "meeting_protocol", label: "Meeting-Protokoll" },

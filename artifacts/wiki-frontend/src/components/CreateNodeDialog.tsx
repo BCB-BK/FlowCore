@@ -39,6 +39,7 @@ import {
   PAGE_TYPE_CATEGORIES,
   VARIANT_CATEGORY_LABELS,
   buildInitialEditorContent,
+  DISABLED_TEMPLATE_TYPES,
   type TemplateType,
   type VariantCategory,
 } from "@/lib/types";
@@ -95,10 +96,13 @@ export function CreateNodeDialog({
   const { toast } = useToast();
 
   const allowedTypes = useMemo(() => {
+    let types: TemplateType[];
     if (parentTemplateType) {
-      return getAllowedChildTypes(parentTemplateType);
+      types = getAllowedChildTypes(parentTemplateType);
+    } else {
+      types = Object.keys(PAGE_TYPE_REGISTRY) as TemplateType[];
     }
-    return Object.keys(PAGE_TYPE_REGISTRY) as TemplateType[];
+    return types.filter((t) => !DISABLED_TEMPLATE_TYPES.has(t));
   }, [parentTemplateType]);
 
   const recommendedTypes = useMemo(() => {
