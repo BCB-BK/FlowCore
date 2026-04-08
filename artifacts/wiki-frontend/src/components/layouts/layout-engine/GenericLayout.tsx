@@ -13,6 +13,7 @@ import { CompetencyAreas } from "@/components/compound/CompetencyAreas";
 import { CheckItemsEditor } from "@/components/compound/CheckItemsEditor";
 import { QaRepeater } from "@/components/compound/QaRepeater";
 import { TermRepeater } from "@/components/compound/TermRepeater";
+import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { isFieldEmpty } from "@/lib/field-empty";
 import { FileX2 } from "lucide-react";
 import type { LayoutConfig, LayoutField, LayoutRow, PageTypeSection } from "./types";
@@ -103,6 +104,17 @@ function FieldRenderer({
     case "term_repeater":
       return (
         <TermRepeater
+          value={str(data)}
+          onSave={onSectionSave}
+          sectionKey={field.key}
+          help={sectionDef?.help}
+          helpText={sectionDef?.helpText}
+          guidingQuestions={sectionDef?.guidingQuestions}
+        />
+      );
+    case "references_editor":
+      return (
+        <ReferencesEditor
           value={str(data)}
           onSave={onSectionSave}
           sectionKey={field.key}

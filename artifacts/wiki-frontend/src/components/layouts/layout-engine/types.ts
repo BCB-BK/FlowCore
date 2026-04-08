@@ -14,7 +14,8 @@ export type FieldComponent =
   | "competency_areas"
   | "check_items_editor"
   | "qa_repeater"
-  | "term_repeater";
+  | "term_repeater"
+  | "references_editor";
 
 export interface LayoutField {
   key: string;
