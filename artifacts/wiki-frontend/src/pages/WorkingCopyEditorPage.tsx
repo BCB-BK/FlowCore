@@ -826,7 +826,7 @@ export function WorkingCopyEditorPage() {
           <TabsContent value="content" className="mt-4">
             <PageLayout
               templateType={node.templateType}
-              structuredFields={wcStructuredFields}
+              structuredFields={validationSFSnapshot}
               onSectionSave={canEdit ? handleSectionSave : undefined}
               pageType={node.templateType}
               nodeId={node.id}
@@ -896,7 +896,7 @@ export function WorkingCopyEditorPage() {
             <CompletenessIndicator
               templateType={node.templateType}
               metadata={metadata}
-              sectionData={wcStructuredFields}
+              sectionData={validationSFSnapshot}
             />
             <MetadataPanel
               templateType={node.templateType}
