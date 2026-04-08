@@ -25,60 +25,111 @@ interface DeadImport {
 
 const deadImports: DeadImport[] = [];
 
-function checkFile(filePath: string): void {
-  const content = readFileSync(filePath, "utf-8");
+interface ParsedImport {
+  lineStart: number;
+  lineEnd: number;
+  symbols: string[];
+  fullStatement: string;
+}
+
+function parseImports(content: string): ParsedImport[] {
   const lines = content.split("\n");
+  const imports: ParsedImport[] = [];
 
-  const importPattern =
-    /^import\s+(?:type\s+)?(?:\{([^}]+)\}|(\w+)(?:\s*,\s*\{([^}]+)\})?)\s+from\s+['"][^'"]+['"]/;
-
-  for (let i = 0; i < lines.length; i++) {
+  let i = 0;
+  while (i < lines.length) {
     const line = lines[i];
     const trimmed = line.trim();
-    if (!trimmed.startsWith("import ")) continue;
-    if (trimmed.startsWith("import '") || trimmed.startsWith('import "'))
-      continue;
 
-    const match = trimmed.match(importPattern);
-    if (!match) continue;
+    if (!trimmed.startsWith("import ")) {
+      i++;
+      continue;
+    }
+
+    if (trimmed.startsWith("import '") || trimmed.startsWith('import "')) {
+      i++;
+      continue;
+    }
+
+    let fullStatement = trimmed;
+    let lineEnd = i;
+
+    while (!fullStatement.includes(" from ") && lineEnd < lines.length - 1) {
+      lineEnd++;
+      fullStatement += " " + lines[lineEnd].trim();
+    }
 
     const symbols: string[] = [];
 
-    if (match[1]) {
-      for (const part of match[1].split(",")) {
-        const cleaned = part.trim().replace(/^type\s+/, "");
-        const asMatch = cleaned.match(/\w+\s+as\s+(\w+)/);
-        const sym = asMatch ? asMatch[1] : cleaned;
-        if (sym && sym !== "") symbols.push(sym);
+    const namespaceMatch = fullStatement.match(
+      /import\s+\*\s+as\s+(\w+)\s+from/,
+    );
+    if (namespaceMatch) {
+      symbols.push(namespaceMatch[1]);
+    }
+
+    const namedMatch = fullStatement.match(
+      /import\s+(?:type\s+)?(?:\{([^}]+)\}|(\w+)(?:\s*,\s*\{([^}]+)\})?)\s+from/,
+    );
+    if (namedMatch && !namespaceMatch) {
+      if (namedMatch[1]) {
+        for (const part of namedMatch[1].split(",")) {
+          const cleaned = part.trim().replace(/^type\s+/, "");
+          if (!cleaned) continue;
+          const asMatch = cleaned.match(/\w+\s+as\s+(\w+)/);
+          const sym = asMatch ? asMatch[1] : cleaned;
+          if (sym && sym !== "" && sym !== "type") symbols.push(sym);
+        }
+      }
+      if (namedMatch[2]) {
+        symbols.push(namedMatch[2]);
+      }
+      if (namedMatch[3]) {
+        for (const part of namedMatch[3].split(",")) {
+          const cleaned = part.trim().replace(/^type\s+/, "");
+          if (!cleaned) continue;
+          const asMatch = cleaned.match(/\w+\s+as\s+(\w+)/);
+          const sym = asMatch ? asMatch[1] : cleaned;
+          if (sym && sym !== "" && sym !== "type") symbols.push(sym);
+        }
       }
     }
 
-    if (match[2]) {
-      symbols.push(match[2]);
+    if (symbols.length > 0) {
+      imports.push({
+        lineStart: i,
+        lineEnd,
+        symbols,
+        fullStatement: fullStatement.slice(0, 120),
+      });
     }
 
-    if (match[3]) {
-      for (const part of match[3].split(",")) {
-        const cleaned = part.trim().replace(/^type\s+/, "");
-        const asMatch = cleaned.match(/\w+\s+as\s+(\w+)/);
-        const sym = asMatch ? asMatch[1] : cleaned;
-        if (sym && sym !== "") symbols.push(sym);
-      }
-    }
+    i = lineEnd + 1;
+  }
 
-    const afterImports = lines.slice(i + 1).join("\n");
-    const beforeImport = lines.slice(0, i).join("\n");
+  return imports;
+}
 
-    for (const sym of symbols) {
-      if (!sym || sym === "type") continue;
-      const usageRegex = new RegExp(`\\b${sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+function checkFile(filePath: string): void {
+  const content = readFileSync(filePath, "utf-8");
+  const lines = content.split("\n");
+  const imports = parseImports(content);
+
+  for (const imp of imports) {
+    const afterImports = lines.slice(imp.lineEnd + 1).join("\n");
+    const beforeImport = lines.slice(0, imp.lineStart).join("\n");
+
+    for (const sym of imp.symbols) {
+      const usageRegex = new RegExp(
+        `\\b${sym.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      );
       if (!usageRegex.test(afterImports) && !usageRegex.test(beforeImport)) {
         const rel = relative(ROOT, filePath);
         deadImports.push({
           file: rel,
-          line: i + 1,
+          line: imp.lineStart + 1,
           symbol: sym,
-          statement: trimmed.slice(0, 100),
+          statement: imp.fullStatement,
         });
       }
     }
@@ -104,7 +155,7 @@ for (const dir of rootDirs) {
   try {
     scanDir(dir);
   } catch {
-    // directory may not exist
+    // skip
   }
 }
 

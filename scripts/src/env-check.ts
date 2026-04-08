@@ -1,4 +1,10 @@
-import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import {
+  readFileSync,
+  readdirSync,
+  statSync,
+  existsSync,
+  writeFileSync,
+} from "node:fs";
 import { join, extname, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "../..");
@@ -71,6 +77,22 @@ function loadEnvExample(): Set<string> {
   return vars;
 }
 
+function generateEnvExample(vars: Map<string, string[]>): void {
+  const lines = [
+    "# Auto-generated .env.example",
+    "# Review and adjust default values before committing.",
+    "",
+  ];
+
+  for (const varName of [...vars.keys()].sort()) {
+    lines.push(`${varName}=`);
+  }
+
+  writeFileSync(ENV_EXAMPLE_PATH, lines.join("\n") + "\n");
+  console.log(`Created ${ENV_EXAMPLE_PATH} with ${vars.size} variable(s).`);
+  console.log("Please review the generated file and add default values.\n");
+}
+
 const scanDirs = ["artifacts", "lib", "scripts"].map((d) => join(ROOT, d));
 const codeRefs = new Map<string, string[]>();
 
@@ -82,29 +104,30 @@ for (const dir of scanDirs) {
       codeRefs.get(key)!.push(...files);
     }
   } catch {
-    // directory may not exist
+    // skip
   }
 }
-
-const envExample = loadEnvExample();
-let issues = 0;
 
 console.log("=== Environment Variable Check ===\n");
 
 if (!existsSync(ENV_EXAMPLE_PATH)) {
-  console.warn("WARNING: .env.example does not exist.\n");
-  console.log("Variables found in code:");
+  console.warn("WARNING: .env.example does not exist — creating it now.\n");
+  generateEnvExample(codeRefs);
+  console.log("Variables included:");
   for (const [varName, files] of [...codeRefs.entries()].sort()) {
     console.log(`  ${varName}`);
     for (const f of [...new Set(files)]) {
       console.log(`    → ${f}`);
     }
   }
-  console.log(
-    `\nCreate .env.example with these ${codeRefs.size} variable(s).`,
+  console.error(
+    `\nCreated .env.example with ${codeRefs.size} variable(s). Review and re-run.`,
   );
   process.exit(1);
 }
+
+const envExample = loadEnvExample();
+let issues = 0;
 
 console.log("--- Used in code but NOT in .env.example ---");
 for (const [varName, files] of [...codeRefs.entries()].sort()) {

@@ -7,6 +7,7 @@ const ANTIPATTERNS: Array<{
   regex: RegExp;
   description: string;
   severity: "warn" | "error";
+  excludeFiles?: RegExp[];
 }> = [
   {
     regex: /catch\s*\(\s*\w*\s*\)\s*\{\s*\}/,
@@ -19,19 +20,10 @@ const ANTIPATTERNS: Array<{
     severity: "error",
   },
   {
-    regex: /setTimeout\s*\(/,
-    description: "setTimeout usage (potential async anti-pattern)",
+    regex: /db\.(update|insert|delete)\s*\(/,
+    description: "Direct db write without transaction wrapper",
     severity: "warn",
-  },
-  {
-    regex: /setInterval\s*\(/,
-    description: "setInterval usage (potential async anti-pattern)",
-    severity: "warn",
-  },
-  {
-    regex: /console\.log\s*\(/,
-    description: "console.log in production code",
-    severity: "warn",
+    excludeFiles: [/\.test\./, /\.spec\./, /seed/, /migrate/, /import-/],
   },
   {
     regex: /\/\/\s*@ts-ignore/,
@@ -47,6 +39,24 @@ const ANTIPATTERNS: Array<{
     regex: /as\s+any\b/,
     description: "Unsafe 'as any' type assertion",
     severity: "warn",
+  },
+  {
+    regex: /console\.log\s*\(/,
+    description: "console.log in production code",
+    severity: "warn",
+    excludeFiles: [/scripts\//, /\.test\./, /\.spec\./, /seed/, /logger/],
+  },
+  {
+    regex: /setTimeout\s*\(/,
+    description: "setTimeout usage (potential async anti-pattern)",
+    severity: "warn",
+    excludeFiles: [/\.test\./, /\.spec\./],
+  },
+  {
+    regex: /setInterval\s*\(/,
+    description: "setInterval usage (potential async anti-pattern)",
+    severity: "warn",
+    excludeFiles: [/\.test\./, /\.spec\./],
   },
 ];
 
@@ -121,6 +131,12 @@ function parseDiff(diff: string): Finding[] {
 
     for (const pattern of ANTIPATTERNS) {
       if (pattern.regex.test(addedLine)) {
+        if (
+          pattern.excludeFiles &&
+          pattern.excludeFiles.some((r) => r.test(currentFile))
+        ) {
+          continue;
+        }
         findings.push({
           file: currentFile,
           line: currentLine - 1,

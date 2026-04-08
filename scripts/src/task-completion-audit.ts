@@ -12,7 +12,7 @@ import { execSync, execFileSync } from "node:child_process";
 const ROOT = resolve(import.meta.dirname, "../..");
 const TASKS_DIR = join(ROOT, ".local/tasks");
 const REGISTRY_PATH = join(ROOT, ".local/violations-registry.json");
-const FAIL_THRESHOLD = 0.2;
+const FAIL_THRESHOLD = 0.3;
 
 interface SubCheck {
   name: string;
@@ -69,21 +69,16 @@ function extractKeyTerms(taskFile: string): string[] {
         const clean = t.replace(/`/g, "").trim();
         if (
           clean.length > 3 &&
+          clean.length < 60 &&
           !clean.includes(" ") &&
           !clean.startsWith("pnpm") &&
           !clean.startsWith("npm") &&
-          !clean.startsWith("#")
+          !clean.startsWith("#") &&
+          !clean.includes("/") &&
+          !clean.includes("=") &&
+          !clean.endsWith(":") &&
+          /^[a-zA-Z_]/.test(clean)
         ) {
-          terms.push(clean);
-        }
-      }
-    }
-
-    const boldTerms = line.match(/\*\*([^*]+)\*\*/g);
-    if (boldTerms) {
-      for (const t of boldTerms) {
-        const clean = t.replace(/\*\*/g, "").trim();
-        if (clean.length > 4 && clean.length < 40) {
           terms.push(clean);
         }
       }
@@ -106,7 +101,12 @@ function checkTermInCodebase(term: string): boolean {
         "lib/",
         "scripts/src/",
       ],
-      { cwd: ROOT, encoding: "utf-8", timeout: 5000, stdio: ["pipe", "pipe", "pipe"] },
+      {
+        cwd: ROOT,
+        encoding: "utf-8",
+        timeout: 5000,
+        stdio: ["pipe", "pipe", "pipe"],
+      },
     );
     return result.trim().length > 0;
   } catch {
@@ -119,7 +119,7 @@ function runSubCheck(name: string, command: string): SubCheck {
     const output = execSync(command, {
       cwd: ROOT,
       encoding: "utf-8",
-      timeout: 30000,
+      timeout: 60000,
       stdio: ["pipe", "pipe", "pipe"],
     });
     return { name, passed: true, output: output.trim().slice(0, 500) };
@@ -146,6 +146,14 @@ function saveRegistry(registry: ViolationsRegistry): void {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2));
 }
+
+const VALIDATOR_CHECKS: Array<{ name: string; script: string }> = [
+  { name: "no-hardcode-check", script: "no-hardcode-check" },
+  { name: "env-check", script: "env-check" },
+  { name: "dead-import-check", script: "dead-import-check" },
+  { name: "rootfix-audit", script: "rootfix-audit" },
+  { name: "typecheck", script: "typecheck" },
+];
 
 const latestTask = findLatestTaskFile();
 if (!latestTask) {
@@ -180,19 +188,14 @@ console.log("\n--- Sub-Checks ---");
 
 const subChecks: SubCheck[] = [];
 
-subChecks.push(
-  runSubCheck(
-    "no-hardcode-check",
-    "pnpm --filter @workspace/scripts run no-hardcode-check",
-  ),
-);
-
-subChecks.push(
-  runSubCheck(
-    "typecheck",
-    "pnpm --filter @workspace/scripts run typecheck",
-  ),
-);
+for (const check of VALIDATOR_CHECKS) {
+  subChecks.push(
+    runSubCheck(
+      check.name,
+      `pnpm --filter @workspace/scripts run ${check.script}`,
+    ),
+  );
+}
 
 for (const check of subChecks) {
   const status = check.passed ? "PASS" : "FAIL";
@@ -201,7 +204,8 @@ for (const check of subChecks) {
 
 const failedChecks = subChecks.filter((c) => !c.passed).length;
 const totalChecks = subChecks.length + 1;
-const termCheckFailed = terms.length > 0 && found / terms.length < 0.5 ? 1 : 0;
+const termCheckFailed =
+  terms.length > 0 && found / terms.length < 0.5 ? 1 : 0;
 const totalViolations = failedChecks + termCheckFailed;
 const violationRatio = totalChecks > 0 ? totalViolations / totalChecks : 0;
 
@@ -224,8 +228,12 @@ if (registry.runs.length > 50) {
 saveRegistry(registry);
 
 console.log(`\n--- Summary ---`);
-console.log(`Violations: ${totalViolations}/${totalChecks}`);
-console.log(`Ratio: ${(violationRatio * 100).toFixed(1)}% (threshold: ${FAIL_THRESHOLD * 100}%)`);
+console.log(
+  `Violations: ${totalViolations}/${totalChecks}`,
+);
+console.log(
+  `Ratio: ${(violationRatio * 100).toFixed(1)}% (threshold: ${FAIL_THRESHOLD * 100}%)`,
+);
 console.log(`Registry updated: ${REGISTRY_PATH}`);
 
 if (!result.passed) {

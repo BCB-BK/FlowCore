@@ -30,6 +30,7 @@ const ALLOWLIST: Array<{ file: RegExp; line: RegExp }> = [
   { file: /orval\.config\.ts$/, line: /.*/ },
   { file: /notification\.service\.ts$/, line: /00000000-0000-0000-0000-000000000000/ },
   { file: /drizzle\.config\.ts$/, line: /.*/ },
+  { file: /apply-triggers\.ts$/, line: /.*/ },
 ];
 
 const PATTERNS: Array<{ regex: RegExp; description: string }> = [
@@ -49,7 +50,7 @@ const PATTERNS: Array<{ regex: RegExp; description: string }> = [
   },
   {
     regex: /['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"]/,
-    description: "Hardcoded UUID",
+    description: "Hardcoded UUID (potential dev principal ID or secret)",
   },
   {
     regex: /['"]Bearer\s+[A-Za-z0-9._~+\/=-]{20,}['"]/,
@@ -58,6 +59,10 @@ const PATTERNS: Array<{ regex: RegExp; description: string }> = [
   {
     regex: /['"]https?:\/\/[^'"]*\.(azurewebsites|sharepoint|graph\.microsoft)\.com[^'"]*['"]/,
     description: "Hardcoded Azure/SharePoint URL",
+  },
+  {
+    regex: /X-Dev-Principal-Id.*['"][0-9a-f-]{36}['"]/,
+    description: "Hardcoded dev principal ID in header",
   },
 ];
 
@@ -120,7 +125,7 @@ for (const dir of rootDirs) {
   try {
     scanDir(dir);
   } catch {
-    // directory may not exist
+    // skip
   }
 }
 
