@@ -118,6 +118,7 @@ const ALL_ROLE_KEYS = [
 const PERMISSION_LABELS: Record<string, string> = {
   view_home: "Startseite",
   view_search: "Suche",
+  view_glossary: "Glossar",
   view_dashboard: "Dashboard",
   view_tasks: "Meine Aufgaben",
   view_settings: "Einstellungen",
@@ -148,6 +149,7 @@ const PERMISSION_GROUPS: { label: string; permissions: string[] }[] = [
     permissions: [
       "view_home",
       "view_search",
+      "view_glossary",
       "view_dashboard",
       "view_tasks",
       "view_settings",

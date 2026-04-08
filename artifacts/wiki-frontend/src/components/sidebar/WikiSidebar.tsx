@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { TreeNode } from "./TreeNode";
 import {
   Home,
+  BookOpen,
   Search,
   Database,
   Bot,
@@ -66,6 +67,15 @@ export function WikiSidebar() {
               >
                 <Search className="h-4 w-4" />
                 <span>Suche</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/glossary"}
+                onClick={() => navigate("/glossary")}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Glossar</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {permissions.has("view_dashboard") && (
