@@ -683,90 +683,73 @@ export function WorkingCopyEditorPage() {
             const clusterGroups = previewClusters.length > 0
               ? groupChildrenByClusters(nodeChildren, previewClusters)
               : [];
-            return previewClusters.length > 0 ? (
-              <div className="space-y-5">
+            return (
+              <div className="space-y-6">
                 <h3 className="text-base font-semibold">
                   {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten"}
                 </h3>
-                {clusterGroups.map(({ cluster, children: groupChildren }) => (
-                  <div key={cluster?.id ?? "__unassigned__"}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Layers className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm font-semibold">
-                        {cluster?.title ?? "Sonstige"}
-                      </span>
-                      <Badge variant="secondary" className="text-[10px] h-4 px-1">
-                        {groupChildren.length}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      {groupChildren.map((child, idx) => {
-                        const childDef = getPageType(child.templateType);
-                        return (
-                          <Card
-                            key={child.id}
-                            className="cursor-pointer hover:shadow-md transition-shadow group"
-                            onClick={() => navigate(`/node/${child.id}`)}
-                          >
-                            <CardContent className="flex items-center gap-4 p-3">
-                              <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
-                                {idx + 1}.
-                              </span>
-                              {childDef ? (
-                                <div
-                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
-                                  style={{ backgroundColor: childDef.color }}
-                                >
-                                  <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                {previewClusters.length > 0 ? (
+                  clusterGroups.map(({ cluster, children: groupChildren }) => (
+                    <div key={cluster?.id ?? "__unassigned__"} className="rounded-lg border bg-card">
+                      <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/40">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                          <Layers className="h-4 w-4 text-primary" />
+                        </div>
+                        <h4 className="text-sm font-semibold flex-1">{cluster?.title ?? "Sonstige"}</h4>
+                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 shrink-0">
+                          {groupChildren.length} {groupChildren.length === 1 ? "Seite" : "Seiten"}
+                        </Badge>
+                      </div>
+                      {groupChildren.length > 0 ? (
+                        <div className="divide-y">
+                          {groupChildren.map((child, idx) => {
+                            const childDef = getPageType(child.templateType);
+                            return (
+                              <div
+                                key={child.id}
+                                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
+                                onClick={() => navigate(`/node/${child.id}`)}
+                              >
+                                <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">{idx + 1}.</span>
+                                {childDef ? (
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0" style={{ backgroundColor: childDef.color }}>
+                                    <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                                  </div>
+                                ) : (
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm group-hover:text-primary transition-colors">{child.title}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs text-muted-foreground">{child.displayCode}</span>
+                                    {childDef && <span className="text-[10px] text-muted-foreground/70">{childDef.label}</span>}
+                                  </div>
                                 </div>
-                              ) : (
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                                  {child.title}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {child.displayCode}
-                                </p>
+                                <StatusBadge status={child.status as Parameters<typeof StatusBadge>[0]["status"]} compact />
                               </div>
-                              <StatusBadge
-                                status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
-                                compact
-                              />
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="px-4 py-3 text-sm text-muted-foreground">Noch keine Seiten in diesem Cluster</p>
+                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-5">
-                <h3 className="text-base font-semibold">
-                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten"}
-                </h3>
-                <div className="flex flex-col gap-1.5">
-                  {nodeChildren.map((child, idx) => {
-                    const childDef = getPageType(child.templateType);
-                    return (
-                      <Card
-                        key={child.id}
-                        className="cursor-pointer hover:shadow-md transition-shadow group"
-                        onClick={() => navigate(`/node/${child.id}`)}
-                      >
-                        <CardContent className="flex items-center gap-4 p-3">
-                          <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
-                            {idx + 1}.
-                          </span>
+                  ))
+                ) : (
+                  <div className="rounded-lg border bg-card divide-y">
+                    {nodeChildren.map((child, idx) => {
+                      const childDef = getPageType(child.templateType);
+                      return (
+                        <div
+                          key={child.id}
+                          className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
+                          onClick={() => navigate(`/node/${child.id}`)}
+                        >
+                          <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">{idx + 1}.</span>
                           {childDef ? (
-                            <div
-                              className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
-                              style={{ backgroundColor: childDef.color }}
-                            >
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0" style={{ backgroundColor: childDef.color }}>
                               <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
                             </div>
                           ) : (
@@ -775,22 +758,15 @@ export function WorkingCopyEditorPage() {
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                              {child.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {child.displayCode}
-                            </p>
+                            <p className="font-medium text-sm group-hover:text-primary transition-colors">{child.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{child.displayCode}</p>
                           </div>
-                          <StatusBadge
-                            status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
-                            compact
-                          />
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                          <StatusBadge status={child.status as Parameters<typeof StatusBadge>[0]["status"]} compact />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })()}
