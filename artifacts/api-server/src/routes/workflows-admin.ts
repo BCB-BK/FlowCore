@@ -21,7 +21,7 @@ import { logger } from "../lib/logger";
 
 export const workflowsAdminRouter = Router();
 
-const auth = [requireAuth, requirePermission("manage_settings")];
+const auth = [requireAuth, requirePermission("manage_workflows")];
 
 workflowsAdminRouter.get("/admin/workflows", ...auth, async (_req, res) => {
   try {

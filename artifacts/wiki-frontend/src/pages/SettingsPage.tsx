@@ -47,6 +47,32 @@ import { ReleaseTab } from "@/components/settings/ReleaseTab";
 import { AuditTrailTab } from "@/components/settings/AuditTrailTab";
 import { WorkflowsTab } from "@/components/settings/WorkflowsTab";
 import { useAuth } from "@/hooks/use-auth";
+import type { LucideIcon } from "lucide-react";
+
+interface SettingsTabDefinition {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  requiredPermissions: string[];
+}
+
+const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
+  { value: "general", label: "Allgemein", icon: Server, requiredPermissions: ["manage_settings"] },
+  { value: "users", label: "Benutzer & Rollen", icon: Users, requiredPermissions: ["manage_permissions"] },
+  { value: "connections", label: "Verbindungen", icon: Link2, requiredPermissions: ["manage_settings"] },
+  { value: "ai", label: "FlowCore-Assistent", icon: Bot, requiredPermissions: ["manage_settings"] },
+  { value: "templates", label: "Seitentemplates", icon: FileText, requiredPermissions: ["manage_templates"] },
+  { value: "connectors", label: "Konnektoren", icon: Database, requiredPermissions: ["manage_connectors"] },
+  { value: "backups", label: "Backup", icon: HardDrive, requiredPermissions: ["view_backups", "manage_backup"] },
+  { value: "audit", label: "Audit-Trail", icon: Eye, requiredPermissions: ["view_audit_log"] },
+  { value: "workflows", label: "Workflows", icon: GitBranch, requiredPermissions: ["manage_workflows"] },
+  { value: "consistency", label: "Konsistenz", icon: ShieldCheck, requiredPermissions: ["manage_settings"] },
+  { value: "releases", label: "Releases", icon: Tag, requiredPermissions: ["manage_settings"] },
+];
+
+function hasTabAccess(perms: Set<string>, tab: SettingsTabDefinition): boolean {
+  return tab.requiredPermissions.some((p) => perms.has(p));
+}
 
 interface SystemInfo {
   system: { version: string; environment: string; uptime: number };
@@ -84,37 +110,10 @@ export function SettingsPage() {
   const { data: user } = useAuth();
   const perms = useMemo(() => new Set(user?.permissions ?? []), [user]);
 
-  const tabs = useMemo(() => {
-    const t: { value: string; label: string; icon: typeof Server }[] = [];
-    if (perms.has("manage_settings")) {
-      t.push({ value: "general", label: "Allgemein", icon: Server });
-    }
-    if (perms.has("manage_permissions")) {
-      t.push({ value: "users", label: "Benutzer & Rollen", icon: Users });
-    }
-    if (perms.has("manage_settings")) {
-      t.push({ value: "connections", label: "Verbindungen", icon: Link2 });
-      t.push({ value: "ai", label: "FlowCore-Assistent", icon: Bot });
-    }
-    if (perms.has("manage_templates")) {
-      t.push({ value: "templates", label: "Seitentemplates", icon: FileText });
-    }
-    if (perms.has("manage_connectors")) {
-      t.push({ value: "connectors", label: "Konnektoren", icon: Database });
-    }
-    if (perms.has("view_backups") || perms.has("manage_backup")) {
-      t.push({ value: "backups", label: "Backup", icon: HardDrive });
-    }
-    if (perms.has("view_audit_log") || perms.has("manage_settings")) {
-      t.push({ value: "audit", label: "Audit-Trail", icon: Eye });
-    }
-    if (perms.has("manage_settings")) {
-      t.push({ value: "workflows", label: "Workflows", icon: GitBranch });
-      t.push({ value: "consistency", label: "Konsistenz", icon: ShieldCheck });
-      t.push({ value: "releases", label: "Releases", icon: Tag });
-    }
-    return t;
-  }, [perms]);
+  const tabs = useMemo(
+    () => SETTINGS_TAB_CONFIG.filter((tab) => hasTabAccess(perms, tab)),
+    [perms],
+  );
 
   const [activeTab, setActiveTab] = useState("");
 

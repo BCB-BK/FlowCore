@@ -32,6 +32,7 @@ export type WikiPermission =
   | "manage_permissions"
   | "manage_templates"
   | "manage_settings"
+  | "manage_workflows"
   | "view_audit_log"
   | "manage_connectors"
   | "manage_backup"
@@ -72,6 +73,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "manage_permissions",
     "manage_templates",
     "manage_settings",
+    "manage_workflows",
     "view_audit_log",
     "manage_connectors",
     "manage_backup",
@@ -110,6 +112,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "archive_page",
     "manage_permissions",
     "manage_templates",
+    "manage_workflows",
     "view_audit_log",
     "view_home",
     "view_search",
