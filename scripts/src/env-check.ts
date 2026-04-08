@@ -47,9 +47,10 @@ function collectEnvRefs(dir: string): Map<string, string[]> {
         scan(fullPath);
       } else if (EXTENSIONS.has(extname(entry))) {
         const content = readFileSync(fullPath, "utf-8");
-        const matches = content.matchAll(/process\.env\.([A-Z_][A-Z0-9_]*)/g);
+        const matches = content.matchAll(/process\.env(?:\.([A-Z_][A-Z0-9_]*)|\[["']([A-Z_][A-Z0-9_]*)["']\])/g);
         for (const m of matches) {
-          const varName = m[1];
+          const varName = m[1] || m[2];
+          if (!varName) continue;
           if (WELL_KNOWN_VARS.has(varName)) continue;
           if (!refs.has(varName)) refs.set(varName, []);
           refs.get(varName)!.push(fullPath.replace(ROOT + "/", ""));
