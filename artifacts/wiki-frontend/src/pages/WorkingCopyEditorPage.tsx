@@ -447,13 +447,18 @@ export function WorkingCopyEditorPage() {
       toast({ title: wasAutoPublished ? "Direkt ver\u00F6ffentlicht (Freigabekette inaktiv)" : "Zur Pr\u00FCfung eingereicht" });
       setSubmitOpen(false);
       if (nodeId) {
-        queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+        const invalidations = [
+          queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) }),
+        ];
         if (wasAutoPublished) {
-          queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] });
-          queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
-          queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] });
-          queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] });
+          invalidations.push(
+            queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] }),
+            queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
+            queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] }),
+            queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] }),
+          );
         }
+        await Promise.all(invalidations);
       }
       navigate(`/node/${nodeId}`);
     } catch (err) {
