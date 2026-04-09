@@ -21,6 +21,7 @@ interface StatusBadgeProps {
   status: NodeStatus;
   nextReviewDate?: string | null;
   ownerId?: string | null;
+  ownerName?: string;
   compact?: boolean;
 }
 
@@ -79,6 +80,7 @@ export function StatusBadge({
   status,
   nextReviewDate,
   ownerId,
+  ownerName,
   compact,
 }: StatusBadgeProps) {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.draft;
@@ -88,7 +90,7 @@ export function StatusBadge({
     nextReviewDate &&
     new Date(nextReviewDate) < new Date() &&
     status !== "archived";
-  const isMissingOwner = !ownerId && status === "published";
+  const isMissingOwner = !ownerId && !ownerName && status === "published";
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">

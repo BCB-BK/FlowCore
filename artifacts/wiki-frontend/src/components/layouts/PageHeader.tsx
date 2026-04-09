@@ -13,6 +13,7 @@ interface PageHeaderProps {
   structuredFields: Record<string, unknown>;
   nextReviewDate?: string;
   ownerId?: string | null;
+  ownerName?: string;
 }
 
 export function PageHeader({
@@ -24,6 +25,7 @@ export function PageHeader({
   structuredFields,
   nextReviewDate,
   ownerId,
+  ownerName,
 }: PageHeaderProps) {
   const pageDef = getPageType(templateType);
 
@@ -42,6 +44,7 @@ export function PageHeader({
           status={status as Parameters<typeof StatusBadge>[0]["status"]}
           nextReviewDate={nextReviewDate}
           ownerId={ownerId}
+          ownerName={ownerName}
         />
         <Badge variant="secondary">
           {PAGE_TYPE_LABELS[templateType] || templateType}

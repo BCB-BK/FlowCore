@@ -461,6 +461,7 @@ export function NodeDetail() {
         structuredFields={structuredFields}
         nextReviewDate={governanceFields.nextReviewDate}
         ownerId={node.ownerId}
+        ownerName={ownerDisplayName}
       />
 
       {showQuickFacts && (
