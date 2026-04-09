@@ -15,6 +15,7 @@ import {
 } from "../services/release.service";
 import { auditService, type AuditQueryOptions } from "../lib/audit";
 import { hasPermission } from "../services/rbac.service";
+import { getAllSystemSettings, setSystemSetting, isSetupMode } from "../services/system-settings.service";
 
 const router: IRouter = Router();
 
@@ -38,11 +39,14 @@ router.get("/admin/system-info", requireAuth, requirePermission("manage_settings
     : process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"] ||
       "https://api.openai.com/v1";
 
+  const setupModeActive = await isSetupMode();
+
   res.json({
     system: {
       version: "0.4",
       environment: appConfig.nodeEnv,
       uptime: Math.floor(process.uptime()),
+      setupMode: setupModeActive,
     },
     database: {
       status: dbStatus,
@@ -345,6 +349,43 @@ router.get("/admin/audit-events/export", requireAuth, requireAnyPermission("view
         events: sanitizedEvents,
       });
     }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.get("/admin/setup-mode", requireAuth, async (_req, res) => {
+  try {
+    const active = await isSetupMode();
+    res.json({ setupMode: active });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.get("/admin/system-settings", requireAuth, requirePermission("manage_settings"), async (_req, res) => {
+  try {
+    const settings = await getAllSystemSettings();
+    res.json({ settings });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.put("/admin/system-settings/:key", requireAuth, requirePermission("manage_settings"), async (req, res) => {
+  try {
+    const key = req.params.key as string;
+    const { value } = req.body;
+    if (typeof value !== "string") {
+      res.status(400).json({ error: "value muss ein String sein" });
+      return;
+    }
+    const actorName = req.user?.displayName || "system";
+    await setSystemSetting(key, value, actorName);
+    res.json({ success: true, key, value });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: message });

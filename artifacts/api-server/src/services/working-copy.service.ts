@@ -10,6 +10,7 @@ import {
 import { eq, and, sql, notInArray, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { validateForPublication } from "@workspace/shared/page-types";
+import { isSetupMode } from "./system-settings.service";
 
 export type WorkingCopyStatus =
   | "draft"
@@ -276,7 +277,7 @@ export async function submitWorkingCopy(
     .from(contentNodesTable)
     .where(eq(contentNodesTable.id, wc.nodeId));
 
-  if (node) {
+  if (node && !(await isSetupMode())) {
     const metadata = (wc.content as Record<string, unknown>) ?? {};
     const sectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
     const validation = validateForPublication(node.templateType, metadata, sectionData);
@@ -443,7 +444,7 @@ export async function publishWorkingCopy(
     .from(contentNodesTable)
     .where(eq(contentNodesTable.id, wc.nodeId));
 
-  if (pubNode) {
+  if (pubNode && !(await isSetupMode())) {
     const metadata = (wc.content as Record<string, unknown>) ?? {};
     const sectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
     const validation = validateForPublication(pubNode.templateType, metadata, sectionData);

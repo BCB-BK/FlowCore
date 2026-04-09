@@ -11,6 +11,7 @@ import { Badge } from "@workspace/ui/badge";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
 import { Label } from "@workspace/ui/label";
+import { Switch } from "@workspace/ui/switch";
 import {
   Settings,
   Link2,
@@ -75,7 +76,7 @@ function hasTabAccess(perms: Set<string>, tab: SettingsTabDefinition): boolean {
 }
 
 interface SystemInfo {
-  system: { version: string; environment: string; uptime: number };
+  system: { version: string; environment: string; uptime: number; setupMode?: boolean };
   database: { status: string; version: string };
   auth: {
     devMode: boolean;
@@ -210,11 +211,14 @@ export function SettingsPage() {
 function GeneralTab() {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [setupMode, setSetupMode] = useState(false);
+  const [setupModeLoading, setSetupModeLoading] = useState(false);
 
   useEffect(() => {
     customFetch<SystemInfo>("/api/admin/system-info")
       .then((data) => {
         setInfo(data);
+        setSetupMode(!!data.system.setupMode);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -275,6 +279,52 @@ function GeneralTab() {
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5" />
+            Betriebsmodus
+          </CardTitle>
+          <CardDescription>
+            Im Anlage-Modus werden alle Validierungsblocker beim Einreichen und Ver{"ö"}ffentlichen von Seiten deaktiviert. Ideal f{"ü"}r die initiale Bef{"ü"}llung des Wikis.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium">Anlage-Modus</p>
+              <p className="text-xs text-muted-foreground">
+                Seiten k{"ö"}nnen ohne Pflichtfeld-Pr{"ü"}fung eingereicht und ver{"ö"}ffentlicht werden
+              </p>
+            </div>
+            <Switch
+              checked={setupMode}
+              disabled={setupModeLoading}
+              onCheckedChange={async (checked) => {
+                setSetupModeLoading(true);
+                try {
+                  await customFetch("/api/admin/system-settings/setup_mode", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ value: checked ? "true" : "false" }),
+                  });
+                  setSetupMode(checked);
+                } catch {
+                }
+                setSetupModeLoading(false);
+              }}
+            />
+          </div>
+          {setupMode && (
+            <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950 p-3">
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                <strong>Anlage-Modus ist aktiv.</strong> Alle Ver{"ö"}ffentlichungsanforderungen (Pflichtfelder, Mindestl{"ä"}ngen, Review-Regeln) sind deaktiviert. Deaktivieren Sie diesen Modus, sobald die initiale Bef{"ü"}llung abgeschlossen ist.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

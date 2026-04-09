@@ -1,4 +1,5 @@
 import { calculateCompleteness, getFieldsByRequirement, getSectionsByRequirement, validateForPublication } from "@/lib/types";
+import { useSetupMode } from "@/hooks/use-setup-mode";
 import { Progress } from "@workspace/ui/progress";
 import { Badge } from "@workspace/ui/badge";
 import {
@@ -7,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/tooltip";
-import { CheckCircle2, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, Construction } from "lucide-react";
 
 interface CompletenessIndicatorProps {
   templateType: string;
@@ -22,6 +23,7 @@ export function CompletenessIndicator({
   sectionData,
   compact,
 }: CompletenessIndicatorProps) {
+  const { setupMode } = useSetupMode();
   const { percentage, filled, total, missing } = calculateCompleteness(
     templateType,
     metadata,
@@ -39,7 +41,7 @@ export function CompletenessIndicator({
   if (total === 0) return null;
 
   const isComplete = percentage === 100;
-  const publishReady = validation.valid;
+  const publishReady = validation.valid || setupMode;
 
   if (compact) {
     return (
@@ -53,6 +55,11 @@ export function CompletenessIndicator({
                 <AlertCircle className="h-4 w-4 text-amber-500" />
               )}
               <span className="text-xs font-medium">{percentage}%</span>
+              {setupMode && !validation.valid && (
+                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-amber-600 border-amber-200">
+                  Anlage-Modus
+                </Badge>
+              )}
               {!publishReady && (
                 <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-red-600 border-red-200">
                   Nicht publizierbar
@@ -111,18 +118,29 @@ export function CompletenessIndicator({
         )}
       </div>
 
+      {setupMode && !validation.valid && (
+        <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 p-2.5">
+          <div className="flex items-center gap-1.5">
+            <Construction className="h-3.5 w-3.5 text-amber-600" />
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+              Anlage-Modus aktiv &mdash; Validierung deaktiviert
+            </span>
+          </div>
+        </div>
+      )}
+
       {!publishReady && (
         <div className="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 p-2.5 space-y-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircle className="h-3.5 w-3.5 text-red-600" />
             <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              Nicht veröffentlichungsbereit ({validation.readinessPercentage}%)
+              Nicht ver\u00F6ffentlichungsbereit ({validation.readinessPercentage}%)
             </span>
           </div>
           <ul className="text-xs space-y-0.5">
             {validation.errors.map((e) => (
               <li key={e.field} className="text-red-600 dark:text-red-400 flex items-start gap-1">
-                <span className="shrink-0 mt-0.5">•</span>
+                <span className="shrink-0 mt-0.5">&bull;</span>
                 <span>{e.message}</span>
               </li>
             ))}
