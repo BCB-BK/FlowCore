@@ -58,6 +58,7 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
+import { useSetupMode } from "@/hooks/use-setup-mode";
 import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
@@ -96,6 +97,7 @@ export function WorkingCopyEditorPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: currentUser } = useAuth();
+  const { isSetupMode } = useSetupMode();
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
     query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
@@ -405,14 +407,16 @@ export function WorkingCopyEditorPage() {
   const handleSubmit = useCallback(async () => {
     if (!activeWC || !node) return;
 
-    const validation = validateForPublication(node.templateType, editableMetadata, validationSFSnapshot);
-    if (validation && !validation.valid) {
-      toast({
-        variant: "destructive",
-        title: "Veröffentlichungsanforderungen nicht erfüllt",
-        description: `${validation.errors.length} Fehler müssen behoben werden.`,
-      });
-      return;
+    if (!isSetupMode) {
+      const validation = validateForPublication(node.templateType, editableMetadata, validationSFSnapshot);
+      if (validation && !validation.valid) {
+        toast({
+          variant: "destructive",
+          title: "Veröffentlichungsanforderungen nicht erfüllt",
+          description: `${validation.errors.length} Fehler müssen behoben werden.`,
+        });
+        return;
+      }
     }
 
     if (autosaveTimerRef.current) {
@@ -453,7 +457,7 @@ export function WorkingCopyEditorPage() {
     }
   }, [
     activeWC, node, doSave, editableMetadata, validationSFSnapshot, changeType,
-    changeSummary, submitComment, submitWorkingCopy, toast, nodeId, queryClient, navigate,
+    changeSummary, submitComment, submitWorkingCopy, toast, nodeId, queryClient, navigate, isSetupMode,
   ]);
 
   const handleCancel = useCallback(async () => {
@@ -1061,7 +1065,7 @@ export function WorkingCopyEditorPage() {
             <Button variant="outline" onClick={() => setSubmitOpen(false)}>
               Abbrechen
             </Button>
-            <Button onClick={handleSubmit} disabled={submitWorkingCopy.isPending || (submitValidation !== null && !submitValidation.valid)}>
+            <Button onClick={handleSubmit} disabled={submitWorkingCopy.isPending || (!isSetupMode && submitValidation !== null && !submitValidation.valid)}>
               {submitWorkingCopy.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
               Einreichen
             </Button>
