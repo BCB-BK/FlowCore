@@ -35,6 +35,7 @@ import {
   FileEdit,
   Loader2,
   Eye,
+  ArrowRightLeft,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
@@ -51,6 +52,7 @@ import {
   getGetNodeDeletionRequestQueryKey,
 } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
+import { MoveNodeDialog } from "@/components/MoveNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { PageHeader } from "@/components/layouts/PageHeader";
@@ -103,6 +105,7 @@ export function NodeDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [showPageAssist, setShowPageAssist] = useState(false);
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
+  const [showMoveNode, setShowMoveNode] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const { toast } = useToast();
 
@@ -437,6 +440,16 @@ export function NodeDetail() {
         >
           <Plus className="mr-1 h-4 w-4" />
           Unterseite
+        </Button>
+        )}
+        {canEditStructure && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowMoveNode(true)}
+        >
+          <ArrowRightLeft className="h-4 w-4 mr-1" />
+          Verschieben
         </Button>
         )}
         {canArchive && !pendingDeletionQuery.data && (
@@ -1180,6 +1193,17 @@ export function NodeDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {nodeId && (
+        <MoveNodeDialog
+          open={showMoveNode}
+          onOpenChange={setShowMoveNode}
+          nodeId={nodeId}
+          nodeTitle={node.title}
+          nodeDisplayCode={node.displayCode}
+          currentParentId={node.parentNodeId ?? null}
+        />
+      )}
     </div>
   );
 }
