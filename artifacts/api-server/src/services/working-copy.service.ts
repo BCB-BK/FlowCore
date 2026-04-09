@@ -196,8 +196,14 @@ export async function updateWorkingCopy(
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
   if (input.title !== undefined) updateData.title = input.title;
   if (input.content !== undefined) updateData.content = input.content;
-  if (input.structuredFields !== undefined)
-    updateData.structuredFields = input.structuredFields;
+  if (input.structuredFields !== undefined) {
+    const existing = (wc.structuredFields as Record<string, unknown>) ?? {};
+    const incoming = input.structuredFields;
+    if (existing._clusters && !incoming._clusters) {
+      incoming._clusters = existing._clusters;
+    }
+    updateData.structuredFields = incoming;
+  }
   if (input.editorSnapshot !== undefined)
     updateData.editorSnapshot = input.editorSnapshot;
   if (input.changeType !== undefined) updateData.changeType = input.changeType;

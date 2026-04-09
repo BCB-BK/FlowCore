@@ -180,11 +180,15 @@ export function WorkingCopyEditorPage() {
   }, [activeWC]);
 
   const localStructuredFieldsRef = useRef<Record<string, unknown>>({});
+  const sfInitializedRef = useRef(false);
+  const sfInitWcIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (activeWC) {
+    if (activeWC && activeWC.id !== sfInitWcIdRef.current) {
       const sf = (activeWC.structuredFields as Record<string, unknown>) ?? {};
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
+      sfInitializedRef.current = true;
+      sfInitWcIdRef.current = activeWC.id;
     }
   }, [activeWC]);
 
@@ -246,6 +250,7 @@ export function WorkingCopyEditorPage() {
       const wc = wcRef.current;
       const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
       if (!wc || !editableStatuses.includes(wc.status)) return;
+      if (!sfInitializedRef.current) return;
       setIsSaving(true);
       try {
         await updateWorkingCopy.mutateAsync({
@@ -275,6 +280,7 @@ export function WorkingCopyEditorPage() {
 
   const handleEditorSave = useCallback(
     async (json: JSONContent) => {
+      if (!sfInitializedRef.current) return;
       const sf = { ...localStructuredFieldsRef.current, _editorContent: json };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
@@ -288,6 +294,7 @@ export function WorkingCopyEditorPage() {
 
   const handleEditorContentChange = useCallback(
     (json: JSONContent) => {
+      if (!sfInitializedRef.current) return;
       const sf = { ...localStructuredFieldsRef.current, _editorContent: json };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
@@ -298,6 +305,7 @@ export function WorkingCopyEditorPage() {
 
   const handleSectionSave = useCallback(
     async (sectionKey: string, value: unknown) => {
+      if (!sfInitializedRef.current) return;
       const sf = { ...localStructuredFieldsRef.current, [sectionKey]: value };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
