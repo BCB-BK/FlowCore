@@ -119,10 +119,22 @@ export function NodeDetail() {
     return getAllowedChildTypes(node.templateType);
   }, [node]);
 
+  const sortByDisplayCode = useCallback(
+    <T extends { displayCode?: string | null }>(items: T[]): T[] =>
+      [...items].sort((a, b) => {
+        const codeA = a.displayCode ?? "";
+        const codeB = b.displayCode ?? "";
+        return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: "base" });
+      }),
+    [],
+  );
+
   const publishedChildren = useMemo(() => {
     if (!children) return [];
-    return children.filter((c) => c.status === "published" || c.publishedRevisionId);
-  }, [children]);
+    return sortByDisplayCode(
+      children.filter((c) => c.status === "published" || c.publishedRevisionId),
+    );
+  }, [children, sortByDisplayCode]);
 
   const groupedChildren = useMemo(() => {
     if (publishedChildren.length === 0) return {};
@@ -205,12 +217,12 @@ export function NodeDetail() {
     if (!children || children.length === 0 || clusters.length === 0) return [];
     const raw = groupChildrenByClusters(children, clusters);
     return raw.map((group) => {
-      if (group.cluster === null) {
-        return { ...group, children: group.children.filter(isPublished) };
-      }
-      return group;
+      const sorted = sortByDisplayCode(
+        group.cluster === null ? group.children.filter(isPublished) : group.children,
+      );
+      return { ...group, children: sorted };
     }).filter((g) => g.children.length > 0 || g.cluster !== null);
-  }, [children, clusters, isPublished]);
+  }, [children, clusters, isPublished, sortByDisplayCode]);
 
   const editorContent = useMemo(() => {
     if (
@@ -942,7 +954,7 @@ export function NodeDetail() {
 
           {children && children.length > 0 ? (
             <div className="space-y-2">
-              {children.map((child) => {
+              {sortByDisplayCode(children).map((child) => {
                 const childDef = getPageType(child.templateType);
                 return (
                   <Card
