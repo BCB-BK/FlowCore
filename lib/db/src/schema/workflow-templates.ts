@@ -39,6 +39,7 @@ export const workflowTemplatesTable = pgTable("workflow_templates", {
   name: text("name").notNull(),
   description: text("description"),
   isDefault: boolean("is_default").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
   enforceSoD: boolean("enforce_so_d").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

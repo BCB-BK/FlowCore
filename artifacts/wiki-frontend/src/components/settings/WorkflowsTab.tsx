@@ -61,6 +61,7 @@ interface WorkflowTemplate {
   name: string;
   description: string | null;
   isDefault: boolean;
+  isActive: boolean;
   enforceSoD: boolean;
   steps: WorkflowStep[];
 }
@@ -543,6 +544,7 @@ function WorkflowCard({
   onEdit,
   onDuplicate,
   onDelete,
+  onToggleActive,
   isDeleting,
 }: {
   template: WorkflowTemplate;
@@ -550,10 +552,11 @@ function WorkflowCard({
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onToggleActive: (active: boolean) => void;
   isDeleting: boolean;
 }) {
   return (
-    <div className="border rounded-lg overflow-hidden hover:border-muted-foreground/30 transition-colors">
+    <div className={`border rounded-lg overflow-hidden transition-colors ${template.isActive ? "hover:border-muted-foreground/30" : "opacity-60 border-dashed"}`}>
       <div
         className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
         onClick={onEdit}
@@ -567,6 +570,9 @@ function WorkflowCard({
               <h3 className="font-medium text-sm">{template.name}</h3>
               {template.isDefault && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Standard</Badge>
+              )}
+              {!template.isActive && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-muted-foreground/30">Inaktiv</Badge>
               )}
               {template.enforceSoD && (
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">4-Augen</Badge>
@@ -614,8 +620,19 @@ function WorkflowCard({
             )}
           </div>
 
-          <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
             <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center">
+                    <Switch
+                      checked={template.isActive}
+                      onCheckedChange={onToggleActive}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{template.isActive ? "Aktiv \u2014 Freigabekette wird durchlaufen" : "Inaktiv \u2014 Seiten werden direkt ver\u00F6ffentlicht"}</TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onEdit}>
@@ -644,7 +661,7 @@ function WorkflowCard({
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Löschen</TooltipContent>
+                <TooltipContent>L{"ö"}schen</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -695,6 +712,19 @@ function WorkflowsSection() {
       alert(err instanceof Error ? err.message : "Fehler beim Löschen");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleToggleActive = async (id: string, active: boolean) => {
+    try {
+      await customFetch(`/api/admin/workflows/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: active }),
+      });
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Fehler beim Aktualisieren");
     }
   };
 
@@ -797,6 +827,7 @@ function WorkflowsSection() {
               }}
               onDuplicate={() => handleDuplicate(t)}
               onDelete={() => handleDelete(t.id)}
+              onToggleActive={(active) => handleToggleActive(t.id, active)}
               isDeleting={deletingId === t.id}
             />
           ))}

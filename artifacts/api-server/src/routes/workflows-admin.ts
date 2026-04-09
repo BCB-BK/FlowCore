@@ -50,7 +50,7 @@ workflowsAdminRouter.get("/admin/workflows/:id", ...auth, async (req, res) => {
 
 workflowsAdminRouter.post("/admin/workflows", ...auth, async (req, res) => {
   try {
-    const { name, description, isDefault, enforceSoD, steps } = req.body;
+    const { name, description, isDefault, isActive, enforceSoD, steps } = req.body;
     if (!name) {
       res.status(400).json({ error: "Name ist ein Pflichtfeld" });
       return;
@@ -59,6 +59,7 @@ workflowsAdminRouter.post("/admin/workflows", ...auth, async (req, res) => {
       name,
       description,
       isDefault: isDefault ?? false,
+      isActive: isActive ?? true,
       enforceSoD: enforceSoD ?? false,
       createdBy: req.user?.displayName || "system",
       steps: steps ?? [],
@@ -72,11 +73,12 @@ workflowsAdminRouter.post("/admin/workflows", ...auth, async (req, res) => {
 
 workflowsAdminRouter.put("/admin/workflows/:id", ...auth, async (req, res) => {
   try {
-    const { name, description, isDefault, enforceSoD, steps } = req.body;
+    const { name, description, isDefault, isActive, enforceSoD, steps } = req.body;
     const updated = await updateWorkflowTemplate(req.params.id as string, {
       name,
       description,
       isDefault,
+      isActive,
       enforceSoD,
       steps,
     });

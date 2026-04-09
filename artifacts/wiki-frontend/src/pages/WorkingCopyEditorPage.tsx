@@ -430,7 +430,7 @@ export function WorkingCopyEditorPage() {
     }
 
     try {
-      await submitWorkingCopy.mutateAsync({
+      const submitResult = await submitWorkingCopy.mutateAsync({
         workingCopyId: activeWC.id,
         data: {
           changeType: changeType as "editorial" | "minor" | "major" | "regulatory" | "structural",
@@ -438,7 +438,8 @@ export function WorkingCopyEditorPage() {
           comment: submitComment || undefined,
         },
       });
-      toast({ title: "Zur Prüfung eingereicht" });
+      const wasAutoPublished = submitResult?.status === "published";
+      toast({ title: wasAutoPublished ? "Direkt ver\u00F6ffentlicht (Freigabekette inaktiv)" : "Zur Pr\u00FCfung eingereicht" });
       setSubmitOpen(false);
       if (nodeId) {
         queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });

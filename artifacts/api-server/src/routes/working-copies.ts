@@ -200,13 +200,23 @@ router.post(
       const id = req.params.id as string;
       const actorId = req.user!.principalId;
       const updated = await submitWorkingCopy(id, req.body, actorId);
-      notifyWorkingCopySubmitted(
-        updated.nodeId,
-        updated.title,
-        actorId,
-        req.user!.displayName,
-        id,
-      ).catch((e) => logger.warn({ err: e }, "Notification failed after submit"));
+      if (updated.status === "published") {
+        notifyWorkingCopyPublished(
+          updated.nodeId,
+          updated.title,
+          actorId,
+          req.user!.displayName,
+          id,
+        ).catch((e) => logger.warn({ err: e }, "Notification failed after auto-publish"));
+      } else {
+        notifyWorkingCopySubmitted(
+          updated.nodeId,
+          updated.title,
+          actorId,
+          req.user!.displayName,
+          id,
+        ).catch((e) => logger.warn({ err: e }, "Notification failed after submit"));
+      }
       res.json(updated);
     } catch (err) {
       throw mapServiceError(err);

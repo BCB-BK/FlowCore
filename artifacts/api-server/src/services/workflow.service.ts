@@ -14,6 +14,7 @@ export interface WorkflowTemplateWithSteps {
   name: string;
   description: string | null;
   isDefault: boolean;
+  isActive: boolean;
   enforceSoD: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -79,6 +80,7 @@ export async function createWorkflowTemplate(input: {
   name: string;
   description?: string;
   isDefault?: boolean;
+  isActive?: boolean;
   enforceSoD?: boolean;
   createdBy?: string;
   steps: Array<{ stepNumber: number; name: string; roles: string[] }>;
@@ -96,6 +98,7 @@ export async function createWorkflowTemplate(input: {
         name: input.name,
         description: input.description ?? null,
         isDefault: input.isDefault ?? false,
+        isActive: input.isActive ?? true,
         enforceSoD: input.enforceSoD ?? false,
         createdBy: input.createdBy ?? null,
       })
@@ -135,6 +138,7 @@ export async function updateWorkflowTemplate(
     name?: string;
     description?: string | null;
     isDefault?: boolean;
+    isActive?: boolean;
     enforceSoD?: boolean;
     steps?: Array<{ stepNumber: number; name: string; roles: string[] }>;
   },
@@ -157,6 +161,7 @@ export async function updateWorkflowTemplate(
     if (input.name !== undefined) updateData.name = input.name;
     if (input.description !== undefined) updateData.description = input.description;
     if (input.isDefault !== undefined) updateData.isDefault = input.isDefault;
+    if (input.isActive !== undefined) updateData.isActive = input.isActive;
     if (input.enforceSoD !== undefined) updateData.enforceSoD = input.enforceSoD;
 
     const [updated] = await tx
@@ -403,6 +408,27 @@ export async function deleteNotificationRule(id: string): Promise<boolean> {
     .where(eq(notificationRulesTable.id, id))
     .returning({ id: notificationRulesTable.id });
   return result.length > 0;
+}
+
+export async function isWorkflowActiveForPageType(templateType: string): Promise<boolean> {
+  const [assignment] = await db
+    .select({ workflowId: pageTypeWorkflowAssignmentsTable.workflowId })
+    .from(pageTypeWorkflowAssignmentsTable)
+    .where(eq(pageTypeWorkflowAssignmentsTable.pageType, templateType));
+
+  if (!assignment) {
+    const [defaultWf] = await db
+      .select({ isActive: workflowTemplatesTable.isActive })
+      .from(workflowTemplatesTable)
+      .where(eq(workflowTemplatesTable.isDefault, true));
+    return defaultWf?.isActive ?? true;
+  }
+
+  const [wf] = await db
+    .select({ isActive: workflowTemplatesTable.isActive })
+    .from(workflowTemplatesTable)
+    .where(eq(workflowTemplatesTable.id, assignment.workflowId));
+  return wf?.isActive ?? true;
 }
 
 export async function getSystemSetting(key: string): Promise<string | null> {

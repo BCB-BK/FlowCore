@@ -11,6 +11,7 @@ import { eq, and, sql, notInArray, desc } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { validateForPublication } from "@workspace/shared/page-types";
 import { isSetupMode } from "./system-settings.service";
+import { isWorkflowActiveForPageType } from "./workflow.service";
 
 export type WorkingCopyStatus =
   | "draft"
@@ -298,6 +299,15 @@ export async function submitWorkingCopy(
   if (input.changeType) updateData.changeType = input.changeType;
   if (input.changeSummary) updateData.changeSummary = input.changeSummary;
 
+  const workflowActive = node
+    ? await isWorkflowActiveForPageType(node.templateType)
+    : true;
+
+  if (!workflowActive) {
+    const result = await autoPublishWorkingCopy(id, wc, input, actorId);
+    return result;
+  }
+
   const updated = await db.transaction(async (tx) => {
     const [result] = await tx
       .update(contentWorkingCopiesTable)
@@ -327,6 +337,105 @@ export async function submitWorkingCopy(
 
   logger.info({ workingCopyId: id, actorId }, "Working copy submitted for review");
   return updated;
+}
+
+async function autoPublishWorkingCopy(
+  id: string,
+  wc: NonNullable<Awaited<ReturnType<typeof getWorkingCopyById>>>,
+  input: SubmitWorkingCopyInput,
+  actorId: string,
+) {
+  const summary = wc.lastManualSummary || wc.lastAiSummary || wc.changeSummary || input.changeSummary || "";
+
+  return await db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
+    );
+
+    const maxResult = await tx
+      .select({
+        maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
+      })
+      .from(contentRevisionsTable)
+      .where(eq(contentRevisionsTable.nodeId, wc.nodeId));
+    const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
+
+    const versionLabel = `${revisionNo}.0`;
+
+    const [newRevision] = await tx
+      .insert(contentRevisionsTable)
+      .values({
+        nodeId: wc.nodeId,
+        revisionNo,
+        versionLabel,
+        title: wc.title,
+        content: wc.content,
+        structuredFields: wc.structuredFields,
+        changeType: input.changeType || "minor",
+        changeSummary: summary,
+        basedOnRevisionId: wc.baseRevisionId,
+        authorId: wc.authorId ?? actorId,
+        status: "published",
+      })
+      .returning();
+
+    await tx
+      .update(contentRevisionsTable)
+      .set({ status: "archived" })
+      .where(
+        and(
+          eq(contentRevisionsTable.nodeId, wc.nodeId),
+          eq(contentRevisionsTable.status, "published"),
+          sql`${contentRevisionsTable.id} != ${newRevision.id}`,
+        ),
+      );
+
+    await tx
+      .update(contentNodesTable)
+      .set({
+        publishedRevisionId: newRevision.id,
+        status: "published",
+        updatedAt: new Date(),
+      })
+      .where(eq(contentNodesTable.id, wc.nodeId));
+
+    const [result] = await tx
+      .update(contentWorkingCopiesTable)
+      .set({
+        status: "published",
+        submittedBy: actorId,
+        submittedAt: new Date(),
+        updatedAt: new Date(),
+        changeType: input.changeType || "minor",
+        changeSummary: input.changeSummary || null,
+      })
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .returning();
+
+    await tx.insert(workingCopyEventsTable).values({
+      workingCopyId: id,
+      eventType: "published",
+      actorId,
+      comment: input.comment || null,
+      metadata: { changeType: input.changeType, autoPublish: true },
+    });
+
+    await tx.insert(auditEventsTable).values({
+      eventType: "content",
+      action: "working_copy_auto_published",
+      actorId,
+      resourceType: "working_copy",
+      resourceId: id,
+      details: { nodeId: wc.nodeId, revisionNo, versionLabel, autoPublish: true },
+    });
+
+    logger.info(
+      { workingCopyId: id, actorId, revisionNo, versionLabel },
+      "Working copy auto-published (workflow inactive)",
+    );
+
+    return result;
+  });
 }
 
 export async function returnWorkingCopyForChanges(

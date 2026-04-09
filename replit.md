@@ -29,8 +29,8 @@ The frontend (`wiki-frontend`) is a React application built with Vite, TailwindC
     - **Content Management:** CRUD operations for content nodes, revisions, relations, templates, and links, using a dual ID system. Navigation includes hierarchy-aware breadcrumbs and a professionalized relation sidebar.
     - **Search:** Full-text search with suggestions and analytics.
     - **AI Assistant:** Orchestration services for knowledge Q&A and page writing assistance via SSE streaming, including field-level AI assistance with diff preview and configurable prompts.
-    - **Workflow:** Review workflows (submit/approve/reject), revision events, diffing, and watchers.
-    - **Publikationsmodell (Working Copies):** A strict publication model where published pages are read-only. All content changes follow a `Draft → Submitted → In Review → Approved → Published` lifecycle, enforced by the API. Restore operations also go through this workflow.
+    - **Workflow:** Review workflows (submit/approve/reject), revision events, diffing, and watchers. Workflow templates support an `isActive` toggle — when a workflow is deactivated, pages assigned to it are auto-published on submit (bypassing the review chain). The toggle is available in Settings > Workflows as a Switch per workflow card.
+    - **Publikationsmodell (Working Copies):** A strict publication model where published pages are read-only. All content changes follow a `Draft → Submitted → In Review → Approved → Published` lifecycle, enforced by the API. When the assigned workflow is inactive, submit auto-publishes directly (`autoPublishWorkingCopy`). Restore operations also go through this workflow.
     - **Connectors:** Management of source systems and storage providers (e.g., SharePoint) with sync scheduling and asset origin tracking.
     - **Backup:** Orchestrates `pg_dump`, manifest generation, SharePoint upload, and retention policies, with a dry-run restore endpoint.
     - **Quality Dashboard:** Provides insights into page quality, duplicate detection, maintenance hints, a Review/Working Copy Dashboard, and an Ownership Monitor.
