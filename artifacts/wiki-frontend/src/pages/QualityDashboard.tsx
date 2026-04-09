@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -54,6 +54,10 @@ import {
   UserX,
   Eye,
   UserCheck,
+  List as ListIcon,
+  FolderTree,
+  ChevronDown,
+  AlertTriangleIcon,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PAGE_TYPE_LABELS } from "@/lib/types";
@@ -72,6 +76,7 @@ import type {
   MaintenanceHintSeverity,
   GetReviewDashboardParams,
   GetReviewDashboardStatus,
+  PageQualityRow,
 } from "@workspace/api-client-react";
 
 function StatCard({
@@ -236,10 +241,235 @@ function filteredOwnershipItems<
   return items.filter((i) => i.gapTypes.includes(filter));
 }
 
+function PageFlagIcons({ page }: { page: PageQualityRow }) {
+  return (
+    <div className="flex gap-1">
+      {page.parentDeleted && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <AlertTriangleIcon className="h-4 w-4 text-amber-500" />
+            </TooltipTrigger>
+            <TooltipContent>
+              {"\u00DCbergeordnete Seite gel\u00F6scht \u2013 Seite ist verwaist"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {page.isOrphan && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Link2Off className="h-4 w-4 text-purple-500" />
+            </TooltipTrigger>
+            <TooltipContent>Verwaist</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {page.reviewOverdue && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Clock className="h-4 w-4 text-red-500" />
+            </TooltipTrigger>
+            <TooltipContent>
+              {"Review \u00FCberf\u00E4llig"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {!page.ownerId && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Users className="h-4 w-4 text-orange-500" />
+            </TooltipTrigger>
+            <TooltipContent>
+              Kein Verantwortlicher
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {page.tagCount === 0 && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Tag className="h-4 w-4 text-indigo-500" />
+            </TooltipTrigger>
+            <TooltipContent>Keine Tags</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+}
+
+interface TreeNode {
+  page: PageQualityRow;
+  children: TreeNode[];
+}
+
+function buildTree(pages: PageQualityRow[]): TreeNode[] {
+  const byId = new Map<string, TreeNode>();
+  for (const page of pages) {
+    byId.set(page.nodeId, { page, children: [] });
+  }
+  const roots: TreeNode[] = [];
+  for (const page of pages) {
+    const node = byId.get(page.nodeId)!;
+    if (page.parentNodeId && byId.has(page.parentNodeId)) {
+      byId.get(page.parentNodeId)!.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  const sortNodes = (nodes: TreeNode[]) => {
+    nodes.sort((a, b) =>
+      (a.page.displayCode || "").localeCompare(b.page.displayCode || "", "de", { numeric: true })
+    );
+    for (const n of nodes) sortNodes(n.children);
+  };
+  sortNodes(roots);
+  return roots;
+}
+
+function TreeRow({
+  node,
+  depth,
+  onNavigate,
+  expandedSet,
+  toggleExpand,
+}: {
+  node: TreeNode;
+  depth: number;
+  onNavigate: (path: string) => void;
+  expandedSet: Set<string>;
+  toggleExpand: (id: string) => void;
+}) {
+  const hasChildren = node.children.length > 0;
+  const isExpanded = expandedSet.has(node.page.nodeId);
+  const page = node.page;
+
+  return (
+    <>
+      <div
+        className="flex items-center gap-2 py-2 px-3 hover:bg-muted/50 cursor-pointer border-b border-border/50"
+        style={{ paddingLeft: `${12 + depth * 24}px` }}
+        onClick={() => onNavigate(`/node/${page.nodeId}`)}
+      >
+        {hasChildren ? (
+          <button
+            className="p-0.5 rounded hover:bg-muted shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpand(page.nodeId);
+            }}
+          >
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform ${
+                isExpanded ? "" : "-rotate-90"
+              }`}
+            />
+          </button>
+        ) : (
+          <span className="w-5 shrink-0" />
+        )}
+        <span className="font-mono text-xs text-muted-foreground shrink-0 w-[180px] truncate">
+          {page.displayCode}
+        </span>
+        <span className="font-medium text-sm truncate flex-1 min-w-0 flex items-center gap-1.5">
+          {page.title}
+          {page.parentDeleted && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangleIcon className="h-4 w-4 text-amber-500 shrink-0" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {"\u00DCbergeordnete Seite gel\u00F6scht"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </span>
+        <StatusLabel status={page.status} />
+        <PageFlagIcons page={page} />
+        <span className="text-xs text-muted-foreground w-8 text-right shrink-0">
+          {page.childCount > 0 ? page.childCount : ""}
+        </span>
+      </div>
+      {isExpanded &&
+        node.children.map((child) => (
+          <TreeRow
+            key={child.page.nodeId}
+            node={child}
+            depth={depth + 1}
+            onNavigate={onNavigate}
+            expandedSet={expandedSet}
+            toggleExpand={toggleExpand}
+          />
+        ))}
+    </>
+  );
+}
+
+function PagesTreeView({
+  pages,
+  onNavigate,
+}: {
+  pages: PageQualityRow[];
+  onNavigate: (path: string) => void;
+}) {
+  const tree = useMemo(() => buildTree(pages), [pages]);
+  const [expandedSet, setExpandedSet] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const expandAll = () => {
+    const allIds = new Set(pages.filter((p) => p.childCount > 0).map((p) => p.nodeId));
+    setExpandedSet(allIds);
+  };
+
+  const collapseAll = () => {
+    setExpandedSet(new Set());
+  };
+
+  return (
+    <div>
+      <div className="flex gap-2 px-3 py-2 border-b bg-muted/30">
+        <Button variant="ghost" size="sm" onClick={expandAll}>
+          Alle aufklappen
+        </Button>
+        <Button variant="ghost" size="sm" onClick={collapseAll}>
+          Alle zuklappen
+        </Button>
+      </div>
+      {tree.map((node) => (
+        <TreeRow
+          key={node.page.nodeId}
+          node={node}
+          depth={0}
+          onNavigate={onNavigate}
+          expandedSet={expandedSet}
+          toggleExpand={toggleExpand}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function QualityDashboard() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
   const [pageFilter, setPageFilter] = useState<string>("all");
+  const [pagesViewMode, setPagesViewMode] = useState<"flat" | "tree">("flat");
   const [reviewStatusFilter, setReviewStatusFilter] = useState<string>("all");
   const [reviewOwnerFilter, setReviewOwnerFilter] = useState<string>("");
   const [reviewMinAge, setReviewMinAge] = useState<string>("");
@@ -605,22 +835,25 @@ export function QualityDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <Select value={pageFilter} onValueChange={setPageFilter}>
               <SelectTrigger className="w-full sm:w-[220px]">
-                <SelectValue placeholder="Filter wählen" />
+                <SelectValue placeholder="Filter w\u00E4hlen" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Alle Seiten</SelectItem>
                 <SelectItem value="no_owner">Ohne Verantwortlichen</SelectItem>
                 <SelectItem value="overdue_review">
-                  Review überfällig
+                  Review {"\u00FC"}berf{"\u00E4"}llig
                 </SelectItem>
                 <SelectItem value="orphan">Verwaiste Seiten</SelectItem>
-                <SelectItem value="draft">Entwürfe</SelectItem>
+                <SelectItem value="parent_deleted">
+                  {"\u00DCbergeordnete Seite gel\u00F6scht"}
+                </SelectItem>
+                <SelectItem value="draft">Entw{"\u00FC"}rfe</SelectItem>
                 <SelectItem value="stale">Veraltet (&gt;180 Tage)</SelectItem>
                 <SelectItem value="no_tags">Ohne Tags</SelectItem>
                 <SelectItem value="broken_refs">
-                  Defekte Verknüpfungen
+                  Defekte Verkn{"\u00FC"}pfungen
                 </SelectItem>
-                <SelectItem value="incomplete">Unvollständig</SelectItem>
+                <SelectItem value="incomplete">Unvollst{"\u00E4"}ndig</SelectItem>
               </SelectContent>
             </Select>
             {pages && (
@@ -628,6 +861,24 @@ export function QualityDashboard() {
                 {pages.total} Seiten
               </span>
             )}
+            <div className="flex gap-1 ml-auto">
+              <Button
+                variant={pagesViewMode === "flat" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPagesViewMode("flat")}
+              >
+                <ListIcon className="h-4 w-4 mr-1" />
+                Liste
+              </Button>
+              <Button
+                variant={pagesViewMode === "tree" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPagesViewMode("tree")}
+              >
+                <FolderTree className="h-4 w-4 mr-1" />
+                Baum
+              </Button>
+            </div>
           </div>
 
           <Card>
@@ -639,6 +890,7 @@ export function QualityDashboard() {
                   ))}
                 </div>
               ) : pages && pages.items.length > 0 ? (
+                pagesViewMode === "flat" ? (
                 <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -675,52 +927,7 @@ export function QualityDashboard() {
                           {page.tagCount}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
-                            {page.isOrphan && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Link2Off className="h-4 w-4 text-purple-500" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>Verwaist</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                            {page.reviewOverdue && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Clock className="h-4 w-4 text-red-500" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    Review überfällig
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                            {!page.ownerId && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Users className="h-4 w-4 text-orange-500" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    Kein Verantwortlicher
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                            {page.tagCount === 0 && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Tag className="h-4 w-4 text-indigo-500" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>Keine Tags</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                          </div>
+                          <PageFlagIcons page={page} />
                         </TableCell>
                         <TableCell className="text-right">
                           {page.childCount}
@@ -730,6 +937,9 @@ export function QualityDashboard() {
                   </TableBody>
                 </Table>
                 </div>
+                ) : (
+                  <PagesTreeView pages={pages.items} onNavigate={navigate} />
+                )
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
                   Keine Seiten mit diesem Filter gefunden

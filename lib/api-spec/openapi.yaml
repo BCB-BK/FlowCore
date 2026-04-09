@@ -2755,6 +2755,7 @@ paths:
                 no_owner,
                 overdue_review,
                 orphan,
+                parent_deleted,
                 draft,
                 stale,
                 no_tags,
@@ -5958,6 +5959,12 @@ components:
           type: integer
         tagCount:
           type: integer
+        parentNodeId:
+          type: string
+          format: uuid
+          nullable: true
+        parentDeleted:
+          type: boolean
       required:
         - nodeId
         - title
@@ -5973,6 +5980,7 @@ components:
         - childCount
         - relationCount
         - tagCount
+        - parentDeleted
 
     PageQualityList:
       type: object

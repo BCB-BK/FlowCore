@@ -13,6 +13,7 @@ export const GetQualityPagesFilter = {
   no_owner: "no_owner",
   overdue_review: "overdue_review",
   orphan: "orphan",
+  parent_deleted: "parent_deleted",
   draft: "draft",
   stale: "stale",
   no_tags: "no_tags",

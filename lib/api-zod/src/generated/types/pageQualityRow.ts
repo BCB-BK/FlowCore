@@ -23,4 +23,6 @@ export interface PageQualityRow {
   childCount: number;
   relationCount: number;
   tagCount: number;
+  parentNodeId?: string | null;
+  parentDeleted: boolean;
 }

@@ -34,6 +34,8 @@ export interface PageQualityRow {
   childCount: number;
   relationCount: number;
   tagCount: number;
+  parentNodeId: string | null;
+  parentDeleted: boolean;
 }
 
 export interface DuplicateGroup {
@@ -250,6 +252,9 @@ export async function getPageQualityList(
     whereClause = sql`WHERE NOT cn.is_deleted AND cn.parent_node_id IS NULL
       AND cn.template_type NOT IN ('core_process_overview', 'dashboard')
       AND NOT EXISTS (SELECT 1 FROM content_relations rel WHERE rel.source_node_id = cn.id OR rel.target_node_id = cn.id)`;
+  } else if (filter === "parent_deleted") {
+    whereClause = sql`WHERE NOT cn.is_deleted AND cn.parent_node_id IS NOT NULL
+      AND EXISTS (SELECT 1 FROM content_nodes p WHERE p.id = cn.parent_node_id AND (p.is_deleted = true OR p.status = 'deleted'))`;
   } else if (filter === "draft") {
     whereClause = sql`WHERE NOT cn.is_deleted AND cn.status = 'draft'`;
   } else if (filter === "stale") {
@@ -294,11 +299,15 @@ export async function getPageQualityList(
       (SELECT COUNT(*) FROM content_nodes ch WHERE ch.parent_node_id = cn.id AND NOT ch.is_deleted)::text as child_count,
       (SELECT COUNT(*) FROM content_relations rel WHERE rel.source_node_id = cn.id OR rel.target_node_id = cn.id)::text as relation_count,
       (SELECT COUNT(*) FROM content_node_tags t WHERE t.node_id = cn.id)::text as tag_count,
+      cn.parent_node_id,
       (cn.parent_node_id IS NULL
         AND cn.template_type NOT IN ('core_process_overview', 'dashboard')
         AND NOT EXISTS (SELECT 1 FROM content_relations rel WHERE rel.source_node_id = cn.id OR rel.target_node_id = cn.id)
       ) as is_orphan,
-      (cr.next_review_date IS NOT NULL AND cr.next_review_date < NOW()) as review_overdue
+      (cr.next_review_date IS NOT NULL AND cr.next_review_date < NOW()) as review_overdue,
+      (cn.parent_node_id IS NOT NULL AND EXISTS (
+        SELECT 1 FROM content_nodes p WHERE p.id = cn.parent_node_id AND (p.is_deleted = true OR p.status = 'deleted')
+      )) as parent_deleted
     FROM content_nodes cn
     LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
     ${whereClause}
@@ -339,6 +348,8 @@ export async function getPageQualityList(
       childCount: num(r, "child_count"),
       relationCount: num(r, "relation_count"),
       tagCount,
+      parentNodeId: r.parent_node_id ? String(r.parent_node_id) : null,
+      parentDeleted: bool(r, "parent_deleted"),
     };
   });
 
