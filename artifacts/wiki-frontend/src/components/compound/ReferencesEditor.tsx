@@ -243,7 +243,7 @@ export function ReferencesEditor({
                 onClick={() => addRef("url")}
               >
                 <Globe className="h-3.5 w-3.5 mr-1.5" />
-                URL hinzuf\u00FCgen
+                URL hinzuf{"ü"}gen
               </Button>
               <Button
                 variant="outline"

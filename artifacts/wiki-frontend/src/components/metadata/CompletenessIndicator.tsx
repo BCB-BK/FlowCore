@@ -134,7 +134,7 @@ export function CompletenessIndicator({
           <div className="flex items-center gap-1.5">
             <AlertCircle className="h-3.5 w-3.5 text-red-600" />
             <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              Nicht ver\u00F6ffentlichungsbereit ({validation.readinessPercentage}%)
+              Nicht ver{"ö"}ffentlichungsbereit ({validation.readinessPercentage}%)
             </span>
           </div>
           <ul className="text-xs space-y-0.5">

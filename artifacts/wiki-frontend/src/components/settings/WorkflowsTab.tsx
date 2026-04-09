@@ -631,7 +631,7 @@ function WorkflowCard({
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>{template.isActive ? "Aktiv \u2014 Freigabekette wird durchlaufen" : "Inaktiv \u2014 Seiten werden direkt ver\u00F6ffentlicht"}</TooltipContent>
+                <TooltipContent>{template.isActive ? "Aktiv \u2014 Freigabekette wird durchlaufen" : "Inaktiv \u2014 Seiten werden direkt ver\u00f6ffentlicht"}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>

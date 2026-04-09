@@ -602,7 +602,7 @@ export function WorkingCopyEditorPage() {
               Vorschau
             </p>
             <p className="text-xs text-blue-600 dark:text-blue-400">
-              So sieht die Seite nach Ver\u00F6ffentlichung aus. Leere Abschnitte werden ausgeblendet.
+              So sieht die Seite nach Ver{"ö"}ffentlichung aus. Leere Abschnitte werden ausgeblendet.
             </p>
           </div>
           <Button
