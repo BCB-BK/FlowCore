@@ -201,7 +201,7 @@ export function BlockEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[200px] px-4 py-3",
+          "prose prose-sm sm:prose dark:prose-invert max-w-none sm:max-w-none focus:outline-none min-h-[200px] px-4 py-3",
       },
     },
   });
@@ -462,7 +462,7 @@ export function BlockEditor({
         nodeId={nodeId}
         onTrackMediaUsage={onTrackMediaUsage}
       >
-        <div className="relative pl-6">
+        <div className={`relative ${editable ? "pl-6" : ""}`}>
           {editable && <BlockActionMenu editor={editor} />}
           {editable && onCreateSubpage && (
             <ContextualSubpageButton
