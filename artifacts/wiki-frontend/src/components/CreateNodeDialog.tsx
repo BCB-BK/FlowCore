@@ -199,9 +199,8 @@ export function CreateNodeDialog({
         }
       }
 
-      if (variantDef?.initialBlocks && variantDef.initialBlocks.length > 0) {
-        structuredInit._editorContent = buildInitialEditorContent(variantDef.initialBlocks);
-      }
+
+
 
       const wc = await createWorkingCopy.mutateAsync({ nodeId: node.id });
 
