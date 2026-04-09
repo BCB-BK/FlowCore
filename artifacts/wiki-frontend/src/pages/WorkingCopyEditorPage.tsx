@@ -448,6 +448,12 @@ export function WorkingCopyEditorPage() {
       setSubmitOpen(false);
       if (nodeId) {
         queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+        if (wasAutoPublished) {
+          queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] });
+          queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] });
+        }
       }
       navigate(`/node/${nodeId}`);
     } catch (err) {
