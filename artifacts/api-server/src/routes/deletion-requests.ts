@@ -6,7 +6,7 @@ import {
   auditEventsTable,
   principalsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 
@@ -39,9 +39,13 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
     .$dynamic();
 
   if (statusFilter) {
-    query = query.where(
-      eq(deletionRequestsTable.status, statusFilter as any),
-    );
+    const validStatuses = ["pending", "approved", "rejected", "executed"] as const;
+    type DeletionStatus = (typeof validStatuses)[number];
+    if (validStatuses.includes(statusFilter as DeletionStatus)) {
+      query = query.where(
+        eq(deletionRequestsTable.status, statusFilter as DeletionStatus),
+      );
+    }
   }
 
   const rows = await query;
@@ -56,11 +60,7 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
     ? await db
         .select({ id: principalsTable.id, displayName: principalsTable.displayName })
         .from(principalsTable)
-        .where(
-          allIds.length === 1
-            ? eq(principalsTable.id, allIds[0])
-            : undefined as any,
-        )
+        .where(inArray(principalsTable.id, allIds))
     : [];
 
   const nameMap = new Map(principals.map((p) => [p.id, p.displayName]));
