@@ -112,7 +112,7 @@ export function BlockEditor({
         dropcursor: { color: "hsl(var(--primary))", width: 2 },
       }),
       Placeholder.configure({
-        placeholder: 'Tippen Sie "/" für Befehle...',
+        placeholder: '',
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
