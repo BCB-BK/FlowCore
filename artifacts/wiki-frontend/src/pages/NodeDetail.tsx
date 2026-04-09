@@ -535,7 +535,52 @@ export function NodeDetail() {
                 templateType={node.templateType}
                 structuredFields={structuredFields}
               />
+            </div>
+          )}
 
+          {isOverviewPage && !isFieldEmpty(editorContent) && (
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <h3 className="text-base font-semibold">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={showPageAssist ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowPageAssist(!showPageAssist)}
+                >
+                  <Bot className="h-3.5 w-3.5 mr-1" />
+                  FlowCore-Assistent
+                </Button>
+              </div>
+            </div>
+            <div
+              className={
+                showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
+              }
+            >
+              <BlockEditor
+                content={editorContent}
+                onSave={async () => {}}
+                editable={false}
+                nodeId={nodeId}
+                parentTemplateType={node?.templateType}
+              />
+              {showPageAssist && (
+                <PageAssistant
+                  nodeId={nodeId}
+                  getSelectedText={() => {
+                    const sel = window.getSelection();
+                    return sel ? sel.toString() : "";
+                  }}
+                  onClose={() => setShowPageAssist(false)}
+                />
+              )}
+            </div>
+          </div>
+          )}
+
+          {isOverviewPage && (
+            <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold">
                   {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : node.templateType === "area_overview" ? "Zugehörige Seiten" : "Untergeordnete Inhalte"}
@@ -845,7 +890,7 @@ export function NodeDetail() {
             </>
           )}
 
-          {!isFieldEmpty(editorContent) && (
+          {!isOverviewPage && !isFieldEmpty(editorContent) && (
           <div className="mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
               <h3 className="text-base font-semibold">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
