@@ -153,13 +153,19 @@ export function NodeDetail() {
     query: { queryKey: [`/api/principals/${wcAuthorId || ""}`], enabled: !!wcAuthorId && !isOwnWc },
   });
 
+  const latestRevision =
+    revisions && revisions.length > 0 ? revisions[0] : null;
+
+  const nodeOwnerId = node?.ownerId ?? undefined;
+  const revisionHasOwner = !!(latestRevision?.content as Record<string, unknown> | undefined)?.owner;
+  const { data: ownerPrincipal } = useGetPrincipal(nodeOwnerId || "", {
+    query: { queryKey: [`/api/principals/${nodeOwnerId || ""}`], enabled: !!nodeOwnerId && !revisionHasOwner },
+  });
+
   const [editTitle, setEditTitle] = useState("");
   const [editTemplateType, setEditTemplateType] = useState<
     NonNullable<UpdateNodeInput["templateType"]>
   >("core_process_overview");
-
-  const latestRevision =
-    revisions && revisions.length > 0 ? revisions[0] : null;
   const revisionContent =
     (latestRevision?.content as Record<string, unknown>) ?? {};
 
@@ -170,8 +176,11 @@ export function NodeDetail() {
         dv[k.replace(/_display$/, "")] = v;
       }
     }
+    if (!dv.owner && ownerPrincipal?.displayName) {
+      dv.owner = ownerPrincipal.displayName;
+    }
     return dv;
-  }, [revisionContent]);
+  }, [revisionContent, ownerPrincipal]);
 
   const structuredFields: Record<string, unknown> = useMemo(
     () => (latestRevision?.structuredFields as Record<string, unknown>) ?? {},
@@ -202,6 +211,17 @@ export function NodeDetail() {
     if (!structuredFields.governance || typeof structuredFields.governance !== "object") return {};
     return structuredFields.governance as Record<string, string>;
   }, [structuredFields]);
+
+  const enrichedMetadata = useMemo(() => {
+    const base: Record<string, unknown> = { ...revisionContent };
+    if (!base.owner && nodeOwnerId) {
+      base.owner = nodeOwnerId;
+      if (ownerPrincipal?.displayName) {
+        base.owner_display = ownerPrincipal.displayName;
+      }
+    }
+    return base;
+  }, [revisionContent, nodeOwnerId, ownerPrincipal]);
 
   const handleCreateOrResumeWC = useCallback(async () => {
     if (!nodeId) return;
@@ -246,7 +266,7 @@ export function NodeDetail() {
     );
   }
 
-  const metadata: Record<string, unknown> = revisionContent;
+  const metadata: Record<string, unknown> = enrichedMetadata;
 
   const handleDeletionRequest = async () => {
     if (!deleteReason.trim()) return;
@@ -313,7 +333,12 @@ export function NodeDetail() {
     }
   };
 
-  const ownerDisplayName = metadataDisplayValues.owner || (revisionContent.owner ? String(revisionContent.owner) : undefined);
+  const ownerDisplayName =
+    metadataDisplayValues.owner ||
+    (revisionContent.owner_display ? String(revisionContent.owner_display) : undefined) ||
+    ownerPrincipal?.displayName ||
+    (revisionContent.owner ? String(revisionContent.owner) : undefined) ||
+    undefined;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
