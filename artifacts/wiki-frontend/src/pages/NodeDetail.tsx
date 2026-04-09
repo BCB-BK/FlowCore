@@ -135,6 +135,10 @@ export function NodeDetail() {
     return groups;
   }, [publishedChildren]);
 
+  const isPublished = useCallback((c: { status: string; publishedRevisionId?: string | null }) => {
+    return c.status === "published" || !!c.publishedRevisionId;
+  }, []);
+
   const userPerms = currentUser?.permissions ?? [];
   const canCreate = userPerms.includes("create_page");
   const canEdit = userPerms.includes("edit_content");
@@ -198,9 +202,15 @@ export function NodeDetail() {
   );
 
   const clusterGroups = useMemo(() => {
-    if (publishedChildren.length === 0 || clusters.length === 0) return [];
-    return groupChildrenByClusters(publishedChildren, clusters);
-  }, [publishedChildren, clusters]);
+    if (!children || children.length === 0 || clusters.length === 0) return [];
+    const raw = groupChildrenByClusters(children, clusters);
+    return raw.map((group) => {
+      if (group.cluster === null) {
+        return { ...group, children: group.children.filter(isPublished) };
+      }
+      return group;
+    }).filter((g) => g.children.length > 0 || g.cluster !== null);
+  }, [children, clusters, isPublished]);
 
   const editorContent = useMemo(() => {
     if (
@@ -529,7 +539,7 @@ export function NodeDetail() {
                 )}
               </div>
 
-              {publishedChildren.length > 0 ? (
+              {(clusters.length > 0 ? (children && children.length > 0) : publishedChildren.length > 0) ? (
                 clusters.length > 0 ? (
                 <div className="space-y-6">
                   {clusterGroups.map(({ cluster, children: groupChildren }) => (
