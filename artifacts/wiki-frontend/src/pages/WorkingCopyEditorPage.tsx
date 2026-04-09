@@ -36,6 +36,7 @@ import {
   Layers,
   FolderOpen,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
@@ -97,7 +98,7 @@ export function WorkingCopyEditorPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: currentUser } = useAuth();
-  const { isSetupMode } = useSetupMode();
+  const { setupMode: isSetupMode } = useSetupMode();
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
     query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
@@ -964,10 +965,20 @@ export function WorkingCopyEditorPage() {
             );
           })()}
 
-          {submitOpen && submitValidation && !submitValidation.valid && (
+          {submitOpen && isSetupMode && (
+            <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-700 p-3 flex items-start gap-2">
+              <ShieldCheck className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Anlage-Modus aktiv</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">Pflichtfeld-Pr{"ü"}fung ist deaktiviert. Seiten k{"ö"}nnen auch ohne vollst{"ä"}ndige Metadaten eingereicht werden.</p>
+              </div>
+            </div>
+          )}
+
+          {submitOpen && submitValidation && !submitValidation.valid && !isSetupMode && (
             <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 p-3 space-y-2">
               <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                Veröffentlichungsanforderungen nicht erfüllt ({submitValidation.readinessPercentage}% bereit)
+                Ver{"ö"}ffentlichungsanforderungen nicht erf{"ü"}llt ({submitValidation.readinessPercentage}% bereit)
               </p>
               <ul className="text-xs space-y-1">
                 {submitValidation.errors.map((e) => (
