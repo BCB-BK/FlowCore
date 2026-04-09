@@ -1,6 +1,6 @@
 import { getPageType } from "@/lib/types";
 import type { DisplayProfile } from "@/lib/types";
-import { FileText, LayoutDashboard, Shield, Server, BookOpen, Workflow, FileX2 } from "lucide-react";
+import { FileText, LayoutDashboard, Shield, Server, BookOpen, Workflow } from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 import { isFieldEmpty } from "@/lib/field-empty";
 
@@ -48,13 +48,7 @@ export function GenericSectionLayout({
   if (contentSections.length === 0) return null;
 
   if (isViewMode && visibleSections.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <FileX2 className="h-10 w-10 mb-3 opacity-40" />
-        <p className="text-sm">Noch keine Inhalte vorhanden</p>
-        <p className="text-xs mt-1">Erstellen Sie eine Arbeitskopie, um Inhalte hinzuzufügen.</p>
-      </div>
-    );
+    return null;
   }
 
   const sectionIcon = displayProfile

@@ -53,12 +53,11 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
   const checkRef = useCheckSourceReference();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center gap-2 text-muted-foreground text-sm py-4">
-        <RefreshCw className="w-4 h-4 animate-spin" />
-        Lade Quellreferenzen...
-      </div>
-    );
+    return null;
+  }
+
+  if (!refs || refs.length === 0) {
+    return null;
   }
 
   return (
@@ -85,12 +84,6 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
         </div>
       </CardHeader>
       <CardContent>
-        {(!refs || refs.length === 0) && (
-          <p className="text-sm text-muted-foreground py-2">
-            Keine externen Quellen verknüpft
-          </p>
-        )}
-
         <div className="space-y-2">
           {refs?.map((ref) => {
             const statusCfg =

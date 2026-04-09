@@ -15,7 +15,6 @@ import { QaRepeater } from "@/components/compound/QaRepeater";
 import { TermRepeater } from "@/components/compound/TermRepeater";
 import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { isFieldEmpty } from "@/lib/field-empty";
-import { FileX2 } from "lucide-react";
 import type { LayoutConfig, LayoutField, LayoutRow, PageTypeSection } from "./types";
 
 interface GenericLayoutProps {
@@ -236,13 +235,7 @@ export function GenericLayout({
   });
 
   if (isViewMode && visibleRows.length === 0 && visibleLegacy.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <FileX2 className="h-10 w-10 mb-3 opacity-40" />
-        <p className="text-sm">Noch keine Inhalte vorhanden</p>
-        <p className="text-xs mt-1">Erstellen Sie eine Arbeitskopie, um Inhalte hinzuzufügen.</p>
-      </div>
-    );
+    return null;
   }
 
   return (
