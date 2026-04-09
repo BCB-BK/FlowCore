@@ -48,6 +48,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Save,
+  ExternalLink,
   Star,
   Zap,
   Settings2,
@@ -169,7 +171,7 @@ export function CreateNodeDialog({
       .map((c) => ({ category: c, variants: grouped[c] }));
   }, [selectedDef, templateType]);
 
-  const handleCreate = async () => {
+  const handleCreate = async (openNewPage: boolean = false) => {
     if (!title.trim()) return;
 
     try {
@@ -199,9 +201,6 @@ export function CreateNodeDialog({
         }
       }
 
-
-
-
       const wc = await createWorkingCopy.mutateAsync({ nodeId: node.id });
 
       await updateWorkingCopy.mutateAsync({
@@ -216,7 +215,15 @@ export function CreateNodeDialog({
 
       onNodeCreated?.(node.id);
       resetAndClose();
-      navigate(`/nodes/${node.id}/edit`);
+
+      if (openNewPage) {
+        navigate(`/nodes/${node.id}/edit`);
+      } else {
+        toast({
+          title: "Seite erstellt",
+          description: `"${title.trim()}" wurde erfolgreich angelegt.`,
+        });
+      }
     } catch (err) {
       toast({
         variant: "destructive",
@@ -691,13 +698,23 @@ export function CreateNodeDialog({
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
-            <Button
-              onClick={handleCreate}
-              disabled={!title.trim() || createNode.isPending}
-            >
-              {createNode.isPending ? "Wird erstellt..." : "Anlegen"}
-              {!createNode.isPending && <Check className="ml-1 h-4 w-4" />}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleCreate(false)}
+                disabled={!title.trim() || createNode.isPending}
+              >
+                {createNode.isPending ? "Wird erstellt..." : "Speichern"}
+                {!createNode.isPending && <Save className="ml-1 h-4 w-4" />}
+              </Button>
+              <Button
+                onClick={() => handleCreate(true)}
+                disabled={!title.trim() || createNode.isPending}
+              >
+                {createNode.isPending ? "Wird erstellt..." : "Speichern & \u00F6ffnen"}
+                {!createNode.isPending && <ExternalLink className="ml-1 h-4 w-4" />}
+              </Button>
+            </div>
           )}
         </DialogFooter>
       </DialogContent>
