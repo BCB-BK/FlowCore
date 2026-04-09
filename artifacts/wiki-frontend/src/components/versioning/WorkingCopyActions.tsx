@@ -62,10 +62,17 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
     return validateForPublication(templateType, metadata, sectionData);
   }, [templateType, workingCopy.content, workingCopy.structuredFields]);
 
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+  const invalidateNode = () => {
     queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] });
     queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
+  };
+
+  const updateWcCache = (result: unknown) => {
+    queryClient.setQueryData(getGetActiveWorkingCopyQueryKey(nodeId), result);
+  };
+
+  const removeWcCache = () => {
+    queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
   };
 
   const resetDialogs = () => {
@@ -79,13 +86,14 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
 
   const handleApprove = async () => {
     try {
-      await approve.mutateAsync({
+      const result = await approve.mutateAsync({
         workingCopyId: workingCopy.id,
         data: { comment: comment || undefined },
       });
       toast({ title: "Arbeitskopie freigegeben" });
       resetDialogs();
-      invalidate();
+      updateWcCache(result);
+      invalidateNode();
     } catch (err) {
       toast({
         variant: "destructive",
@@ -96,13 +104,14 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
 
   const handleReturn = async () => {
     try {
-      await returnForChanges.mutateAsync({
+      const result = await returnForChanges.mutateAsync({
         workingCopyId: workingCopy.id,
         data: { comment: comment || undefined },
       });
       toast({ title: "Zur Überarbeitung zurückgegeben" });
       resetDialogs();
-      invalidate();
+      updateWcCache(result);
+      invalidateNode();
     } catch (err) {
       toast({
         variant: "destructive",
@@ -128,7 +137,10 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
       });
       toast({ title: "Veröffentlicht", description: `Version ${versionLabel.trim()}` });
       resetDialogs();
-      invalidate();
+      removeWcCache();
+      invalidateNode();
+      queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] });
     } catch (err) {
       toast({
         variant: "destructive",
@@ -145,7 +157,8 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
       });
       toast({ title: "Arbeitskopie abgebrochen" });
       resetDialogs();
-      invalidate();
+      removeWcCache();
+      invalidateNode();
     } catch (err) {
       toast({
         variant: "destructive",

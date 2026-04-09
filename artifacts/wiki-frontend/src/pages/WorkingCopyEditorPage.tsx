@@ -455,18 +455,20 @@ export function WorkingCopyEditorPage() {
       toast({ title: wasAutoPublished ? "Direkt ver\u00F6ffentlicht (Freigabekette inaktiv)" : "Zur Pr\u00FCfung eingereicht" });
       setSubmitOpen(false);
       if (nodeId) {
-        const invalidations = [
-          queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) }),
-        ];
         if (wasAutoPublished) {
-          invalidations.push(
+          queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+          await Promise.all([
             queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] }),
             queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
             queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] }),
             queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] }),
+          ]);
+        } else {
+          queryClient.setQueryData(
+            getGetActiveWorkingCopyQueryKey(nodeId),
+            submitResult,
           );
         }
-        await Promise.all(invalidations);
       }
       navigate(`/node/${nodeId}`);
     } catch (err) {
@@ -489,7 +491,7 @@ export function WorkingCopyEditorPage() {
       });
       toast({ title: "Arbeitskopie abgebrochen" });
       if (nodeId) {
-        queryClient.invalidateQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+        queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
       }
       navigate(`/node/${nodeId}`);
     } catch (err) {
