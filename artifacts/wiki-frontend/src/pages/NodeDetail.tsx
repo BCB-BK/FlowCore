@@ -829,9 +829,6 @@ export function NodeDetail() {
                   <TagManager nodeId={nodeId} />
                 </div>
               )}
-
-              {nodeId && <div className="mt-4"><RelatedContentSidebar nodeId={nodeId} /></div>}
-              {nodeId && <div className="mt-4"><GlossaryTermsPanel nodeId={nodeId} /></div>}
             </>
           )}
 
@@ -874,6 +871,13 @@ export function NodeDetail() {
               )}
             </div>
           </div>
+          )}
+
+          {!isOverviewPage && nodeId && (
+            <>
+              <div className="mt-4"><RelatedContentSidebar nodeId={nodeId} /></div>
+              <div className="mt-4"><GlossaryTermsPanel nodeId={nodeId} /></div>
+            </>
           )}
 
           {nodeId && <SourceReferencesPanel nodeId={nodeId} />}
