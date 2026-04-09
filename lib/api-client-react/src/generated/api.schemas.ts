@@ -83,6 +83,7 @@ export interface ContentNode {
   deletedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Number of direct child nodes */
   childCount?: number;
 }
 
@@ -1300,6 +1301,54 @@ export interface SourceReferenceCheckResult {
   externalModifiedAt?: string | null;
 }
 
+export type DeletionRequestStatus =
+  (typeof DeletionRequestStatus)[keyof typeof DeletionRequestStatus];
+
+export const DeletionRequestStatus = {
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+  executed: "executed",
+  cancelled: "cancelled",
+} as const;
+
+export interface DeletionRequest {
+  id: string;
+  nodeId: string;
+  nodeTitle: string;
+  nodeDisplayCode: string;
+  requestedBy: string;
+  requestedByName?: string;
+  reason: string;
+  status: DeletionRequestStatus;
+  reviewedBy?: string | null;
+  reviewedByName?: string | null;
+  reviewComment?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DeletionRequestOrNull = DeletionRequest | null;
+
+export interface CreateDeletionRequestBody {
+  nodeId: string;
+  reason: string;
+}
+
+export type ReviewDeletionRequestBodyDecision =
+  (typeof ReviewDeletionRequestBodyDecision)[keyof typeof ReviewDeletionRequestBodyDecision];
+
+export const ReviewDeletionRequestBodyDecision = {
+  approved: "approved",
+  rejected: "rejected",
+} as const;
+
+export interface ReviewDeletionRequestBody {
+  decision: ReviewDeletionRequestBodyDecision;
+  comment?: string;
+}
+
 export type AiSettingsSourceMode =
   (typeof AiSettingsSourceMode)[keyof typeof AiSettingsSourceMode];
 
@@ -2307,6 +2356,21 @@ export type ListSharePointSitesParams = {
 export type ListSharePointDriveItemsParams = {
   folderId?: string;
 };
+
+export type ListDeletionRequestsParams = {
+  status?: ListDeletionRequestsStatus;
+};
+
+export type ListDeletionRequestsStatus =
+  (typeof ListDeletionRequestsStatus)[keyof typeof ListDeletionRequestsStatus];
+
+export const ListDeletionRequestsStatus = {
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+  executed: "executed",
+  cancelled: "cancelled",
+} as const;
 
 export type GetAiUsageStatsParams = {
   days?: number;

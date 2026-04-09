@@ -386,6 +386,7 @@ export const ListNodesResponseItem = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 export const ListNodesResponse = zod.array(ListNodesResponseItem);
 
@@ -466,6 +467,7 @@ export const ListRootNodesResponseItem = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 export const ListRootNodesResponse = zod.array(ListRootNodesResponseItem);
 
@@ -519,6 +521,7 @@ export const GetNodeResponse = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 
 /**
@@ -597,6 +600,7 @@ export const UpdateNodeResponse = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 
 /**
@@ -656,6 +660,7 @@ export const GetNodeChildrenResponseItem = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 export const GetNodeChildrenResponse = zod.array(GetNodeChildrenResponseItem);
 
@@ -709,6 +714,7 @@ export const GetNodeSiblingsResponseItem = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 export const GetNodeSiblingsResponse = zod.array(GetNodeSiblingsResponseItem);
 
@@ -763,6 +769,7 @@ export const GetNodeAncestorsResponseItem = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 export const GetNodeAncestorsResponse = zod.array(GetNodeAncestorsResponseItem);
 
@@ -821,6 +828,7 @@ export const MoveNodeResponse = zod.object({
   deletedAt: zod.date().nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+  childCount: zod.number().optional().describe("Number of direct child nodes"),
 });
 
 /**
@@ -2996,6 +3004,177 @@ export const CheckSourceReferenceResponse = zod.object({
   lastCheckedAt: zod.date(),
   externalModifiedAt: zod.date().nullish(),
 });
+
+/**
+ * @summary List all deletion requests
+ */
+export const ListDeletionRequestsQueryParams = zod.object({
+  status: zod
+    .enum(["pending", "approved", "rejected", "executed", "cancelled"])
+    .optional(),
+});
+
+export const ListDeletionRequestsResponseItem = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  nodeTitle: zod.string(),
+  nodeDisplayCode: zod.string(),
+  requestedBy: zod.string(),
+  requestedByName: zod.string().optional(),
+  reason: zod.string(),
+  status: zod.enum([
+    "pending",
+    "approved",
+    "rejected",
+    "executed",
+    "cancelled",
+  ]),
+  reviewedBy: zod.string().nullish(),
+  reviewedByName: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListDeletionRequestsResponse = zod.array(
+  ListDeletionRequestsResponseItem,
+);
+
+/**
+ * @summary Request deletion of a content node
+ */
+export const CreateDeletionRequestBody = zod.object({
+  nodeId: zod.string().uuid(),
+  reason: zod.string(),
+});
+
+/**
+ * @summary Get a single deletion request
+ */
+export const GetDeletionRequestParams = zod.object({
+  requestId: zod.coerce.string().uuid(),
+});
+
+export const GetDeletionRequestResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  nodeTitle: zod.string(),
+  nodeDisplayCode: zod.string(),
+  requestedBy: zod.string(),
+  requestedByName: zod.string().optional(),
+  reason: zod.string(),
+  status: zod.enum([
+    "pending",
+    "approved",
+    "rejected",
+    "executed",
+    "cancelled",
+  ]),
+  reviewedBy: zod.string().nullish(),
+  reviewedByName: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Approve or reject a deletion request
+ */
+export const ReviewDeletionRequestParams = zod.object({
+  requestId: zod.coerce.string().uuid(),
+});
+
+export const ReviewDeletionRequestBody = zod.object({
+  decision: zod.enum(["approved", "rejected"]),
+  comment: zod.string().optional(),
+});
+
+export const ReviewDeletionRequestResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  nodeTitle: zod.string(),
+  nodeDisplayCode: zod.string(),
+  requestedBy: zod.string(),
+  requestedByName: zod.string().optional(),
+  reason: zod.string(),
+  status: zod.enum([
+    "pending",
+    "approved",
+    "rejected",
+    "executed",
+    "cancelled",
+  ]),
+  reviewedBy: zod.string().nullish(),
+  reviewedByName: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Cancel a pending deletion request
+ */
+export const CancelDeletionRequestParams = zod.object({
+  requestId: zod.coerce.string().uuid(),
+});
+
+export const CancelDeletionRequestResponse = zod.object({
+  id: zod.string().uuid(),
+  nodeId: zod.string().uuid(),
+  nodeTitle: zod.string(),
+  nodeDisplayCode: zod.string(),
+  requestedBy: zod.string(),
+  requestedByName: zod.string().optional(),
+  reason: zod.string(),
+  status: zod.enum([
+    "pending",
+    "approved",
+    "rejected",
+    "executed",
+    "cancelled",
+  ]),
+  reviewedBy: zod.string().nullish(),
+  reviewedByName: zod.string().nullish(),
+  reviewComment: zod.string().nullish(),
+  reviewedAt: zod.date().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Get pending deletion request for a node
+ */
+export const GetNodeDeletionRequestParams = zod.object({
+  nodeId: zod.coerce.string().uuid(),
+});
+
+export const GetNodeDeletionRequestResponse = zod.union([
+  zod.object({
+    id: zod.string().uuid(),
+    nodeId: zod.string().uuid(),
+    nodeTitle: zod.string(),
+    nodeDisplayCode: zod.string(),
+    requestedBy: zod.string(),
+    requestedByName: zod.string().optional(),
+    reason: zod.string(),
+    status: zod.enum([
+      "pending",
+      "approved",
+      "rejected",
+      "executed",
+      "cancelled",
+    ]),
+    reviewedBy: zod.string().nullish(),
+    reviewedByName: zod.string().nullish(),
+    reviewComment: zod.string().nullish(),
+    reviewedAt: zod.date().nullish(),
+    createdAt: zod.date(),
+    updatedAt: zod.date(),
+  }),
+  zod.null(),
+]);
 
 /**
  * @summary Get AI assistant settings

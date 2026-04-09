@@ -36,10 +36,15 @@ import {
   ChevronRight,
   Send,
   CheckCircle2,
+  Trash2,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { useGetMyWork } from "@workspace/api-client-react";
+import { useGetMyWork, useListDeletionRequests, useReviewDeletionRequest, getListDeletionRequestsQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 type SortField = "priority" | "age" | "title" | "area";
 type SortDir = "asc" | "desc";
@@ -453,6 +458,113 @@ export function ReviewInboxPage() {
           </CardContent>
         </Card>
       )}
+      <DeletionRequestsSection />
     </div>
+  );
+}
+
+function DeletionRequestsSection() {
+  const { data: requests, isLoading } = useListDeletionRequests({ status: "pending" });
+  const reviewMutation = useReviewDeletionRequest();
+  const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+
+  const handleReview = async (requestId: string, decision: "approved" | "rejected") => {
+    try {
+      await reviewMutation.mutateAsync({
+        requestId,
+        data: { decision },
+      });
+      toast({
+        title: decision === "approved"
+          ? "L\u00F6schanfrage genehmigt \u2013 Seite archiviert"
+          : "L\u00F6schanfrage abgelehnt",
+      });
+      queryClient.invalidateQueries({
+        queryKey: getListDeletionRequestsQueryKey(),
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    }
+  };
+
+  if (isLoading) return null;
+  if (!requests || requests.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <Trash2 className="h-5 w-5 text-destructive" />
+          <CardTitle className="text-base">{"L\u00F6schanfragen"}</CardTitle>
+          <Badge variant="destructive" className="ml-1">{requests.length}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Seite</TableHead>
+              <TableHead>{"Begr\u00FCndung"}</TableHead>
+              <TableHead>Angefragt von</TableHead>
+              <TableHead>Datum</TableHead>
+              <TableHead className="text-right">Aktionen</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {requests.map((req) => (
+              <TableRow key={req.id} className="cursor-pointer" onClick={() => navigate(`/node/${req.nodeId}`)}>
+                <TableCell>
+                  <div>
+                    <p className="font-medium text-sm">{req.nodeTitle}</p>
+                    <p className="text-xs text-muted-foreground">{req.nodeDisplayCode}</p>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <p className="text-sm max-w-[200px] truncate">{req.reason}</p>
+                </TableCell>
+                <TableCell>
+                  <span className="text-sm">{req.requestedByName || req.requestedBy}</span>
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(req.createdAt).toLocaleDateString("de-DE")}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-green-600 hover:text-green-700"
+                      onClick={() => handleReview(req.id, "approved")}
+                      disabled={reviewMutation.isPending}
+                    >
+                      <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                      Genehmigen
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleReview(req.id, "rejected")}
+                      disabled={reviewMutation.isPending}
+                    >
+                      <XCircle className="h-3.5 w-3.5 mr-1" />
+                      Ablehnen
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

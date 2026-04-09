@@ -2420,6 +2420,126 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceReferenceCheckResult"
 
+  /content/deletion-requests:
+    get:
+      operationId: listDeletionRequests
+      tags: [content]
+      summary: List all deletion requests
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, approved, rejected, executed, cancelled]
+      responses:
+        "200":
+          description: List of deletion requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeletionRequest"
+    post:
+      operationId: createDeletionRequest
+      tags: [content]
+      summary: Request deletion of a content node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDeletionRequestBody"
+      responses:
+        "201":
+          description: Deletion request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletionRequest"
+
+  /content/deletion-requests/{requestId}:
+    get:
+      operationId: getDeletionRequest
+      tags: [content]
+      summary: Get a single deletion request
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deletion request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletionRequest"
+
+  /content/deletion-requests/{requestId}/review:
+    post:
+      operationId: reviewDeletionRequest
+      tags: [content]
+      summary: Approve or reject a deletion request
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewDeletionRequestBody"
+      responses:
+        "200":
+          description: Deletion request reviewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletionRequest"
+
+  /content/deletion-requests/{requestId}/cancel:
+    post:
+      operationId: cancelDeletionRequest
+      tags: [content]
+      summary: Cancel a pending deletion request
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deletion request cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletionRequest"
+
+  /content/nodes/{nodeId}/deletion-request:
+    get:
+      operationId: getNodeDeletionRequest
+      tags: [content]
+      summary: Get pending deletion request for a node
+      parameters:
+        - $ref: "#/components/parameters/NodeId"
+      responses:
+        "200":
+          description: Pending deletion request or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletionRequestOrNull"
+
   /ai/settings:
     get:
       operationId: getAiSettings
@@ -5363,6 +5483,86 @@ components:
         - id
         - syncStatus
         - lastCheckedAt
+
+    DeletionRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nodeId:
+          type: string
+          format: uuid
+        nodeTitle:
+          type: string
+        nodeDisplayCode:
+          type: string
+        requestedBy:
+          type: string
+        requestedByName:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected, executed, cancelled]
+        reviewedBy:
+          type: string
+          nullable: true
+        reviewedByName:
+          type: string
+          nullable: true
+        reviewComment:
+          type: string
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nodeId
+        - nodeTitle
+        - nodeDisplayCode
+        - requestedBy
+        - reason
+        - status
+        - createdAt
+        - updatedAt
+
+    DeletionRequestOrNull:
+      oneOf:
+        - $ref: "#/components/schemas/DeletionRequest"
+        - type: "null"
+
+    CreateDeletionRequestBody:
+      type: object
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+      required:
+        - nodeId
+        - reason
+
+    ReviewDeletionRequestBody:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        comment:
+          type: string
+      required:
+        - decision
 
     AiSettings:
       type: object

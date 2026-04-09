@@ -3,7 +3,6 @@ import {
   useNode,
   useNodeChildren,
   useNodeRevisions,
-  useDeleteNode,
   useUpdateNode,
 } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
@@ -22,17 +21,6 @@ import {
   SelectValue,
 } from "@workspace/ui/select";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@workspace/ui/alert-dialog";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -44,7 +32,6 @@ import {
   FolderOpen,
   Plus,
   Trash2,
-  Pencil,
   FileEdit,
   Loader2,
   Eye,
@@ -58,6 +45,10 @@ import {
   useGetActiveWorkingCopy,
   useCreateWorkingCopy,
   useGetPrincipal,
+  useCreateDeletionRequest,
+  useGetNodeDeletionRequest,
+  useCancelDeletionRequest,
+  getGetNodeDeletionRequestQueryKey,
 } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
@@ -78,6 +69,7 @@ import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
 import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { PageAssistant } from "@/components/ai/PageAssistant";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { Bot } from "lucide-react";
@@ -100,14 +92,18 @@ export function NodeDetail() {
   const { data: currentUser } = useAuth();
   const { data: children } = useNodeChildren(nodeId);
   const { data: revisions } = useNodeRevisions(nodeId);
-  const deleteNode = useDeleteNode();
+  const queryClient = useQueryClient();
   const updateNode = useUpdateNode();
   const createWorkingCopy = useCreateWorkingCopy();
+  const createDeletionRequest = useCreateDeletionRequest();
+  const cancelDeletionRequest = useCancelDeletionRequest();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [showEdit, setShowEdit] = useState(false);
   const [showPageAssist, setShowPageAssist] = useState(false);
+  const [showDeleteRequest, setShowDeleteRequest] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
   const { toast } = useToast();
 
   const pageDef = useMemo(() => {
@@ -146,6 +142,10 @@ export function NodeDetail() {
   });
   const activeWC = activeWCQuery.data;
   const wcLoading = activeWCQuery.isLoading;
+
+  const pendingDeletionQuery = useGetNodeDeletionRequest(nodeId || "", {
+    query: { enabled: !!nodeId },
+  });
 
   const wcAuthorId = activeWC?.authorId;
   const isOwnWc = !currentUser || wcAuthorId === currentUser?.principalId;
@@ -248,14 +248,38 @@ export function NodeDetail() {
 
   const metadata: Record<string, unknown> = revisionContent;
 
-  const handleDelete = async () => {
+  const handleDeletionRequest = async () => {
+    if (!deleteReason.trim()) return;
     try {
-      await deleteNode.mutateAsync({ nodeId: node.id });
-      navigate("/");
+      await createDeletionRequest.mutateAsync({
+        data: { nodeId: node.id, reason: deleteReason.trim() },
+      });
+      toast({ title: "L\u00F6schanfrage eingereicht" });
+      setShowDeleteRequest(false);
+      setDeleteReason("");
+      queryClient.invalidateQueries({
+        queryKey: getGetNodeDeletionRequestQueryKey(node.id),
+      });
     } catch (err) {
       toast({
         variant: "destructive",
-        title: "Fehler beim Archivieren",
+        title: "Fehler beim Einreichen der L\u00F6schanfrage",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    }
+  };
+
+  const handleCancelDeletion = async (requestId: string) => {
+    try {
+      await cancelDeletionRequest.mutateAsync({ requestId });
+      toast({ title: "L\u00F6schanfrage zur\u00FCckgezogen" });
+      queryClient.invalidateQueries({
+        queryKey: getGetNodeDeletionRequestQueryKey(node.id),
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
         description: err instanceof Error ? err.message : "Unbekannter Fehler",
       });
     }
@@ -353,12 +377,6 @@ export function NodeDetail() {
             </Button>
           );
         })()}
-        {canEditStructure && (
-        <Button variant="outline" size="sm" onClick={openEditDialog}>
-          <Pencil className="mr-1 h-4 w-4" />
-          Eigenschaften
-        </Button>
-        )}
         {canCreate && (
         <Button
           variant="outline"
@@ -369,29 +387,16 @@ export function NodeDetail() {
           Unterseite
         </Button>
         )}
-        {canArchive && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="text-destructive">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Seite archivieren?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Die Seite &quot;{node.title}&quot; wird archiviert. Dieser
-                Vorgang kann rückgängig gemacht werden.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>
-                Archivieren
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {canArchive && !pendingDeletionQuery.data && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-destructive"
+          onClick={() => setShowDeleteRequest(true)}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          {"L\u00F6schanfrage"}
+        </Button>
         )}
       </div>
 
@@ -432,6 +437,32 @@ export function NodeDetail() {
         </TabsList>
 
         <TabsContent value="content" className="mt-4">
+          {pendingDeletionQuery.data && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <div>
+                    <p className="text-sm font-medium text-destructive">{"L\u00F6schanfrage ausstehend"}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {"Begr\u00FCndung: "}{pendingDeletionQuery.data.reason}
+                      {" \u2014 Erstellt am "}{new Date(pendingDeletionQuery.data.createdAt).toLocaleDateString("de-DE")}
+                    </p>
+                  </div>
+                </div>
+                {pendingDeletionQuery.data.requestedBy === currentUser?.principalId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCancelDeletion(pendingDeletionQuery.data!.id)}
+                    disabled={cancelDeletionRequest.isPending}
+                  >
+                    {"Zur\u00FCckziehen"}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           {activeWC && nodeId && (
             <div className="mb-4 space-y-3">
               <WorkingCopyBanner
@@ -1006,6 +1037,43 @@ export function NodeDetail() {
               disabled={!editTitle.trim() || updateNode.isPending}
             >
               {updateNode.isPending ? "Wird gespeichert..." : "Speichern"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteRequest} onOpenChange={(open) => { setShowDeleteRequest(open); if (!open) setDeleteReason(""); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{"L\u00F6schanfrage stellen"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              {"Die Seite \u201E"}{node.title}{"\u201C wird zur L\u00F6schung vorgeschlagen. Ein Administrator muss die Anfrage genehmigen."}
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="delete-reason">{"Begr\u00FCndung"}</Label>
+              <Input
+                id="delete-reason"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                placeholder={"Warum soll die Seite gel\u00F6scht werden?"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && deleteReason.trim()) handleDeletionRequest();
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowDeleteRequest(false); setDeleteReason(""); }}>
+              Abbrechen
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeletionRequest}
+              disabled={!deleteReason.trim() || createDeletionRequest.isPending}
+            >
+              {createDeletionRequest.isPending ? "Wird eingereicht..." : "Anfrage einreichen"}
             </Button>
           </DialogFooter>
         </DialogContent>

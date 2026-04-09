@@ -25,5 +25,6 @@ export interface ContentNode {
   deletedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  /** Number of direct child nodes */
   childCount?: number;
 }

@@ -19,6 +19,7 @@ import { backupRouter } from "./backup";
 import { workingCopiesRouter } from "./working-copies";
 import { notificationsRouter } from "./notifications";
 import apiTokensRouter from "./api-tokens";
+import { deletionRequestsRouter } from "./deletion-requests";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use("/ai", aiRouter);
 router.use("/quality", qualityRouter);
 router.use(teamsRouter);
 router.use(apiTokensRouter);
+router.use("/content", deletionRequestsRouter);
 
 export default router;

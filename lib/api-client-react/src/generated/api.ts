@@ -47,6 +47,7 @@ import type {
   ContentRevision,
   ContentTemplate,
   CreateAiFieldProfileBody,
+  CreateDeletionRequestBody,
   CreateGlossaryTerm,
   CreateNodeInput,
   CreatePrincipalInput,
@@ -57,6 +58,8 @@ import type {
   CreateSourceSystemInput,
   CreateStorageProviderInput,
   CreateTag,
+  DeletionRequest,
+  DeletionRequestOrNull,
   DryRunRestore200,
   DuplicateGroup,
   EffectivePermissions,
@@ -84,6 +87,7 @@ import type {
   HealthStatus,
   LinkGlossaryTermBody,
   ListBackupRunsParams,
+  ListDeletionRequestsParams,
   ListGlossaryTermsParams,
   ListMediaAssetsParams,
   ListPrincipalsParams,
@@ -118,6 +122,7 @@ import type {
   RestoreRevisionInput,
   ReturnWorkingCopyForChangesBody,
   ReviewDashboardSummary,
+  ReviewDeletionRequestBody,
   ReviewWorkflow,
   ReviewWorkflowDetail,
   RevisionDiff,
@@ -10142,6 +10147,549 @@ export const useCheckSourceReference = <
 > => {
   return useMutation(getCheckSourceReferenceMutationOptions(options));
 };
+
+/**
+ * @summary List all deletion requests
+ */
+export const getListDeletionRequestsUrl = (
+  params?: ListDeletionRequestsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/content/deletion-requests?${stringifiedParams}`
+    : `/api/content/deletion-requests`;
+};
+
+export const listDeletionRequests = async (
+  params?: ListDeletionRequestsParams,
+  options?: RequestInit,
+): Promise<DeletionRequest[]> => {
+  return customFetch<DeletionRequest[]>(getListDeletionRequestsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListDeletionRequestsQueryKey = (
+  params?: ListDeletionRequestsParams,
+) => {
+  return [
+    `/api/content/deletion-requests`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getListDeletionRequestsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listDeletionRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListDeletionRequestsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listDeletionRequests>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListDeletionRequestsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listDeletionRequests>>
+  > = ({ signal }) =>
+    listDeletionRequests(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listDeletionRequests>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListDeletionRequestsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listDeletionRequests>>
+>;
+export type ListDeletionRequestsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all deletion requests
+ */
+
+export function useListDeletionRequests<
+  TData = Awaited<ReturnType<typeof listDeletionRequests>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListDeletionRequestsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listDeletionRequests>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListDeletionRequestsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Request deletion of a content node
+ */
+export const getCreateDeletionRequestUrl = () => {
+  return `/api/content/deletion-requests`;
+};
+
+export const createDeletionRequest = async (
+  createDeletionRequestBody: CreateDeletionRequestBody,
+  options?: RequestInit,
+): Promise<DeletionRequest> => {
+  return customFetch<DeletionRequest>(getCreateDeletionRequestUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createDeletionRequestBody),
+  });
+};
+
+export const getCreateDeletionRequestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createDeletionRequest>>,
+    TError,
+    { data: BodyType<CreateDeletionRequestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createDeletionRequest>>,
+  TError,
+  { data: BodyType<CreateDeletionRequestBody> },
+  TContext
+> => {
+  const mutationKey = ["createDeletionRequest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createDeletionRequest>>,
+    { data: BodyType<CreateDeletionRequestBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createDeletionRequest(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateDeletionRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createDeletionRequest>>
+>;
+export type CreateDeletionRequestMutationBody =
+  BodyType<CreateDeletionRequestBody>;
+export type CreateDeletionRequestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Request deletion of a content node
+ */
+export const useCreateDeletionRequest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createDeletionRequest>>,
+    TError,
+    { data: BodyType<CreateDeletionRequestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createDeletionRequest>>,
+  TError,
+  { data: BodyType<CreateDeletionRequestBody> },
+  TContext
+> => {
+  return useMutation(getCreateDeletionRequestMutationOptions(options));
+};
+
+/**
+ * @summary Get a single deletion request
+ */
+export const getGetDeletionRequestUrl = (requestId: string) => {
+  return `/api/content/deletion-requests/${requestId}`;
+};
+
+export const getDeletionRequest = async (
+  requestId: string,
+  options?: RequestInit,
+): Promise<DeletionRequest> => {
+  return customFetch<DeletionRequest>(getGetDeletionRequestUrl(requestId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDeletionRequestQueryKey = (requestId: string) => {
+  return [`/api/content/deletion-requests/${requestId}`] as const;
+};
+
+export const getGetDeletionRequestQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDeletionRequest>>,
+  TError = ErrorType<unknown>,
+>(
+  requestId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getDeletionRequest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetDeletionRequestQueryKey(requestId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getDeletionRequest>>
+  > = ({ signal }) =>
+    getDeletionRequest(requestId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!requestId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDeletionRequest>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDeletionRequestQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDeletionRequest>>
+>;
+export type GetDeletionRequestQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get a single deletion request
+ */
+
+export function useGetDeletionRequest<
+  TData = Awaited<ReturnType<typeof getDeletionRequest>>,
+  TError = ErrorType<unknown>,
+>(
+  requestId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getDeletionRequest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDeletionRequestQueryOptions(requestId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Approve or reject a deletion request
+ */
+export const getReviewDeletionRequestUrl = (requestId: string) => {
+  return `/api/content/deletion-requests/${requestId}/review`;
+};
+
+export const reviewDeletionRequest = async (
+  requestId: string,
+  reviewDeletionRequestBody: ReviewDeletionRequestBody,
+  options?: RequestInit,
+): Promise<DeletionRequest> => {
+  return customFetch<DeletionRequest>(getReviewDeletionRequestUrl(requestId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(reviewDeletionRequestBody),
+  });
+};
+
+export const getReviewDeletionRequestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewDeletionRequest>>,
+    TError,
+    { requestId: string; data: BodyType<ReviewDeletionRequestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reviewDeletionRequest>>,
+  TError,
+  { requestId: string; data: BodyType<ReviewDeletionRequestBody> },
+  TContext
+> => {
+  const mutationKey = ["reviewDeletionRequest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reviewDeletionRequest>>,
+    { requestId: string; data: BodyType<ReviewDeletionRequestBody> }
+  > = (props) => {
+    const { requestId, data } = props ?? {};
+
+    return reviewDeletionRequest(requestId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReviewDeletionRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reviewDeletionRequest>>
+>;
+export type ReviewDeletionRequestMutationBody =
+  BodyType<ReviewDeletionRequestBody>;
+export type ReviewDeletionRequestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Approve or reject a deletion request
+ */
+export const useReviewDeletionRequest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reviewDeletionRequest>>,
+    TError,
+    { requestId: string; data: BodyType<ReviewDeletionRequestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof reviewDeletionRequest>>,
+  TError,
+  { requestId: string; data: BodyType<ReviewDeletionRequestBody> },
+  TContext
+> => {
+  return useMutation(getReviewDeletionRequestMutationOptions(options));
+};
+
+/**
+ * @summary Cancel a pending deletion request
+ */
+export const getCancelDeletionRequestUrl = (requestId: string) => {
+  return `/api/content/deletion-requests/${requestId}/cancel`;
+};
+
+export const cancelDeletionRequest = async (
+  requestId: string,
+  options?: RequestInit,
+): Promise<DeletionRequest> => {
+  return customFetch<DeletionRequest>(getCancelDeletionRequestUrl(requestId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCancelDeletionRequestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelDeletionRequest>>,
+    TError,
+    { requestId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelDeletionRequest>>,
+  TError,
+  { requestId: string },
+  TContext
+> => {
+  const mutationKey = ["cancelDeletionRequest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelDeletionRequest>>,
+    { requestId: string }
+  > = (props) => {
+    const { requestId } = props ?? {};
+
+    return cancelDeletionRequest(requestId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CancelDeletionRequestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cancelDeletionRequest>>
+>;
+
+export type CancelDeletionRequestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Cancel a pending deletion request
+ */
+export const useCancelDeletionRequest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelDeletionRequest>>,
+    TError,
+    { requestId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof cancelDeletionRequest>>,
+  TError,
+  { requestId: string },
+  TContext
+> => {
+  return useMutation(getCancelDeletionRequestMutationOptions(options));
+};
+
+/**
+ * @summary Get pending deletion request for a node
+ */
+export const getGetNodeDeletionRequestUrl = (nodeId: string) => {
+  return `/api/content/nodes/${nodeId}/deletion-request`;
+};
+
+export const getNodeDeletionRequest = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<DeletionRequestOrNull> => {
+  return customFetch<DeletionRequestOrNull>(
+    getGetNodeDeletionRequestUrl(nodeId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetNodeDeletionRequestQueryKey = (nodeId: string) => {
+  return [`/api/content/nodes/${nodeId}/deletion-request`] as const;
+};
+
+export const getGetNodeDeletionRequestQueryOptions = <
+  TData = Awaited<ReturnType<typeof getNodeDeletionRequest>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeDeletionRequest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetNodeDeletionRequestQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getNodeDeletionRequest>>
+  > = ({ signal }) =>
+    getNodeDeletionRequest(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getNodeDeletionRequest>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetNodeDeletionRequestQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getNodeDeletionRequest>>
+>;
+export type GetNodeDeletionRequestQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get pending deletion request for a node
+ */
+
+export function useGetNodeDeletionRequest<
+  TData = Awaited<ReturnType<typeof getNodeDeletionRequest>>,
+  TError = ErrorType<unknown>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getNodeDeletionRequest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetNodeDeletionRequestQueryOptions(nodeId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Get AI assistant settings

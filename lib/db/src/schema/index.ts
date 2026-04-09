@@ -22,3 +22,4 @@ export * from "./sessions";
 export * from "./api-tokens";
 export * from "./rate-limits";
 export * from "./workflow-templates";
+export * from "./deletion-requests";

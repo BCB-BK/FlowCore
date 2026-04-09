@@ -205,3 +205,11 @@ export const workingCopyEventTypeEnum = pgEnum("working_copy_event_type", [
   "unlocked",
   "commented",
 ]);
+
+export const deletionRequestStatusEnum = pgEnum("deletion_request_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "executed",
+  "cancelled",
+]);
