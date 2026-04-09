@@ -417,7 +417,7 @@ export function NodeDetail() {
             </Button>
           );
         })()}
-        {canCreate && (
+        {canCreate && activeWC && (
         <Button
           variant="outline"
           size="sm"
@@ -527,7 +527,7 @@ export function NodeDetail() {
                 <h3 className="text-base font-semibold">
                   {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : node.templateType === "area_overview" ? "Zugehörige Seiten" : "Untergeordnete Inhalte"}
                 </h3>
-                {canCreate && (
+                {canCreate && activeWC && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -924,7 +924,7 @@ export function NodeDetail() {
         <TabsContent value="children" className="mt-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Unterseiten</h2>
-            {canCreate && (
+            {canCreate && activeWC && (
             <Button
               variant="outline"
               size="sm"
@@ -1000,7 +1000,7 @@ export function NodeDetail() {
                       .join(", ")}
                   </p>
                 )}
-                {canCreate && (
+                {canCreate && activeWC && (
                 <Button
                   variant="outline"
                   size="sm"
