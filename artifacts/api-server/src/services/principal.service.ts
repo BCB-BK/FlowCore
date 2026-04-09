@@ -15,15 +15,22 @@ export async function upsertPrincipal(input: {
   email?: string;
   upn?: string;
 }, txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db): Promise<string> {
-  const [existing] = await txOrDb
-    .select({ id: principalsTable.id })
+  const providerVariants = [input.externalProvider];
+  if (input.externalProvider === "entra") providerVariants.push("entra_id");
+  else if (input.externalProvider === "entra_id") providerVariants.push("entra");
+
+  const matches = await txOrDb
+    .select({ id: principalsTable.id, externalProvider: principalsTable.externalProvider })
     .from(principalsTable)
     .where(
       and(
-        eq(principalsTable.externalProvider, input.externalProvider),
+        inArray(principalsTable.externalProvider, providerVariants),
         eq(principalsTable.externalId, input.externalId),
       ),
     );
+
+  const canonical = matches.find((m) => m.externalProvider === input.externalProvider);
+  const existing = canonical ?? matches[0];
 
   if (existing) {
     await txOrDb
@@ -32,10 +39,21 @@ export async function upsertPrincipal(input: {
         displayName: input.displayName,
         email: input.email,
         upn: input.upn,
+        externalProvider: input.externalProvider,
         lastSyncAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(principalsTable.id, existing.id));
+
+    const duplicates = matches.filter((m) => m.id !== existing.id);
+    for (const dup of duplicates) {
+      await txOrDb
+        .update(principalsTable)
+        .set({ status: "inactive", updatedAt: new Date() })
+        .where(eq(principalsTable.id, dup.id));
+      logger.info({ duplicateId: dup.id, canonicalId: existing.id }, "Deactivated duplicate principal");
+    }
+
     return existing.id;
   }
 

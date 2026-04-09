@@ -114,6 +114,35 @@ async function seedAiFieldProfiles(): Promise<void> {
   );
 }
 
+async function deduplicatePrincipals(): Promise<void> {
+  const { principalsTable } = await import("@workspace/db/schema");
+  const { eq, sql: dsql } = await import("drizzle-orm");
+
+  const dupes: { dup_id: string; canonical_id: string; display_name: string }[] = await db.execute(dsql`
+    SELECT p1.id AS dup_id, p2.id AS canonical_id, p1.display_name
+    FROM principals p1
+    JOIN principals p2
+      ON p1.external_id = p2.external_id
+      AND p2.external_provider = 'entra'
+      AND p2.status = 'active'
+    WHERE p1.external_provider = 'entra_id'
+      AND p1.status = 'active'
+      AND p1.id <> p2.id
+  `) as any;
+
+  const rows = Array.isArray(dupes) ? dupes : (dupes as any).rows ?? [];
+  for (const row of rows) {
+    await db
+      .update(principalsTable)
+      .set({ status: "inactive", updatedAt: new Date() })
+      .where(eq(principalsTable.id, String(row.dup_id)));
+    logger.info(
+      { duplicateId: row.dup_id, canonicalId: row.canonical_id, name: row.display_name },
+      "Deactivated duplicate entra_id principal",
+    );
+  }
+}
+
 export async function runStartupSeed(): Promise<void> {
   logger.info("Running startup data seed...");
 
@@ -133,6 +162,12 @@ export async function runStartupSeed(): Promise<void> {
     await seedNotificationRules();
   } catch (err) {
     logger.error({ err }, "Failed to seed notification rules");
+  }
+
+  try {
+    await deduplicatePrincipals();
+  } catch (err) {
+    logger.error({ err }, "Failed to deduplicate principals");
   }
 
   logger.info("Startup data seed complete");
