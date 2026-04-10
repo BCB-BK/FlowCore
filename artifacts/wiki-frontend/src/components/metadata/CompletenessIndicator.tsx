@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { calculateCompleteness, getFieldsByRequirement, getSectionsByRequirement, validateForPublication } from "@/lib/types";
 import { useSetupMode } from "@/hooks/use-setup-mode";
 import { Progress } from "@workspace/ui/progress";
@@ -8,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/tooltip";
-import { CheckCircle2, AlertCircle, AlertTriangle, Info, Construction } from "lucide-react";
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, Construction, ChevronDown } from "lucide-react";
 
 interface CompletenessIndicatorProps {
   templateType: string;
@@ -24,6 +25,7 @@ export function CompletenessIndicator({
   compact,
 }: CompletenessIndicatorProps) {
   const { setupMode } = useSetupMode();
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const { percentage, filled, total, missing } = calculateCompleteness(
     templateType,
     metadata,
@@ -91,90 +93,105 @@ export function CompletenessIndicator({
     );
   }
 
+  const hasDetails = !isComplete || !publishReady || validation.warnings.length > 0 || missing.length > 0;
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Vollständigkeit</span>
+    <div className="space-y-2">
+      <button
+        type="button"
+        className="flex items-center justify-between w-full text-left group"
+        onClick={() => hasDetails && setDetailsOpen(!detailsOpen)}
+      >
+        <div className="flex items-center gap-2">
+          {hasDetails && (
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${detailsOpen ? "" : "-rotate-90"}`} />
+          )}
+          <span className="text-sm font-medium">{"\u0056ollst\u00E4ndigkeit"}</span>
+        </div>
         <span className="text-sm text-muted-foreground">
           {filled}/{total} Pflichtfelder ({percentage}%)
         </span>
-      </div>
+      </button>
       <Progress value={percentage} className="h-2" />
 
-      <div className="flex flex-wrap gap-2 text-xs">
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-red-500" />
-          <span className="text-muted-foreground">Pflicht: {requiredCount}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-amber-400" />
-          <span className="text-muted-foreground">Empfohlen: {recommendedCount}</span>
-        </div>
-        {conditionalCount > 0 && (
-          <div className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-blue-400" />
-            <span className="text-muted-foreground">Bedingt: {conditionalCount}</span>
+      {detailsOpen && (
+        <div className="space-y-3 pt-1">
+          <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-red-500" />
+              <span className="text-muted-foreground">Pflicht: {requiredCount}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="text-muted-foreground">Empfohlen: {recommendedCount}</span>
+            </div>
+            {conditionalCount > 0 && (
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-muted-foreground">Bedingt: {conditionalCount}</span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {setupMode && !validation.valid && (
-        <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 p-2.5">
-          <div className="flex items-center gap-1.5">
-            <Construction className="h-3.5 w-3.5 text-amber-600" />
-            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-              Anlage-Modus aktiv &mdash; Validierung deaktiviert
-            </span>
-          </div>
-        </div>
-      )}
+          {setupMode && !validation.valid && (
+            <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 p-2.5">
+              <div className="flex items-center gap-1.5">
+                <Construction className="h-3.5 w-3.5 text-amber-600" />
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                  Anlage-Modus aktiv &mdash; Validierung deaktiviert
+                </span>
+              </div>
+            </div>
+          )}
 
-      {!publishReady && (
-        <div className="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 p-2.5 space-y-1.5">
-          <div className="flex items-center gap-1.5">
-            <AlertCircle className="h-3.5 w-3.5 text-red-600" />
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              Nicht ver{"ö"}ffentlichungsbereit ({validation.readinessPercentage}%)
-            </span>
-          </div>
-          <ul className="text-xs space-y-0.5">
-            {validation.errors.map((e) => (
-              <li key={e.field} className="text-red-600 dark:text-red-400 flex items-start gap-1">
-                <span className="shrink-0 mt-0.5">&bull;</span>
-                <span>{e.message}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+          {!publishReady && (
+            <div className="rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 p-2.5 space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 text-red-600" />
+                <span className="text-xs font-medium text-red-700 dark:text-red-400">
+                  Nicht ver{"ö"}ffentlichungsbereit ({validation.readinessPercentage}%)
+                </span>
+              </div>
+              <ul className="text-xs space-y-0.5">
+                {validation.errors.map((e) => (
+                  <li key={e.field} className="text-red-600 dark:text-red-400 flex items-start gap-1">
+                    <span className="shrink-0 mt-0.5">&bull;</span>
+                    <span>{e.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-      {validation.warnings.length > 0 && (
-        <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 p-2.5 space-y-1.5">
-          <div className="flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-              Empfehlungen ({validation.warnings.length})
-            </span>
-          </div>
-          <ul className="text-xs space-y-0.5">
-            {validation.warnings.map((w) => (
-              <li key={w.field} className="text-amber-600 dark:text-amber-400 flex items-start gap-1">
-                <Info className="h-3 w-3 shrink-0 mt-0.5" />
-                <span>{w.message}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+          {validation.warnings.length > 0 && (
+            <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 p-2.5 space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                  Empfehlungen ({validation.warnings.length})
+                </span>
+              </div>
+              <ul className="text-xs space-y-0.5">
+                {validation.warnings.map((w) => (
+                  <li key={w.field} className="text-amber-600 dark:text-amber-400 flex items-start gap-1">
+                    <Info className="h-3 w-3 shrink-0 mt-0.5" />
+                    <span>{w.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-      {missing.length > 0 && (
-        <div className="text-xs text-muted-foreground space-y-0.5">
-          <p className="font-medium text-amber-600">Fehlende Felder:</p>
-          <ul className="list-disc list-inside">
-            {missing.map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-          </ul>
+          {missing.length > 0 && (
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              <p className="font-medium text-amber-600">Fehlende Felder:</p>
+              <ul className="list-disc list-inside">
+                {missing.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
