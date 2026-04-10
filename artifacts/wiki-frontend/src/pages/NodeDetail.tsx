@@ -621,7 +621,7 @@ export function NodeDetail() {
             </div>
           )}
 
-          {isOverviewPage && (
+          {isOverviewPage && (clusters.length > 0 ? (children && children.length > 0) : publishedChildren.length > 0) && (
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold">
@@ -639,7 +639,7 @@ export function NodeDetail() {
                 )}
               </div>
 
-              {(clusters.length > 0 ? (children && children.length > 0) : publishedChildren.length > 0) ? (
+              {(
                 clusters.length > 0 ? (
                 <div className="space-y-6">
                   {clusterGroups.map(({ cluster, children: groupChildren }) => (
@@ -862,58 +862,7 @@ export function NodeDetail() {
                   })}
                 </div>
                 )
-              ) : activeWC ? (
-                <div className="space-y-3">
-                  {canCreate && allowedChildTypes.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {allowedChildTypes.slice(0, 6).map((childType) => {
-                        const typeDef = getPageType(childType);
-                        return (
-                          <Card
-                            key={childType}
-                            className="border-dashed cursor-pointer hover:border-primary/40 transition-colors"
-                            onClick={() => { setCreatePresetType(childType); setShowCreate(true); }}
-                          >
-                            <CardContent className="flex items-center gap-3 p-3">
-                              {typeDef ? (
-                                <div
-                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0 opacity-60"
-                                  style={{ backgroundColor: typeDef.color }}
-                                >
-                                  <PageTypeIcon iconName={typeDef.icon} className="h-3.5 w-3.5" />
-                                </div>
-                              ) : (
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-muted-foreground">
-                                  {PAGE_TYPE_LABELS[childType] ?? childType}
-                                </p>
-                              </div>
-                              <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-                      <FolderOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Noch keine {node.templateType === "core_process_overview" ? "Bereiche oder Prozesse" : "untergeordneten Inhalte"} vorhanden
-                      </p>
-                      {canCreate && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Nutzen Sie die Kacheln oben oder den Button, um die erste Unterseite anzulegen.
-                      </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : null}
+              )}
             </div>
           )}
 
