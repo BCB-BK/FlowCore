@@ -12,3 +12,9 @@ id = "1mCbgH2P-Y01iNRB-bRoU"
 uri = "file://page-types-export.json"
 type = "unspecified"
 title = "FlowCore Page Type Registry – AI Audit Export"
+
+[[outputs]]
+id = "x1ScKLdEnqqdnf8azrKGV"
+uri = "file://FlowCore_Integration_Dokumentation.md"
+type = "text"
+title = "FlowCore: Technische Integrationsdokumentation"
