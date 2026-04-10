@@ -457,9 +457,11 @@ export function WorkingCopyEditorPage() {
       if (nodeId) {
         if (wasAutoPublished) {
           queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+          queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true });
+          queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
           await Promise.all([
-            queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] }),
-            queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
+            queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true }),
+            queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
             queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] }),
             queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] }),
           ]);

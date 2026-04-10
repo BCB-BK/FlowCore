@@ -39,6 +39,8 @@ const sessionStore = isProduction
 
 const app: Express = express();
 
+app.set("etag", false);
+
 if (isProduction) {
   app.set("trust proxy", 1);
 }

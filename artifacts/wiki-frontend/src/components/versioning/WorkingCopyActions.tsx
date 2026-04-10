@@ -138,9 +138,14 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
       toast({ title: "Veröffentlicht", description: `Version ${versionLabel.trim()}` });
       resetDialogs();
       removeWcCache();
-      invalidateNode();
-      queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] });
-      queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] });
+      queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true });
+      queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true }),
+        queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] }),
+      ]);
     } catch (err) {
       toast({
         variant: "destructive",

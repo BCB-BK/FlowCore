@@ -400,6 +400,7 @@ async function autoPublishWorkingCopy(
       .update(contentNodesTable)
       .set({
         publishedRevisionId: newRevision.id,
+        title: wc.title,
         status: "published",
         updatedAt: new Date(),
       })
