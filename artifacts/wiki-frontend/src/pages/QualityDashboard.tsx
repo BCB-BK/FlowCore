@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -25,6 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@workspace/ui/dialog";
 import { Input } from "@workspace/ui/input";
 import { Skeleton } from "@workspace/ui/skeleton";
 import {
@@ -58,9 +66,19 @@ import {
   FolderTree,
   ChevronDown,
   AlertTriangleIcon,
+  Trash2,
+  ArrowRight,
+  Archive,
+  X,
+  Loader2,
+  FolderOpen,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { PAGE_TYPE_LABELS } from "@/lib/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
+import { PageTypeIcon } from "@/components/PageTypeIcon";
 import {
   useGetQualityOverview,
   useGetQualityPages,
@@ -70,6 +88,15 @@ import {
   useGetQualityByProcess,
   useGetReviewDashboard,
   useGetOwnershipMonitor,
+  useListRootNodes,
+  useGetNodeChildren,
+  customFetch,
+  getGetQualityPagesQueryKey,
+  getGetQualityOverviewQueryKey,
+  getGetMaintenanceHintsQueryKey,
+  getGetQualityByProcessQueryKey,
+  getListRootNodesQueryKey,
+  getListNodesQueryKey,
 } from "@workspace/api-client-react";
 import type {
   GetQualityPagesFilter,
@@ -465,8 +492,315 @@ function PagesTreeView({
   );
 }
 
+function BulkMoveTreeNode({
+  node,
+  selectedId,
+  onSelect,
+  depth,
+  excludedIds,
+}: {
+  node: { id: string; title: string; displayCode: string | null; templateType: string };
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  depth: number;
+  excludedIds: Set<string>;
+}) {
+  const [expanded, setExpanded] = useState(depth < 1);
+  const { data: children } = useGetNodeChildren(node.id, {
+    query: { enabled: expanded },
+  });
+
+  const isExcluded = excludedIds.has(node.id);
+  const pageDef = getPageType(node.templateType);
+  const isSelected = selectedId === node.id;
+
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md text-sm transition-colors ${
+          isExcluded ? "opacity-40 cursor-not-allowed" : isSelected ? "bg-primary/10 ring-1 ring-primary/30 cursor-pointer" : "hover:bg-muted/60 cursor-pointer"
+        }`}
+        style={{ paddingLeft: `${depth * 20 + 8}px` }}
+        onClick={() => !isExcluded && onSelect(node.id)}
+        role="treeitem"
+        aria-selected={isSelected}
+        aria-disabled={isExcluded}
+        tabIndex={isExcluded ? -1 : 0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!isExcluded) onSelect(node.id); } }}
+      >
+        <button
+          className="p-0.5 hover:bg-muted rounded shrink-0"
+          aria-label={expanded ? "Zuklappen" : "Aufklappen"}
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+        >
+          {expanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+        </button>
+        {pageDef ? (
+          <div className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0" style={{ backgroundColor: pageDef.color }}>
+            <PageTypeIcon iconName={pageDef.icon} className="h-3 w-3" />
+          </div>
+        ) : (
+          <FolderOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+        )}
+        <span className="truncate font-medium">{node.title}</span>
+        {node.displayCode && <span className="text-[10px] text-muted-foreground shrink-0">{node.displayCode}</span>}
+      </div>
+      {expanded && children?.filter((c) => !excludedIds.has(c.id)).map((child) => (
+        <BulkMoveTreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} excludedIds={excludedIds} />
+      ))}
+    </div>
+  );
+}
+
+function BulkMoveDialog({
+  open,
+  onOpenChange,
+  nodeIds,
+  onComplete,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  nodeIds: string[];
+  onComplete: () => void;
+}) {
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+  const [moving, setMoving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { data: roots } = useListRootNodes({ query: { enabled: open } });
+  const excludedIds = useMemo(() => new Set(nodeIds), [nodeIds]);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedParentId(null);
+      setError(null);
+    }
+  }, [open]);
+
+  const handleMove = async () => {
+    if (!selectedParentId) return;
+    setMoving(true);
+    setError(null);
+    let succeeded = 0;
+    try {
+      for (const nodeId of nodeIds) {
+        await customFetch(`/api/content/nodes/${nodeId}/move`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newParentNodeId: selectedParentId }),
+        });
+        succeeded++;
+      }
+      onComplete();
+      onOpenChange(false);
+    } catch (err) {
+      const base = err instanceof Error ? err.message : "Fehler beim Verschieben";
+      setError(succeeded > 0 ? `${succeeded}/${nodeIds.length} verschoben. ${base}` : base);
+    } finally {
+      setMoving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{nodeIds.length} Seiten verschieben</DialogTitle>
+          <DialogDescription>
+            {`W\u00E4hlen Sie das neue Ziel f\u00FCr die ausgew\u00E4hlten Seiten.`}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto border rounded-md p-2 min-h-[200px] max-h-[400px]" role="tree">
+          {roots && roots.length > 0 ? roots.filter((r) => !excludedIds.has(r.id)).map((root) => (
+            <BulkMoveTreeNode key={root.id} node={root} selectedId={selectedParentId} onSelect={setSelectedParentId} depth={0} excludedIds={excludedIds} />
+          )) : (
+            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Lade Seitenstruktur...
+            </div>
+          )}
+        </div>
+        {error && (
+          <p className="text-xs text-destructive flex items-center gap-1">
+            <AlertTriangle className="h-3 w-3" />
+            {error}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button onClick={handleMove} disabled={!selectedParentId || moving}>
+            {moving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <ArrowRight className="h-4 w-4 mr-1" />}
+            Verschieben
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function BulkDeleteDialog({
+  open,
+  onOpenChange,
+  nodeIds,
+  pages,
+  onComplete,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  nodeIds: string[];
+  pages: PageQualityRow[];
+  onComplete: () => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const selectedPages = pages.filter((p) => nodeIds.includes(p.nodeId));
+
+  useEffect(() => {
+    if (open) setError(null);
+  }, [open]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+    let succeeded = 0;
+    try {
+      for (const nodeId of nodeIds) {
+        await customFetch(`/api/content/nodes/${nodeId}`, { method: "DELETE" });
+        succeeded++;
+      }
+      onComplete();
+      onOpenChange(false);
+    } catch (err) {
+      const base = err instanceof Error ? err.message : "Fehler beim L\u00F6schen";
+      setError(succeeded > 0 ? `${succeeded}/${nodeIds.length} gel\u00F6scht. ${base}` : base);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-destructive flex items-center gap-2">
+            <Trash2 className="h-5 w-5" />
+            {nodeIds.length} Seiten l\u00F6schen
+          </DialogTitle>
+          <DialogDescription>
+            Die folgenden Seiten werden gel\u00F6scht. Dieser Vorgang kann nicht r\u00FCckg\u00E4ngig gemacht werden.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[200px] overflow-y-auto border rounded-md divide-y">
+          {selectedPages.map((p) => (
+            <div key={p.nodeId} className="flex items-center gap-2 px-3 py-2 text-sm">
+              <span className="font-mono text-xs text-muted-foreground">{p.displayCode}</span>
+              <span className="truncate">{p.title}</span>
+            </div>
+          ))}
+        </div>
+        {error && (
+          <p className="text-xs text-destructive flex items-center gap-1">
+            <AlertTriangle className="h-3 w-3" />
+            {error}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Trash2 className="h-4 w-4 mr-1" />}
+            {nodeIds.length} Seiten l\u00F6schen
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function BulkArchiveDialog({
+  open,
+  onOpenChange,
+  nodeIds,
+  pages,
+  onComplete,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  nodeIds: string[];
+  pages: PageQualityRow[];
+  onComplete: () => void;
+}) {
+  const [archiving, setArchiving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const selectedPages = pages.filter((p) => nodeIds.includes(p.nodeId));
+
+  useEffect(() => {
+    if (open) setError(null);
+  }, [open]);
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    setError(null);
+    let succeeded = 0;
+    try {
+      for (const nodeId of nodeIds) {
+        await customFetch(`/api/content/nodes/${nodeId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "archived" }),
+        });
+        succeeded++;
+      }
+      onComplete();
+      onOpenChange(false);
+    } catch (err) {
+      const base = err instanceof Error ? err.message : "Fehler beim Archivieren";
+      setError(succeeded > 0 ? `${succeeded}/${nodeIds.length} archiviert. ${base}` : base);
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Archive className="h-5 w-5" />
+            {nodeIds.length} Seiten archivieren
+          </DialogTitle>
+          <DialogDescription>
+            Die folgenden Seiten werden archiviert und sind danach nicht mehr aktiv sichtbar.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[200px] overflow-y-auto border rounded-md divide-y">
+          {selectedPages.map((p) => (
+            <div key={p.nodeId} className="flex items-center gap-2 px-3 py-2 text-sm">
+              <span className="font-mono text-xs text-muted-foreground">{p.displayCode}</span>
+              <span className="truncate">{p.title}</span>
+              <StatusLabel status={p.status} />
+            </div>
+          ))}
+        </div>
+        {error && (
+          <p className="text-xs text-destructive flex items-center gap-1">
+            <AlertTriangle className="h-3 w-3" />
+            {error}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button onClick={handleArchive} disabled={archiving}>
+            {archiving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
+            {nodeIds.length} Seiten archivieren
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function QualityDashboard() {
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [pageFilter, setPageFilter] = useState<string>("all");
   const [pagesViewMode, setPagesViewMode] = useState<"flat" | "tree">("flat");
@@ -476,6 +810,53 @@ export function QualityDashboard() {
   const [reviewTemplateFilter, setReviewTemplateFilter] = useState<string>("all");
   const [ownershipGapFilter, setOwnershipGapFilter] = useState<string>("all");
   const [escalationThreshold, setEscalationThreshold] = useState<string>("30");
+
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+
+  const toggleSelection = useCallback((nodeId: string) => {
+    setSelectedNodeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) next.delete(nodeId);
+      else next.add(nodeId);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedNodeIds(new Set()), []);
+
+  useEffect(() => {
+    clearSelection();
+  }, [pageFilter, pagesViewMode, clearSelection]);
+
+  useEffect(() => {
+    if (!pages) return;
+    const currentIds = new Set(pages.items.map((p) => p.nodeId));
+    setSelectedNodeIds((prev) => {
+      const pruned = new Set([...prev].filter((id) => currentIds.has(id)));
+      if (pruned.size === prev.size) return prev;
+      return pruned;
+    });
+  }, [pages]);
+
+  const invalidateAfterBulk = useCallback(() => {
+    clearSelection();
+    const keysToRemove = [
+      getGetQualityPagesQueryKey(),
+      getGetQualityOverviewQueryKey(),
+      getGetMaintenanceHintsQueryKey(),
+      getGetQualityByProcessQueryKey(),
+      getListRootNodesQueryKey(),
+      getListNodesQueryKey(),
+    ];
+    for (const key of keysToRemove) {
+      queryClient.removeQueries({ queryKey: key });
+    }
+    queryClient.refetchQueries({ queryKey: getGetQualityPagesQueryKey() });
+    queryClient.refetchQueries({ queryKey: getGetQualityOverviewQueryKey() });
+  }, [queryClient, clearSelection]);
 
   const { data: overview, isLoading: overviewLoading } =
     useGetQualityOverview();
@@ -891,10 +1272,56 @@ export function QualityDashboard() {
                 </div>
               ) : pages && pages.items.length > 0 ? (
                 pagesViewMode === "flat" ? (
+                <div>
+                {selectedNodeIds.size > 0 && (
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/5 border-b">
+                    <Badge variant="secondary" className="font-mono">
+                      {selectedNodeIds.size}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground mr-auto">
+                      {selectedNodeIds.size === 1 ? "Seite ausgew\u00E4hlt" : "Seiten ausgew\u00E4hlt"}
+                    </span>
+                    <Button size="sm" variant="outline" onClick={() => setShowMoveDialog(true)}>
+                      <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                      Verschieben
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setShowArchiveDialog(true)}>
+                      <Archive className="h-3.5 w-3.5 mr-1" />
+                      Archivieren
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setShowDeleteDialog(true)}>
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      L\u00F6schen
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={clearSelection}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
                 <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10 px-2">
+                        <input
+                          type="checkbox"
+                          aria-label="Alle Seiten ausw\u00E4hlen"
+                          className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+                          checked={pages.items.length > 0 && pages.items.every((p) => selectedNodeIds.has(p.nodeId))}
+                          ref={(el) => {
+                            if (el) {
+                              el.indeterminate = selectedNodeIds.size > 0 && !pages.items.every((p) => selectedNodeIds.has(p.nodeId));
+                            }
+                          }}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedNodeIds(new Set(pages.items.map((p) => p.nodeId)));
+                            } else {
+                              clearSelection();
+                            }
+                          }}
+                        />
+                      </TableHead>
                       <TableHead>Kennung</TableHead>
                       <TableHead>Titel</TableHead>
                       <TableHead>Status</TableHead>
@@ -908,9 +1335,18 @@ export function QualityDashboard() {
                     {pages.items.map((page) => (
                       <TableRow
                         key={page.nodeId}
-                        className="cursor-pointer hover:bg-muted/50"
+                        className={`cursor-pointer hover:bg-muted/50 ${selectedNodeIds.has(page.nodeId) ? "bg-primary/5" : ""}`}
                         onClick={() => navigate(`/node/${page.nodeId}`)}
                       >
+                        <TableCell className="px-2" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            aria-label={`${page.title} ausw\u00E4hlen`}
+                            className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+                            checked={selectedNodeIds.has(page.nodeId)}
+                            onChange={() => toggleSelection(page.nodeId)}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-xs">
                           {page.displayCode}
                         </TableCell>
@@ -936,6 +1372,7 @@ export function QualityDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
                 </div>
                 ) : (
                   <PagesTreeView pages={pages.items} onNavigate={navigate} />
@@ -1619,6 +2056,31 @@ export function QualityDashboard() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {pages && (
+        <>
+          <BulkMoveDialog
+            open={showMoveDialog}
+            onOpenChange={setShowMoveDialog}
+            nodeIds={Array.from(selectedNodeIds)}
+            onComplete={invalidateAfterBulk}
+          />
+          <BulkDeleteDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            nodeIds={Array.from(selectedNodeIds)}
+            pages={pages.items}
+            onComplete={invalidateAfterBulk}
+          />
+          <BulkArchiveDialog
+            open={showArchiveDialog}
+            onOpenChange={setShowArchiveDialog}
+            nodeIds={Array.from(selectedNodeIds)}
+            pages={pages.items}
+            onComplete={invalidateAfterBulk}
+          />
+        </>
+      )}
     </div>
   );
 }
