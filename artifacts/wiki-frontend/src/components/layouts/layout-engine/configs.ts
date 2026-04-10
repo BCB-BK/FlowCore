@@ -71,7 +71,6 @@ export const procedureConfig: LayoutConfig = {
     { key: "risks", component: "risks_controls_table" },
     { key: "kpis", component: "kpi_table" },
     { key: "compliance", component: "editable", label: "Normbezug & Compliance", description: "Regulatorische Anforderungen, Normreferenzen und gesetzliche Vorgaben", icon: ShieldCheck, iconColor: "text-red-600", emptyText: "Kein Normbezug definiert", requirement: "recommended" },
-    { key: "documents", component: "references_editor", label: "Mitgeltende Unterlagen", description: "Referenzierte Dokumente, Normen und Formulare", icon: FileStack, iconColor: "text-blue-600", emptyText: "Keine mitgeltenden Unterlagen" },
     { key: "relations", component: "editable", label: "Verknüpfungen & Querverweise", description: "Verknüpfte Prozesse, übergeordnete Dokumente und abhängige Seiten", icon: Link2, iconColor: "text-cyan-600", emptyText: "Keine Verknüpfungen dokumentiert", requirement: "recommended" },
     { key: "changelog", component: "editable", label: "Änderungshistorie", description: "Dokumentierte Änderungen mit Datum und Verantwortlichem", icon: History, iconColor: "text-gray-500", emptyText: "Keine Änderungen dokumentiert", requirement: "recommended" },
   ],
@@ -129,7 +128,6 @@ export const policyConfig: LayoutConfig = {
     { key: "scope", component: "editable", label: "Geltungsbereich", description: "Für wen und wo gilt die Richtlinie?", icon: BookOpen, iconColor: "text-blue-600", emptyText: "Noch kein Geltungsbereich definiert" },
     { key: "definitions", component: "editable", label: "Begriffe & Definitionen", description: "Klärung zentraler Begriffe", icon: BookMarked, iconColor: "text-indigo-600", emptyText: "Keine Begriffe definiert" },
     { key: "enforcement", component: "editable", label: "Durchsetzung & Konsequenzen", description: "Maßnahmen bei Nichteinhaltung", icon: Gavel, iconColor: "text-amber-600", emptyText: "Noch keine Durchsetzungsmaßnahmen definiert" },
-    { key: "references", component: "references_editor", label: "Referenzen & mitgeltende Dokumente", description: "Verknüpfte Normen, Gesetze und Dokumente", icon: FileStack, iconColor: "text-blue-600", emptyText: "Keine Referenzen angegeben" },
   ],
 };
 
@@ -149,7 +147,6 @@ export const workInstructionConfig: LayoutConfig = {
     { key: "safety", component: "editable", label: "Sicherheitshinweise", description: "Arbeitsschutz und Sicherheitsvorgaben", icon: ShieldAlert, iconColor: "text-red-600", emptyText: "Keine Sicherheitshinweise" },
     { key: "materials", component: "editable", label: "Werkzeuge & Materialien", description: "Benötigte Werkzeuge, Materialien und Hilfsmittel", icon: Wrench, iconColor: "text-amber-600", emptyText: "Keine Werkzeuge/Materialien angegeben" },
     { key: "quality_criteria", component: "editable", label: "Qualitätskriterien", description: "Prüfmerkmale und Akzeptanzkriterien", icon: CheckCircle, iconColor: "text-green-600", emptyText: "Keine Qualitätskriterien definiert" },
-    { key: "documents", component: "references_editor", label: "Mitgeltende Unterlagen", description: "Referenzierte Dokumente und Formulare", icon: FileStack, iconColor: "text-blue-600", emptyText: "Keine mitgeltenden Unterlagen" },
   ],
 };
 

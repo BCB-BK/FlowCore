@@ -57,6 +57,7 @@ import {
 import type { WorkingCopy } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
+import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { useSetupMode } from "@/hooks/use-setup-mode";
@@ -89,6 +90,24 @@ const CONTENT_HEADING_MAP: Record<string, string> = {
   training_resource: "Schulungsinhalt",
   use_case: "Normalablauf",
 };
+
+const REFERENCES_KEY_MAP: Record<string, string> = {
+  policy: "references",
+  procedure_instruction: "documents",
+  work_instruction: "documents",
+};
+
+function getReferencesKey(templateType: string): string {
+  return REFERENCES_KEY_MAP[templateType] ?? "references";
+}
+
+function getReferencesValue(structuredFields: Record<string, unknown>, templateType: string): string {
+  const key = getReferencesKey(templateType);
+  const val = structuredFields[key];
+  if (val === null || val === undefined) return "";
+  if (typeof val === "object") return JSON.stringify(val);
+  return String(val);
+}
 
 export function WorkingCopyEditorPage() {
   const [, params] = useRoute("/nodes/:id/edit");
@@ -904,6 +923,16 @@ export function WorkingCopyEditorPage() {
                 )}
               </div>
             </div>
+
+            {node && (
+              <div className="mt-6">
+                <ReferencesEditor
+                  value={getReferencesValue(validationSFSnapshot, node.templateType)}
+                  onSave={canEdit ? handleSectionSave : undefined}
+                  sectionKey={getReferencesKey(node.templateType)}
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="metadata" className="mt-4 space-y-4">

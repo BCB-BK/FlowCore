@@ -62,6 +62,7 @@ import { TagManager } from "@/components/tags/TagManager";
 import { RelatedContentSidebar } from "@/components/content/RelatedContentSidebar";
 import { GlossaryTermsPanel } from "@/components/content/GlossaryTermsPanel";
 import { SourceReferencesPanel } from "@/components/content/SourceReferencesPanel";
+import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
@@ -78,6 +79,24 @@ import { Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { isFieldEmpty } from "@/lib/field-empty";
 
+
+const REFERENCES_KEY_MAP: Record<string, string> = {
+  policy: "references",
+  procedure_instruction: "documents",
+  work_instruction: "documents",
+};
+
+function getReferencesKey(templateType: string): string {
+  return REFERENCES_KEY_MAP[templateType] ?? "references";
+}
+
+function getReferencesValue(structuredFields: Record<string, unknown>, templateType: string): string {
+  const key = getReferencesKey(templateType);
+  const val = structuredFields[key];
+  if (val === null || val === undefined) return "";
+  if (typeof val === "object") return JSON.stringify(val);
+  return String(val);
+}
 
 const CONTENT_HEADING_MAP: Record<string, string> = {
   policy: "Richtlinientext",
@@ -593,6 +612,15 @@ export function NodeDetail() {
           </div>
           )}
 
+          {isOverviewPage && !isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
+            <div className="mb-6">
+              <ReferencesEditor
+                value={getReferencesValue(structuredFields, node.templateType)}
+                sectionKey={getReferencesKey(node.templateType)}
+              />
+            </div>
+          )}
+
           {isOverviewPage && (
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -942,6 +970,15 @@ export function NodeDetail() {
               )}
             </div>
           </div>
+          )}
+
+          {!isOverviewPage && !isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
+            <div className="mt-6">
+              <ReferencesEditor
+                value={getReferencesValue(structuredFields, node.templateType)}
+                sectionKey={getReferencesKey(node.templateType)}
+              />
+            </div>
           )}
 
           {!isOverviewPage && nodeId && (
