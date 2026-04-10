@@ -745,7 +745,7 @@ export function NodeDetail() {
                               {typeChildren.length}
                             </Badge>
                           </div>
-                          {canCreate && (
+                          {canCreate && activeWC && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -872,7 +872,7 @@ export function NodeDetail() {
                   })}
                 </div>
                 )
-              ) : (
+              ) : activeWC ? (
                 <div className="space-y-3">
                   {canCreate && allowedChildTypes.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -923,7 +923,7 @@ export function NodeDetail() {
                     </CardContent>
                   </Card>
                 </div>
-              )}
+              ) : null}
             </div>
           )}
 
@@ -1112,7 +1112,7 @@ export function NodeDetail() {
                 <p className="text-sm text-muted-foreground">
                   Keine Unterseiten vorhanden
                 </p>
-                {pageDef && pageDef.allowedChildTypes.length > 0 && (
+                {activeWC && pageDef && pageDef.allowedChildTypes.length > 0 && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Erlaubte Typen:{" "}
                     {pageDef.allowedChildTypes
