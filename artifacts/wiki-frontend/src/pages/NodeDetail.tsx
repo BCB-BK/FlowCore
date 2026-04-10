@@ -36,7 +36,6 @@ import {
   Loader2,
   Eye,
   ArrowRightLeft,
-  ChevronDown,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
@@ -79,43 +78,6 @@ import { Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { isFieldEmpty } from "@/lib/field-empty";
 
-function CollapsibleSection({
-  title,
-  defaultOpen = false,
-  count,
-  children,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  count?: number;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="border rounded-lg">
-      <button
-        type="button"
-        className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors"
-        onClick={() => setOpen(!open)}
-      >
-        <ChevronDown
-          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`}
-        />
-        <span className="text-sm font-medium">{title}</span>
-        {count !== undefined && count > 0 && (
-          <Badge variant="secondary" className="text-xs h-5 px-1.5 ml-1">
-            {count}
-          </Badge>
-        )}
-      </button>
-      {open && (
-        <div className="px-4 pb-4 space-y-4">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
 
 const CONTENT_HEADING_MAP: Record<string, string> = {
   policy: "Richtlinientext",
@@ -928,24 +890,17 @@ export function NodeDetail() {
           )}
 
           {!isOverviewPage && (
-            <>
-              <CollapsibleSection
-                title="Strukturierte Felder"
-                defaultOpen={false}
-                count={Object.keys(structuredFields).filter(k => !k.startsWith("_") && structuredFields[k] != null && structuredFields[k] !== "").length}
-              >
-                <PageLayout
-                  templateType={node.templateType}
-                  structuredFields={structuredFields}
-                />
-              </CollapsibleSection>
-
+            <div className="mb-6 space-y-4">
+              <PageLayout
+                templateType={node.templateType}
+                structuredFields={structuredFields}
+              />
               {nodeId && (
                 <div className="mt-4">
                   <TagManager nodeId={nodeId} />
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {!isOverviewPage && !isFieldEmpty(editorContent) && (
