@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   useCreateNode,
   useRootNodes,
@@ -6,7 +6,10 @@ import {
 import {
   useCreateWorkingCopy,
   useUpdateWorkingCopy,
+  useSearchContent,
+  customFetch,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -15,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@workspace/ui/dialog";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
@@ -38,8 +42,10 @@ import {
   getVariantsByCategory,
   PAGE_TYPE_CATEGORIES,
   VARIANT_CATEGORY_LABELS,
+  PAGE_TYPE_LABELS,
   buildInitialEditorContent,
   DISABLED_TEMPLATE_TYPES,
+  getPageType,
   type TemplateType,
   type VariantCategory,
 } from "@/lib/types";
@@ -56,6 +62,10 @@ import {
   ClipboardCheck,
   Image,
   FolderOpen,
+  Search,
+  Link2,
+  Plus,
+  Loader2,
 } from "lucide-react";
 
 const VARIANT_CATEGORY_ICONS: Record<VariantCategory, React.ReactNode> = {
@@ -83,6 +93,7 @@ export function CreateNodeDialog({
   presetType,
   onNodeCreated,
 }: CreateNodeDialogProps) {
+  const [mode, setMode] = useState<"create" | "link">("create");
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [templateType, setTemplateType] = useState<
@@ -98,6 +109,68 @@ export function CreateNodeDialog({
   const { data: rootNodes } = useRootNodes();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [linkQuery, setLinkQuery] = useState("");
+  const [debouncedLinkQuery, setDebouncedLinkQuery] = useState("");
+  const [linking, setLinking] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedLinkQuery(linkQuery), 300);
+    return () => clearTimeout(timer);
+  }, [linkQuery]);
+
+  const { data: linkResults, isLoading: linkSearching } = useSearchContent(
+    { q: debouncedLinkQuery, limit: 20, includeUnpublished: true },
+    { query: { enabled: mode === "link" && debouncedLinkQuery.length >= 2 } as any },
+  );
+
+  const filteredLinkResults = useMemo(() => {
+    if (!linkResults?.results) return [];
+    const allowedSet = new Set(
+      parentTemplateType
+        ? getAllowedChildTypes(parentTemplateType)
+        : (Object.keys(PAGE_TYPE_REGISTRY) as TemplateType[]),
+    );
+    return linkResults.results.filter(
+      (r) =>
+        r.id !== parentNodeId &&
+        r.parentNodeId !== parentNodeId &&
+        allowedSet.has(r.templateType as TemplateType),
+    );
+  }, [linkResults, parentNodeId, parentTemplateType]);
+
+  const handleLinkPage = useCallback(async (nodeId: string, nodeTitle: string, oldParentId?: string | null) => {
+    if (!parentNodeId || linking) return;
+    setLinking(true);
+    try {
+      await customFetch(`/api/content/nodes/${nodeId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newParentNodeId: parentNodeId }),
+      });
+      queryClient.removeQueries({ queryKey: [`/api/content/nodes/${parentNodeId}/children`] });
+      queryClient.removeQueries({ queryKey: [`/api/content/nodes/roots`] });
+      if (oldParentId) {
+        queryClient.removeQueries({ queryKey: [`/api/content/nodes/${oldParentId}/children`] });
+      }
+      queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${parentNodeId}/children`] });
+      onNodeCreated?.(nodeId);
+      resetAndClose();
+      toast({
+        title: "Seite verkn\u00FCpft",
+        description: `"${nodeTitle}" wurde als Unterseite eingeordnet.`,
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Verkn\u00FCpfen",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    } finally {
+      setLinking(false);
+    }
+  }, [parentNodeId, linking, queryClient, toast, onNodeCreated]);
 
   const allowedTypes = useMemo(() => {
     let types: TemplateType[];
@@ -242,6 +315,9 @@ export function CreateNodeDialog({
     setOwnerId(undefined);
     setOwnerName(undefined);
     setSelectedParentId(null);
+    setMode("create");
+    setLinkQuery("");
+    setDebouncedLinkQuery("");
     onOpenChange(false);
   };
 
@@ -278,21 +354,144 @@ export function CreateNodeDialog({
       <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {parentNodeId ? "Unterseite anlegen" : "Neue Seite anlegen"}
+            {mode === "link"
+              ? "Bestehende Seite einordnen"
+              : parentNodeId
+                ? "Unterseite anlegen"
+                : "Neue Seite anlegen"}
           </DialogTitle>
-          <div className="flex items-center gap-2 mt-2">
-            {[0, 1, 2, 3].map((s) => (
-              <div
-                key={s}
-                className={`h-1 flex-1 rounded-full transition-colors ${
-                  s <= step ? "bg-primary" : "bg-muted"
-                }`}
-              />
-            ))}
-          </div>
+          {parentNodeId && (
+            <div className="flex gap-1 mt-2">
+              <Button
+                size="sm"
+                variant={mode === "create" ? "default" : "outline"}
+                className="flex-1 text-xs"
+                onClick={() => { setMode("create"); setLinkQuery(""); }}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Neue Seite
+              </Button>
+              <Button
+                size="sm"
+                variant={mode === "link" ? "default" : "outline"}
+                className="flex-1 text-xs"
+                onClick={() => { setMode("link"); setStep(0); }}
+              >
+                <Link2 className="h-3.5 w-3.5 mr-1" />
+                Bestehende verlinken
+              </Button>
+            </div>
+          )}
+          {mode === "create" && (
+            <div className="flex items-center gap-2 mt-2">
+              {[0, 1, 2, 3].map((s) => (
+                <div
+                  key={s}
+                  className={`h-1 flex-1 rounded-full transition-colors ${
+                    s <= step ? "bg-primary" : "bg-muted"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </DialogHeader>
 
-        {step === 0 && (
+        {mode === "link" && (
+          <div className="space-y-3 py-2">
+            <DialogDescription>
+              Suchen Sie nach Titel oder Kennung einer bestehenden Seite, um sie hier als Unterseite einzuordnen.
+            </DialogDescription>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Titel oder Kennung eingeben..."
+                value={linkQuery}
+                onChange={(e) => setLinkQuery(e.target.value)}
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+
+            <div className="max-h-[350px] overflow-y-auto space-y-1">
+              {linkSearching && debouncedLinkQuery.length >= 2 && (
+                <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Suche...
+                </div>
+              )}
+
+              {!linkSearching && debouncedLinkQuery.length >= 2 && filteredLinkResults.length === 0 && (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  Keine Ergebnisse f\u00FCr \u201E{debouncedLinkQuery}\u201C
+                </div>
+              )}
+
+              {debouncedLinkQuery.length < 2 && (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  Mindestens 2 Zeichen eingeben, um zu suchen
+                </div>
+              )}
+
+              {filteredLinkResults.map((result) => {
+                const pageDef = getPageType(result.templateType);
+                return (
+                  <Card
+                    key={result.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-disabled={linking}
+                    className={`transition-colors ${linking ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"}`}
+                    onClick={() => !linking && handleLinkPage(result.id, result.title, result.parentNodeId)}
+                    onKeyDown={(e) => { if (!linking && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); handleLinkPage(result.id, result.title, result.parentNodeId); } }}
+                  >
+                    <CardContent className="flex items-center gap-3 p-3">
+                      {pageDef ? (
+                        <div
+                          className="flex h-8 w-8 items-center justify-center rounded text-white shrink-0"
+                          style={{ backgroundColor: pageDef.color }}
+                        >
+                          <PageTypeIcon iconName={pageDef.icon} className="h-4 w-4" />
+                        </div>
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-muted shrink-0">
+                          <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">{result.title}</span>
+                          {result.displayCode && (
+                            <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                              {result.displayCode}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">
+                            {PAGE_TYPE_LABELS[result.templateType] || result.templateType}
+                          </span>
+                          <Badge variant={result.status === "published" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                            {result.status === "published" ? "Ver\u00F6ffentlicht" : result.status === "draft" ? "Entwurf" : result.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {linking && (
+              <div className="flex items-center justify-center py-3 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Seite wird eingeordnet...
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode === "create" && step === 0 && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Wählen Sie den Seitentyp für die neue Seite.
@@ -372,7 +571,7 @@ export function CreateNodeDialog({
           </div>
         )}
 
-        {step === 1 && selectedDef && (
+        {mode === "create" && step === 1 && selectedDef && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Wählen Sie eine Vorlage für <strong>{selectedDef.labelDe}</strong>.
@@ -465,7 +664,7 @@ export function CreateNodeDialog({
           </div>
         )}
 
-        {step === 2 && (
+        {mode === "create" && step === 2 && (
           <div className="space-y-4 py-2">
             {selectedDef && (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -561,7 +760,7 @@ export function CreateNodeDialog({
           </div>
         )}
 
-        {step === 3 && (
+        {mode === "create" && step === 3 && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
               Überprüfen Sie die Angaben und erstellen Sie die Seite.
@@ -675,48 +874,50 @@ export function CreateNodeDialog({
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          {step > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => setStep(step - 1)}
-              className="mr-auto"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Zurück
-            </Button>
-          )}
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            Abbrechen
-          </Button>
-          {step < 3 ? (
-            <Button
-              onClick={() => setStep(step + 1)}
-              disabled={step === 2 && !title.trim()}
-            >
-              Weiter
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          ) : (
-            <div className="flex gap-2">
+        {mode === "create" && (
+          <DialogFooter className="gap-2 sm:gap-0">
+            {step > 0 && (
               <Button
                 variant="outline"
-                onClick={() => handleCreate(false)}
-                disabled={!title.trim() || createNode.isPending}
+                onClick={() => setStep(step - 1)}
+                className="mr-auto"
               >
-                {createNode.isPending ? "Wird erstellt..." : "Speichern"}
-                {!createNode.isPending && <Save className="ml-1 h-4 w-4" />}
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                Zur\u00FCck
               </Button>
+            )}
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              Abbrechen
+            </Button>
+            {step < 3 ? (
               <Button
-                onClick={() => handleCreate(true)}
-                disabled={!title.trim() || createNode.isPending}
+                onClick={() => setStep(step + 1)}
+                disabled={step === 2 && !title.trim()}
               >
-                {createNode.isPending ? "Wird erstellt..." : "Speichern & \u00F6ffnen"}
-                {!createNode.isPending && <ExternalLink className="ml-1 h-4 w-4" />}
+                Weiter
+                <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
-            </div>
-          )}
-        </DialogFooter>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleCreate(false)}
+                  disabled={!title.trim() || createNode.isPending}
+                >
+                  {createNode.isPending ? "Wird erstellt..." : "Speichern"}
+                  {!createNode.isPending && <Save className="ml-1 h-4 w-4" />}
+                </Button>
+                <Button
+                  onClick={() => handleCreate(true)}
+                  disabled={!title.trim() || createNode.isPending}
+                >
+                  {createNode.isPending ? "Wird erstellt..." : "Speichern & \u00F6ffnen"}
+                  {!createNode.isPending && <ExternalLink className="ml-1 h-4 w-4" />}
+                </Button>
+              </div>
+            )}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
