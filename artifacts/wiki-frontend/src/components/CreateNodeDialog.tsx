@@ -120,9 +120,11 @@ export function CreateNodeDialog({
     return () => clearTimeout(timer);
   }, [linkQuery]);
 
+  const linkSearchEnabled = mode === "link" && debouncedLinkQuery.length >= 2;
   const { data: linkResults, isLoading: linkSearching } = useSearchContent(
-    { q: debouncedLinkQuery, limit: 20, includeUnpublished: true },
-    { query: { enabled: mode === "link" && debouncedLinkQuery.length >= 2 } as any },
+    linkSearchEnabled
+      ? { q: debouncedLinkQuery, limit: 20, includeUnpublished: true }
+      : {},
   );
 
   const filteredLinkResults = useMemo(() => {
