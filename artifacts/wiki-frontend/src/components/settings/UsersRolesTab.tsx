@@ -62,6 +62,7 @@ import type {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { ConfidentialitySection } from "./ConfidentialitySection";
 
 const ROLE_LABELS: Record<string, string> = {
   system_admin: "System-Administrator",
@@ -292,6 +293,10 @@ export function UsersRolesTab() {
         principalsByRole={principalsByRole}
         onSelectPrincipal={setSelectedPrincipalId}
       />
+
+      <Separator />
+
+      <ConfidentialitySection />
     </div>
   );
 }

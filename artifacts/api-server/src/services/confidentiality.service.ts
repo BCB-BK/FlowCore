@@ -1,12 +1,11 @@
 import { db } from "@workspace/db";
 import {
-  confidentialityAccessConfigTable,
+  confidentialityPrincipalAccessTable,
   contentNodesTable,
   contentRevisionsTable,
 } from "@workspace/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 import { logger } from "../lib/logger";
-import { getUserRoles } from "./rbac.service";
 
 export type ConfidentialityLevel =
   | "public"
@@ -21,65 +20,12 @@ export const CONFIDENTIALITY_LEVELS: ConfidentialityLevel[] = [
   "strictly_confidential",
 ];
 
-export const VALID_ROLES = [
-  "system_admin",
-  "process_manager",
-  "compliance_manager",
-  "editor",
-  "reviewer",
-  "approver",
-  "viewer",
-];
-
-export const DEFAULT_CONFIDENTIALITY_CONFIG: Record<
-  ConfidentialityLevel,
-  string[]
-> = {
-  public: [...VALID_ROLES],
-  internal: [...VALID_ROLES],
-  confidential: ["system_admin", "process_manager", "compliance_manager"],
-  strictly_confidential: ["system_admin"],
+export const LEVEL_LABELS: Record<ConfidentialityLevel, string> = {
+  public: "\u00D6ffentlich",
+  internal: "Intern",
+  confidential: "Vertraulich",
+  strictly_confidential: "Streng vertraulich",
 };
-
-let configCache: Map<string, string[]> | null = null;
-let configCacheExpiresAt = 0;
-const CONFIG_CACHE_TTL_MS = 30_000;
-
-export async function getConfidentialityConfig(): Promise<
-  Map<string, string[]>
-> {
-  if (configCache && configCacheExpiresAt > Date.now()) {
-    return configCache;
-  }
-
-  const rows = await db
-    .select()
-    .from(confidentialityAccessConfigTable)
-    .orderBy(confidentialityAccessConfigTable.level);
-
-  const map = new Map<string, string[]>();
-  for (const row of rows) {
-    map.set(row.level, row.allowedRoles);
-  }
-
-  if (map.size === 0) {
-    for (const [level, roles] of Object.entries(
-      DEFAULT_CONFIDENTIALITY_CONFIG,
-    )) {
-      map.set(level, roles);
-    }
-  }
-
-  configCache = map;
-  configCacheExpiresAt = Date.now() + CONFIG_CACHE_TTL_MS;
-
-  return map;
-}
-
-export function invalidateConfidentialityConfigCache(): void {
-  configCache = null;
-  configCacheExpiresAt = 0;
-}
 
 export async function getNodeConfidentialityLevel(
   nodeId: string,
@@ -129,6 +75,26 @@ function isNamedPersonOnNode(
   if (node.reviewerId === principalId) return true;
   if (node.approverId === principalId) return true;
   return false;
+}
+
+async function hasPrincipalAccessToLevel(
+  principalId: string,
+  level: ConfidentialityLevel,
+): Promise<boolean> {
+  if (level === "public") return true;
+
+  const rows = await db
+    .select({ id: confidentialityPrincipalAccessTable.id })
+    .from(confidentialityPrincipalAccessTable)
+    .where(
+      and(
+        eq(confidentialityPrincipalAccessTable.level, level),
+        eq(confidentialityPrincipalAccessTable.principalId, principalId),
+      ),
+    )
+    .limit(1);
+
+  return rows.length > 0;
 }
 
 export async function checkConfidentialityAccess(
@@ -185,12 +151,7 @@ export async function checkConfidentialityAccess(
     return { allowed: true, level };
   }
 
-  const config = await getConfidentialityConfig();
-  const allowedRoles = config.get(level) || [];
-
-  const userRoles = await getUserRoles(principalId);
-
-  const hasAccess = userRoles.some((role) => allowedRoles.includes(role));
+  const hasAccess = await hasPrincipalAccessToLevel(principalId, level);
 
   if (!hasAccess) {
     logger.info(
@@ -198,8 +159,6 @@ export async function checkConfidentialityAccess(
         principalId,
         nodeId,
         confidentialityLevel: level,
-        userRoles,
-        allowedRoles,
       },
       "Confidentiality access denied",
     );
@@ -214,13 +173,13 @@ export async function checkConfidentialityAccessBatch(
 ): Promise<Map<string, boolean>> {
   if (nodeIds.length === 0) return new Map();
 
-  const userRoles = await getUserRoles(principalId);
-  const config = await getConfidentialityConfig();
+  const principalLevels = await db
+    .select({ level: confidentialityPrincipalAccessTable.level })
+    .from(confidentialityPrincipalAccessTable)
+    .where(eq(confidentialityPrincipalAccessTable.principalId, principalId));
 
-  const isSystemAdmin = userRoles.includes("system_admin" as any);
-  if (isSystemAdmin) {
-    return new Map(nodeIds.map((id) => [id, true]));
-  }
+  const allowedLevels = new Set(principalLevels.map((r) => r.level));
+  allowedLevels.add("public");
 
   const nodes = await db
     .select({
@@ -286,9 +245,8 @@ export async function checkConfidentialityAccessBatch(
     const effectiveLevel = CONFIDENTIALITY_LEVELS.includes(level as ConfidentialityLevel)
       ? level
       : "strictly_confidential";
-    const allowedRoles = config.get(effectiveLevel) || [];
-    const hasAccess = userRoles.some((role) => allowedRoles.includes(role));
-    result.set(node.id, hasAccess);
+
+    result.set(node.id, allowedLevels.has(effectiveLevel));
   }
 
   for (const id of nodeIds) {
@@ -298,4 +256,42 @@ export async function checkConfidentialityAccessBatch(
   }
 
   return result;
+}
+
+export async function getAssignmentsForLevel(level: string) {
+  return db
+    .select()
+    .from(confidentialityPrincipalAccessTable)
+    .where(eq(confidentialityPrincipalAccessTable.level, level));
+}
+
+export async function getAllAssignments() {
+  return db
+    .select()
+    .from(confidentialityPrincipalAccessTable);
+}
+
+export async function assignPrincipalToLevel(
+  level: string,
+  principalId: string,
+  assignedBy: string,
+): Promise<void> {
+  await db
+    .insert(confidentialityPrincipalAccessTable)
+    .values({ level, principalId, assignedBy })
+    .onConflictDoNothing();
+}
+
+export async function removePrincipalFromLevel(
+  level: string,
+  principalId: string,
+): Promise<void> {
+  await db
+    .delete(confidentialityPrincipalAccessTable)
+    .where(
+      and(
+        eq(confidentialityPrincipalAccessTable.level, level),
+        eq(confidentialityPrincipalAccessTable.principalId, principalId),
+      ),
+    );
 }
