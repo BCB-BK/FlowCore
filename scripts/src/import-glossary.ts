@@ -16,26 +16,22 @@ function slugify(text: string): string {
 
 const EXCEL_PATH = path.resolve(
   import.meta.dirname,
-  "../../attached_assets/BCB_Glossar_v5_final_1774525714408.xlsx",
+  "../../attached_assets/Begriffe_1776326457078.xlsx",
 );
 
 async function importGlossary() {
-  const deleted = await db.delete(glossaryTermsTable).returning();
-  console.log(`Deleted ${deleted.length} existing glossary terms`);
-
   const wb = XLSX.readFile(EXCEL_PATH);
   const ws = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 });
 
   const dataRows = rows.slice(1);
-  console.log(`Read ${dataRows.length} glossary terms from Excel`);
 
   const values = dataRows
     .filter((row) => row[0] && row[1])
     .map((row) => {
-      const [term, definition, synonymsRaw, abbreviation] = row;
-      const synonyms = synonymsRaw
-        ? synonymsRaw
+      const [term, definition, verweisRaw] = row;
+      const synonyms = verweisRaw
+        ? verweisRaw
             .split(",")
             .map((s: string) => s.trim())
             .filter(Boolean)
@@ -45,30 +41,27 @@ async function importGlossary() {
         term: term.trim(),
         slug: slugify(term.trim()),
         definition: definition.trim(),
-        synonyms,
-        abbreviation: abbreviation?.trim() || null,
+        synonyms: synonyms && synonyms.length > 0 ? synonyms : null,
+        abbreviation: null as string | null,
       };
     });
+
+  console.log(`Read ${values.length} valid terms from Excel`);
+
+  const deleted = await db.delete(glossaryTermsTable).returning();
+  console.log(`Deleted ${deleted.length} existing glossary terms`);
 
   const inserted = await db
     .insert(glossaryTermsTable)
     .values(values)
-    .onConflictDoNothing()
     .returning();
 
-  console.log(
-    `Result: ${inserted.length} inserted, ${values.length - inserted.length} skipped (already exist)`,
-  );
-  console.log(`Total terms processed: ${values.length}`);
+  console.log(`Inserted ${inserted.length} new terms`);
 
-  if (inserted.length > 0) {
-    console.log("\nInserted terms:");
-    for (const t of inserted) {
-      console.log(
-        `  + ${t.term} [${t.slug}] abbr=${t.abbreviation || "-"} synonyms=${t.synonyms?.length || 0}`,
-      );
-    }
-  }
+  const total = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(glossaryTermsTable);
+  console.log(`Total terms now in DB: ${total[0]?.count}`);
 
   process.exit(0);
 }
