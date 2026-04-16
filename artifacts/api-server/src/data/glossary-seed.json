@@ -1,0 +1,4870 @@
+[
+  {
+    "term": "Academy of Sports",
+    "slug": "academy-of-sports",
+    "definition": "<p><strong>Definition:</strong> Nicht-akademische Bildungseinheit des Campus mit Schwerpunkt auf Sport, Fitness, Gesundheit, Ernährung und angrenzenden Fachthemen.</p><p><strong>BCB-Kontext:</strong> Wird intern häufig als AoS abgekürzt und führt vor allem Fernlehrgänge und Zertifikatsangebote.</p>",
+    "synonyms": [
+      "AoS"
+    ],
+    "abbreviation": "AoS"
+  },
+  {
+    "term": "Account",
+    "slug": "account",
+    "definition": "<p><strong>Definition:</strong> CRM-Objekt für eine Organisation oder einen Geschäftskontext, dem Kontakte und Vorgänge zugeordnet werden.</p><p><strong>BCB-Kontext:</strong> Im BCB wird ein Account vor allem im B2B- oder B2G-nahen Kontext relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Akademische Weiterbildung / Hochschulzertifikat",
+    "slug": "akademische-weiterbildung-hochschulzertifikat",
+    "definition": "<p><strong>Definition:</strong> Weiterbildungsformat auf Hochschulniveau, häufig mit ausgewiesenen ECTS oder hochschulnaher Zertifizierung.</p><p><strong>BCB-Kontext:</strong> Im BCB ist dies vor allem im Umfeld der EHiP Academy relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Akkreditierung / Reakkreditierung",
+    "slug": "akkreditierung-reakkreditierung",
+    "definition": "<p><strong>Definition:</strong> Externe Qualitätssicherung und formale Bestätigung eines Studiengangs beziehungsweise deren Erneuerung nach Ablauf.</p><p><strong>BCB-Kontext:</strong> Im BCB betrifft dies vor allem die akademischen Angebote der EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Asynchrones Lernen",
+    "slug": "asynchrones-lernen",
+    "definition": "<p><strong>Definition:</strong> Lernen ohne gleichzeitige Anwesenheit aller Beteiligten und ohne festen Echtzeit-Termin.</p><p><strong>BCB-Kontext:</strong> Im BCB ist asynchrones Lernen der Standard vieler digitaler Lernarchitekturen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Audit Trail",
+    "slug": "audit-trail",
+    "definition": "<p><strong>Definition:</strong> Nachvollziehbare Protokollierung von Änderungen, Entscheidungen oder Systemaktionen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Begriff insbesondere bei KI-Nutzung, Freigaben und Compliance-nahen Prozessen relevant.</p>",
+    "synonyms": [
+      "Protokollspur"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AutoAngebot",
+    "slug": "autoangebot",
+    "definition": "<p><strong>Definition:</strong> Automatisiert erzeugtes Angebot auf Basis definierter Produkt- und Förderlogiken.</p><p><strong>BCB-Kontext:</strong> Im BCB ist das AutoAngebot besonders in Stockfirst- und B2G-nahen Logiken relevant.</p>",
+    "synonyms": [
+      "automatisches Angebot"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AZAV-System",
+    "slug": "azav-system",
+    "definition": "<p><strong>Definition:</strong> System der Arbeitsförderung für Träger- und Maßnahmezulassung im Bereich geförderter Weiterbildung.</p><p><strong>BCB-Kontext:</strong> Im BCB bildet das AZAV-System die Grundlage für B2G-Angebote und Bildungsgutschein-Prozesse.</p>",
+    "synonyms": [
+      "Arbeitsförderungssystem"
+    ],
+    "abbreviation": "AZAV"
+  },
+  {
+    "term": "Bachelor of Arts",
+    "slug": "bachelor-of-arts",
+    "definition": "<p><strong>Definition:</strong> Akademischer Grad für bestimmte erfolgreich abgeschlossene Bachelorstudiengänge.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Bachelor of Arts ein relevanter Abschlussgrad an der EHiP.</p>",
+    "synonyms": [
+      "B.A."
+    ],
+    "abbreviation": "B.A."
+  },
+  {
+    "term": "Bachelor-Thesis",
+    "slug": "bachelor-thesis",
+    "definition": "<p><strong>Definition:</strong> Wissenschaftliche Abschlussarbeit eines Bachelorstudiums.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Bachelor-Thesis Teil des formalen Studienabschlusses an der EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Beisitzer*in",
+    "slug": "beisitzer-in",
+    "definition": "<p><strong>Definition:</strong> Person mit begleitender Funktion in einem Prüfungsprozess ohne primäre Gesamtverantwortung für die Prüfungsentscheidung.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Begriff vor allem im akademischen Prüfungsumfeld relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Bereichsleitung",
+    "slug": "bereichsleitung",
+    "definition": "<p><strong>Definition:</strong> Leitungsfunktion für einen organisatorischen Bereich mit Budget-, Personal- oder Entscheidungsverantwortung.</p><p><strong>BCB-Kontext:</strong> Im BCB wird Bereichsleitung als übergreifender Begriff für verantwortliche Führungsrollen genutzt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Berufsbegleitend",
+    "slug": "berufsbegleitend",
+    "definition": "Durchführungsform, bei der eine Qualifizierung parallel zu einer bestehenden Berufstätigkeit absolviert wird. Typisch sind Teilzeitmodelle, Abend- oder Online-Formate.",
+    "synonyms": [
+      "Teilzeit",
+      "Weiterbildung",
+      "Durchführungsform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "BildungsCampus Backnang",
+    "slug": "bildungscampus-backnang",
+    "definition": "<p><strong>Definition:</strong> Verbund der Bildungseinheiten Academy of Sports, DeLSt und EHiP unter gemeinsamer strategischer und operativer Steuerung.</p><p><strong>BCB-Kontext:</strong> Bezeichnet den Gesamtcampus und dient intern als Klammer für Marken, Prozesse, Systeme und Standards.</p>",
+    "synonyms": [
+      "BCB",
+      "Campus"
+    ],
+    "abbreviation": "BCB"
+  },
+  {
+    "term": "Bildungsgutschein",
+    "slug": "bildungsgutschein",
+    "definition": "Förderinstrument der BA für berufliche Weiterbildung nach §§ 81 ff. SGB III. Deckt Lehrgangs- und Nebenkosten ab.",
+    "synonyms": [
+      "Berufliche Weiterbildung",
+      "FbW-Maßnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Blended Learning",
+    "slug": "blended-learning",
+    "definition": "Lernform, die Präsenzunterricht mit Online-Elementen kombiniert. Unterliegt besonderen AZAV-Anforderungen gemäß den Beirats-Empfehlungen 2025.",
+    "synonyms": [
+      "E-Learning",
+      "Hybridunterricht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Cluster",
+    "slug": "cluster",
+    "definition": "<p><strong>Definition:</strong> Logische Gruppierung von inhaltlich oder funktional zusammengehörenden Lernelementen oder Bausteinen.</p><p><strong>BCB-Kontext:</strong> Im BCB dient Cluster der strukturierten Bündelung innerhalb eines Produkts.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Compliance",
+    "slug": "compliance",
+    "definition": "Einhaltung aller relevanten Gesetze und Verordnungen, insbesondere der AZAV-Anforderungen.",
+    "synonyms": [
+      "AZAV",
+      "Rechtssicherheit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Contact",
+    "slug": "contact",
+    "definition": "<p><strong>Definition:</strong> CRM-Objekt für eine konkrete Person mit Kommunikations- oder Beziehungsrelevanz.</p><p><strong>BCB-Kontext:</strong> Im BCB wird ein Contact genutzt, um personenbezogene Beziehungen im CRM sauber abzubilden.</p>",
+    "synonyms": [
+      "Kontakt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Copilot Studio",
+    "slug": "copilot-studio",
+    "definition": "<p><strong>Definition:</strong> Microsoft-Umgebung zur Entwicklung und Steuerung dialogbasierter Assistenten und Automatisierungslogiken.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Copilot Studio vor allem im Kontext KI-Architektur, Assistenzsysteme und Prozessunterstützung relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "CRM",
+    "slug": "crm",
+    "definition": "<p><strong>Definition:</strong> System zur strukturierten Verwaltung von Interessenten-, Kunden- und Vertriebsinformationen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist CRM das zentrale System für Beratung, Funnel-Steuerung, Dokumentation und Teile der Betreuung.</p>",
+    "synonyms": [
+      "Customer Relationship Management"
+    ],
+    "abbreviation": "CRM"
+  },
+  {
+    "term": "Cross-Selling",
+    "slug": "cross-selling",
+    "definition": "<p><strong>Definition:</strong> Angebot eines ergänzenden Produkts oder einer weiteren Bildungsoption außerhalb des ursprünglichen Kernangebots.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Cross-Selling eng mit OneCampus und Ladder-Denken verbunden.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Curriculum",
+    "slug": "curriculum",
+    "definition": "Lehrplan einer Bildungsmaßnahme mit Inhalten, Zielen, Methoden und zeitlicher Struktur.",
+    "synonyms": [
+      "Lehrplan",
+      "Bildungsziel"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Dekan",
+    "slug": "dekan",
+    "definition": "<p><strong>Definition:</strong> Leitende akademische Funktion einer Fakultät.</p><p><strong>BCB-Kontext:</strong> Im BCB verantwortet der Dekan die fachliche und organisatorische Führung eines Fakultätsbereichs.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Dekanat",
+    "slug": "dekanat",
+    "definition": "<p><strong>Definition:</strong> Leitungseinheit einer Fakultät oder eines akademischen Bereichs.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet das Dekanat die organisatorische Spitze einer Fakultät inklusive Dekan und gegebenenfalls Prodekan.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "DeLSt",
+    "slug": "delst",
+    "definition": "<p><strong>Definition:</strong> Nicht-akademische Bildungseinheit des Campus mit Schwerpunkt auf beruflicher Weiterbildung, IHK-nahen Angeboten und wirtschaftsbezogenen Fernlehrgängen.</p><p><strong>BCB-Kontext:</strong> Wird intern als DeLSt verwendet und steht für Deutsche eLearning Studieninstitut.</p>",
+    "synonyms": [
+      "Deutsches eLearning Studieninstitut"
+    ],
+    "abbreviation": "DeLSt"
+  },
+  {
+    "term": "Digitales Lehrmaterial",
+    "slug": "digitales-lehrmaterial",
+    "definition": "<p><strong>Definition:</strong> Lehrinhalt, der digital bereitgestellt und genutzt wird.</p><p><strong>BCB-Kontext:</strong> Im BCB umfasst digitales Lehrmaterial unter anderem Skripte, Videos, WBTs und begleitende Dateien.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Diploma Supplement",
+    "slug": "diploma-supplement",
+    "definition": "<p><strong>Definition:</strong> Ergänzendes Dokument zum Hochschulabschluss mit standardisierten Informationen zu Inhalt und Einordnung des Studiums.</p><p><strong>BCB-Kontext:</strong> Im BCB betrifft das Diploma Supplement die akademischen Abschlüsse der EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "DSGVO",
+    "slug": "dsgvo",
+    "definition": "Datenschutz-Grundverordnung der EU. Regelt den Umgang mit personenbezogenen Daten von Teilnehmern.",
+    "synonyms": [
+      "Datenschutz",
+      "Personenbezogene Daten"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Dualer Fernstudiengang",
+    "slug": "dualer-fernstudiengang",
+    "definition": "<p><strong>Definition:</strong> Fernstudiengang mit vertraglich oder organisatorisch eingebundener Praxiskomponente.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet der Begriff akademische Produkte, die Studium und Unternehmenspraxis systematisch verbinden.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "ECTS / Credit Points",
+    "slug": "ects-credit-points",
+    "definition": "<p><strong>Definition:</strong> Leistungspunkte zur quantitativen Abbildung des studentischen Arbeitsaufwands in akademischen Programmen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist ECTS die gebräuchliche akademische Bezugsgröße für Studienmodule und Zertifikate mit Hochschulbezug.</p>",
+    "synonyms": [
+      "Leistungspunkte",
+      "Credit Points"
+    ],
+    "abbreviation": "ECTS"
+  },
+  {
+    "term": "Educational Services",
+    "slug": "educational-services",
+    "definition": "<p><strong>Definition:</strong> Zentrale Funktion zur Steuerung von Lehrmaterial, Didaktik, Produktionslogik und Bildungsprodukt-Umsetzung.</p><p><strong>BCB-Kontext:</strong> Im BCB bündelt Educational Services Anforderungen aus Produkt, Lehre, Plattform und Qualität.</p>",
+    "synonyms": [
+      "ES"
+    ],
+    "abbreviation": "ES"
+  },
+  {
+    "term": "EHiP",
+    "slug": "ehip",
+    "definition": "<p><strong>Definition:</strong> Private Fernhochschule des Campus für akademische Angebote wie Bachelorstudiengänge, duale Fernstudiengänge und akademische Weiterbildungen.</p><p><strong>BCB-Kontext:</strong> Bezeichnet den akademischen Bereich des Campus und steht für Europäische Hochschule für Innovation und Perspektive.</p>",
+    "synonyms": [
+      "Europäische Hochschule für Innovation und Perspektive"
+    ],
+    "abbreviation": "EHiP"
+  },
+  {
+    "term": "EHiP Academy",
+    "slug": "ehip-academy",
+    "definition": "<p><strong>Definition:</strong> Angebotsbereich der EHiP für akademische Weiterbildungen und hochschulnahe Zertifikatsformate.</p><p><strong>BCB-Kontext:</strong> Wird intern genutzt, wenn nicht Vollstudiengänge, sondern akademische Weiterbildungsprodukte gemeint sind.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Eignungsfeststellung",
+    "slug": "eignungsfeststellung",
+    "definition": "Verfahren zur Feststellung beruflicher Eignung und Kompetenzen von Teilnehmern, häufig vor Beginn einer Qualifizierungsmaßnahme. Kann über AVGS gefördert werden.",
+    "synonyms": [
+      "AVGS",
+      "Aktivierungsmaßnahmen",
+      "Kompetenzfeststellung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Exmatrikulation",
+    "slug": "exmatrikulation",
+    "definition": "<p><strong>Definition:</strong> Formale Beendigung des Studierendenstatus an einer Hochschule.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet Exmatrikulation das formale Ende des Studierendenstatus, unabhängig vom Grund.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Fachkundige Stelle",
+    "slug": "fachkundige-stelle",
+    "definition": "<p><strong>Definition:</strong> Akkreditierte Stelle, die Träger- und Maßnahmezulassungen im AZAV-System prüft und vergibt.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die fachkundige Stelle die externe Prüfinstanz für geförderte Angebote.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Fakultät",
+    "slug": "fakultaet",
+    "definition": "<p><strong>Definition:</strong> Akademische Organisationseinheit, in der fachlich zusammenhängende Studienangebote gebündelt werden.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet Fakultät insbesondere die Fachbereiche der EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Feedback / Lernfortschritt",
+    "slug": "feedback-lernfortschritt",
+    "definition": "<p><strong>Definition:</strong> Feedback ist die Rückmeldung auf Leistung oder Verhalten; Lernfortschritt bezeichnet den Stand der inhaltlichen Bearbeitung oder Zielerreichung.</p><p><strong>BCB-Kontext:</strong> Im BCB sind beide Begriffe zentral für Betreuung, Plattformlogik und Auslöser im CRM- oder Betreuungskontext.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Fernlehre-Regulatorik (ZFU & FernUSG)",
+    "slug": "fernlehre-regulatorik-zfu-fernusg",
+    "definition": "<p><strong>Definition:</strong> Zusammenfassender Begriff für die wesentlichen regulatorischen Anforderungen an Fernlehrgänge aus Zulassung und Teilnehmer*innenschutz.</p><p><strong>BCB-Kontext:</strong> Im BCB betrifft Fernlehre-Regulatorik vor allem die nicht-akademischen Angebote von AoS und DeLSt sowie deren Produktgestaltung, Kommunikation und Verträge.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Fernlehrgang",
+    "slug": "fernlehrgang",
+    "definition": "Organisierte Form des Lernens, bei der Lehrende und Lernende überwiegend räumlich getrennt sind und der Lernerfolg überwacht wird. Entgeltliche Fernlehrgänge sind in der Regel zulassungspflichtig.",
+    "synonyms": [
+      "Fernunterricht",
+      "ZFU-Zulassung",
+      "Lehrbrief"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fernstudiengang",
+    "slug": "fernstudiengang",
+    "definition": "Strukturiertes Fernstudium mit akademischer Ausrichtung, meist an Hochschulen oder hochschulnahen Einrichtungen. Es verbindet selbstgesteuertes Lernen mit Prüfungs- und Betreuungsstrukturen.",
+    "synonyms": [
+      "Fernlehrgang",
+      "Immatrikulation",
+      "ECTS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fernunterricht",
+    "slug": "fernunterricht",
+    "definition": "Lehr- und Lernform, bei der Lehrende und Lernende überwiegend räumlich getrennt sind und der Lernerfolg kontrolliert wird. Für entgeltliche Angebote gelten die Vorgaben des FernUSG.",
+    "synonyms": [
+      "Fernlehrgang",
+      "Selbstlernphase",
+      "Fernunterrichtsschutzgesetz (FernUSG)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fernunterrichtsschutzgesetz",
+    "slug": "fernunterrichtsschutzgesetz",
+    "definition": "<p><strong>Definition:</strong> Bundesgesetz zum Schutz von Teilnehmenden im Fernunterricht, insbesondere in Bezug auf Zulassung, Vertrag und Informationspflichten.</p><p><strong>BCB-Kontext:</strong> Im BCB ist das Fernunterrichtsschutzgesetz für die nicht-akademische Fernlehre ein zentraler Rechtsrahmen.</p>",
+    "synonyms": [
+      "FernUSG"
+    ],
+    "abbreviation": "FernUSG"
+  },
+  {
+    "term": "Fernunterrichtsvertrag",
+    "slug": "fernunterrichtsvertrag",
+    "definition": "Vertrag zwischen Anbieter und Teilnehmer über einen Fernlehrgang oder Fernunterricht. Er muss die gesetzlichen Anforderungen an Form, Inhalte, Belehrungen und Rechte der Teilnehmer erfüllen.",
+    "synonyms": [
+      "Fernunterrichtsschutzgesetz (FernUSG)",
+      "Vertragsinhalt",
+      "Widerrufsrecht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Finanzierungsmodell / Studienvertrag",
+    "slug": "finanzierungsmodell-studienvertrag",
+    "definition": "<p><strong>Definition:</strong> Finanzierungsmodell bezeichnet die Zahlungs- und Laufzeitlogik eines Angebots; der Studienvertrag regelt die vertragliche Grundlage eines Studiums.</p><p><strong>BCB-Kontext:</strong> Im BCB sind beide Begriffe wichtig, wenn Studienentscheidung, Laufzeit und Kostenstruktur zusammen betrachtet werden.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "FOCUS",
+    "slug": "focus",
+    "definition": "<p><strong>Definition:</strong> Bezeichnung für das Lernsystem beziehungsweise die virtuelle Lernumgebung im EHiP-Kontext.</p><p><strong>BCB-Kontext:</strong> Wird im BCB genutzt, wenn die akademische Lernumgebung der EHiP gemeint ist.</p>",
+    "synonyms": [
+      "Lernsystem FOCUS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Funnel",
+    "slug": "funnel",
+    "definition": "<p><strong>Definition:</strong> Modell der aufeinanderfolgenden Phasen vom ersten Interesse bis zum Abschluss.</p><p><strong>BCB-Kontext:</strong> Im BCB dient der Funnel der einheitlichen Steuerung von Beratung, Angebot und Conversion.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Gleichstellungsbeauftragte*r",
+    "slug": "gleichstellungsbeauftragte-r",
+    "definition": "<p><strong>Definition:</strong> Funktion mit Verantwortung für Gleichstellungs- und Antidiskriminierungsaspekte in einer Organisation oder Hochschule.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Rolle sowohl für Governance als auch für Kultur- und Schutzthemen relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Grundordnung",
+    "slug": "grundordnung",
+    "definition": "<p><strong>Definition:</strong> Zentrale hochschulinterne Ordnung, die Aufbau, Organe und grundlegende Zuständigkeiten regelt.</p><p><strong>BCB-Kontext:</strong> Im BCB bezieht sich Grundordnung im Regelfall auf die EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Gutachter*in",
+    "slug": "gutachter-in",
+    "definition": "<p><strong>Definition:</strong> Person, die eine wissenschaftliche oder prüfungsbezogene Leistung formal begutachtet.</p><p><strong>BCB-Kontext:</strong> Im BCB betrifft dies insbesondere Abschlussarbeiten oder komplexere Leistungsnachweise.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Head of",
+    "slug": "head-of",
+    "definition": "<p><strong>Definition:</strong> Leitungsbezeichnung für die verantwortliche Führung eines Bereichs oder Funktionsclusters.</p><p><strong>BCB-Kontext:</strong> Im BCB kennzeichnet Head of typischerweise die primäre fachliche und operative Bereichsverantwortung.</p>",
+    "synonyms": [
+      "Bereichsleitung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Hochschulleitung",
+    "slug": "hochschulleitung",
+    "definition": "<p><strong>Definition:</strong> Zusammenfassender Begriff für die leitenden akademischen und administrativen Funktionen einer Hochschule.</p><p><strong>BCB-Kontext:</strong> Im BCB meint Hochschulleitung je nach Kontext insbesondere Rektorat beziehungsweise Präsidium und Kanzlerfunktion.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Hochschulrecht (LHG)",
+    "slug": "hochschulrecht-lhg",
+    "definition": "<p><strong>Definition:</strong> Landesrechtlicher Rahmen für Aufbau, Aufgaben und Betrieb von Hochschulen in Baden-Württemberg.</p><p><strong>BCB-Kontext:</strong> Im BCB ist das LHG der zentrale rechtliche Referenzrahmen für die EHiP.</p>",
+    "synonyms": [
+      "Landeshochschulgesetz"
+    ],
+    "abbreviation": "LHG"
+  },
+  {
+    "term": "Immatrikulation",
+    "slug": "immatrikulation",
+    "definition": "Formale Einschreibung an einer Hochschule oder vergleichbaren Bildungseinrichtung. Sie begründet die offizielle Studienzugehörigkeit und ist oft mit bestimmten Rechten und Pflichten verbunden.",
+    "synonyms": [
+      "Hochschulzulassungsberechtigung",
+      "Numerus Clausus (NC)",
+      "ECTS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kanal (in Microsoft Teams)",
+    "slug": "kanal-in-microsoft-teams",
+    "definition": "<p><strong>Definition:</strong> Unterbereich innerhalb eines Teams zur strukturierten Kommunikation zu einem bestimmten Thema oder Zweck.</p><p><strong>BCB-Kontext:</strong> Im BCB helfen Kanäle dabei, Kommunikation innerhalb eines Teams sauber zu trennen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Kanzler",
+    "slug": "kanzler",
+    "definition": "<p><strong>Definition:</strong> Leitende Funktion für Verwaltung, Betrieb, Ressourcen und administrative Hochschulprozesse.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet der Kanzler die operative Verwaltungsleitung im Hochschulkontext.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Kernmodul",
+    "slug": "kernmodul",
+    "definition": "<p><strong>Definition:</strong> Studienmodul, das für alle Studierenden eines Programms verpflichtend ist.</p><p><strong>BCB-Kontext:</strong> Im BCB beschreibt Kernmodul den nicht wählbaren Pflichtteil eines Curriculums.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Kolloquium",
+    "slug": "kolloquium",
+    "definition": "<p><strong>Definition:</strong> Mündliches Prüfungs- oder Verteidigungsformat, häufig im Zusammenhang mit einer Abschlussarbeit.</p><p><strong>BCB-Kontext:</strong> Im BCB ist das Kolloquium Teil bestimmter akademischer Prüfungslogiken.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Kontaktstudium",
+    "slug": "kontaktstudium",
+    "definition": "<p><strong>Definition:</strong> Form der wissenschaftlichen Weiterbildung ohne notwendige Einschreibung in ein Vollstudium.</p><p><strong>BCB-Kontext:</strong> Im BCB dient Kontaktstudium als Einordnung für bestimmte akademische Weiterbildungsangebote.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "KURSNET / meinNOW",
+    "slug": "kursnet-meinnow",
+    "definition": "<p><strong>Definition:</strong> Digitale Plattformen beziehungsweise Reichweiten- und Informationskanäle im Förder- und Weiterbildungsumfeld.</p><p><strong>BCB-Kontext:</strong> Im BCB sind KURSNET und meinNOW relevante Einstiegs- und Sichtbarkeitskanäle für geförderte und andere Angebote.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lead",
+    "slug": "lead",
+    "definition": "<p><strong>Definition:</strong> Frühe Vertriebsstufe für eine Person oder Organisation mit erkennbarem Interesse an einem Angebot.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Lead der typische Startpunkt im CRM und im OneCampus-Funnel.</p>",
+    "synonyms": [
+      "Interessent*in"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Learner Care",
+    "slug": "learner-care",
+    "definition": "<p><strong>Definition:</strong> Organisationseinheit für die operative Betreuung von Lernenden.</p><p><strong>BCB-Kontext:</strong> Im BCB umfasst Learner Care insbesondere Onboarding, Begleitung, Rückgewinnung, Bindung und studienbegleitende Kommunikation.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Learning Identity",
+    "slug": "learning-identity",
+    "definition": "<p><strong>Definition:</strong> Verbindliches Verständnis davon, wie Lernen am Campus gestaltet, begründet und weiterentwickelt wird.</p><p><strong>BCB-Kontext:</strong> Dient im BCB als Orientierungsrahmen für Didaktik, Lehrmaterial, Lernformate und Qualitätsansprüche.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Learning Success",
+    "slug": "learning-success",
+    "definition": "<p><strong>Definition:</strong> Bereich mit Fokus auf Lernfortschritt, Bindung, Betreuung und Abschlussunterstützung.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Learning Success die organisatorische Klammer für betreuungsnahe Maßnahmen rund um den Lernerfolg.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrbeauftragte*r",
+    "slug": "lehrbeauftragte-r",
+    "definition": "<p><strong>Definition:</strong> Extern oder ergänzend eingesetzte Lehrperson ohne Professur, die Lehr- oder Prüfungsaufgaben in einem definierten Rahmen übernimmt.</p><p><strong>BCB-Kontext:</strong> Im BCB werden Lehrbeauftragte zur Ergänzung der Lehre und in bestimmten Fällen auch in Prüfungsfunktionen eingesetzt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrskript / gedrucktes Lehrskript",
+    "slug": "lehrskript-gedrucktes-lehrskript",
+    "definition": "<p><strong>Definition:</strong> Textbasiertes Lernmaterial; ein gedrucktes Lehrskript ist dessen physische Variante.</p><p><strong>BCB-Kontext:</strong> Im BCB gehören digitale und gedruckte Skripte zu den klassischen Lernelementen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrvideo",
+    "slug": "lehrvideo",
+    "definition": "<p><strong>Definition:</strong> Videoformat zur Vermittlung von Inhalten, Erklärungen oder Beispielen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist das Lehrvideo ein häufig genutztes Lernelement innerhalb digitaler Angebote.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lernelement",
+    "slug": "lernelement",
+    "definition": "<p><strong>Definition:</strong> Kleinste kuratierte Einheit der Wissensvermittlung innerhalb eines Produkts.</p><p><strong>BCB-Kontext:</strong> Im BCB umfassen Lernelemente zum Beispiel Videos, WBTs, Skripte oder ähnliche Bausteine.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lernkontrollfrage",
+    "slug": "lernkontrollfrage",
+    "definition": "<p><strong>Definition:</strong> Frage oder Aufgabenformat zur Überprüfung, ob ein Lerninhalt verstanden wurde.</p><p><strong>BCB-Kontext:</strong> Im BCB werden Lernkontrollfragen häufig in WBTs, Plattformen oder Skripten eingesetzt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lernpfad / Lehrplan",
+    "slug": "lernpfad-lehrplan",
+    "definition": "<p><strong>Definition:</strong> Strukturierte Abfolge von Inhalten oder Schritten, die Lernenden Orientierung im Produkt gibt.</p><p><strong>BCB-Kontext:</strong> Im BCB beschreibt der Begriff, wie Lernende durch ein Angebot geführt werden.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Lernsystem",
+    "slug": "lernsystem",
+    "definition": "<p><strong>Definition:</strong> Technische und didaktische Gesamtumgebung, in der Lernen organisiert, begleitet und nachvollzogen wird.</p><p><strong>BCB-Kontext:</strong> Im BCB kann Lernsystem auf FOCUS, myFOCUS oder die dahinterliegende Lernlogik verweisen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Live-Online-Seminar / Webinar",
+    "slug": "live-online-seminar-webinar",
+    "definition": "<p><strong>Definition:</strong> Synchrones Online-Format zur Vermittlung, Vertiefung oder Diskussion von Inhalten.</p><p><strong>BCB-Kontext:</strong> Im BCB werden Live-Online-Seminare und Webinare je nach Produkt als ergänzende Lern- oder Betreuungsform genutzt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "LMS",
+    "slug": "lms",
+    "definition": "<p><strong>Definition:</strong> System zur Verwaltung, Ausspielung und Nachverfolgung von Lerninhalten und Lernaktivitäten.</p><p><strong>BCB-Kontext:</strong> Im BCB bildet das LMS die technische Grundlage zentraler Lernprozesse.</p>",
+    "synonyms": [
+      "Learning Management System"
+    ],
+    "abbreviation": "LMS"
+  },
+  {
+    "term": "Maßnahmenkombination",
+    "slug": "massnahmenkombination",
+    "definition": "<p><strong>Definition:</strong> Kombination mehrerer förderfähiger oder zugelassener Einheiten in einem Angebotskontext.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Begriff vor allem im B2G-Umfeld und bei Upsell-Logiken relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmezulassung / Maßnahme",
+    "slug": "massnahmezulassung-massnahme",
+    "definition": "<p><strong>Definition:</strong> Formale Zulassung einer konkreten geförderten Weiterbildung; die Maßnahme ist das definierte Bildungsangebot innerhalb des Fördersystems.</p><p><strong>BCB-Kontext:</strong> Im BCB ist jede förderfähige Weiterbildung als konkrete Maßnahme mit eindeutigen Merkmalen zu verstehen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Microsoft 365",
+    "slug": "microsoft-365",
+    "definition": "<p><strong>Definition:</strong> Microsoft-Plattform aus Anwendungen und Cloud-Diensten für Kommunikation, Zusammenarbeit und Produktivität.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Microsoft 365 die technische Klammer für Outlook, Teams, Lists und weitere Arbeitswerkzeuge.</p>",
+    "synonyms": [
+      "M365"
+    ],
+    "abbreviation": "M365"
+  },
+  {
+    "term": "Microsoft Lists",
+    "slug": "microsoft-lists",
+    "definition": "<p><strong>Definition:</strong> Microsoft-Tool zur strukturierten Erfassung, Pflege und Nachverfolgung listenbasierter Informationen.</p><p><strong>BCB-Kontext:</strong> Im BCB wird Lists für operative Übersichten, Aufgaben- oder Statuslogiken genutzt.</p>",
+    "synonyms": [
+      "Lists"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Microsoft Teams",
+    "slug": "microsoft-teams",
+    "definition": "<p><strong>Definition:</strong> Kollaborationsplattform für Chat, Besprechungen, Dateien und teambezogene Zusammenarbeit.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Microsoft Teams ein zentrales Arbeitswerkzeug für Abstimmung, Meetings und interne Kommunikation.</p>",
+    "synonyms": [
+      "Teams"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Modulbeschreibung",
+    "slug": "modulbeschreibung",
+    "definition": "<p><strong>Definition:</strong> Formalisierte Beschreibung eines Studienmoduls mit Inhalt, Zielen, Umfang und Prüfungslogik.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Modulbeschreibung ein zentrales Dokument für akademische Qualität und Transparenz.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "myFOCUS",
+    "slug": "myfocus",
+    "definition": "<p><strong>Definition:</strong> Bezeichnung für den Online-Campus beziehungsweise die Lernumgebung insbesondere im nicht-akademischen Bereich von AoS und DeLSt.</p><p><strong>BCB-Kontext:</strong> Wird im BCB genutzt, wenn auf die bestehende Lernplattform für Fernlehrgänge Bezug genommen wird.</p>",
+    "synonyms": [
+      "Online-Campus myFOCUS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "OneCampus",
+    "slug": "onecampus",
+    "definition": "<p><strong>Definition:</strong> Campusweites Beratungs- und Vertriebsmodell, bei dem Interessenten nicht markenisoliert, sondern über das gesamte Portfolio hinweg beraten werden.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet OneCampus die übergreifende Logik für Beratung, Cross-Selling, Ladder-Pfade und Übergaben zwischen Einheiten.</p>",
+    "synonyms": [
+      "integrierte Beratung",
+      "campusweiter Vertrieb"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Online Campus",
+    "slug": "online-campus",
+    "definition": "<p><strong>Definition:</strong> Digitale Hauptumgebung, in der Lernende auf Inhalte, Kommunikation, Betreuung und teilweise Prüfungsprozesse zugreifen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Online Campus die zentrale Arbeits- und Lernoberfläche für Teilnehmende und Studierende.</p>",
+    "synonyms": [
+      "virtueller Campus"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Online-Bibliothek",
+    "slug": "online-bibliothek",
+    "definition": "<p><strong>Definition:</strong> Digitale Sammlung von Literatur, Ressourcen oder Recherchezugängen für Lernende.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Online-Bibliothek besonders im akademischen Kontext relevant, kann aber auch weiterbildungsnahe Funktionen haben.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Onscreen-Video",
+    "slug": "onscreen-video",
+    "definition": "<p><strong>Definition:</strong> Lehrvideo, bei dem Inhalte überwiegend über eingeblendete Visuals, Folien, Oberflächen oder Bildschirmdarstellungen vermittelt werden.</p><p><strong>BCB-Kontext:</strong> Im BCB dient das Onscreen-Video vor allem der kompakten, visuellen Wissensvermittlung.</p>",
+    "synonyms": [
+      "Screen-Video"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Opportunity",
+    "slug": "opportunity",
+    "definition": "<p><strong>Definition:</strong> CRM-Objekt für eine konkrete Verkaufschance mit definierter Phase, Wahrscheinlichkeit oder Abschlusslogik.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet Opportunity einen strukturiert verfolgten Vertriebsfall.</p>",
+    "synonyms": [
+      "Verkaufschance"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Organigramm",
+    "slug": "organigramm",
+    "definition": "<p><strong>Definition:</strong> Strukturierte Darstellung von Zuständigkeiten, Bereichen, Hierarchien und Berichtslinien einer Organisation.</p><p><strong>BCB-Kontext:</strong> Wird intern verwendet, um Rollen, Einheiten und Zuordnungen im Campus schnell einordnen zu können.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Outlook",
+    "slug": "outlook",
+    "definition": "<p><strong>Definition:</strong> Microsoft-Anwendung für E-Mail, Kalender, Termine und kommunikative Organisation.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Outlook Standard für Mailkommunikation, Terminplanung und Einladungskontexte.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Pipeline",
+    "slug": "pipeline",
+    "definition": "<p><strong>Definition:</strong> Gesamtheit der offenen Vertriebschancen in ihren jeweiligen Phasen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Pipeline ein Steuerungsbegriff für Kapazität, Forecast und Priorisierung.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Prodekan",
+    "slug": "prodekan",
+    "definition": "<p><strong>Definition:</strong> Stellvertretende oder ergänzende Leitungsfunktion innerhalb eines Dekanats.</p><p><strong>BCB-Kontext:</strong> Im BCB unterstützt der Prodekan den Dekan in fachlichen, organisatorischen oder strategischen Aufgaben.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Product Management",
+    "slug": "product-management",
+    "definition": "<p><strong>Definition:</strong> Funktion zur Steuerung, Priorisierung und Weiterentwicklung von Bildungsprodukten über ihren Lebenszyklus hinweg.</p><p><strong>BCB-Kontext:</strong> Im BCB verantwortet Product Management unter anderem Produktlogik, Marktfit, Portfolioabstimmung und Entwicklungsprioritäten.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Produkt",
+    "slug": "produkt",
+    "definition": "<p><strong>Definition:</strong> Generischer Oberbegriff für ein Bildungsangebot unabhängig von Marke, Abschlussart oder Förderlogik.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Produkt die übergreifende Bezeichnung für akademische und nicht-akademische Angebote.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Produktportfolio",
+    "slug": "produktportfolio",
+    "definition": "<p><strong>Definition:</strong> Gesamtheit aller aktiven und geplanten Produkte einer Organisation.</p><p><strong>BCB-Kontext:</strong> Im BCB beschreibt das Produktportfolio die strukturierte Gesamtsicht auf Angebote über alle Einheiten hinweg.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Produktseite / Landingpage",
+    "slug": "produktseite-landingpage",
+    "definition": "<p><strong>Definition:</strong> Digitale Seite zur Darstellung, Erklärung und Konvertierung eines konkreten Angebots oder Kampagnenziels.</p><p><strong>BCB-Kontext:</strong> Im BCB werden Produktseiten und Landingpages in Marketing, Funnel-Steuerung und Angebotserstellung genutzt.</p>",
+    "synonyms": [
+      "LP"
+    ],
+    "abbreviation": "LP"
+  },
+  {
+    "term": "Professor*in",
+    "slug": "professor-in",
+    "definition": "<p><strong>Definition:</strong> Hochschullehrende Person mit wissenschaftlicher und lehrbezogener Verantwortung.</p><p><strong>BCB-Kontext:</strong> Im BCB tragen Professorinnen und Professoren insbesondere Verantwortung für Lehre, Prüfungen, Modulentwicklung und fachliche Qualität an der EHiP.</p>",
+    "synonyms": [
+      "Hochschullehrende"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Präsenzphase",
+    "slug": "praesenzphase",
+    "definition": "Abschnitt einer Maßnahme, in dem Teilnehmer persönlich vor Ort unterrichtet oder betreut werden. Präsenzphasen können Teil von Blended-Learning- oder Fernlernkonzepten sein.",
+    "synonyms": [
+      "Synchroner Unterricht",
+      "Blended Learning",
+      "Durchführungsform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Präsidium",
+    "slug": "praesidium",
+    "definition": "<p><strong>Definition:</strong> Leitungsgremium einer Hochschule auf oberer Steuerungsebene.</p><p><strong>BCB-Kontext:</strong> Im BCB wird Präsidium als Governance-Begriff für die EHiP verwendet, insbesondere im Zusammenhang mit Verantwortlichkeiten und Qualitätssicherung.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Prüfer*in",
+    "slug": "pruefer-in",
+    "definition": "<p><strong>Definition:</strong> Zur Bewertung einer Prüfungsleistung befugte Person.</p><p><strong>BCB-Kontext:</strong> Im BCB wird der Begriff besonders in Ordnungen, Prüfungsprozessen und Rollenzuordnungen verwendet.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Prüfungsausschuss",
+    "slug": "pruefungsausschuss",
+    "definition": "<p><strong>Definition:</strong> Gremium mit Verantwortung für zentrale Entscheidungen in Prüfungsangelegenheiten.</p><p><strong>BCB-Kontext:</strong> Im BCB bezieht sich der Begriff vor allem auf die EHiP und deren formale Prüfungsentscheidungen, Zuständigkeiten und Widerspruchsprozesse.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Prüfungsvorbereitung",
+    "slug": "pruefungsvorbereitung",
+    "definition": "<p><strong>Definition:</strong> Geplante Unterstützung zur Vorbereitung auf Leistungsnachweise und Prüfungen.</p><p><strong>BCB-Kontext:</strong> Im BCB umfasst Prüfungsvorbereitung sowohl Inhalte als auch Betreuung und Strukturhilfen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Prüfungszentrum",
+    "slug": "pruefungszentrum",
+    "definition": "<p><strong>Definition:</strong> Zentrale Einheit zur administrativen Unterstützung von Prüfungsprozessen.</p><p><strong>BCB-Kontext:</strong> Im BCB unterstützt das Prüfungszentrum insbesondere die Organisation, Nachverfolgung und Durchführung von Prüfungsabläufen an der EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "QCG",
+    "slug": "qcg",
+    "definition": "<p><strong>Definition:</strong> Rechtlicher Förderrahmen für die berufliche Weiterbildung Beschäftigter über Arbeitgeberkontexte.</p><p><strong>BCB-Kontext:</strong> Im BCB ist QCG insbesondere im B2B- und B2G-nahen Förderdialog relevant.</p>",
+    "synonyms": [
+      "Qualifizierungschancengesetz"
+    ],
+    "abbreviation": "QCG"
+  },
+  {
+    "term": "Qualitätsmanagement",
+    "slug": "qualitaetsmanagement",
+    "definition": "<p><strong>Definition:</strong> Systematische Sicherung, Überprüfung und Weiterentwicklung definierter Qualitätsstandards.</p><p><strong>BCB-Kontext:</strong> Im BCB bezieht sich Qualitätsmanagement auf Prozesse, Lehre, Betreuung, Produktqualität und regelkonforme Umsetzung.</p>",
+    "synonyms": [
+      "QM"
+    ],
+    "abbreviation": "QM"
+  },
+  {
+    "term": "Regelstudienzeit",
+    "slug": "regelstudienzeit",
+    "definition": "<p><strong>Definition:</strong> Zeitspanne, in der ein Studium in einem definierten Modell planmäßig abgeschlossen werden kann.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Regelstudienzeit insbesondere für Vollzeit- und Teilzeitmodelle der EHiP relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Rektor",
+    "slug": "rektor",
+    "definition": "<p><strong>Definition:</strong> Leitende akademische Funktion einer Hochschule mit Verantwortung für Studium, Lehre und akademische Entwicklung.</p><p><strong>BCB-Kontext:</strong> Im BCB wird der Begriff operativ als Bezeichnung für die akademische Leitung der EHiP verwendet.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Reverse Classroom",
+    "slug": "reverse-classroom",
+    "definition": "<p><strong>Definition:</strong> Didaktisches Modell, bei dem Inhalte zunächst eigenständig erarbeitet und gemeinsame Termine für Vertiefung oder Anwendung genutzt werden.</p><p><strong>BCB-Kontext:</strong> Im BCB kann Reverse Classroom eingesetzt werden, wenn Vorarbeit und Live-Format bewusst getrennt werden.</p>",
+    "synonyms": [
+      "Flipped Classroom"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Salesforce (Sales Cloud & Marketing Cloud)",
+    "slug": "salesforce-sales-cloud-marketing-cloud",
+    "definition": "<p><strong>Definition:</strong> Cloudbasierte Plattform für die Verbindung von Vertriebs- und Marketingprozessen in einem gemeinsamen Daten- und Prozesskontext.</p><p><strong>BCB-Kontext:</strong> Im BCB dient Salesforce als zentrale Lösung für Lead-Management, Funnel-Steuerung, Kampagnen, Kommunikation und Automatisierung.</p>",
+    "synonyms": [
+      "Salesforce"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Selbststudium",
+    "slug": "selbststudium",
+    "definition": "<p><strong>Definition:</strong> Eigenverantwortliche Bearbeitung von Lerninhalten ohne fortlaufende Live-Anleitung.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Selbststudium der zentrale Modus vieler Fernlernangebote.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Semester",
+    "slug": "semester",
+    "definition": "<p><strong>Definition:</strong> Zeitliche Grundeinheit der Studienorganisation.</p><p><strong>BCB-Kontext:</strong> Im BCB ist das Semester im akademischen Kontext relevant, auch wenn der tatsächliche Studienstart flexibel sein kann.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Semestertaktung",
+    "slug": "semestertaktung",
+    "definition": "<p><strong>Definition:</strong> Organisatorische Logik, nach der bestimmte Studien- oder Prüfungsbestandteile einem Semesterablauf folgen.</p><p><strong>BCB-Kontext:</strong> Im BCB kann Semestertaktung trotz flexiblem Start in Teilbereichen des EHiP-Studiums relevant sein.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Senat",
+    "slug": "senat",
+    "definition": "<p><strong>Definition:</strong> Zentrales akademisches Gremium einer Hochschule mit Mitwirkungs- und Beschlussfunktion in wesentlichen Hochschulfragen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Senat ein relevanter Begriff für Governance, Ordnungen und akademische Selbstverwaltung der EHiP.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "SGB III",
+    "slug": "sgb-iii",
+    "definition": "<p><strong>Definition:</strong> Drittes Buch des Sozialgesetzbuchs mit Regelungen zur Arbeitsförderung.</p><p><strong>BCB-Kontext:</strong> Im BCB ist SGB III vor allem relevant, wenn Förderlogik, Arbeitsförderung und AZAV-Kontexte betroffen sind.</p>",
+    "synonyms": [
+      "Sozialgesetzbuch III"
+    ],
+    "abbreviation": "SGB III"
+  },
+  {
+    "term": "SKU",
+    "slug": "sku",
+    "definition": "<p><strong>Definition:</strong> Eindeutig identifizierbare Produkteinheit in Systemen, Preislogiken und Angebotsprozessen.</p><p><strong>BCB-Kontext:</strong> Im BCB dient die SKU der sauberen Trennung, Steuerung und Vermarktung einzelner Angebote oder Maßnahmen.</p>",
+    "synonyms": null,
+    "abbreviation": "SKU"
+  },
+  {
+    "term": "SLA",
+    "slug": "sla",
+    "definition": "<p><strong>Definition:</strong> Verbindlich definierte Service- oder Reaktionsanforderung zwischen Prozessschritten oder Rollen.</p><p><strong>BCB-Kontext:</strong> Im BCB wird SLA genutzt, um Reaktionsgeschwindigkeit und Prozessdisziplin messbar zu machen.</p>",
+    "synonyms": [
+      "Service Level Agreement"
+    ],
+    "abbreviation": "SLA"
+  },
+  {
+    "term": "SLA-Timer",
+    "slug": "sla-timer",
+    "definition": "<p><strong>Definition:</strong> Systemische oder organisatorische Überwachung, ob definierte Reaktionszeiten eingehalten werden.</p><p><strong>BCB-Kontext:</strong> Im BCB wird der SLA-Timer zur Steuerung zeitkritischer Vertriebs- und Betreuungsphasen eingesetzt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "SmartCall",
+    "slug": "smartcall",
+    "definition": "<p><strong>Definition:</strong> Gezielter, nicht generischer Telefonkontakt auf Basis definierter Trigger oder Signale.</p><p><strong>BCB-Kontext:</strong> Im BCB bezeichnet SmartCall einen selektiven Beratungsanruf statt eines pauschalen Pflicht-Calls.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Sprecher-Video",
+    "slug": "sprecher-video",
+    "definition": "<p><strong>Definition:</strong> Lehrvideo, bei dem eine sprechende Person sichtbar als Hauptträger der Erklärung auftritt.</p><p><strong>BCB-Kontext:</strong> Im BCB wird das Sprecher-Video eingesetzt, wenn persönliche Ansprache oder Moderation wichtig ist.</p>",
+    "synonyms": [
+      "Talking-Head-Video"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Stockfirst",
+    "slug": "stockfirst",
+    "definition": "<p><strong>Definition:</strong> Vertriebslogik, bei der standardisierte, schnell ausspielbare Angebote Vorrang vor stark individualisierten Vorgängen haben.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Stockfirst vor allem im B2G- und skalierungsorientierten Funnel relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Studien- und Prüfungsordnung",
+    "slug": "studien-und-pruefungsordnung",
+    "definition": "<p><strong>Definition:</strong> Ordnungswerk, das Studienstruktur, Prüfungsformen, Fristen und Zuständigkeiten festlegt.</p><p><strong>BCB-Kontext:</strong> Im BCB ist dieser Begriff für akademische Programme und ihre formale Steuerung zentral.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Studienbeginn",
+    "slug": "studienbeginn",
+    "definition": "<p><strong>Definition:</strong> Formaler oder tatsächlicher Startpunkt eines Studiums.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Studienbeginn vor allem bei flexiblen Fernstudienmodellen bewusst niedrigschwellig organisiert.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Studienmodul",
+    "slug": "studienmodul",
+    "definition": "<p><strong>Definition:</strong> In sich geschlossene Lehreinheit innerhalb eines Studiengangs mit definiertem Inhalt, Umfang und Lernergebnis.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Studienmodul die korrekte Bezeichnung für den akademischen Baustein eines Studiums.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Study Coach",
+    "slug": "study-coach",
+    "definition": "Begleitende Person, die Teilnehmer bei Lernorganisation, Motivation und erfolgreichem Studienverlauf unterstützt. Der Begriff wird oft synonym oder ergänzend zu Learning Coach verwendet.",
+    "synonyms": [
+      "Learning Coach",
+      "Tutor",
+      "Betreuung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Synchrones Lernen",
+    "slug": "synchrones-lernen",
+    "definition": "<p><strong>Definition:</strong> Lernen in Echtzeit mit gemeinsamem Termin oder direkter Interaktion.</p><p><strong>BCB-Kontext:</strong> Im BCB ergänzt synchrones Lernen gezielt die asynchrone Lernlogik.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Teacher Care",
+    "slug": "teacher-care",
+    "definition": "<p><strong>Definition:</strong> Organisationseinheit für die operative Betreuung und Unterstützung von Lehrenden.</p><p><strong>BCB-Kontext:</strong> Im BCB umfasst Teacher Care die Schnittstelle zu Dozierenden, Tutorinnen und weiteren Lehrrollen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Team (in Microsoft Teams)",
+    "slug": "team-in-microsoft-teams",
+    "definition": "<p><strong>Definition:</strong> Arbeitsbereich in Microsoft Teams, der Personen, Kanäle, Dateien und Zusammenarbeit zu einem Thema oder Bereich bündelt.</p><p><strong>BCB-Kontext:</strong> Im BCB wird ein Team typischerweise für Bereiche, Projekte oder Funktionsgruppen angelegt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Team Lead",
+    "slug": "team-lead",
+    "definition": "<p><strong>Definition:</strong> Führungsrolle mit Verantwortung für die operative Steuerung eines Teams.</p><p><strong>BCB-Kontext:</strong> Im BCB wird Team Lead für teamnahe Führung, Priorisierung und operative Umsetzung verwendet.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnahmevoraussetzungen / Zugangsvoraussetzungen",
+    "slug": "teilnahmevoraussetzungen-zugangsvoraussetzungen",
+    "definition": "<p><strong>Definition:</strong> Bedingungen, die für die Teilnahme an einem Angebot erfüllt sein müssen; Zugangsvoraussetzungen sind besonders bei formal geregelten Programmen relevant.</p><p><strong>BCB-Kontext:</strong> Im BCB hilft die Unterscheidung, operative Produktvoraussetzungen von formal-rechtlichen Zugangsbedingungen zu trennen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnehmerakte",
+    "slug": "teilnehmerakte",
+    "definition": "<p><strong>Definition:</strong> Dokumentationsbestand der für einen Teilnehmenden relevanten Unterlagen, Nachweise und Prozessschritte.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Teilnehmerakte vor allem im Förder- und Compliance-Kontext relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Teilzeit",
+    "slug": "teilzeit",
+    "definition": "Durchführungsform mit reduziertem zeitlichem Umfang im Vergleich zur Vollzeit. Teilzeitmodelle erhöhen die Vereinbarkeit mit Arbeit, Familie oder gesundheitlichen Einschränkungen.",
+    "synonyms": [
+      "Vollzeit",
+      "berufsbegleitend",
+      "Durchführungsform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Trägerzulassung / Träger",
+    "slug": "traegerzulassung-traeger",
+    "definition": "<p><strong>Definition:</strong> Zulassung einer Organisation als verlässlicher Anbieter geförderter Weiterbildungsmaßnahmen; der Träger ist die dafür verantwortliche Organisation.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Begriff relevant für die Frage, wer förderfähige Maßnahmen offiziell anbieten darf.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Tutor*innensprechstunde",
+    "slug": "tutor-innensprechstunde",
+    "definition": "<p><strong>Definition:</strong> Fester oder flexibler Termin, in dem Lernende Fragen an Lehrende oder Tutorinnen richten können.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Tutor*innensprechstunde ein ergänzendes Unterstützungsformat.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Tutorium",
+    "slug": "tutorium",
+    "definition": "<p><strong>Definition:</strong> Begleitendes Format zur Vertiefung, Anwendung oder Diskussion von Lernstoff.</p><p><strong>BCB-Kontext:</strong> Im BCB kann ein Tutorium fachlich, organisatorisch oder prüfungsbezogen ausgerichtet sein.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Unterrichtseinheit (UE)",
+    "slug": "unterrichtseinheit-ue",
+    "definition": "<p><strong>Definition:</strong> Maßeinheit zur quantitativen Beschreibung von Lern- oder Unterrichtsumfang, typischerweise im nicht-akademischen Kontext.</p><p><strong>BCB-Kontext:</strong> Im BCB wird UE besonders in förderfähigen oder nicht-akademischen Angebotslogiken genutzt.</p>",
+    "synonyms": [
+      "UE"
+    ],
+    "abbreviation": "UE"
+  },
+  {
+    "term": "Upselling",
+    "slug": "upselling",
+    "definition": "<p><strong>Definition:</strong> Angebot einer höherwertigen oder umfangreicheren Produktoption als Erweiterung der ursprünglichen Auswahl.</p><p><strong>BCB-Kontext:</strong> Im BCB wird Upselling bevorzugt über separate SKUs und saubere Produktlogiken umgesetzt.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Urkunde",
+    "slug": "urkunde",
+    "definition": "<p><strong>Definition:</strong> Formaldokument zur Bestätigung eines verliehenen Grades oder Abschlusses.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die Urkunde insbesondere beim Hochschulabschluss relevant.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Vodcast / Podcast",
+    "slug": "vodcast-podcast",
+    "definition": "<p><strong>Definition:</strong> Audio- oder videobasiertes Format zur ergänzenden Wissensvermittlung.</p><p><strong>BCB-Kontext:</strong> Im BCB werden Vodcasts und Podcasts eingesetzt, wenn Inhalte mobil, kompakt oder ergänzend konsumierbar sein sollen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Vollzeit",
+    "slug": "vollzeit",
+    "definition": "Durchführungsform mit hohem zeitlichen Umfang und regelmäßiger Teilnahme an mehreren Tagen pro Woche. Vollzeitmaßnahmen sind von Teilzeit- oder berufsbegleitenden Angeboten abzugrenzen.",
+    "synonyms": [
+      "Teilzeit",
+      "berufsbegleitend",
+      "Durchführungsform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Voucher-Journey",
+    "slug": "voucher-journey",
+    "definition": "<p><strong>Definition:</strong> Strukturierter Prozess vom Förderinteresse bis zur Einlösung und Umsetzung eines Bildungsgutscheins.</p><p><strong>BCB-Kontext:</strong> Im BCB beschreibt Voucher-Journey die operative Begleitung geförderter Teilnehmender.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Wahlpflichtmodul",
+    "slug": "wahlpflichtmodul",
+    "definition": "<p><strong>Definition:</strong> Studienmodul, das aus einer vorgegebenen Auswahl gewählt werden kann.</p><p><strong>BCB-Kontext:</strong> Im BCB steht Wahlpflichtmodul für curricular definierte Auswahlbausteine im Studium.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Web-Based Training (WBT)",
+    "slug": "web-based-training-wbt",
+    "definition": "Digitales Lernformat, bei dem Inhalte webbasiert bereitgestellt und bearbeitet werden. Es kann synchron, asynchron oder kombiniert ausgestaltet sein.",
+    "synonyms": [
+      "E-Learning",
+      "Lernplattform",
+      "digitale Lernmedien"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Workbook",
+    "slug": "workbook",
+    "definition": "<p><strong>Definition:</strong> Begleitmaterial mit Aufgaben, Reflexionen oder Transferhilfen zur aktiven Vertiefung von Inhalten.</p><p><strong>BCB-Kontext:</strong> Im BCB dient ein Workbook oft der Anwendung und Strukturierung des Lernprozesses.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Workload",
+    "slug": "workload",
+    "definition": "<p><strong>Definition:</strong> Geplante Arbeitsbelastung, die mit einem Lern- oder Studienabschnitt verbunden ist.</p><p><strong>BCB-Kontext:</strong> Im BCB ist Workload besonders bei Studienmodulen und ECTS-relevanten Angeboten wichtig.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Zentrale Studierendenberatung",
+    "slug": "zentrale-studierendenberatung",
+    "definition": "<p><strong>Definition:</strong> Zentrale Anlaufstelle für Studieninteressierte und Studierende bei organisatorischen und studienbezogenen Fragen.</p><p><strong>BCB-Kontext:</strong> Im BCB ist die zentrale Studierendenberatung besonders im EHiP-Kontext relevant und begleitet vor allem akademische Entscheidungs- und Betreuungsfragen.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Zertifikat / Microlearning",
+    "slug": "zertifikat-microlearning",
+    "definition": "<p><strong>Definition:</strong> Zertifikat bezeichnet den dokumentierten Abschluss eines Bildungsangebots; Microlearning bezeichnet sehr kleinteilige, kurze Lernformate.</p><p><strong>BCB-Kontext:</strong> Im BCB können Zertifikatsangebote in klassischer Länge oder als kompaktere Formate auftreten.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Zeugnis",
+    "slug": "zeugnis",
+    "definition": "<p><strong>Definition:</strong> Formaler Nachweis über erfolgreich absolvierte Leistungen oder Abschlüsse.</p><p><strong>BCB-Kontext:</strong> Im BCB wird Zeugnis vor allem im akademischen Kontext verwendet.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "ZFU",
+    "slug": "zfu",
+    "definition": "<p><strong>Definition:</strong> Zuständige Behörde der Länder im Sinne des Fernunterrichtsschutzgesetzes für die Prüfung und Zulassung von Fernlehrgängen.</p><p><strong>BCB-Kontext:</strong> Im BCB steht ZFU für die externe Zulassungsinstanz, die bei vielen Fernlehrgängen von AoS und DeLSt relevant ist.</p>",
+    "synonyms": [
+      "Staatliche Zentralstelle für Fernunterricht"
+    ],
+    "abbreviation": "ZFU"
+  },
+  {
+    "term": "Zielgruppe",
+    "slug": "zielgruppe",
+    "definition": "Personenkreis, für den eine Bildungsmaßnahme konzipiert ist (z.B. Arbeitslose, Geringqualifizierte).",
+    "synonyms": [
+      "Teilnehmergewinnung",
+      "Marketing"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassungspflicht / wesentliche Änderung",
+    "slug": "zulassungspflicht-wesentliche-aenderung",
+    "definition": "<p><strong>Definition:</strong> Pflicht, bestimmte Fernlehrgänge vor Durchführung zulassen zu lassen; größere inhaltliche oder strukturelle Änderungen können erneut zulassungspflichtig sein.</p><p><strong>BCB-Kontext:</strong> Im BCB ist der Begriff relevant, wenn Produkte neu entwickelt oder wesentlich verändert werden.</p>",
+    "synonyms": null,
+    "abbreviation": null
+  },
+  {
+    "term": "Abbruch",
+    "slug": "abbruch",
+    "definition": "Vorzeitige Beendigung einer Bildungsmaßnahme durch den Teilnehmer oder Träger. Muss dokumentiert und der BA gemeldet werden.",
+    "synonyms": [
+      "Fehlzeitenkonzept",
+      "Dokumentation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Abbruchmeldung",
+    "slug": "abbruchmeldung",
+    "definition": "Formale Meldung über den vorzeitigen Abbruch einer Maßnahme an interne Stellen und – bei Förderung – an die Bundesagentur für Arbeit oder das Jobcenter. Sie dient dem Nachweis, der Fallsteuerung und der Aktualisierung der Teilnehmerdaten.",
+    "synonyms": [
+      "Abbruch",
+      "Dokumentation",
+      "Bundesagentur für Arbeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Abrechnung",
+    "slug": "abrechnung",
+    "definition": "Finanzielle Abrechnung von Bildungsmaßnahmen mit der Bundesagentur für Arbeit basierend auf BDKS und tatsächlichen Teilnehmerzahlen.",
+    "synonyms": [
+      "BDKS",
+      "Bundesagentur für Arbeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Abschluss",
+    "slug": "abschluss",
+    "definition": "Zertifikat, Zeugnis oder anerkannte Qualifikation am Ende einer Bildungsmaßnahme. Kann staatlich anerkannt oder trägerspezifisch sein.",
+    "synonyms": [
+      "Zertifikat",
+      "Qualifikation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "abschlussorientierte Weiterbildung",
+    "slug": "abschlussorientierte-weiterbildung",
+    "definition": "Weiterbildung, die gezielt auf einen anerkannten Berufsabschluss oder eine gleichwertige Qualifikation vorbereitet. Sie ist auf ein klar definiertes Bildungsziel mit prüfbarem Abschluss ausgerichtet.",
+    "synonyms": [
+      "Abschluss",
+      "anerkannter Ausbildungsberuf",
+      "Nachqualifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Abweichung",
+    "slug": "abweichung",
+    "definition": "Nichteinhaltung einer festgelegten Anforderung der AZAV. Wird während Audits festgestellt und muss durch Korrekturmaßnahmen behoben werden.",
+    "synonyms": [
+      "Audit",
+      "Korrekturmaßnahmen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Akkreditierung",
+    "slug": "akkreditierung",
+    "definition": "Formelle Anerkennung der Kompetenz einer fachkundigen Stelle durch die DAkkS zur Durchführung von AZAV-Zertifizierungen.",
+    "synonyms": [
+      "DAkkS",
+      "Fachkundige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Akkreditierungsrat",
+    "slug": "akkreditierungsrat",
+    "definition": "Bundesweites Gremium zur Sicherung und Weiterentwicklung der Qualität im Hochschulbereich. Für Bildungsträger ist er vor allem bei hochschulnahen oder akademischen Begriffen relevant.",
+    "synonyms": [
+      "programmakkreditiert",
+      "Wissenschaftsrat",
+      "Hochschulzulassungsberechtigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Akkreditierungsstelle",
+    "slug": "akkreditierungsstelle",
+    "definition": "Stelle, die die Kompetenz von Zertifizierungs- oder Prüfstellen formal bestätigt. Im AZAV-Umfeld übernimmt diese Funktion auf nationaler Ebene die DAkkS.",
+    "synonyms": [
+      "DAkkS",
+      "Akkreditierung",
+      "Fachkundige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Akkreditierungsurkunde",
+    "slug": "akkreditierungsurkunde",
+    "definition": "Formales Dokument als Nachweis einer erteilten Akkreditierung. Es bestätigt den Geltungsbereich und die Gültigkeit der Anerkennung einer Stelle.",
+    "synonyms": [
+      "Akkreditierung",
+      "DAkkS",
+      "Zertifikat"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Aktivierungsmaßnahmen",
+    "slug": "aktivierungsmassnahmen",
+    "definition": "Maßnahmen zur Aktivierung und beruflichen Eingliederung nach § 45 SGB III, gefördert über AVGS. Dauer bis zu 8 Wochen.",
+    "synonyms": [
+      "AVGS",
+      "SGB III"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Allgemeine Geschäftsbedingungen (AGB)",
+    "slug": "allgemeine-geschaeftsbedingungen-agb",
+    "definition": "Vorformulierte Vertragsbedingungen eines Trägers für Verträge mit Teilnehmern oder Geschäftspartnern. Sie regeln typische Rechte und Pflichten, etwa Zahlung, Kündigung und Haftung.",
+    "synonyms": [
+      "Schulungsvertrag",
+      "Vertragsinhalt",
+      "Widerrufsrecht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Alumni",
+    "slug": "alumni",
+    "definition": "Ehemalige Teilnehmer oder Absolventen einer Bildungsmaßnahme. Sie können für Verbleibsnachweise, Netzwerkeffekte und Erfahrungsberichte relevant sein.",
+    "synonyms": [
+      "Abschluss",
+      "Verbleib",
+      "Teilnehmer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AMDL (Arbeitsmarktdienstleister)",
+    "slug": "amdl-arbeitsmarktdienstleister",
+    "definition": "Prüfdienst der Bundesagentur für Arbeit zur Überwachung der AZAV-Einhaltung bei Bildungsträgern und Maßnahmen. Agiert unabhängig vom AZAV-Audit.",
+    "synonyms": [
+      "Prüfdienst",
+      "Überwachung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Änderungsmeldung",
+    "slug": "aenderungsmeldung",
+    "definition": "Pflichtmeldung an die fachkundige Stelle bei Veränderungen des Bildungsträgers (Personal, Standort, Rechtsform, QM-System). Fristen und Meldearten sind in der AZAV geregelt.",
+    "synonyms": [
+      "Fachkundige Stelle",
+      "Trägerzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Änderungszulassung",
+    "slug": "aenderungszulassung",
+    "definition": "Erweiterung oder Anpassung einer bestehenden Zulassung infolge relevanter Änderungen an Träger, Maßnahme oder Angebot. Sie stellt sicher, dass der neue Zustand formal abgedeckt ist.",
+    "synonyms": [
+      "Änderungsmeldung",
+      "wesentliche Änderung",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "anerkannter Ausbildungsberuf",
+    "slug": "anerkannter-ausbildungsberuf",
+    "definition": "Staatlich geregelter Ausbildungsberuf nach Berufsbildungsgesetz oder Handwerksordnung. Er bildet häufig den Referenzrahmen für Teilqualifikationen, Umschulungen und abschlussorientierte Weiterbildungen.",
+    "synonyms": [
+      "Abschluss",
+      "Berufsanschlussfähige Teilqualifikationen (TQ)",
+      "Umschulung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anerkennungsbeirat",
+    "slug": "anerkennungsbeirat",
+    "definition": "Gremium nach § 182 SGB III, das Empfehlungen zur AZAV-Umsetzung erarbeitet und regelmäßig aktualisiert.",
+    "synonyms": [
+      "Empfehlungen des Beirats",
+      "SGB III"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anforderungen an Teilnehmende",
+    "slug": "anforderungen-an-teilnehmende",
+    "definition": "Voraussetzungen, die Interessenten für die Teilnahme an einer Maßnahme erfüllen müssen, etwa Vorkenntnisse, Sprachstand oder technische Ausstattung. Sie müssen transparent beschrieben und vor Vertragsabschluss kommuniziert werden.",
+    "synonyms": [
+      "Zielgruppe",
+      "Informationsmaterial",
+      "Vertragsinhalt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Angemessenheit der Kosten",
+    "slug": "angemessenheit-der-kosten",
+    "definition": "Grundsatz, dass die Kosten einer Maßnahme nachvollziehbar, marktgerecht und im Verhältnis zum Bildungsziel stehen müssen. Er spielt insbesondere bei Kalkulation und Kostenzustimmung eine Rolle.",
+    "synonyms": [
+      "Kalkulation",
+      "BDKS",
+      "Kostenzustimmungsverfahren"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anlage Module/Bausteine",
+    "slug": "anlage-module-bausteine",
+    "definition": "Ergänzendes Dokument, in dem einzelne Module oder Bausteine einer Maßnahme strukturiert aufgeführt und beschrieben werden. Es dient der Transparenz über Inhalte, Umfang und Reihenfolge.",
+    "synonyms": [
+      "Modul",
+      "Maßnahmebaustein",
+      "Maßnahmenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anmeldebestätigung",
+    "slug": "anmeldebestaetigung",
+    "definition": "Schriftliche Bestätigung des Eingangs und der Annahme einer Anmeldung zu einer Maßnahme oder einem Fernlehrgang. Sie dokumentiert den Vertrags- oder Aufnahmeprozess.",
+    "synonyms": [
+      "Schulungsvertrag",
+      "Teilnahmebestätigung",
+      "Eintritt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anpassungsfortbildung",
+    "slug": "anpassungsfortbildung",
+    "definition": "Berufliche Weiterbildung zur Aktualisierung und Erweiterung vorhandener Kenntnisse im erlernten oder ausgeübten Beruf.",
+    "synonyms": [
+      "Weiterbildung",
+      "Fortbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anrechnung",
+    "slug": "anrechnung",
+    "definition": "Anerkennung bereits erworbener Kompetenzen, Vorleistungen oder Lernzeiten auf eine Qualifizierung oder einen Abschluss. Dadurch können Inhalte oder Zeitanteile entfallen.",
+    "synonyms": [
+      "Kompetenzfeststellung",
+      "Abschluss",
+      "Modul"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Anwesenheit",
+    "slug": "anwesenheit",
+    "definition": "Physische oder virtuelle Teilnahme an Bildungsmaßnahmen. Muss dokumentiert werden und ist Voraussetzung für Förderung.",
+    "synonyms": [
+      "Dokumentation",
+      "Fehlzeitenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Arbeitsentgeltzuschuss",
+    "slug": "arbeitsentgeltzuschuss",
+    "definition": "Finanzieller Zuschuss der Bundesagentur für Arbeit an Arbeitgeber, etwa zur Förderung der Beschäftigung oder Qualifizierung bestimmter Zielgruppen. Er kann parallel zu Bildungsmaßnahmen relevant sein.",
+    "synonyms": [
+      "Qualifizierungschancengesetz (QCG)",
+      "WeGebAU",
+      "Förderung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Arbeitsförderung",
+    "slug": "arbeitsfoerderung",
+    "definition": "Gesamtheit der Maßnahmen zur Verbesserung der Beschäftigungsaussichten nach SGB III, einschließlich beruflicher Weiterbildung.",
+    "synonyms": [
+      "SGB III",
+      "Berufliche Weiterbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Arbeitslosengeld",
+    "slug": "arbeitslosengeld",
+    "definition": "Lohnersatzleistung für arbeitslose Personen. Während Bildungsmaßnahmen wird weiterhin ALG I oder ALG II gezahlt.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "Förderung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Arbeitsmarktrelevanz",
+    "slug": "arbeitsmarktrelevanz",
+    "definition": "Grad, in dem Inhalte und Abschlüsse einer Maßnahme den aktuellen Anforderungen des Arbeitsmarktes entsprechen. Sie ist ein wichtiges Kriterium für Bildungszielplanung, Förderung und Zulassung.",
+    "synonyms": [
+      "Bildungszielplanung",
+      "Vermittlung",
+      "Beschäftigungsfähigkeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Arbeitsunfähigkeitsmeldung (AU-Meldung)",
+    "slug": "arbeitsunfaehigkeitsmeldung-au-meldung",
+    "definition": "Mitteilung eines Teilnehmers über krankheitsbedingte Arbeits- oder Maßnahmeunfähigkeit, in der Regel mit ärztlichem Nachweis. Sie ist für Fehlzeiten, Anwesenheit und Förderlogik relevant.",
+    "synonyms": [
+      "Fehltage",
+      "Anwesenheit",
+      "Fehlzeitenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Asynchroner Unterricht",
+    "slug": "asynchroner-unterricht",
+    "definition": "Lernform, bei der Lehrinhalte zeitversetzt bearbeitet werden und keine gleichzeitige Anwesenheit von Dozent und Teilnehmer erforderlich ist. Typisch sind aufgezeichnete Inhalte, Aufgaben und Selbstlernphasen.",
+    "synonyms": [
+      "E-Learning",
+      "Selbstlernphase",
+      "digitale Lernmedien"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Audit",
+    "slug": "audit",
+    "definition": "Systematische Überprüfung der AZAV-Konformität durch externe fachkundige Stellen oder interne Auditoren.",
+    "synonyms": [
+      "Fachkundige Stelle",
+      "Voraudit",
+      "Surveillance-Audit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Auditfeststellung",
+    "slug": "auditfeststellung",
+    "definition": "Ergebnis oder Beobachtung aus einem Audit, das dokumentiert wird und zu Abweichungen, Empfehlungen oder Hinweisen führen kann. Auditfeststellungen bilden die Grundlage für weitere Maßnahmen.",
+    "synonyms": [
+      "Audit",
+      "Abweichung",
+      "Empfehlung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Auditkriterium",
+    "slug": "auditkriterium",
+    "definition": "Prüfmaßstab, gegen den im Audit bewertet wird, zum Beispiel eine Norm, gesetzliche Anforderung oder interne Vorgabe. Auditkriterien bestimmen, was als konform oder nicht konform gilt.",
+    "synonyms": [
+      "Audit",
+      "Konformität",
+      "Qualitätsmanagementsystem"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Auditor",
+    "slug": "auditor",
+    "definition": "Qualifizierte Person zur Durchführung von Audits. Externe Auditoren arbeiten für fachkundige Stellen.",
+    "synonyms": [
+      "Lead Auditor",
+      "Fachkundige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Aufstiegsfortbildung",
+    "slug": "aufstiegsfortbildung",
+    "definition": "Weiterbildung zur Erlangung höherer beruflicher Qualifikationen, z.B. Meister, Techniker, Fachwirt.",
+    "synonyms": [
+      "Weiterbildung",
+      "Qualifikation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Aufzeichnungen",
+    "slug": "aufzeichnungen",
+    "definition": "Dokumentierte Nachweise über durchgeführte Tätigkeiten, Ergebnisse oder Entscheidungen. Sie dienen der Nachvollziehbarkeit und müssen im QM-System gelenkt und aufbewahrt werden.",
+    "synonyms": [
+      "Dokumentation",
+      "Lenkung dokumentierter Information",
+      "Nachweis"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Ausbildung",
+    "slug": "ausbildung",
+    "definition": "Geregelter Lernprozess zum Erwerb eines Berufsabschlusses, meist im dualen oder schulischen System. Sie ist von Weiterbildung abzugrenzen, kann aber Referenz für Umschulungen und TQ sein.",
+    "synonyms": [
+      "anerkannter Ausbildungsberuf",
+      "Umschulung",
+      "Abschluss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Auskunftspflicht",
+    "slug": "auskunftspflicht",
+    "definition": "Verpflichtung, gegenüber zuständigen Stellen, Teilnehmern oder Aufsichtsbehörden bestimmte Informationen vollständig und richtig bereitzustellen. Sie spielt insbesondere im Fernunterrichtsrecht und bei Prüfungen eine Rolle.",
+    "synonyms": [
+      "Informationsmaterial",
+      "Verfahrensablauf",
+      "zuständige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "ausschließlich erfolgsbezogen vergütete Arbeitsvermittlung",
+    "slug": "ausschliesslich-erfolgsbezogen-verguetete-arbeitsvermittlung",
+    "definition": "Vergütungsmodell, bei dem eine Arbeitsvermittlung nur im Erfolgsfall bezahlt wird, etwa nach tatsächlicher Stellenbesetzung. Dieses Prinzip ist im AVGS- und PAV-Kontext besonders relevant.",
+    "synonyms": [
+      "Private Arbeitsvermittler (PAV)",
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+      "Vermittlung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Austritt",
+    "slug": "austritt",
+    "definition": "Formales Ende der Teilnahme an einer Maßnahme durch regulären Abschluss, Kündigung oder Abbruch. Der Austritt ist zu dokumentieren und gegebenenfalls zu melden.",
+    "synonyms": [
+      "Abbruch",
+      "Abschluss",
+      "Teilnehmerverwaltung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+    "slug": "avgs-aktivierungs-und-vermittlungsgutschein",
+    "definition": "Förderinstrument der BA für Aktivierungsmaßnahmen nach § 45 SGB III. Dauer bis zu 8 Wochen.",
+    "synonyms": [
+      "Aktivierungsmaßnahmen",
+      "Bundesagentur für Arbeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AZAV",
+    "slug": "azav",
+    "definition": "Akkreditierungs- und Zulassungsverordnung Arbeitsförderung. Zentrale Verordnung für Qualitätsstandards in der geförderten Weiterbildung seit 2012.",
+    "synonyms": [
+      "Zertifizierung",
+      "Qualitätsstandards"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AZAV-Beauftragter",
+    "slug": "azav-beauftragter",
+    "definition": "Vom Bildungsträger benannte Person für die Umsetzung und Einhaltung der AZAV-Anforderungen.",
+    "synonyms": [
+      "Qualitätsmanagement",
+      "Verantwortlichkeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "AZWV",
+    "slug": "azwv",
+    "definition": "Anerkennungs- und Zulassungsverordnung Weiterbildung. Vorgängerverordnung der AZAV (2004–2012).",
+    "synonyms": [
+      "AZAV",
+      "Weiterbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "BA (Bundesagentur für Arbeit)",
+    "slug": "ba-bundesagentur-fuer-arbeit",
+    "definition": "Zentrale Behörde für Arbeitsförderung. Zuständig für Bildungsgutscheine, AVGS und AZAV-Überwachung durch AMDL.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "AMDL"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "BAFA",
+    "slug": "bafa",
+    "definition": "Bundesamt für Wirtschaft und Ausfuhrkontrolle. Relevant für bestimmte Beratungsleistungen und Förderprogramme.",
+    "synonyms": [
+      "Förderung",
+      "Beratung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "BDKS (Bundesdurchschnittskostensatz)",
+    "slug": "bdks-bundesdurchschnittskostensatz",
+    "definition": "Jährlich von der BA festgelegte durchschnittliche Kosten pro Teilnehmer und Unterrichtsstunde für die Maßnahmenkalkulation.",
+    "synonyms": [
+      "Kalkulation",
+      "Kostenzustimmungsverfahren"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bedarfsanalyse",
+    "slug": "bedarfsanalyse",
+    "definition": "Systematische Ermittlung des Qualifizierungs- und Unterstützungsbedarfs einer Zielgruppe, Region oder Organisation. Sie bildet die Grundlage für Bildungsziele, Angebotsentwicklung und Maßnahmenplanung.",
+    "synonyms": [
+      "Bildungszielplanung",
+      "Zielgruppe",
+      "Maßnahmenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bedarfsgemeinschaft",
+    "slug": "bedarfsgemeinschaft",
+    "definition": "Zusammenschluss von Personen im SGB II-Bereich. Relevant für Förderentscheidungen bei Langzeitarbeitslosen.",
+    "synonyms": [
+      "SGB II",
+      "Langzeitarbeitslose"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Beirat nach § 182 SGB III",
+    "slug": "beirat-nach-182-sgb-iii",
+    "definition": "Fachgremium zur BA-Vertretung. Bildungsträger und fachkundige Stellen. Erstellt AZAV-Empfehlungen.",
+    "synonyms": [
+      "Empfehlungen des Beirats",
+      "SGB III"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Beobachtung",
+    "slug": "beobachtung",
+    "definition": "Im QM- oder Auditkontext festgehaltener Hinweis ohne unmittelbare Abweichung, der auf ein Risiko oder Verbesserungspotenzial aufmerksam macht. Sie kann in Empfehlungen oder Maßnahmen überführt werden.",
+    "synonyms": [
+      "Auditfeststellung",
+      "Empfehlung",
+      "Risikomanagement"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Beratung",
+    "slug": "beratung",
+    "definition": "Individuelle Unterstützung bei der Berufswahl und Qualifizierung durch Arbeitsberater oder Bildungsträger.",
+    "synonyms": [
+      "Berufswahl",
+      "Qualifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Berufliche Rehabilitation",
+    "slug": "berufliche-rehabilitation",
+    "definition": "Maßnahmen zur beruflichen Eingliederung von Menschen mit Behinderungen oder gesundheitlichen Einschränkungen.",
+    "synonyms": [
+      "Rehabilitation",
+      "Inklusion"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Berufliche Weiterbildung",
+    "slug": "berufliche-weiterbildung",
+    "definition": "Maßnahmen nach §§ 81 ff. SGB III zur Vermittlung beruflicher Kenntnisse. Förderbar über Bildungsgutschein.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "FbW-Maßnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Berufsanschlussfähige Teilqualifikationen (TQ)",
+    "slug": "berufsanschlussfaehige-teilqualifikationen-tq",
+    "definition": "Modulare Qualifizierungsbausteine, die auf anerkannte Ausbildungsberufe vorbereiten.",
+    "synonyms": [
+      "Modulare Qualifizierung",
+      "Kompetenzfeststellung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Berufskennziffern (BKZ)",
+    "slug": "berufskennziffern-bkz",
+    "definition": "Systematische Verschlüsselung von Berufen durch die BA zur eindeutigen Zuordnung von Qualifikationen.",
+    "synonyms": [
+      "Klassifikation",
+      "Beruf"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Berufsrückkehr",
+    "slug": "berufsrueckkehr",
+    "definition": "Wiedereinstieg in das Berufsleben nach längerer Pause, oft unterstützt durch spezielle Weiterbildungsmaßnahmen.",
+    "synonyms": [
+      "Wiedereinstieg",
+      "Qualifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Beschäftigtenqualifizierung",
+    "slug": "beschaeftigtenqualifizierung",
+    "definition": "Weiterbildung von Personen in bestehenden Arbeitsverhältnissen zur Sicherung oder Entwicklung ihrer Beschäftigungsfähigkeit. Sie wird häufig über QCG, Qualifizierungsgeld oder WeGebAU gefördert.",
+    "synonyms": [
+      "Qualifizierungschancengesetz (QCG)",
+      "Qualifizierungsgeld",
+      "WeGebAU"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Beschäftigungsfähigkeit",
+    "slug": "beschaeftigungsfaehigkeit",
+    "definition": "Fähigkeit einer Person, eine Erwerbstätigkeit aufzunehmen und auszuüben. Ziel aller Bildungsmaßnahmen.",
+    "synonyms": [
+      "Employability",
+      "Vermittlung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Beschwerdemanagement",
+    "slug": "beschwerdemanagement",
+    "definition": "Dokumentierter Prozess zur systematischen Erfassung, Bearbeitung und Auswertung von Beschwerden. Pflichtbestandteil des QM-Systems nach AZAV.",
+    "synonyms": [
+      "Qualitätsmanagementsystem",
+      "KVP"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "besondere Aufwendungen",
+    "slug": "besondere-aufwendungen",
+    "definition": "Zusätzliche, nicht regelmäßig anfallende Kosten, die im Zusammenhang mit einer Maßnahme gesondert begründet werden müssen. Sie können bei Kalkulation und Kostenzustimmung relevant sein.",
+    "synonyms": [
+      "Kalkulation",
+      "förderfähige Kosten",
+      "Kostenzustimmungsverfahren"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Betreuung",
+    "slug": "betreuung",
+    "definition": "Fachliche und organisatorische Begleitung von Teilnehmern während einer Maßnahme oder eines Fernlehrgangs. Sie umfasst Erreichbarkeit, Unterstützung bei Fragen und die Sicherung des Lernfortschritts.",
+    "synonyms": [
+      "Tutor",
+      "Feedback",
+      "Lernerfolgskontrolle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "betriebliche Lernphase",
+    "slug": "betriebliche-lernphase",
+    "definition": "Praxisorientierter Abschnitt einer Maßnahme, der in einem Betrieb stattfindet und das Gelernte an realen Arbeitsaufgaben vertieft. Sie muss konzeptionell eingebunden und dokumentiert sein.",
+    "synonyms": [
+      "Praktikum",
+      "Praxisphase",
+      "Maßnahmenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bewertung",
+    "slug": "bewertung",
+    "definition": "Beurteilung von Teilnehmerleistungen und Maßnahmenqualität. Erfolgt durch Tests, Prüfungen und Evaluationen.",
+    "synonyms": [
+      "Evaluation",
+      "Prüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bildungsträger",
+    "slug": "bildungstraeger",
+    "definition": "Organisation, die Bildungsmaßnahmen durchführt und dafür eine AZAV-Zertifizierung benötigt.",
+    "synonyms": [
+      "Zertifizierung",
+      "Trägerzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bildungsziel",
+    "slug": "bildungsziel",
+    "definition": "Angestrebtes Lernergebnis einer Bildungsmaßnahme. Muss konkret, messbar und erreichbar formuliert sein.",
+    "synonyms": [
+      "Lernziel",
+      "Curriculum"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bildungszielplanung",
+    "slug": "bildungszielplanung",
+    "definition": "Von den Regionaldirektionen der BA erstellter Plan, der festlegt, welche Bildungsziele in einer Region prioritär gefördert werden. Wichtige Grundlage für die Portfoliosteuerung von Bildungsträgern.",
+    "synonyms": [
+      "Bundesagentur für Arbeit",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "BPW (Berufspraktische Weiterbildung)",
+    "slug": "bpw-berufspraktische-weiterbildung",
+    "definition": "Berufliche Weiterbildung mit hohem Praxisanteil. Kombiniert Theorie mit praktischen Übungen und Betriebsphasen.",
+    "synonyms": [
+      "Praxis",
+      "Berufliche Weiterbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Bürgergeld",
+    "slug": "buergergeld",
+    "definition": "Seit 2023 Nachfolger von Hartz IV als Grundsicherung nach SGB II. Ab 2026 wird die Bezeichnung wieder in Grundsicherung für Arbeitsuchende geändert.",
+    "synonyms": [
+      "Grundsicherung",
+      "SGB II",
+      "Jobcenter"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Businessplan",
+    "slug": "businessplan",
+    "definition": "Geschäftsplan für die Gründung oder Erweiterung eines Bildungsträgers. Enthält Marktanalyse, Zielgruppendefinition, Finanzplanung und Zertifizierungsstrategie.",
+    "synonyms": [
+      "Bildungsträger",
+      "Kalkulation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Chamber of Commerce and Industry (CCI)",
+    "slug": "chamber-of-commerce-and-industry-cci",
+    "definition": "Englische Bezeichnung für Industrie- und Handelskammer. Im Glossar dient der Begriff meist als internationale oder übersetzte Variante der IHK.",
+    "synonyms": [
+      "Industrie- und Handelskammer (IHK)",
+      "IHK (Industrie- und Handelskammer)",
+      "Kammerbestätigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Chancenmanagement",
+    "slug": "chancenmanagement",
+    "definition": "Systematischer Ansatz, positive Entwicklungen, Marktchancen und Verbesserungspotenziale frühzeitig zu erkennen und aktiv zu nutzen. Es ergänzt das Risikomanagement um eine positive Perspektive.",
+    "synonyms": [
+      "Risikomanagement",
+      "Managementbewertung (Managementreview)",
+      "Zielgruppe"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Checkliste",
+    "slug": "checkliste",
+    "definition": "Systematische Auflistung von Prüfpunkten für interne oder externe Audits zur AZAV-Konformität.",
+    "synonyms": [
+      "Audit",
+      "Qualitätssicherung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Coaching",
+    "slug": "coaching",
+    "definition": "Individuelle Beratung und Begleitung von Teilnehmern zur Erreichung beruflicher Ziele. Seit August 2025 bei bestimmten SGB II-Maßnahmen verpflichtend.",
+    "synonyms": [
+      "Beratung",
+      "Jobcoaching"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Controlling",
+    "slug": "controlling",
+    "definition": "Systematische Überwachung und Steuerung von Bildungsmaßnahmen bezüglich Qualität, Kosten und Zielerreichung.",
+    "synonyms": [
+      "Qualitätsmanagement",
+      "Kennzahlen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "DAkkS",
+    "slug": "dakks",
+    "definition": "Deutsche Akkreditierungsstelle. Akkreditiert fachkundige Stellen für AZAV-Zertifizierungen.",
+    "synonyms": [
+      "Akkreditierung",
+      "Fachkundige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Datenschutz",
+    "slug": "datenschutz",
+    "definition": "Schutz personenbezogener Daten von Teilnehmern nach DSGVO. Wichtiger Compliance-Aspekt für Bildungsträger.",
+    "synonyms": [
+      "DSGVO",
+      "Compliance"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Datenschutzinformationen",
+    "slug": "datenschutzinformationen",
+    "definition": "Transparenzinformationen zur Verarbeitung personenbezogener Daten, die betroffenen Personen zur Verfügung gestellt werden müssen. Sie beschreiben u.a. Zwecke, Rechtsgrundlagen, Empfänger und Rechte.",
+    "synonyms": [
+      "Datenschutz",
+      "DSGVO",
+      "Teilnehmerverwaltung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Deutscher Qualifikationsrahmen (DQR)",
+    "slug": "deutscher-qualifikationsrahmen-dqr",
+    "definition": "Nationales System zur Einordnung von Qualifikationen in acht Niveaustufen. Er erleichtert die Vergleichbarkeit von Abschlüssen und ist mit dem Europäischen Qualifikationsrahmen verknüpft.",
+    "synonyms": [
+      "Europäischer Qualifikationsrahmen (EQR)",
+      "Abschluss",
+      "Qualifikation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Didaktisches Konzept",
+    "slug": "didaktisches-konzept",
+    "definition": "Schriftlich dokumentiertes Konzept zu Lehr- und Lernmethoden einer Bildungsmaßnahme. Muss zur Maßnahmenzulassung vorgelegt werden und Lernziele, Methoden und Medien beschreiben.",
+    "synonyms": [
+      "Curriculum",
+      "Lehrplan",
+      "Bildungsziel"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "digitale Lernmedien",
+    "slug": "digitale-lernmedien",
+    "definition": "Digitale Materialien und Werkzeuge zur Vermittlung von Lerninhalten, etwa Videos, Lernplattformen, Dateien oder interaktive Übungen. Sie sind Bestandteil moderner E-Learning- und Blended-Learning-Konzepte.",
+    "synonyms": [
+      "E-Learning",
+      "Lernplattform",
+      "Lehrmaterial"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Digitalisierung",
+    "slug": "digitalisierung",
+    "definition": "Integration digitaler Technologien in Bildungsprozesse. Umfasst E-Learning, digitale Tools und Online-Formate.",
+    "synonyms": [
+      "E-Learning",
+      "Online-Unterricht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Dokumentation",
+    "slug": "dokumentation",
+    "definition": "Systematische Aufzeichnung aller relevanten Prozesse und Ergebnisse. Grundlage für AZAV-Nachweise.",
+    "synonyms": [
+      "Nachweis",
+      "Qualitätsmanagement"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Dokumentenlenkung",
+    "slug": "dokumentenlenkung",
+    "definition": "Geregelter Prozess zur Erstellung, Prüfung, Freigabe, Verteilung, Änderung und Archivierung von Dokumenten. Sie stellt sicher, dass nur aktuelle und gültige Fassungen verwendet werden.",
+    "synonyms": [
+      "Lenkung dokumentierter Information",
+      "Versionierung",
+      "Freigabestand"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Dozent",
+    "slug": "dozent",
+    "definition": "Lehrperson in Bildungsmaßnahmen. Muss fachliche und pädagogische Eignung nachweisen.",
+    "synonyms": [
+      "Pädagogische Eignung",
+      "Fachliche Eignung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Dozentenbewertung",
+    "slug": "dozentenbewertung",
+    "definition": "Systematische Beurteilung von Dozenten durch Teilnehmer, Führungskräfte oder QM-Verantwortliche. Sie dient der Qualitätssicherung und Personalentwicklung.",
+    "synonyms": [
+      "Dozent",
+      "Teilnehmerbefragung",
+      "Qualitätsmanagement"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Durchführungsform",
+    "slug": "durchfuehrungsform",
+    "definition": "Art und Weise, in der eine Maßnahme umgesetzt wird, zum Beispiel in Präsenz, online, hybrid, in Vollzeit oder Teilzeit. Die Durchführungsform muss im Konzept und in der Zulassung beschrieben sein.",
+    "synonyms": [
+      "Präsenzphase",
+      "Online-Unterricht",
+      "Teilzeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Durchführungsort",
+    "slug": "durchfuehrungsort",
+    "definition": "Ort der Maßnahmendurchführung. Muss in der Maßnahmenzulassung spezifiziert und geeignet sein.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "Ausstattung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "ECTS",
+    "slug": "ects",
+    "definition": "European Credit Transfer and Accumulation System – ein Leistungspunktesystem des europäischen Hochschulraums. Es dient der Anrechnung und Vergleichbarkeit von Studienleistungen.",
+    "synonyms": [
+      "Immatrikulation",
+      "Anrechnung",
+      "Hochschulzulassungsberechtigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Eigenleistung",
+    "slug": "eigenleistung",
+    "definition": "Anteil an Leistungen oder Kosten, der nicht durch Fördermittel gedeckt ist und vom Teilnehmer, Arbeitgeber oder Träger selbst erbracht wird. Eigenleistungen sind bei der Finanzierung klar abzugrenzen.",
+    "synonyms": [
+      "Kostenübernahme",
+      "Förderung",
+      "förderfähige Kosten"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Eingliederung",
+    "slug": "eingliederung",
+    "definition": "Integration von Arbeitslosen in den ersten Arbeitsmarkt. Hauptziel aller AZAV-Maßnahmen.",
+    "synonyms": [
+      "Vermittlung",
+      "Arbeitsmarkt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Eingliederungsquote",
+    "slug": "eingliederungsquote",
+    "definition": "Kennzahl, die angibt, wie viele Teilnehmer nach einer Maßnahme in Beschäftigung oder Ausbildung integriert wurden. Sie ist ein wichtiges Steuerungs- und Qualitätskriterium.",
+    "synonyms": [
+      "Vermittlungsquote",
+      "Eingliederung",
+      "Erfolgsmessung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Einschreibegebühren",
+    "slug": "einschreibegebuehren",
+    "definition": "Einmalige Gebühren für Anmeldung oder Aufnahme in einen Fernlehrgang oder Studiengang. Sie unterliegen bei Verbraucherverträgen besonderen Transparenzanforderungen.",
+    "synonyms": [
+      "Fernunterrichtsvertrag",
+      "Nebenleistungen",
+      "Vertragsinhalt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Einsendeaufgabe",
+    "slug": "einsendeaufgabe",
+    "definition": "Vom Teilnehmer eigenständig zu bearbeitende Aufgabe, die zur Lernkontrolle an den Träger übermittelt wird. Sie ist typisch für Fernunterricht und dient der Rückmeldung zum Lernstand.",
+    "synonyms": [
+      "Lehrbrief",
+      "Lernerfolgskontrolle",
+      "Feedback"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Eintritt",
+    "slug": "eintritt",
+    "definition": "Beginn der Teilnahme an einer Maßnahme oder eines Vertragsverhältnisses. Der Eintritt ist organisatorisch zu erfassen und bildet die Basis für Meldungen, Dokumentation und Abrechnung.",
+    "synonyms": [
+      "Eintrittsmeldung",
+      "Teilnehmerverwaltung",
+      "Anmeldebestätigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Eintrittsmeldung",
+    "slug": "eintrittsmeldung",
+    "definition": "Formale Meldung über den Beginn der Teilnahme eines geförderten Teilnehmers an einer Maßnahme. Sie dient der Verwaltung, Abrechnung und Kommunikation mit dem Kostenträger.",
+    "synonyms": [
+      "Eintritt",
+      "Teilnehmerverwaltung",
+      "Bundesagentur für Arbeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "E-Learning",
+    "slug": "e-learning",
+    "definition": "Elektronisch unterstütztes Lernen über digitale Medien. Unterliegt besonderen AZAV-Anforderungen für Identitätsprüfung und Kurscharakter laut Beirats-Empfehlungen 2025.",
+    "synonyms": [
+      "Online-Unterricht",
+      "Blended Learning"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Empfehlung",
+    "slug": "empfehlung",
+    "definition": "Hinweis auf ein Verbesserungspotenzial im QM-System, ohne dass eine festgelegte Anforderung der AZAV nachweislich verletzt wurde. Wird während des Audits ausgesprochen und sollte zur Weiterentwicklung des Systems geprüft werden, löst aber keine formale Abweichung aus.",
+    "synonyms": [
+      "Audit",
+      "Korrekturmaßnahmen",
+      "Abweichung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Empfehlungen des Beirats",
+    "slug": "empfehlungen-des-beirats",
+    "definition": "Fachliche Stellungnahmen des Beirats nach § 182 SGB III zur einheitlichen AZAV-Umsetzung.",
+    "synonyms": [
+      "Beirat nach § 182 SGB III",
+      "AZAV"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "entgeltlicher Fernunterricht",
+    "slug": "entgeltlicher-fernunterricht",
+    "definition": "Fernunterricht, für den der Teilnehmer ein Entgelt zahlt. Solche Angebote unterliegen grundsätzlich den Schutzvorschriften des Fernunterrichtsschutzgesetzes.",
+    "synonyms": [
+      "Fernunterricht",
+      "Fernunterrichtsschutzgesetz (FernUSG)",
+      "Fernunterrichtsvertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "erfolgreiche Teilnahme",
+    "slug": "erfolgreiche-teilnahme",
+    "definition": "Teilnahme, bei der die vorgesehenen Inhalte absolviert und definierte Lern- oder Abschlussziele erreicht wurden. Sie bildet häufig die Grundlage für Bescheinigungen oder Zertifikate.",
+    "synonyms": [
+      "Teilnahmebescheinigung",
+      "Teilnahmezertifikat",
+      "Abschluss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Erfolgsmeldung",
+    "slug": "erfolgsmeldung",
+    "definition": "Pflichtmeldung des Bildungsträgers an die Bundesagentur für Arbeit nach Abschluss einer Maßnahme. Dokumentiert Vermittlungserfolge, Abschlüsse und Abbrüche je Teilnehmer. Grundlage für die Qualitätsbewertung durch die BA.",
+    "synonyms": [
+      "Vermittlungsquote",
+      "Dokumentation",
+      "AMDL"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Erfolgsmessung",
+    "slug": "erfolgsmessung",
+    "definition": "Systematische Erfassung und Bewertung, ob definierte Ziele einer Maßnahme erreicht wurden. Grundlage sind Kennzahlen, Feedback, Prüfungen und Verbleibsdaten.",
+    "synonyms": [
+      "Erfolgsmeldung",
+      "Kennzahlen",
+      "Wirksamkeitsprüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Erhebungsbogen",
+    "slug": "erhebungsbogen",
+    "definition": "Standardisiertes Formular zur strukturierten Erfassung von Daten, Informationen oder Bewertungen. Er wird z.B. für Audits, Befragungen oder Anträge eingesetzt.",
+    "synonyms": [
+      "Teilnehmerbefragung",
+      "Audit",
+      "Dokumentation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Europäischer Qualifikationsrahmen (EQR)",
+    "slug": "europaeischer-qualifikationsrahmen-eqr",
+    "definition": "Europäisches Referenzsystem zur Vergleichbarkeit von Qualifikationen über Ländergrenzen hinweg. Der DQR ist die nationale Umsetzung dieses Systems.",
+    "synonyms": [
+      "Deutscher Qualifikationsrahmen (DQR)",
+      "Qualifikation",
+      "Abschluss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Evaluation",
+    "slug": "evaluation",
+    "definition": "Systematische Bewertung von Bildungsmaßnahmen hinsichtlich Wirksamkeit, Qualität und Zielerreichung.",
+    "synonyms": [
+      "Bewertung",
+      "Qualitätssicherung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Existenzgründung",
+    "slug": "existenzgruendung",
+    "definition": "Aufbau einer selbstständigen beruflichen Tätigkeit. Kann durch spezielle Gründungsmaßnahmen gefördert werden.",
+    "synonyms": [
+      "Selbstständigkeit",
+      "Gründungsförderung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fachaufsicht",
+    "slug": "fachaufsicht",
+    "definition": "Aufsicht über die fachlich richtige Anwendung von Regeln, Verfahren und Fördergrundlagen durch zuständige Stellen. Sie ist von Rechts- oder Dienstaufsicht zu unterscheiden.",
+    "synonyms": [
+      "Bundesagentur für Arbeit",
+      "Fachliche Weisungen",
+      "Qualitätsprüfung (§ 183 SGB III)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fachbereich",
+    "slug": "fachbereich",
+    "definition": "Spezifische Bereiche der beruflichen Weiterbildung, in denen Bildungsträger Maßnahmen anbieten können. Es gibt 6 offizielle Fachbereiche.",
+    "synonyms": [
+      "Fachbereich 1-6",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fachkundige Stelle (FKS)",
+    "slug": "fachkundige-stelle-fks",
+    "definition": "Von der DAkkS akkreditierte Organisation, die AZAV-Zertifizierungen durchführt.",
+    "synonyms": [
+      "DAkkS",
+      "Zertifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "fachliche Eignung",
+    "slug": "fachliche-eignung",
+    "definition": "Nachgewiesene fachliche Qualifikation einer Lehr- oder Fachkraft für die vorgesehenen Inhalte und Aufgaben. Sie ist neben der pädagogischen Eignung ein wesentliches Kriterium im Audit.",
+    "synonyms": [
+      "Pädagogische Eignung",
+      "Dozent",
+      "Auditor"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fachliche Weisungen",
+    "slug": "fachliche-weisungen",
+    "definition": "Interne Arbeitsanweisungen der Bundesagentur für Arbeit für Agenturen und Jobcenter. Legen fest, wie Entscheidungen zu Förderungen, Maßnahmezulassungen und Bildungsgutscheinen zu treffen sind. Für Bildungsträger relevant, um Entscheidungsgrundlagen zu verstehen.",
+    "synonyms": [
+      "Bundesagentur für Arbeit",
+      "Bildungsgutschein"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "FbW-Maßnahme",
+    "slug": "fbw-massnahme",
+    "definition": "Förderung der beruflichen Weiterbildung. Das zentrale Instrument der Bundesagentur für Arbeit nach §§ 81 ff. SGB III zur Qualifizierung von Arbeitslosen und von Arbeitslosigkeit bedrohten Personen. Finanzierung über Bildungsgutschein.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "Maßnahmenzulassung",
+      "BDKS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Feedback",
+    "slug": "feedback",
+    "definition": "Rückmeldung zu Leistungen, Lernfortschritten oder Prozessen durch Dozenten, Tutoren, Teilnehmer oder Verantwortliche. Feedback unterstützt Lernen, Qualitätssicherung und Verbesserungen.",
+    "synonyms": [
+      "Betreuung",
+      "Lernerfolgskontrolle",
+      "Teilnehmerbefragung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fehltage",
+    "slug": "fehltage",
+    "definition": "Tage, an denen ein Teilnehmer entschuldigt oder unentschuldigt nicht an einer Maßnahme teilnimmt. Sie müssen dokumentiert und nach dem Fehlzeitenkonzept bewertet werden.",
+    "synonyms": [
+      "Anwesenheit",
+      "Fehlzeitenkonzept",
+      "Arbeitsunfähigkeitsmeldung (AU-Meldung)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fehlzeitenkonzept",
+    "slug": "fehlzeitenkonzept",
+    "definition": "Schriftlich fixierte Regelung des Bildungsträgers zum Umgang mit Fehlzeiten von Teilnehmern. Legt fest, ab wann Fehlzeiten der BA gemeldet werden, wie viele Fehlstunden toleriert werden und welche Konsequenzen drohen. Pflichtbestandteil des QM-Systems und wird im Audit geprüft.",
+    "synonyms": [
+      "Dokumentation",
+      "Qualitätsmanagement",
+      "Abbruch"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fernunterrichtsschutzgesetz (FernUSG)",
+    "slug": "fernunterrichtsschutzgesetz-fernusg",
+    "definition": "Verbraucherschutzgesetz für entgeltlichen Fernunterricht in Deutschland. Es regelt u.a. Zulassungspflichten, Vertragsanforderungen, Informationspflichten sowie Widerrufs- und Kündigungsrechte.",
+    "synonyms": [
+      "ZfU (Staatliche Zentralstelle für Fernunterricht)",
+      "Fernunterricht",
+      "Zulassungspflicht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Förderanfrage",
+    "slug": "foerderanfrage",
+    "definition": "Anfrage an eine zuständige Stelle zur Klärung, ob und unter welchen Bedingungen eine Maßnahme oder Teilnahme förderfähig ist. Sie dient oft der Vorbereitung von Angebot, Antrag oder Beratung.",
+    "synonyms": [
+      "Förderfähigkeit",
+      "Bildungsgutschein",
+      "Kostenträger"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Förderart bundesweit",
+    "slug": "foerderart-bundesweit",
+    "definition": "Kennzeichnung, dass eine Maßnahme oder Förderung nicht regional begrenzt, sondern bundesweit verfügbar oder nutzbar ist. Dies beeinflusst Vermarktung, KURSNET-Eintrag und Zielgruppenansprache.",
+    "synonyms": [
+      "KURSNET",
+      "Weiterbildungsangebot",
+      "Zielgruppe"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "förderfähige Kosten",
+    "slug": "foerderfaehige-kosten",
+    "definition": "Kostenbestandteile, die nach den geltenden Förderregeln durch einen Kostenträger übernommen werden können. Dazu gehören je nach Instrument Lehrgangs-, Fahr-, Prüfungs- oder Nebenkosten.",
+    "synonyms": [
+      "Kostenübernahme",
+      "Bildungsgutschein",
+      "Kostenträger"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Förderfähigkeit",
+    "slug": "foerderfaehigkeit",
+    "definition": "Eignung einer Maßnahme, eines Angebots oder einer Person für eine bestimmte Förderung nach gesetzlichen und fachlichen Kriterien. Die Förderfähigkeit ist vor Bewilligung zu prüfen.",
+    "synonyms": [
+      "Förderanfrage",
+      "Bildungsgutschein",
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Förderung",
+    "slug": "foerderung",
+    "definition": "Finanzielle Unterstützung von Teilnehmern und Bildungsträgern durch die Bundesagentur für Arbeit.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "AVGS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Fortbildung",
+    "slug": "fortbildung",
+    "definition": "Maßnahmen zur Erhaltung und Erweiterung beruflicher Kenntnisse und Fähigkeiten.",
+    "synonyms": [
+      "Weiterbildung",
+      "Anpassungsfortbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Freigabestand",
+    "slug": "freigabestand",
+    "definition": "Aktuell genehmigte und gültige Version eines Dokuments, Formulars oder Konzepts. Er stellt sicher, dass intern und extern nur freigegebene Unterlagen verwendet werden.",
+    "synonyms": [
+      "Dokumentenlenkung",
+      "Versionierung",
+      "Freigabe"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "fristlose Kündigung",
+    "slug": "fristlose-kuendigung",
+    "definition": "Außerordentliche Beendigung eines Vertrags ohne Einhaltung einer Kündigungsfrist bei Vorliegen eines wichtigen Grundes. Voraussetzungen und Folgen müssen rechtlich sauber geregelt sein.",
+    "synonyms": [
+      "Kündigungsrecht",
+      "Schulungsvertrag",
+      "nichtiger Vertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Ganzheitliche Betreuung (§ 16k SGB II)",
+    "slug": "ganzheitliche-betreuung-16k-sgb-ii",
+    "definition": "Unterstützungsleistung für erwerbsfähige Leistungsberechtigte mit komplexen Problemlagen. Sie verbindet beschäftigungsbezogene Hilfe mit sozialintegrativen Unterstützungsangeboten.",
+    "synonyms": [
+      "SGB II (Sozialgesetzbuch II)",
+      "Jobcenter",
+      "Integrationsfachkraft"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gefährdungsbeurteilung",
+    "slug": "gefaehrdungsbeurteilung",
+    "definition": "Systematische Ermittlung und Bewertung möglicher Gefährdungen am Arbeitsplatz oder Lernort. Sie ist ein Pflichtinstrument des Arbeitsschutzes und auch für Bildungsstandorte relevant.",
+    "synonyms": [
+      "Standortbewertung",
+      "Grundriss",
+      "Arbeitsschutz"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gemeinkosten",
+    "slug": "gemeinkosten",
+    "definition": "Indirekte Kosten, die nicht unmittelbar einem einzelnen Teilnehmer oder Modul zugeordnet werden können, etwa Verwaltung, Miete oder allgemeine IT. Sie sind Bestandteil der Maßnahmenkalkulation.",
+    "synonyms": [
+      "Kalkulation",
+      "Maßnahmenkalkulation",
+      "Kostenkalkulation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gerichtsstand",
+    "slug": "gerichtsstand",
+    "definition": "Vereinbarter oder gesetzlich bestimmter Ort des zuständigen Gerichts bei Rechtsstreitigkeiten. In Verträgen und AGB ist der Gerichtsstand nur in den zulässigen Grenzen regelbar.",
+    "synonyms": [
+      "AGB",
+      "Vertragsinhalt",
+      "Fernunterrichtsvertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Geringqualifizierte",
+    "slug": "geringqualifizierte",
+    "definition": "Personen ohne Berufsabschluss oder mit veralteter Qualifikation. Wichtige Zielgruppe für AZAV-Maßnahmen und WeGebAU-Förderung.",
+    "synonyms": [
+      "Nachqualifizierung",
+      "WeGebAU"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gesamtmaßnahme",
+    "slug": "gesamtmassnahme",
+    "definition": "Vollständige Bildungsmaßnahme als zusammenhängende Einheit, im Gegensatz zu Maßnahmebausteinen. Die Wahl zwischen Gesamtmaßnahme und Bausteinen beeinflusst Flexibilität und Verwaltungsaufwand.",
+    "synonyms": [
+      "Maßnahme",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Grundriss",
+    "slug": "grundriss",
+    "definition": "Darstellung der räumlichen Aufteilung eines Standorts oder Unterrichtsraums. Er dient als Nachweis für Eignung, Sicherheit und Ausstattung im Rahmen von Prüfungen und Zulassungen.",
+    "synonyms": [
+      "Durchführungsort",
+      "Standortbilder",
+      "ortsbezogene Prüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Grundsicherung",
+    "slug": "grundsicherung",
+    "definition": "Sozialleistung nach SGB II (Hartz IV / Bürgergeld) zur Sicherung des Lebensunterhalts. Ab 2026 wird die Bezeichnung „Bürgergeld\" wieder in „Grundsicherung\" umbenannt.",
+    "synonyms": [
+      "SGB II",
+      "Jobcenter"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gruppengröße",
+    "slug": "gruppengroesse",
+    "definition": "Anzahl der Teilnehmer, die gleichzeitig in einer Lerngruppe oder Maßnahme betreut werden. Sie beeinflusst Methodik, Personaleinsatz, Qualität und Kalkulation.",
+    "synonyms": [
+      "kalkulierte Teilnehmerzahl",
+      "Betreuung",
+      "Maßnahmenkalkulation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gültigkeitsdauer",
+    "slug": "gueltigkeitsdauer",
+    "definition": "Zeitraum, für den eine AZAV-Zertifizierung (Träger- oder Maßnahmenzulassung) gültig ist. In der Regel 3–5 Jahre.",
+    "synonyms": [
+      "Rezertifizierung",
+      "Surveillance-Audit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gültigkeitsdauer des Angebots",
+    "slug": "gueltigkeitsdauer-des-angebots",
+    "definition": "Zeitraum, in dem ein Angebot verbindlich zu den angegebenen Bedingungen gilt. Sie ist insbesondere bei Informationsmaterial und Vertragsanbahnung transparent anzugeben.",
+    "synonyms": [
+      "Gültigkeitsdauer",
+      "Informationsmaterial",
+      "Vertragsinhalt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Gutscheinnummer",
+    "slug": "gutscheinnummer",
+    "definition": "Eindeutige Identifikationsnummer eines Bildungs- oder Aktivierungsgutscheins. Sie dient der Zuordnung eines Teilnehmers zu Förderfall, Kostenträger und Maßnahme.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+      "Kundennummer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Handbuch",
+    "slug": "handbuch",
+    "definition": "Dokumentation des Qualitätsmanagementsystems eines Bildungsträgers. Zentrales Pflichtdokument für die AZAV-Zertifizierung. Enthält alle Prozesse, Verantwortlichkeiten und Qualitätsziele.",
+    "synonyms": [
+      "Qualitätsmanagementsystem",
+      "Dokumentation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Hauptabweichung",
+    "slug": "hauptabweichung",
+    "definition": "Schwerwiegende Nichteinhaltung einer festgelegten Anforderung der AZAV oder des zugrunde liegenden QM-Systems. Wird während des Audits festgestellt, gefährdet die Erreichung der Auditziele und muss durch umfassende Korrekturmaßnahmen behoben werden; die Wirksamkeit ist in der Regel vor der Zulassungsentscheidung bzw. im Nachaudit nachzuweisen.",
+    "synonyms": [
+      "Audit",
+      "Korrekturmaßnahmen",
+      "Abweichung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Hochschulzulassungsberechtigung",
+    "slug": "hochschulzulassungsberechtigung",
+    "definition": "Formale Berechtigung zur Aufnahme eines Hochschulstudiums, etwa Abitur, Fachhochschulreife oder gleichwertige Qualifikation. Sie ist Voraussetzung für bestimmte Studienangebote.",
+    "synonyms": [
+      "Immatrikulation",
+      "Numerus Clausus (NC)",
+      "ECTS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Hybridunterricht",
+    "slug": "hybridunterricht",
+    "definition": "Mischform aus Präsenz- und Online-Unterricht, bei der Teilnehmer gleichzeitig vor Ort und remote teilnehmen. Seit den Beirats-Empfehlungen 2025 klar definiert und geregelt.",
+    "synonyms": [
+      "Blended Learning",
+      "Online-Unterricht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "IHK (Industrie- und Handelskammer)",
+    "slug": "ihk-industrie-und-handelskammer",
+    "definition": "Körperschaft des öffentlichen Rechts, die Prüfungen für anerkannte Ausbildungsberufe abnimmt.",
+    "synonyms": [
+      "Prüfung",
+      "Abschluss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Industrie- und Handelskammer (IHK)",
+    "slug": "industrie-und-handelskammer-ihk",
+    "definition": "Körperschaft des öffentlichen Rechts, die u.a. Prüfungen abnimmt, Berufsabschlüsse bestätigt und Unternehmen berät. Im Glossar entspricht der Begriff der ausgeschriebenen Form von IHK.",
+    "synonyms": [
+      "IHK (Industrie- und Handelskammer)",
+      "Abschluss",
+      "Kammerbestätigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Informationsmaterial",
+    "slug": "informationsmaterial",
+    "definition": "Unterlagen zur Beschreibung eines Angebots oder Vertrags, etwa Flyer, Webseiten, Broschüren oder Merkblätter. Sie müssen verständlich, zutreffend und vollständig sein.",
+    "synonyms": [
+      "Werbeaussage",
+      "Vertragsinhalt",
+      "Datenschutzinformationen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Inklusion",
+    "slug": "inklusion",
+    "definition": "Gleichberechtigte Teilhabe von Menschen mit Behinderungen an Bildungsmaßnahmen. Wichtiger Aspekt der AZAV.",
+    "synonyms": [
+      "Berufliche Rehabilitation",
+      "Barrierefreiheit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "institutsinterne Prüfung",
+    "slug": "institutsinterne-pruefung",
+    "definition": "Vom Träger oder Institut selbst organisierte Prüfung zur Feststellung des Lernerfolgs. Sie ersetzt nicht automatisch eine staatliche oder kammerrechtliche Abschlussprüfung.",
+    "synonyms": [
+      "institutsinterner Abschluss",
+      "Lernerfolgskontrolle",
+      "Prüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "institutsinterner Abschluss",
+    "slug": "institutsinterner-abschluss",
+    "definition": "Abschluss oder Zertifikat, das vom Bildungsträger selbst vergeben wird und nicht zwingend staatlich anerkannt ist. Aussagekraft und Einordnung sollten transparent kommuniziert werden.",
+    "synonyms": [
+      "institutsinterne Prüfung",
+      "Zertifikat",
+      "Abschluss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Integrationsbefragung",
+    "slug": "integrationsbefragung",
+    "definition": "Befragung ehemaliger Teilnehmer zu ihrem Verbleib, ihrer Beschäftigungssituation und dem Nutzen der Maßnahme. Sie liefert Daten für Wirksamkeitsprüfung und Erfolgsmessung.",
+    "synonyms": [
+      "Verbleib",
+      "Erfolgsmessung",
+      "Teilnehmerbefragung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Integrationsfachkraft",
+    "slug": "integrationsfachkraft",
+    "definition": "Fachkraft in Jobcentern oder anderen Einrichtungen, die Menschen bei der sozialen und beruflichen Integration unterstützt. Sie ist wichtige Schnittstelle bei Förderung und Betreuung.",
+    "synonyms": [
+      "Jobcenter",
+      "Ganzheitliche Betreuung (§ 16k SGB II)",
+      "Eingliederung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Internes Audit",
+    "slug": "internes-audit",
+    "definition": "Selbstprüfung eines Bildungsträgers zur Überprüfung der AZAV-Konformität und zur Vorbereitung auf externe Audits. Ergebnis fließt in die Managementbewertung ein.",
+    "synonyms": [
+      "Audit",
+      "Managementbewertung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "ISO 9001",
+    "slug": "iso-9001",
+    "definition": "Internationale Norm für Qualitätsmanagementsysteme. Wird häufig als Basis für das QM-System von Bildungsträgern verwendet, ersetzt aber nicht die spezifischen AZAV-Anforderungen.",
+    "synonyms": [
+      "Qualitätsmanagementsystem",
+      "Zertifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Jobcenter",
+    "slug": "jobcenter",
+    "definition": "Einrichtung zur Betreuung und Vermittlung von Arbeitslosengeld-II-Empfängern. Wichtiger Partner für Bildungsträger.",
+    "synonyms": [
+      "SGB II",
+      "Bedarfsgemeinschaft"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Jobcoaching",
+    "slug": "jobcoaching",
+    "definition": "Individuelle Begleitung von Teilnehmern bei der Jobsuche und im Bewerbungsprozess. Seit August 2025 bei Fördermaßnahmen nach § 16e und § 16i SGB II verpflichtend.",
+    "synonyms": [
+      "Coaching",
+      "Vermittlung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kalkulation",
+    "slug": "kalkulation",
+    "definition": "Berechnung der Kosten einer Bildungsmaßnahme. Grundlage für die Festlegung von Lehrgangsgebühren und Grundlage des Kostenzustimmungsverfahrens.",
+    "synonyms": [
+      "BDKS",
+      "Kostenzustimmungsverfahren"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "kalkulierte Teilnehmerzahl",
+    "slug": "kalkulierte-teilnehmerzahl",
+    "definition": "Für Planung und Kostenrechnung angesetzte Zahl von Teilnehmern, mit der eine Maßnahme wirtschaftlich kalkuliert wird. Sie beeinflusst Preise, Personaleinsatz und Gruppengröße.",
+    "synonyms": [
+      "Kalkulation",
+      "Gruppengröße",
+      "Maßnahmenkalkulation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kammerbestätigung",
+    "slug": "kammerbestaetigung",
+    "definition": "Bestätigung einer Kammer über einen Sachverhalt, z.B. Prüfungszulassung, Einordnung oder Anerkennung. Sie kann für Maßnahmen, Abschlüsse oder Nachweise erforderlich sein.",
+    "synonyms": [
+      "Industrie- und Handelskammer (IHK)",
+      "anerkannter Ausbildungsberuf",
+      "Nachweis"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kennzahlen",
+    "slug": "kennzahlen",
+    "definition": "Messbare Größen zur Überwachung und Steuerung der Qualität und des Erfolgs von Bildungsmaßnahmen (z.B. Vermittlungsquote).",
+    "synonyms": [
+      "Controlling",
+      "Vermittlungsquote"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Klassifikation der Berufe (KldB)",
+    "slug": "klassifikation-der-berufe-kldb",
+    "definition": "Systematik der Bundesagentur für Arbeit zur standardisierten Einordnung von Berufen. Sie unterstützt Statistik, Beratung, Matching und Förderentscheidungen.",
+    "synonyms": [
+      "Berufskennziffern (BKZ)",
+      "Systematikposition",
+      "Arbeitsmarktrelevanz"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kompetenzfeststellung",
+    "slug": "kompetenzfeststellung",
+    "definition": "Vom Bildungsträger durchgeführte Abschlussprüfung bei Teilqualifikationen (TQ). Bewertet, ob ein Teilnehmer die definierten Kompetenzen eines Moduls erreicht hat. Muss dokumentiert und von externen Prüfern abgenommen werden.",
+    "synonyms": [
+      "Teilqualifikationen (TQ)",
+      "Prüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kompetenzmatrix",
+    "slug": "kompetenzmatrix",
+    "definition": "Übersicht, in der erforderliche und vorhandene Kompetenzen systematisch gegenübergestellt werden. Sie hilft bei Personaleinsatz, Qualifizierungsplanung und Eignungsnachweisen.",
+    "synonyms": [
+      "fachliche Eignung",
+      "Qualifizierung",
+      "Kompetenzfeststellung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Konformität",
+    "slug": "konformitaet",
+    "definition": "Übereinstimmung eines Produkts, Prozesses oder Systems mit festgelegten Anforderungen. Im Audit wird geprüft, ob die Anforderungen tatsächlich erfüllt werden.",
+    "synonyms": [
+      "Auditkriterium",
+      "Nichtkonformität",
+      "Qualitätsmanagementsystem"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Korrekturmaßnahmen",
+    "slug": "korrekturmassnahmen",
+    "definition": "Maßnahmen zur Behebung von Abweichungen, die bei Audits festgestellt wurden.",
+    "synonyms": [
+      "Abweichung",
+      "Audit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kostenkalkulation",
+    "slug": "kostenkalkulation",
+    "definition": "Detaillierte Berechnung der zu erwartenden Kosten einer Maßnahme oder eines Angebots. Sie dient Preisbildung, Wirtschaftlichkeitsprüfung und ggf. Kostenzustimmung.",
+    "synonyms": [
+      "Kalkulation",
+      "Maßnahmenkalkulation",
+      "Gemeinkosten"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kostenträger",
+    "slug": "kostentraeger",
+    "definition": "Stelle, die die Kosten einer Maßnahme ganz oder teilweise übernimmt, z.B. Bundesagentur für Arbeit, Jobcenter, Arbeitgeber oder Teilnehmer selbst.",
+    "synonyms": [
+      "Kostenübernahme",
+      "Bildungsgutschein",
+      "Jobcenter"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kostenübernahme",
+    "slug": "kostenuebernahme",
+    "definition": "Verbindliche Zusage eines Kostenträgers, bestimmte Aufwendungen für eine Maßnahme oder Teilnahme zu tragen. Umfang und Bedingungen müssen nachvollziehbar dokumentiert sein.",
+    "synonyms": [
+      "Kostenträger",
+      "förderfähige Kosten",
+      "Bildungsgutschein"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kostenzustimmung (§ 179 SGB III)",
+    "slug": "kostenzustimmung-179-sgb-iii",
+    "definition": "Genehmigung der Bundesagentur für Arbeit zur Abrechnung von Maßnahmekosten oberhalb des BDKS. Geregelt durch Fachliche Weisung zu § 179 SGB III.",
+    "synonyms": [
+      "BDKS",
+      "Kostenzustimmungsverfahren",
+      "Operativer Service"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kostenzustimmungsverfahren",
+    "slug": "kostenzustimmungsverfahren",
+    "definition": "Verfahren, bei dem ein Bildungsträger beim Operativen Service der Bundesagentur für Arbeit beantragt, Stundensätze oberhalb des BDKS abzurechnen. Nur bei nachgewiesenen höheren Kosten genehmigungsfähig.",
+    "synonyms": [
+      "BDKS",
+      "Kalkulation",
+      "Operativer Service"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kundennummer",
+    "slug": "kundennummer",
+    "definition": "Eindeutige Identifikationsnummer eines Kunden oder Teilnehmers bei einer Behörde, einem System oder einem Träger. Sie dient der Verwaltung und Zuordnung von Vorgängen.",
+    "synonyms": [
+      "Gutscheinnummer",
+      "Teilnehmerverwaltung",
+      "Verbleib"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kundenzufriedenheit",
+    "slug": "kundenzufriedenheit",
+    "definition": "Bewertung der wahrgenommenen Qualität von Leistungen durch Teilnehmer, Auftraggeber oder Partner. Sie ist ein wichtiger Indikator für Qualität und Verbesserungsbedarf.",
+    "synonyms": [
+      "Teilnehmerbefragung",
+      "Feedback",
+      "Qualitätsziel"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kündigungsrecht",
+    "slug": "kuendigungsrecht",
+    "definition": "Recht, ein Vertragsverhältnis unter bestimmten Voraussetzungen ordentlich oder außerordentlich zu beenden. Umfang und Ausübung müssen transparent geregelt sein.",
+    "synonyms": [
+      "Fernunterrichtsvertrag",
+      "fristlose Kündigung",
+      "Widerrufsrecht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "KURSNET",
+    "slug": "kursnet",
+    "definition": "Online-Portal der Bundesagentur für Arbeit zur Veröffentlichung von Weiterbildungsangeboten. Pflichtregistrierung für FbW-Maßnahmen. Wird schrittweise vom Nachfolgeportal „mein NOW\" abgelöst.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "Maßnahmenummer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kurzfragebogen",
+    "slug": "kurzfragebogen",
+    "definition": "PDF-Formular der Bundesagentur für Arbeit zur Anmeldung einer zugelassenen Maßnahme beim Operativen Service. Enthält Trägerdaten, Maßnahmetitel, Durchführungszeitraum und BDKS-Angaben. Voraussetzung für die Vergabe einer Maßnahmenummer.",
+    "synonyms": [
+      "Maßnahmenummer",
+      "Operativer Service"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Kurzfragebogen für zugelassene Maßnahmen",
+    "slug": "kurzfragebogen-fuer-zugelassene-massnahmen",
+    "definition": "Standardisiertes Formular zur Meldung oder Aktivierung bereits zugelassener Maßnahmen gegenüber dem Operativen Service. Es konkretisiert die im Glossar genannte Form des Kurzfragebogens.",
+    "synonyms": [
+      "Kurzfragebogen",
+      "Maßnahmenummer",
+      "Operativer Service (OS)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "KVP (Kontinuierlicher Verbesserungsprozess)",
+    "slug": "kvp-kontinuierlicher-verbesserungsprozess",
+    "definition": "Systematischer Ansatz zur fortlaufenden Verbesserung von Prozessen, Strukturen und Ergebnissen. Pflichtbestandteil des AZAV-QM-Systems.",
+    "synonyms": [
+      "Qualitätsmanagement",
+      "Korrekturmaßnahmen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Langzeitarbeitslose",
+    "slug": "langzeitarbeitslose",
+    "definition": "Personen, die ein Jahr oder länger arbeitslos sind. Wichtige Zielgruppe für AZAV-Maßnahmen.",
+    "synonyms": [
+      "Bedarfsgemeinschaft",
+      "Eingliederung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lead Auditor",
+    "slug": "lead-auditor",
+    "definition": "Leitender Auditor, der bei einer fachkundigen Stelle (FKS) das Zertifizierungsaudit verantwortlich durchführt. Muss eine spezielle Ausbildung absolviert und eine Berufungsurkunde vorweisen. Unterschied zum internen Auditor: extern und von der DAkkS anerkannt.",
+    "synonyms": [
+      "Auditor",
+      "Fachkundige Stelle",
+      "DAkkS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Learning Coach",
+    "slug": "learning-coach",
+    "definition": "Lernbegleiter, der Teilnehmer bei Struktur, Motivation und Lernorganisation unterstützt. Er ergänzt fachliche Lehre um individuelle Begleitung im Lernprozess.",
+    "synonyms": [
+      "Study Coach",
+      "Tutor",
+      "Betreuung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrbrief",
+    "slug": "lehrbrief",
+    "definition": "Schriftlich aufbereitetes Lernmaterial eines Fernlehrgangs, das Inhalte strukturiert vermittelt und oft mit Aufgaben kombiniert ist. Lehrbriefe sind zentrale Bestandteile klassischer Fernlernkonzepte.",
+    "synonyms": [
+      "Studienheft",
+      "Lehrmaterial",
+      "Einsendeaufgabe"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrgangskosten",
+    "slug": "lehrgangskosten",
+    "definition": "Gesamtkosten einer Bildungsmaßnahme, die durch den Bildungsgutschein abgedeckt werden können.",
+    "synonyms": [
+      "Kalkulation",
+      "Bildungsgutschein"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrgangspflege",
+    "slug": "lehrgangspflege",
+    "definition": "Laufende Aktualisierung und administrative Pflege eines Lehrgangs, z.B. bei Inhalten, Terminen, Zulassungsdaten oder Plattformangaben. Sie ist wichtig für rechtssichere und aktuelle Angebotsdarstellungen.",
+    "synonyms": [
+      "Lehrgangssuche",
+      "wesentliche Änderung",
+      "Verzeichnis zugelassener Fernlehrgänge"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrgangssuche",
+    "slug": "lehrgangssuche",
+    "definition": "Suche nach passenden Lehrgängen in Portalen oder Datenbanken anhand von Kriterien wie Thema, Ort, Förderart oder Abschluss. Sie unterstützt Beratung und Teilnehmergewinnung.",
+    "synonyms": [
+      "KURSNET",
+      "meinNOW",
+      "Verzeichnis zugelassener Fernlehrgänge"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrgangsziel",
+    "slug": "lehrgangsziel",
+    "definition": "Konkret formuliertes Ziel eines Lehrgangs hinsichtlich der zu vermittelnden Kompetenzen, Kenntnisse oder Abschlüsse. Es muss klar, verständlich und überprüfbar beschrieben sein.",
+    "synonyms": [
+      "Bildungsziel",
+      "Curriculum",
+      "Abschluss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrmaterial",
+    "slug": "lehrmaterial",
+    "definition": "Alle Materialien, die zur Durchführung und Unterstützung des Lernens eingesetzt werden, etwa Skripte, Dateien, Bücher oder digitale Inhalte. Sie müssen aktuell, geeignet und zugänglich sein.",
+    "synonyms": [
+      "digitale Lernmedien",
+      "Studienmaterial",
+      "Lehrbrief"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lehrplan",
+    "slug": "lehrplan",
+    "definition": "Detaillierte Beschreibung der Inhalte, Ziele und Methoden einer Bildungsmaßnahme.",
+    "synonyms": [
+      "Curriculum",
+      "Bildungsziel"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Leihgerätevertrag",
+    "slug": "leihgeraetevertrag",
+    "definition": "Vertrag über die zeitweise Überlassung technischer Geräte, etwa Laptops oder Tablets, an Teilnehmer. Er regelt Nutzung, Haftung, Rückgabe und ggf. Datenschutzaspekte.",
+    "synonyms": [
+      "Vertragsinhalt",
+      "Lernplattform",
+      "Datenschutz"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Leitbild",
+    "slug": "leitbild",
+    "definition": "Strategisches Grundlagendokument eines Bildungsträgers mit Selbstverständnis, Werten und Qualitätsversprechen. Wird im AZAV-Audit als Ausgangspunkt der Qualitätspolitik geprüft.",
+    "synonyms": [
+      "Qualitätsmanagementsystem",
+      "Handbuch"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lenkung dokumentierter Information",
+    "slug": "lenkung-dokumentierter-information",
+    "definition": "ISO- und QM-naher Begriff für die geregelte Erstellung, Freigabe, Änderung, Verteilung und Aufbewahrung von Dokumenten und Aufzeichnungen. Ziel ist die Nutzung gültiger und nachvollziehbarer Informationen.",
+    "synonyms": [
+      "Dokumentenlenkung",
+      "Aufzeichnungen",
+      "Versionierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lernerfolgskontrolle",
+    "slug": "lernerfolgskontrolle",
+    "definition": "Verfahren zur Überprüfung, ob Teilnehmer die vorgesehenen Lernziele erreicht haben. Dies kann durch Tests, Aufgaben, Prüfungen oder Beobachtungen erfolgen.",
+    "synonyms": [
+      "Einsendeaufgabe",
+      "Prüfung",
+      "Feedback"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lernplattform",
+    "slug": "lernplattform",
+    "definition": "Digitale Umgebung zur Bereitstellung von Lerninhalten, Kommunikation und Organisation von Lernprozessen. Sie ist zentral für E-Learning-, Fernunterrichts- und Blended-Learning-Angebote.",
+    "synonyms": [
+      "digitale Lernmedien",
+      "E-Learning",
+      "Live-Online-Seminar"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Lieferantenbewertung",
+    "slug": "lieferantenbewertung",
+    "definition": "Systematische Bewertung externer Dienstleister oder Lieferanten hinsichtlich Qualität, Zuverlässigkeit und Leistung. Sie ist Teil eines wirksamen Qualitäts- und Beschaffungsmanagements.",
+    "synonyms": [
+      "Qualitätsmanagementsystem",
+      "Prozessbeschreibung",
+      "Kundenzufriedenheit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Live-Online-Seminar",
+    "slug": "live-online-seminar",
+    "definition": "Synchrones digitales Lehrformat, bei dem Dozent und Teilnehmer zeitgleich über ein Online-System miteinander interagieren. Es zählt zu den synchronen Formen des Online-Unterrichts.",
+    "synonyms": [
+      "Synchroner Unterricht",
+      "Online-Unterricht",
+      "Lernplattform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Managementbewertung (Managementreview)",
+    "slug": "managementbewertung-managementreview",
+    "definition": "Jährlich von der Geschäftsleitung zu erstellendes Dokument. Bewertet die Wirksamkeit des gesamten QM-Systems, analysiert Kennzahlen, Auditergebnisse und Kundenfeedback und leitet Verbesserungsmaßnahmen ab. Pflichtdokument im AZAV-Zertifizierungsverfahren.",
+    "synonyms": [
+      "Internes Audit",
+      "Qualitätsmanagementsystem"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahme",
+    "slug": "massnahme",
+    "definition": "Konkretes Bildungsangebot eines Trägers, das nach AZAV zertifiziert werden kann.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "FbW-Maßnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmeangebot AVGS",
+    "slug": "massnahmeangebot-avgs",
+    "definition": "Angebot eines Trägers für Maßnahmen, die über einen Aktivierungs- und Vermittlungsgutschein gefördert werden können. Es richtet sich typischerweise an Personen mit Unterstützungsbedarf bei Aktivierung oder Vermittlung.",
+    "synonyms": [
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+      "Maßnahmen zur Aktivierung und beruflichen Eingliederung",
+      "Maßnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmebaustein",
+    "slug": "massnahmebaustein",
+    "definition": "In sich geschlossener Teil einer größeren Maßnahme mit definierten Inhalten, Zielen und Umfang. Bausteine ermöglichen flexible Einstiege, Kombinationen und modulare Verläufe.",
+    "synonyms": [
+      "Modul",
+      "Maßnahmekombination",
+      "Anlage Module/Bausteine"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmebogen",
+    "slug": "massnahmebogen",
+    "definition": "Dokument, das den Vertrag zwischen dem Bildungsträger und der Bundesagentur für Arbeit bzw. dem Jobcenter über eine zugelassene Maßnahme abbildet. Enthält alle wesentlichen Eckdaten wie Laufzeit, Kosten, Teilnehmerzahlen und Zulassungsnummer.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "Maßnahmenummer",
+      "Kurzfragebogen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmekombination",
+    "slug": "massnahmekombination",
+    "definition": "Kombination mehrerer Bausteine, Module oder Teilmaßnahmen zu einem zusammenhängenden Bildungsangebot. Sie muss konzeptionell, organisatorisch und kalkulatorisch stimmig beschrieben sein.",
+    "synonyms": [
+      "Maßnahmebaustein",
+      "Modul",
+      "Maßnahmenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmekonzeption",
+    "slug": "massnahmekonzeption",
+    "definition": "Fachlich-pädagogische Ausarbeitung einer Maßnahme mit Zielen, Zielgruppe, Inhalten, Methoden, Ablauf und Organisation. Sie ist Grundlage für Zulassung, Durchführung und Qualitätssicherung.",
+    "synonyms": [
+      "Maßnahmenkonzept",
+      "Curriculum",
+      "Bildungsziel"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmen bei einem Arbeitgeber (MAG)",
+    "slug": "massnahmen-bei-einem-arbeitgeber-mag",
+    "definition": "Maßnahmenform nach § 45 SGB III, bei der Teilnehmende betriebliche Praxis direkt bei einem Arbeitgeber erwerben. Ziel ist meist Eignungsfeststellung, Heranführung oder Vermittlung.",
+    "synonyms": [
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+      "Praxisphase",
+      "Eingliederung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmen bei einem Träger (MAT)",
+    "slug": "massnahmen-bei-einem-traeger-mat",
+    "definition": "Maßnahmenform nach § 45 SGB III, die bei einem Bildungsträger durchgeführt wird und auf Aktivierung, Vermittlung oder Heranführung an den Arbeitsmarkt abzielt.",
+    "synonyms": [
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+      "Maßnahmeangebot AVGS",
+      "Eingliederung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmen der Berufswahl und Berufsausbildung",
+    "slug": "massnahmen-der-berufswahl-und-berufsausbildung",
+    "definition": "Angebote zur Berufsorientierung, Berufsvorbereitung oder Unterstützung beim Einstieg in Ausbildung. Sie richten sich häufig an junge Menschen oder Personen mit besonderem Unterstützungsbedarf.",
+    "synonyms": [
+      "Ausbildung",
+      "Zielgruppe",
+      "Maßnahmen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmen zur Aktivierung und beruflichen Eingliederung",
+    "slug": "massnahmen-zur-aktivierung-und-beruflichen-eingliederung",
+    "definition": "Sammelbegriff für Maßnahmen nach § 45 SGB III, die Menschen an Ausbildung oder Arbeit heranführen, ihre Beschäftigungsfähigkeit verbessern oder bei der Vermittlung unterstützen.",
+    "synonyms": [
+      "AVGS (Aktivierungs- und Vermittlungsgutschein)",
+      "Eingliederung",
+      "Maßnahmen bei einem Träger (MAT)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmen zur Teilhabe behinderter Menschen am Arbeitsleben",
+    "slug": "massnahmen-zur-teilhabe-behinderter-menschen-am-arbeitsleben",
+    "definition": "Spezielle Leistungen zur beruflichen Rehabilitation und Teilhabe von Menschen mit Behinderungen. Sie verbinden Qualifizierung, Unterstützung und individuelle Förderbedarfe.",
+    "synonyms": [
+      "Berufliche Rehabilitation",
+      "Rehabilitation",
+      "Inklusion"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmenkalkulation",
+    "slug": "massnahmenkalkulation",
+    "definition": "Rechnerische Herleitung aller Kosten einer Maßnahme einschließlich Personal-, Sach- und Gemeinkosten. Sie bildet die Grundlage für Preise, Wirtschaftlichkeit und Kostenzustimmung.",
+    "synonyms": [
+      "Kalkulation",
+      "Kostenkalkulation",
+      "Gemeinkosten"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmenkonzept",
+    "slug": "massnahmenkonzept",
+    "definition": "Dokumentierte Gesamtdarstellung einer Maßnahme mit Zielgruppe, Bildungsziel, Inhalten, Ablauf, Methodik und Rahmenbedingungen. Es ist zentral für Zulassung und operative Durchführung.",
+    "synonyms": [
+      "Maßnahmekonzeption",
+      "Curriculum",
+      "Durchführungsform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmenummer",
+    "slug": "massnahmenummer",
+    "definition": "Eindeutige Identifikationsnummer für eine zugelassene Bildungsmaßnahme. Wird vom Operativen Service der BA vergeben und ist Voraussetzung für die Teilnehmerfinanzierung.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "KURSNET",
+      "Kurzfragebogen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmenverfolgung",
+    "slug": "massnahmenverfolgung",
+    "definition": "Laufende Beobachtung des Status, der Termine, Kennzahlen und Ergebnisse einer Maßnahme über ihren gesamten Lebenszyklus. Sie unterstützt Steuerung, Dokumentation und Berichtswesen.",
+    "synonyms": [
+      "Maßnahmenummer",
+      "Verbleib",
+      "Erfolgsmessung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmenzulassung",
+    "slug": "massnahmenzulassung",
+    "definition": "Zertifizierung einer konkreten Bildungsmaßnahme durch eine fachkundige Stelle.",
+    "synonyms": [
+      "Trägerzulassung",
+      "Fachkundige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Maßnahmezertifikat",
+    "slug": "massnahmezertifikat",
+    "definition": "Zertifikat oder Bescheinigung über die erteilte Zulassung einer konkreten Maßnahme. Es weist den Geltungsbereich und die Laufzeit der Zulassung nach.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "Zertifikat",
+      "Zulassungsnummer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "meinNOW",
+    "slug": "meinnow",
+    "definition": "Nachfolgeportal von KURSNET der Bundesagentur für Arbeit. Zentrale Plattform für Weiterbildungsangebote, Förderinformationen und Bildungsberatung.",
+    "synonyms": [
+      "KURSNET",
+      "Maßnahmenummer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Mitteilung an den Operativen Service",
+    "slug": "mitteilung-an-den-operativen-service",
+    "definition": "Formale Information des Trägers an den Operativen Service der BA zu Maßnahmen, Änderungen oder administrativen Vorgängen. Sie dient der Bearbeitung in den BA-Systemen.",
+    "synonyms": [
+      "Operativer Service (OS)",
+      "Kurzfragebogen",
+      "Maßnahmenummer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "MML (Monatsmeldeliste)",
+    "slug": "mml-monatsmeldeliste",
+    "definition": "Formular zur monatlichen Einreichung von Maßnahmen bei der fachkundigen Stelle (FKS). Bildungsträger nutzen die MML, um neu zu zertifizierende oder zu verlängernde Maßnahmen anzumelden und den Zulassungsstatus zu verwalten.",
+    "synonyms": [
+      "Fachkundige Stelle",
+      "Maßnahmenzulassung",
+      "Referenzauswahl"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Modul",
+    "slug": "modul",
+    "definition": "Inhaltlich abgegrenzte Lerneinheit innerhalb einer Qualifizierung oder eines Lehrgangs. Module können einzeln beschrieben, geprüft und kombiniert werden.",
+    "synonyms": [
+      "Maßnahmebaustein",
+      "modularer Verlauf",
+      "Curriculum"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Modulare Qualifizierung",
+    "slug": "modulare-qualifizierung",
+    "definition": "Aufbau von Qualifikationen in einzelnen, in sich abgeschlossenen Modulen.",
+    "synonyms": [
+      "Berufsanschlussfähige Teilqualifikationen (TQ)",
+      "Kompetenzfeststellung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "modularer Verlauf",
+    "slug": "modularer-verlauf",
+    "definition": "Ablauf einer Qualifizierung in aufeinander abgestimmten Modulen statt als starre Gesamtmaßnahme. Er ermöglicht flexible Einstiege, individuelle Lernpfade und Zwischenabschlüsse.",
+    "synonyms": [
+      "Modul",
+      "Maßnahmebaustein",
+      "Modulare Qualifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Muster-Widerrufsformular",
+    "slug": "muster-widerrufsformular",
+    "definition": "Standardformular, mit dem Verbraucher einen Widerruf erklären können. Es ist bei entsprechenden Verträgen als Muster bereitzustellen.",
+    "synonyms": [
+      "Widerrufsrecht",
+      "Widerrufsbelehrung",
+      "Fernunterrichtsvertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachqualifizierung",
+    "slug": "nachqualifizierung",
+    "definition": "Maßnahmen zum Erwerb eines Berufsabschlusses für Personen, die bereits über Berufserfahrung verfügen.",
+    "synonyms": [
+      "Geringqualifizierte",
+      "Externenprüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachreichung",
+    "slug": "nachreichung",
+    "definition": "Nachträgliche Übermittlung fehlender Unterlagen, Nachweise oder Informationen im Rahmen eines Antrags oder Prüfverfahrens. Sie muss fristgerecht und nachvollziehbar erfolgen.",
+    "synonyms": [
+      "Nachweis",
+      "Zulassungsantrag",
+      "Stellungnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachweis",
+    "slug": "nachweis",
+    "definition": "Beleg für die Erfüllung von AZAV-Anforderungen, z.B. durch Dokumente, Protokolle oder Zertifikate.",
+    "synonyms": [
+      "Dokumentation",
+      "Audit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachweis der Abschlussprüfung",
+    "slug": "nachweis-der-abschlusspruefung",
+    "definition": "Dokumentierter Beleg, dass eine Abschlussprüfung abgelegt und gegebenenfalls bestanden wurde. Er ist wichtig für Zertifikate, Fördernachweise und Verbleibsdokumentation.",
+    "synonyms": [
+      "Abschluss",
+      "Prüfung",
+      "Zertifikat"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachweis der Prüfung",
+    "slug": "nachweis-der-pruefung",
+    "definition": "Beleg über die Durchführung oder das Ergebnis einer Prüfung. Er unterstützt Transparenz, Qualitätssicherung und die Dokumentation von Lernergebnissen.",
+    "synonyms": [
+      "Prüfung",
+      "Lernerfolgskontrolle",
+      "Nachweis"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachweis der Teilnahme",
+    "slug": "nachweis-der-teilnahme",
+    "definition": "Dokument, das die Teilnahme einer Person an einer Maßnahme oder einzelnen Veranstaltung belegt. Es wird häufig für Kostenträger, Arbeitgeber oder Teilnehmer selbst benötigt.",
+    "synonyms": [
+      "Teilnahmebescheinigung",
+      "Teilnahmebestätigung",
+      "Nachweis"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nachweis der Zwischenprüfung",
+    "slug": "nachweis-der-zwischenpruefung",
+    "definition": "Beleg über eine abgelegte Zwischenprüfung oder einen Zwischenstand im Lernprozess. Er kann für modulare Verläufe oder geförderte Qualifizierungen relevant sein.",
+    "synonyms": [
+      "Prüfung",
+      "Modul",
+      "Nachweis"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nebenabweichung",
+    "slug": "nebenabweichung",
+    "definition": "Teilweise oder nicht wirksam umgesetzte Anforderung der AZAV oder des QM-Systems. Wird während des Audits festgestellt und muss innerhalb einer festgelegten Frist durch geeignete Korrekturmaßnahmen behoben und gegenüber der fachkundigen Stelle nachgewiesen werden.",
+    "synonyms": [
+      "Audit",
+      "Korrekturmaßnahmen",
+      "Abweichung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nebenleistungen",
+    "slug": "nebenleistungen",
+    "definition": "Leistungen oder Kostenbestandteile neben der eigentlichen Lehrleistung, z.B. Versand, Materialien oder besondere Services. Sie müssen transparent ausgewiesen und rechtlich zulässig sein.",
+    "synonyms": [
+      "Einschreibegebühren",
+      "Vertragsinhalt",
+      "förderfähige Kosten"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "nicht zertifizierter Termin",
+    "slug": "nicht-zertifizierter-termin",
+    "definition": "Termin oder Durchführungszeitraum, der nicht vom Geltungsbereich einer bestehenden Zulassung erfasst ist. Solche Termine dürfen nicht als zugelassene Maßnahme beworben oder abgerechnet werden.",
+    "synonyms": [
+      "zugelassener Termin",
+      "Maßnahmenzulassung",
+      "wesentliche Änderung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "nichtiger Vertrag",
+    "slug": "nichtiger-vertrag",
+    "definition": "Vertrag, der wegen eines rechtlichen Mangels von Anfang an keine wirksame Rechtswirkung entfaltet. Gründe können Formmängel, gesetzliche Verbote oder unzulässige Inhalte sein.",
+    "synonyms": [
+      "Fernunterrichtsvertrag",
+      "Vertragsinhalt",
+      "Widerrufsrecht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Nichtkonformität",
+    "slug": "nichtkonformitaet",
+    "definition": "Festgestellte Nichterfüllung einer Anforderung aus Norm, Gesetz, Zulassung oder internem QM-System. Nichtkonformitäten müssen bewertet, behandelt und wirksam behoben werden.",
+    "synonyms": [
+      "Konformität",
+      "Abweichung",
+      "Korrekturmaßnahmen"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Numerus Clausus (NC)",
+    "slug": "numerus-clausus-nc",
+    "definition": "Zulassungsbeschränkung für bestimmte Studiengänge oder Bildungsangebote auf Basis definierter Auswahlkriterien. Er ist vor allem im Hochschulbereich relevant.",
+    "synonyms": [
+      "Hochschulzulassungsberechtigung",
+      "Immatrikulation",
+      "ECTS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Online-Unterricht",
+    "slug": "online-unterricht",
+    "definition": "Vollständig digital durchgeführter Unterricht. Unterliegt besonderen Anforderungen an technische Ausstattung, Identitätsprüfung und synchronen Kontakt zu Dozenten gemäß KURSNET-Richtlinien.",
+    "synonyms": [
+      "E-Learning",
+      "Blended Learning"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Operativer Service (OS)",
+    "slug": "operativer-service-os",
+    "definition": "Zentrale Organisationseinheit der Bundesagentur für Arbeit für die verwaltungstechnische Abwicklung von Bildungsmaßnahmen. Zuständig für Maßnahmenummern, Kostenzustimmung und BDKS-Überschreitungen.",
+    "synonyms": [
+      "Maßnahmenummer",
+      "Kostenzustimmungsverfahren",
+      "BDKS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Ordnungswidrigkeit",
+    "slug": "ordnungswidrigkeit",
+    "definition": "Rechtsverstoß, der nicht als Straftat, sondern als mit Bußgeld bewehrter Pflichtverstoß geahndet wird. Im Fernunterrichtsrecht können bestimmte Verstöße als Ordnungswidrigkeit gelten.",
+    "synonyms": [
+      "Fernunterrichtsschutzgesetz (FernUSG)",
+      "Auskunftspflicht",
+      "Zulassungspflicht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "ortsbezogene Prüfung",
+    "slug": "ortsbezogene-pruefung",
+    "definition": "Prüfung, die sich konkret auf einen bestimmten Standort oder Durchführungsort bezieht. Dabei werden insbesondere Räume, Ausstattung und örtliche Rahmenbedingungen bewertet.",
+    "synonyms": [
+      "Durchführungsort",
+      "Grundriss",
+      "Standortbewertung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Pädagogische Eignung",
+    "slug": "paedagogische-eignung",
+    "definition": "Nachweis der Fähigkeit von Dozenten, Wissen und Fähigkeiten erfolgreich zu vermitteln.",
+    "synonyms": [
+      "Dozent",
+      "Fachliche Eignung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "persönliche Eignung",
+    "slug": "persoenliche-eignung",
+    "definition": "Individuelle Eignung einer Person hinsichtlich Zuverlässigkeit, Integrität und persönlicher Voraussetzungen für eine Aufgabe oder Qualifizierung. Sie ergänzt fachliche und pädagogische Eignungsaspekte.",
+    "synonyms": [
+      "fachliche Eignung",
+      "Pädagogische Eignung",
+      "Dozent"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Praktikum",
+    "slug": "praktikum",
+    "definition": "Betriebliche Lernphase zur Anwendung und Vertiefung von theoretischem Wissen.",
+    "synonyms": [
+      "BPW (Berufspraktische Weiterbildung)",
+      "Betriebliche Erprobung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Praxisphase",
+    "slug": "praxisphase",
+    "definition": "Zeitabschnitt mit praktischer Anwendung des Gelernten im realen oder simulierten Arbeitsumfeld. Sie dient der Vertiefung, Erprobung und Übertragung von Kompetenzen.",
+    "synonyms": [
+      "betriebliche Lernphase",
+      "Praktikum",
+      "Maßnahmen bei einem Arbeitgeber (MAG)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Private Arbeitsvermittler (PAV)",
+    "slug": "private-arbeitsvermittler-pav",
+    "definition": "Träger, die im Rahmen des Fachbereichs 2 private Arbeitsvermittlung anbieten. Müssen AZAV-zertifiziert sein, wenn sie Arbeitslose mit AVGS betreuen. Abrechnung erfolgt ausschließlich bei erfolgreicher Stellenvermittlung.",
+    "synonyms": [
+      "AVGS",
+      "Fachbereich 2",
+      "Vermittlung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "privatrechtliches Vertragsverhältnis (Träger–FKS)",
+    "slug": "privatrechtliches-vertragsverhaeltnis-traeger-fks",
+    "definition": "Zivilrechtliches Vertragsverhältnis zwischen Bildungsträger und fachkundiger Stelle über Zertifizierungsleistungen. Es ist von der öffentlichen Zulassungswirkung zu unterscheiden.",
+    "synonyms": [
+      "Fachkundige Stelle (FKS)",
+      "Trägerzulassung",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Professor",
+    "slug": "professor",
+    "definition": "Lehrende Person mit professoraler Qualifikation, typischerweise im Hochschulkontext. Der Begriff ist vor allem bei akademischen oder kooperativen Bildungsangeboten relevant.",
+    "synonyms": [
+      "Hochschulzulassungsberechtigung",
+      "Immatrikulation",
+      "programmakkreditiert"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "programmakkreditiert",
+    "slug": "programmakkreditiert",
+    "definition": "Bezeichnung für einen Studiengang oder ein Programm, das im Hochschulbereich ein formales Akkreditierungsverfahren erfolgreich durchlaufen hat. Dies ist von der AZAV-Zertifizierung zu unterscheiden.",
+    "synonyms": [
+      "Akkreditierungsrat",
+      "Wissenschaftsrat",
+      "Hochschulzulassungsberechtigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Provisionen",
+    "slug": "provisionen",
+    "definition": "Erfolgsabhängige Vergütungen, etwa für Vermittlung oder Vertrieb. In Bildungs- und Fernunterrichtsverträgen müssen solche Kostenmodelle transparent und rechtlich zulässig sein.",
+    "synonyms": [
+      "ausschließlich erfolgsbezogen vergütete Arbeitsvermittlung",
+      "Nebenleistungen",
+      "Vertragsinhalt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Prozessbeschreibung",
+    "slug": "prozessbeschreibung",
+    "definition": "Dokumentierte Darstellung eines Ablaufs mit Aufgaben, Verantwortlichkeiten, Schnittstellen und Ergebnissen. Sie schafft Standardisierung und Nachvollziehbarkeit im QM-System.",
+    "synonyms": [
+      "Verfahrensanweisung",
+      "Prozesskennzahl",
+      "Qualitätsmanagementsystem"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Prozesskennzahl",
+    "slug": "prozesskennzahl",
+    "definition": "Messgröße zur Bewertung der Leistung oder Stabilität eines Prozesses, z.B. Bearbeitungszeit, Fehlerrate oder Termintreue. Sie unterstützt Steuerung und Verbesserung.",
+    "synonyms": [
+      "Kennzahlen",
+      "Prozessbeschreibung",
+      "Qualitätsziel"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Prüfdienst",
+    "slug": "pruefdienst",
+    "definition": "Abteilung der Bundesagentur für Arbeit (AMDL), die die Einhaltung der AZAV-Vorgaben bei Bildungsträgern überprüft. Agiert unabhängig vom Zertifizierungsaudit der fachkundigen Stelle.",
+    "synonyms": [
+      "AMDL",
+      "Überwachung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Prüfung",
+    "slug": "pruefung",
+    "definition": "Formale Überprüfung von Lernergebnissen zur Feststellung des Qualifikationsniveaus.",
+    "synonyms": [
+      "Abschluss",
+      "Kompetenzfeststellung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "QM-Handbuch",
+    "slug": "qm-handbuch",
+    "definition": "Zentrale Beschreibung des Qualitätsmanagementsystems eines Trägers mit Regelungen, Prozessen und Verantwortlichkeiten. Im Glossar entspricht es inhaltlich dem Handbuch für das QMS.",
+    "synonyms": [
+      "Handbuch",
+      "Qualitätsmanagementsystem (QMS)",
+      "Qualitätsmanagement (QM)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualifizierung",
+    "slug": "qualifizierung",
+    "definition": "Prozess des Erwerbs beruflicher Kenntnisse, Fähigkeiten und Fertigkeiten.",
+    "synonyms": [
+      "Weiterbildung",
+      "Fortbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualifizierungschancengesetz (QCG)",
+    "slug": "qualifizierungschancengesetz-qcg",
+    "definition": "Seit 2019 geltendes Gesetz, das die Förderung beruflicher Weiterbildung für Beschäftigte ermöglicht. Im Gegensatz zur FbW richtet sich das QCG an Arbeitnehmer in bestehenden Arbeitsverhältnissen. Die BA übernimmt je nach Betriebsgröße bis zu 100 % der Lehrgangskosten.",
+    "synonyms": [
+      "FbW-Maßnahme",
+      "WeGebAU"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualifizierungsgeld",
+    "slug": "qualifizierungsgeld",
+    "definition": "Eigenständige Leistung nach § 82a SGB III für Beschäftigte, deren Arbeitsplatz durch Strukturwandel bedroht ist. Arbeitgeber und Arbeitnehmervertretung schließen eine Betriebsvereinbarung; die BA zahlt 60–67 % des Nettoentgelts während der Weiterbildung.",
+    "synonyms": [
+      "QCG",
+      "WeGebAU",
+      "Berufliche Weiterbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualitätsmanagement (QM)",
+    "slug": "qualitaetsmanagement-qm",
+    "definition": "Systematische Planung, Steuerung und Verbesserung der Qualität von Bildungsmaßnahmen.",
+    "synonyms": [
+      "Qualitätsmanagementsystem",
+      "KVP"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualitätsmanagementsystem (QMS)",
+    "slug": "qualitaetsmanagementsystem-qms",
+    "definition": "Dokumentiertes System zur Umsetzung des Qualitätsmanagements in einem Bildungsträger. Enthält alle Prozesse, Verantwortlichkeiten und Qualitätsziele. Herzstück der AZAV-Zertifizierung.",
+    "synonyms": [
+      "Handbuch",
+      "Qualitätsmanagement"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualitätsprüfung (§ 183 SGB III)",
+    "slug": "qualitaetspruefung-183-sgb-iii",
+    "definition": "Prüfung der Qualität zugelassener Träger und Maßnahmen im Sinne des SGB III. Sie ergänzt das Zertifizierungsverfahren um eine aufsichts- und wirkungsbezogene Perspektive.",
+    "synonyms": [
+      "SGB III (Sozialgesetzbuch III)",
+      "Qualitätsmanagement",
+      "Prüfdienst"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Qualitätsziel",
+    "slug": "qualitaetsziel",
+    "definition": "Konkretes, messbares Ziel zur Sicherung oder Verbesserung der Qualität, das aus der Qualitätspolitik abgeleitet wird. Es dient als Orientierungs- und Bewertungsmaßstab im QM-System.",
+    "synonyms": [
+      "Qualitätsmanagementsystem (QMS)",
+      "Kennzahlen",
+      "Managementbewertung (Managementreview)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "räumliche Trennung",
+    "slug": "raeumliche-trennung",
+    "definition": "Situation, in der Lehrende und Lernende nicht am selben Ort sind. Sie ist ein zentrales Merkmal von Fernunterricht und beeinflusst Anforderungen an Betreuung, Medien und Vertragsrecht.",
+    "synonyms": [
+      "Fernunterricht",
+      "Selbstlernphase",
+      "digitale Lernmedien"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Referenzauswahl",
+    "slug": "referenzauswahl",
+    "definition": "Verfahren, mit dem die fachkundige Stelle (FKS) aus einer größeren Anzahl eingereichter Maßnahmen eine repräsentative Auswahl für das Zertifizierungsaudit trifft. Bei mehr als 30 Maßnahmen greift die Referenzauswahl.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "Fachkundige Stelle",
+      "MML"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Referenzauswahlverfahren",
+    "slug": "referenzauswahlverfahren",
+    "definition": "Formales Verfahren zur Auswahl repräsentativer Maßnahmen oder Fälle für eine Prüfung oder Zertifizierung. Es konkretisiert die allgemeine Referenzauswahl methodisch.",
+    "synonyms": [
+      "Referenzauswahl",
+      "Maßnahmenzulassung",
+      "MML (Monatsmeldeliste)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Rehabilitation",
+    "slug": "rehabilitation",
+    "definition": "Maßnahmen zur Wiederherstellung der beruflichen Leistungsfähigkeit von Menschen mit gesundheitlichen Einschränkungen.",
+    "synonyms": [
+      "Berufliche Rehabilitation",
+      "Inklusion"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Rezertifizierung",
+    "slug": "rezertifizierung",
+    "definition": "Erneute Zertifizierung eines Bildungsträgers oder einer Maßnahme nach Ablauf der Gültigkeitsdauer.",
+    "synonyms": [
+      "Gültigkeitsdauer",
+      "Surveillance-Audit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Risikomanagement",
+    "slug": "risikomanagement",
+    "definition": "Systematische Erkennung, Bewertung und Steuerung von Risiken, die Zielerreichung, Qualität oder Compliance beeinträchtigen können. Es ist Teil einer vorausschauenden Unternehmenssteuerung.",
+    "synonyms": [
+      "Chancenmanagement",
+      "Managementbewertung (Managementreview)",
+      "Ursachenanalyse"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Rücknahme der Zulassung",
+    "slug": "ruecknahme-der-zulassung",
+    "definition": "Aufhebung einer Zulassung mit Wirkung für die Vergangenheit, wenn sie z.B. auf unrichtigen Angaben beruhte. Sie ist vom Widerruf der Zulassung zu unterscheiden.",
+    "synonyms": [
+      "Widerruf der Zulassung",
+      "Zulassungsentscheidung",
+      "ZFU-Zulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Schulungsvertrag",
+    "slug": "schulungsvertrag",
+    "definition": "Vertrag zwischen Träger und Teilnehmer über die Durchführung einer Schulung oder Maßnahme. Er regelt Leistungen, Vergütung, Laufzeit, Rechte und Pflichten.",
+    "synonyms": [
+      "Vertragsinhalt",
+      "Widerrufsrecht",
+      "Teilnahmebestätigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Selbstlernphase",
+    "slug": "selbstlernphase",
+    "definition": "Abschnitt des Lernens, in dem Teilnehmer Inhalte eigenständig bearbeiten und vertiefen. Selbstlernphasen sind typisch für E-Learning, Fernunterricht und Blended Learning.",
+    "synonyms": [
+      "Asynchroner Unterricht",
+      "Lehrbrief",
+      "Lernplattform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "SGB II (Sozialgesetzbuch II)",
+    "slug": "sgb-ii-sozialgesetzbuch-ii",
+    "definition": "Regelt die Grundsicherung für Arbeitsuchende (Hartz IV / Bürgergeld).",
+    "synonyms": [
+      "Grundsicherung",
+      "Jobcenter"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "SGB III (Sozialgesetzbuch III)",
+    "slug": "sgb-iii-sozialgesetzbuch-iii",
+    "definition": "Regelt die Arbeitsförderung und die Leistungen der Bundesagentur für Arbeit.",
+    "synonyms": [
+      "Arbeitsförderung",
+      "Bundesagentur für Arbeit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Siegel",
+    "slug": "siegel",
+    "definition": "Visuelles Zeichen oder Label, das auf eine Zertifizierung, Zulassung oder besondere Qualität hinweist. Seine Verwendung sollte nur für tatsächlich gültige Nachweise erfolgen.",
+    "synonyms": [
+      "Zertifikat",
+      "Trägerzertifikat",
+      "Maßnahmezertifikat"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Sozialgarantie",
+    "slug": "sozialgarantie",
+    "definition": "Zusicherung oder rechtlicher Schutzmechanismus zur Sicherung sozialer Rechte oder Leistungen in einem bestimmten Kontext. Der Begriff ist je nach Vertrag oder Programm konkret auszugestalten.",
+    "synonyms": [
+      "Transferleistungen",
+      "SGB II (Sozialgesetzbuch II)",
+      "SGB III (Sozialgesetzbuch III)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Standortbewertung",
+    "slug": "standortbewertung",
+    "definition": "Bewertung eines Standorts hinsichtlich Eignung, Ausstattung, Erreichbarkeit und organisatorischer Rahmenbedingungen. Sie ist für Zulassung, Qualität und Sicherheit relevant.",
+    "synonyms": [
+      "Standortbilder",
+      "Grundriss",
+      "Durchführungsort"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Standortbilder",
+    "slug": "standortbilder",
+    "definition": "Fotografische Dokumentation eines Standorts oder seiner Räume. Sie unterstützen Nachweise zur Ausstattung und Eignung gegenüber Prüfern oder Zulassungsstellen.",
+    "synonyms": [
+      "Grundriss",
+      "Standortübersicht",
+      "ortsbezogene Prüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Standorte des Trägers",
+    "slug": "standorte-des-traegers",
+    "definition": "Gesamtheit der Niederlassungen oder Durchführungsorte eines Bildungsträgers. Mehrere Standorte müssen im QM-System, in Meldungen und Prüfungen berücksichtigt werden.",
+    "synonyms": [
+      "Standortmeldung",
+      "Standortübersicht",
+      "Durchführungsort"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Standortmeldung",
+    "slug": "standortmeldung",
+    "definition": "Mitteilung über einen neuen, geänderten oder aufgegebenen Standort an die zuständige Stelle oder fachkundige Stelle. Sie ist im Rahmen der Änderungsmeldung relevant.",
+    "synonyms": [
+      "Änderungsmeldung",
+      "Standorte des Trägers",
+      "ortsbezogene Prüfung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Standortübersicht",
+    "slug": "standortuebersicht",
+    "definition": "Zusammenfassende Darstellung aller relevanten Informationen zu einem oder mehreren Standorten, etwa Adressen, Räume und Nutzung. Sie dient der internen Steuerung und externen Nachweisführung.",
+    "synonyms": [
+      "Standorte des Trägers",
+      "Standortbilder",
+      "Grundriss"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Stellungnahme",
+    "slug": "stellungnahme",
+    "definition": "Schriftliche fachliche oder organisatorische Einordnung zu einem Sachverhalt, einer Feststellung oder einem Antrag. Sie wird häufig im Audit-, Prüf- oder Zulassungsverfahren verlangt.",
+    "synonyms": [
+      "Auditfeststellung",
+      "Nachreichung",
+      "Verfahrensablauf"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Studienheft",
+    "slug": "studienheft",
+    "definition": "Strukturiertes Lernheft für das Selbststudium, oft als Teil eines Fernlehrgangs. Es entspricht funktional häufig einem Lehrbrief.",
+    "synonyms": [
+      "Lehrbrief",
+      "Studienmaterial",
+      "Einsendeaufgabe"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Studienmaterial",
+    "slug": "studienmaterial",
+    "definition": "Materialien zur Unterstützung eines Studien- oder Fernlernangebots, etwa Hefte, Dateien, Videos oder Literatur. Sie müssen zum Lernziel und zur Zielgruppe passen.",
+    "synonyms": [
+      "Lehrmaterial",
+      "Studienheft",
+      "digitale Lernmedien"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Surveillance-Audit",
+    "slug": "surveillance-audit",
+    "definition": "Jährliches Überwachungsaudit zur Aufrechterhaltung der AZAV-Zertifizierung zwischen den Rezertifizierungsaudits.",
+    "synonyms": [
+      "Rezertifizierung",
+      "Audit"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Synchroner Unterricht",
+    "slug": "synchroner-unterricht",
+    "definition": "Unterrichtsform, bei der Lehrende und Lernende zeitgleich miteinander interagieren – vor Ort oder digital. Charakteristisch sind feste Termine und unmittelbare Rückfragen.",
+    "synonyms": [
+      "Live-Online-Seminar",
+      "Online-Unterricht",
+      "Asynchroner Unterricht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Systematikposition",
+    "slug": "systematikposition",
+    "definition": "Konkrete Einordnungsstelle innerhalb einer Klassifikation, z.B. in der KldB. Sie dient der eindeutigen Zuordnung eines Berufs, Bildungsziels oder Tätigkeitsprofils.",
+    "synonyms": [
+      "Klassifikation der Berufe (KldB)",
+      "Berufskennziffern (BKZ)",
+      "Arbeitsmarktrelevanz"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnahmebescheinigung",
+    "slug": "teilnahmebescheinigung",
+    "definition": "Dokument, das die Teilnahme an einer Maßnahme oder einzelnen Veranstaltung bestätigt. Es enthält in der Regel Zeitraum, Umfang und Thema.",
+    "synonyms": [
+      "Nachweis der Teilnahme",
+      "Teilnahmebestätigung",
+      "Teilnehmer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnahmebestätigung",
+    "slug": "teilnahmebestaetigung",
+    "definition": "Bestätigung, dass eine Anmeldung angenommen oder eine Teilnahme vorgesehen ist bzw. stattgefunden hat. Je nach Kontext kann sie vor oder nach einer Maßnahme erstellt werden.",
+    "synonyms": [
+      "Anmeldebestätigung",
+      "Teilnahmebescheinigung",
+      "Eintritt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "teilnahmebezogener Bericht",
+    "slug": "teilnahmebezogener-bericht",
+    "definition": "Bericht mit Informationen zum Verlauf, Verhalten, Fortschritt oder Ergebnis eines einzelnen Teilnehmers. Er dient interner Steuerung sowie der Kommunikation mit Kostenträgern.",
+    "synonyms": [
+      "Teilnehmerverwaltung",
+      "Verbleib",
+      "Erfolgsmeldung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnahmezertifikat",
+    "slug": "teilnahmezertifikat",
+    "definition": "Zertifikat über die erfolgreiche oder vollständige Teilnahme an einer Maßnahme. Es beschreibt typischerweise Inhalte, Zeitraum und ggf. Lernergebnisse.",
+    "synonyms": [
+      "Zertifikat",
+      "Teilnahmebescheinigung",
+      "erfolgreiche Teilnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnahmezeugnis",
+    "slug": "teilnahmezeugnis",
+    "definition": "Ausführlicheres Dokument über die Teilnahme, oft mit Angaben zu Leistungen, Verhalten oder besonderen Schwerpunkten. Es liegt zwischen Bescheinigung und Zertifikat.",
+    "synonyms": [
+      "Teilnahmezertifikat",
+      "Teilnahmebescheinigung",
+      "Nachweis der Teilnahme"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnehmer",
+    "slug": "teilnehmer",
+    "definition": "Person, die an einer Bildungsmaßnahme teilnimmt.",
+    "synonyms": [
+      "Teilnehmergewinnung",
+      "Teilnehmerverwaltung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnehmerbefragung",
+    "slug": "teilnehmerbefragung",
+    "definition": "Systematische Befragung von Teilnehmern zur Bewertung von Organisation, Inhalten, Dozenten und Nutzen einer Maßnahme. Sie liefert wichtige Daten für Verbesserungen.",
+    "synonyms": [
+      "Feedback",
+      "Kundenzufriedenheit",
+      "Dozentenbewertung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnehmergewinnung",
+    "slug": "teilnehmergewinnung",
+    "definition": "Prozess der Akquise von Teilnehmern für Bildungsmaßnahmen. Eine der größten Herausforderungen für Bildungsträger im wettbewerbsintensiven Weiterbildungsmarkt.",
+    "synonyms": [
+      "Marketing",
+      "Zielgruppe"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Teilnehmerverwaltung",
+    "slug": "teilnehmerverwaltung",
+    "definition": "Administrative Verwaltung von Teilnehmerdaten, Verträgen und Dokumenten.",
+    "synonyms": [
+      "Datenschutz",
+      "Dokumentation"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Textform",
+    "slug": "textform",
+    "definition": "Gesetzlich definierte Form, bei der eine lesbare Erklärung auf einem dauerhaften Datenträger abgegeben wird, ohne eigenhändige Unterschrift. E-Mail ist ein typisches Beispiel.",
+    "synonyms": [
+      "Fernunterrichtsvertrag",
+      "Widerrufsbelehrung",
+      "Vertragsinhalt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Träger",
+    "slug": "traeger",
+    "definition": "Organisation, die Bildungsmaßnahmen anbietet und nach AZAV zertifiziert ist.",
+    "synonyms": [
+      "Bildungsträger",
+      "Trägerzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Trägerzertifikat",
+    "slug": "traegerzertifikat",
+    "definition": "Zertifikat als Nachweis der erteilten Trägerzulassung eines Bildungsträgers. Es dokumentiert Geltungsbereich, Laufzeit und zugelassene Fachbereiche.",
+    "synonyms": [
+      "Trägerzulassung",
+      "Zertifikat",
+      "Zulassungsnummer"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Trägerzulassung",
+    "slug": "traegerzulassung",
+    "definition": "Zertifizierung eines Bildungsträgers durch eine fachkundige Stelle. Voraussetzung für die Maßnahmenzulassung.",
+    "synonyms": [
+      "Maßnahmenzulassung",
+      "Fachkundige Stelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Transferleistungen",
+    "slug": "transferleistungen",
+    "definition": "Sozial- oder Unterstützungsleistungen, die Einkommen sichern oder Übergänge unterstützen, etwa Arbeitslosengeld oder ähnliche Leistungen. Sie können für Förderentscheidungen relevant sein.",
+    "synonyms": [
+      "Arbeitslosengeld",
+      "Grundsicherung",
+      "Sozialgarantie"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Tutor",
+    "slug": "tutor",
+    "definition": "Person, die Teilnehmer fachlich oder organisatorisch begleitet, Fragen beantwortet und den Lernprozess unterstützt. Tutoren sind besonders wichtig in Fern- und Online-Formaten.",
+    "synonyms": [
+      "Betreuung",
+      "Feedback",
+      "Lernplattform"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Umschulung",
+    "slug": "umschulung",
+    "definition": "Ausbildung in einem neuen Beruf, oft nach längerer Berufspause oder bei Berufsunfähigkeit.",
+    "synonyms": [
+      "Berufliche Weiterbildung",
+      "Nachqualifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Umsetzungshinweise",
+    "slug": "umsetzungshinweise",
+    "definition": "Praktische Hinweise zur Anwendung von Vorgaben, Regeln oder Konzepten im Alltag. Sie konkretisieren allgemeine Anforderungen für die operative Umsetzung.",
+    "synonyms": [
+      "Fachliche Weisungen",
+      "Verfahrensanweisung",
+      "Qualitätsmanagementsystem (QMS)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Unterauftragsvergabe",
+    "slug": "unterauftragsvergabe",
+    "definition": "Beauftragung externer Partner mit Teilen der Leistungserbringung durch den Träger. Sie erfordert klare Verantwortung, Auswahl, Überwachung und vertragliche Regelung.",
+    "synonyms": [
+      "Lieferantenbewertung",
+      "Prozessbeschreibung",
+      "Qualitätsmanagementsystem (QMS)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Unterbrechung",
+    "slug": "unterbrechung",
+    "definition": "Vorübergehende Aussetzung der Teilnahme oder Durchführung einer Maßnahme, z.B. wegen Krankheit, Praktikum oder organisatorischer Gründe. Unterbrechungen müssen dokumentiert und bewertet werden.",
+    "synonyms": [
+      "Arbeitsunfähigkeitsmeldung (AU-Meldung)",
+      "Fehltage",
+      "Austritt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Unterrichseinheit (UE)",
+    "slug": "unterrichseinheit-ue",
+    "definition": "Geplante Zeiteinheit des Unterrichts, häufig mit definierter Dauer wie 45 Minuten. Sie dient der didaktischen Planung und Kalkulation.",
+    "synonyms": [
+      "Unterrichtsstunde",
+      "Kalkulation",
+      "Lehrplan"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Unterrichtsstunde",
+    "slug": "unterrichtsstunde",
+    "definition": "Zeiteinheit für den Unterricht, in der Regel 45 Minuten. Grundlage für die Kalkulation von Lehrgangskosten.",
+    "synonyms": [
+      "Kalkulation",
+      "BDKS"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Ursachenanalyse",
+    "slug": "ursachenanalyse",
+    "definition": "Systematische Untersuchung der Gründe für Fehler, Abweichungen oder unerwünschte Ergebnisse. Sie bildet die Grundlage wirksamer Korrektur- und Verbesserungsmaßnahmen.",
+    "synonyms": [
+      "Korrekturmaßnahmen",
+      "Nichtkonformität",
+      "Risikomanagement"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Veranstaltungstermin",
+    "slug": "veranstaltungstermin",
+    "definition": "Konkreter Termin, an dem eine Veranstaltung, ein Modul oder eine Maßnahme stattfindet. Termine müssen in Angeboten, Verträgen und Planungen eindeutig ausgewiesen sein.",
+    "synonyms": [
+      "zugelassener Termin",
+      "Durchführungsform",
+      "Lehrgangssuche"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Verbleib",
+    "slug": "verbleib",
+    "definition": "Status eines Teilnehmers nach Abschluss oder Abbruch einer Maßnahme, z.B. Beschäftigung, Ausbildung, weitere Qualifizierung oder Arbeitslosigkeit. Der Verbleib ist zentral für Erfolgsmessung und Qualität.",
+    "synonyms": [
+      "Integrationsbefragung",
+      "Vermittlungsquote",
+      "Erfolgsmessung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Verfahrensablauf",
+    "slug": "verfahrensablauf",
+    "definition": "Geordnete Abfolge einzelner Schritte in einem Verfahren, etwa bei Zulassung, Prüfung oder Vertragsschluss. Ein klarer Verfahrensablauf schafft Transparenz und Verbindlichkeit.",
+    "synonyms": [
+      "Verfahrensanweisung",
+      "Zulassungsverfahren",
+      "Verfahrensschritte"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Verfahrensanweisung",
+    "slug": "verfahrensanweisung",
+    "definition": "Dokument mit verbindlichen Vorgaben zur Durchführung eines Prozesses oder Verfahrens. Sie beschreibt Zuständigkeiten, Reihenfolgen und erforderliche Nachweise.",
+    "synonyms": [
+      "Prozessbeschreibung",
+      "Dokumentenlenkung",
+      "Qualitätsmanagementsystem (QMS)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vergabe",
+    "slug": "vergabe",
+    "definition": "Prozess der Vergabe von Bildungsmaßnahmen durch die Bundesagentur für Arbeit an Bildungsträger.",
+    "synonyms": [
+      "Ausschreibung",
+      "Wettbewerb"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vermittlung",
+    "slug": "vermittlung",
+    "definition": "Integration von Teilnehmern in den ersten Arbeitsmarkt. Wichtiges Ziel und Qualitätsmerkmal von AZAV-Maßnahmen.",
+    "synonyms": [
+      "Eingliederung",
+      "Vermittlungsquote"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vermittlungsquote",
+    "slug": "vermittlungsquote",
+    "definition": "Prozentsatz der Teilnehmer, die nach einer Maßnahme erfolgreich in Arbeit vermittelt wurden. Wichtige Kennzahl für AMDL-Prüfung und Erfolgsmeldung.",
+    "synonyms": [
+      "Kennzahlen",
+      "Erfolgsmeldung",
+      "Controlling"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vermittlungsvorrang",
+    "slug": "vermittlungsvorrang",
+    "definition": "Grundsatz nach SGB II/III, dass die Vermittlung in Arbeit Vorrang vor Qualifizierungsmaßnahmen hat. Beeinflusst, welche Teilnehmer einen Bildungsgutschein erhalten.",
+    "synonyms": [
+      "Eingliederung",
+      "Bildungsgutschein"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Versionierung",
+    "slug": "versionierung",
+    "definition": "Kennzeichnung und Nachverfolgung verschiedener Fassungen eines Dokuments oder Konzepts. Sie verhindert die Nutzung veralteter Unterlagen und unterstützt die Dokumentenlenkung.",
+    "synonyms": [
+      "Dokumentenlenkung",
+      "Freigabestand",
+      "Lenkung dokumentierter Information"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vertragsinhalt",
+    "slug": "vertragsinhalt",
+    "definition": "Gesamtheit der Regelungen eines Vertrags, insbesondere zu Leistungen, Entgelt, Laufzeit, Rechten und Pflichten. Der Vertragsinhalt muss klar, vollständig und rechtlich zulässig sein.",
+    "synonyms": [
+      "Schulungsvertrag",
+      "Fernunterrichtsvertrag",
+      "AGB"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vertragsstrafe",
+    "slug": "vertragsstrafe",
+    "definition": "Vertraglich vereinbarte Sanktion für den Fall bestimmter Pflichtverletzungen. Solche Klauseln unterliegen strengen rechtlichen Anforderungen und müssen transparent formuliert sein.",
+    "synonyms": [
+      "AGB",
+      "Vertragsinhalt",
+      "nichtiger Vertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Vertretungsregelung",
+    "slug": "vertretungsregelung",
+    "definition": "Festlegung, wer Aufgaben oder Verantwortlichkeiten bei Abwesenheit übernimmt. Sie sichert die Handlungsfähigkeit von Träger, QM und Maßnahmendurchführung.",
+    "synonyms": [
+      "Prozessbeschreibung",
+      "Qualitätsmanagementsystem (QMS)",
+      "Personal"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Verzeichnis zugelassener Fernlehrgänge",
+    "slug": "verzeichnis-zugelassener-fernlehrgaenge",
+    "definition": "Öffentliches Register zugelassener Fernlehrgänge, in dem relevante Angaben zu Anbieter, Lehrgang und Zulassung eingesehen werden können. Es unterstützt Transparenz und Verbraucherschutz.",
+    "synonyms": [
+      "ZFU-Zulassung",
+      "Lehrgangssuche",
+      "zugelassener Fernlehrgang"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Voraudit",
+    "slug": "voraudit",
+    "definition": "Freiwillige „Generalprobe\" vor dem eigentlichen Zertifizierungsaudit. Wird von den meisten fachkundigen Stellen angeboten und hilft, Schwachstellen im QM-System frühzeitig zu erkennen. Besonders empfehlenswert für Erstantragsteller.",
+    "synonyms": [
+      "Audit",
+      "Fachkundige Stelle",
+      "Trägerzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "WeGebAU",
+    "slug": "wegebau",
+    "definition": "Förderung der Weiterbildung Geringqualifizierter und beschäftigter Älterer in Unternehmen. Richtet sich an Arbeitnehmer ohne Berufsabschluss oder ältere Beschäftigte ab 45 Jahren. Die BA übernimmt Lehrgangskosten und zahlt Zuschüsse zum Arbeitsentgelt.",
+    "synonyms": [
+      "QCG",
+      "FbW-Maßnahme",
+      "Geringqualifizierte"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Weiterbildung",
+    "slug": "weiterbildung",
+    "definition": "Organisiertes Lernen zur Erweiterung beruflicher Kenntnisse und Fähigkeiten.",
+    "synonyms": [
+      "Fortbildung",
+      "Umschulung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Weiterbildungsangebot",
+    "slug": "weiterbildungsangebot",
+    "definition": "Konkretes Angebot eines Trägers zur beruflichen Weiterbildung mit definiertem Ziel, Inhalt, Umfang und Rahmenbedingungen. Es dient der Vermarktung und Teilnehmergewinnung.",
+    "synonyms": [
+      "Weiterbildung",
+      "KURSNET",
+      "Maßnahmenkonzept"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Weiterbildungsgeld",
+    "slug": "weiterbildungsgeld",
+    "definition": "Finanzielle Zusatzleistung für bestimmte Personen in geförderter Weiterbildung. Sie soll die Teilnahme an abschlussbezogenen Qualifizierungen attraktiver machen.",
+    "synonyms": [
+      "Bildungsgutschein",
+      "abschlussorientierte Weiterbildung",
+      "Förderung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Weiterbildungsprämie",
+    "slug": "weiterbildungspraemie",
+    "definition": "Prämienleistung für das erfolgreiche Bestehen bestimmter Zwischen- oder Abschlussprüfungen in geförderten Weiterbildungen. Sie setzt das Erreichen definierter Meilensteine voraus.",
+    "synonyms": [
+      "Nachweis der Zwischenprüfung",
+      "Nachweis der Abschlussprüfung",
+      "abschlussorientierte Weiterbildung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Werbeaussage",
+    "slug": "werbeaussage",
+    "definition": "Aussage in Werbung oder Informationsmaterial über Inhalte, Qualität, Dauer oder Nutzen eines Angebots. Sie muss zutreffend, belegbar und nicht irreführend sein.",
+    "synonyms": [
+      "Informationsmaterial",
+      "Gültigkeitsdauer des Angebots",
+      "Vertragsinhalt"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "wesentliche Änderung",
+    "slug": "wesentliche-aenderung",
+    "definition": "Änderung eines zugelassenen Angebots oder Fernlehrgangs, die Inhalt, Ziel, Dauer, Preis oder Struktur erheblich betrifft und daher erneut geprüft oder gemeldet werden muss.",
+    "synonyms": [
+      "Änderungsmeldung",
+      "Lehrgangspflege",
+      "ZFU-Zulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Wettbewerb",
+    "slug": "wettbewerb",
+    "definition": "Konkurrenz zwischen Bildungsträgern um Teilnehmer und Maßnahmen.",
+    "synonyms": [
+      "Marktanalyse",
+      "Teilnehmergewinnung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Widerruf der Zulassung",
+    "slug": "widerruf-der-zulassung",
+    "definition": "Aufhebung einer Zulassung mit Wirkung für die Zukunft, etwa wegen Wegfalls von Voraussetzungen oder Pflichtverstößen. Er ist von der Rücknahme zu unterscheiden.",
+    "synonyms": [
+      "Rücknahme der Zulassung",
+      "Zulassungsentscheidung",
+      "Trägerzertifikat"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Widerrufsbelehrung",
+    "slug": "widerrufsbelehrung",
+    "definition": "Belehrung über das bestehende Widerrufsrecht, seine Fristen und die Art der Ausübung. Sie muss verständlich, vollständig und rechtzeitig bereitgestellt werden.",
+    "synonyms": [
+      "Widerrufsrecht",
+      "Muster-Widerrufsformular",
+      "Fernunterrichtsvertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Widerrufsrecht",
+    "slug": "widerrufsrecht",
+    "definition": "Recht von Verbrauchern, einen Vertrag innerhalb einer gesetzlichen Frist ohne Angabe von Gründen zu widerrufen. Es ist insbesondere bei Fernabsatz- und Fernunterrichtsverträgen relevant.",
+    "synonyms": [
+      "Widerrufsbelehrung",
+      "Muster-Widerrufsformular",
+      "Fernunterrichtsvertrag"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Wirksamkeitsprüfung",
+    "slug": "wirksamkeitspruefung",
+    "definition": "Prüfung, ob eingeführte Maßnahmen, Prozesse oder Korrekturen tatsächlich das gewünschte Ergebnis erreicht haben. Sie ist zentral für KVP und Auditnachweise.",
+    "synonyms": [
+      "Erfolgsmessung",
+      "Korrekturmaßnahmen",
+      "Managementbewertung (Managementreview)"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Wirtschaftlichkeit und Sparsamkeit",
+    "slug": "wirtschaftlichkeit-und-sparsamkeit",
+    "definition": "Grundsatz, Leistungen mit angemessenem Mitteleinsatz zu erbringen und unnötige Kosten zu vermeiden. Er ist besonders im Förder- und Kalkulationskontext relevant.",
+    "synonyms": [
+      "Angemessenheit der Kosten",
+      "Kostenkalkulation",
+      "Kostenzustimmungsverfahren"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Wissenschaftsrat",
+    "slug": "wissenschaftsrat",
+    "definition": "Beratungsgremium für Wissenschaftspolitik und Hochschulentwicklung in Deutschland. Der Begriff ist vor allem bei akademischen oder hochschulnahen Angeboten relevant.",
+    "synonyms": [
+      "Akkreditierungsrat",
+      "programmakkreditiert",
+      "Hochschulzulassungsberechtigung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zertifikat",
+    "slug": "zertifikat",
+    "definition": "Dokument, das den erfolgreichen Abschluss einer Bildungsmaßnahme oder die AZAV-Konformität bescheinigt.",
+    "synonyms": [
+      "Abschluss",
+      "Zertifizierung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zertifikatsnummer",
+    "slug": "zertifikatsnummer",
+    "definition": "Eindeutige Nummer zur Identifikation eines Zertifikats oder einer Zulassung. Sie erleichtert Nachweis, Zuordnung und Prüfung der Gültigkeit.",
+    "synonyms": [
+      "Zertifikat",
+      "Zulassungsnummer",
+      "Trägerzertifikat"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zertifizierung",
+    "slug": "zertifizierung",
+    "definition": "Formale Bestätigung der AZAV-Konformität eines Bildungsträgers oder einer Maßnahme durch eine fachkundige Stelle.",
+    "synonyms": [
+      "Trägerzulassung",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zertifizierungsstelle",
+    "slug": "zertifizierungsstelle",
+    "definition": "Organisation, die Zertifizierungen oder Zulassungen prüft und erteilt. Im AZAV-Kontext übernimmt diese Rolle die fachkundige Stelle.",
+    "synonyms": [
+      "Fachkundige Stelle (FKS)",
+      "Zertifizierung",
+      "Akkreditierungsstelle"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "ZfU (Staatliche Zentralstelle für Fernunterricht)",
+    "slug": "zfu-staatliche-zentralstelle-fuer-fernunterricht",
+    "definition": "Behörde zur Zulassung von Fernlehrgängen nach dem Fernunterrichtsschutzgesetz (FernUSG). Von der AZAV getrennt, aber relevant für Bildungsträger, die Online- oder Fernunterrichtsformate anbieten.",
+    "synonyms": [
+      "E-Learning",
+      "Online-Unterricht"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "ZFU-Zulassung",
+    "slug": "zfu-zulassung",
+    "definition": "Formale Zulassung eines entgeltlichen Fernlehrgangs durch die Staatliche Zentralstelle für Fernunterricht. Sie ist bei zulassungspflichtigem Fernunterricht Voraussetzung für das Angebot.",
+    "synonyms": [
+      "ZfU (Staatliche Zentralstelle für Fernunterricht)",
+      "Zulassungspflicht",
+      "zugelassener Fernlehrgang"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "zugelassener Fernlehrgang",
+    "slug": "zugelassener-fernlehrgang",
+    "definition": "Fernlehrgang, der die erforderliche Zulassung erhalten hat und rechtmäßig angeboten werden darf. Maßgeblich ist insbesondere die Zulassung durch die ZFU.",
+    "synonyms": [
+      "ZFU-Zulassung",
+      "Verzeichnis zugelassener Fernlehrgänge",
+      "Fernlehrgang"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "zugelassener Fernstudiengang",
+    "slug": "zugelassener-fernstudiengang",
+    "definition": "Fernstudiengang, der die jeweils erforderlichen hochschul- und gegebenenfalls fernunterrichtsrechtlichen Voraussetzungen erfüllt. Die Zulassung ist klar von der AZAV zu unterscheiden.",
+    "synonyms": [
+      "Fernstudiengang",
+      "ZFU-Zulassung",
+      "programmakkreditiert"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "zugelassener Termin",
+    "slug": "zugelassener-termin",
+    "definition": "Termin oder Durchführungszeitraum, der vom Geltungsbereich einer bestehenden Zulassung umfasst ist. Nur solche Termine dürfen als zugelassen beworben oder durchgeführt werden.",
+    "synonyms": [
+      "nicht zertifizierter Termin",
+      "Veranstaltungstermin",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassung",
+    "slug": "zulassung",
+    "definition": "Formale Genehmigung eines Bildungsträgers oder einer Maßnahme nach AZAV.",
+    "synonyms": [
+      "Trägerzulassung",
+      "Maßnahmenzulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassungsantrag",
+    "slug": "zulassungsantrag",
+    "definition": "Formeller Antrag auf Erteilung einer Zulassung für einen Träger, eine Maßnahme oder einen Fernlehrgang. Er muss vollständig und mit den erforderlichen Unterlagen eingereicht werden.",
+    "synonyms": [
+      "Trägerzulassung",
+      "Maßnahmenzulassung",
+      "Nachreichung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassungsentscheidung",
+    "slug": "zulassungsentscheidung",
+    "definition": "Formale Entscheidung einer zuständigen Stelle über Erteilung, Ablehnung, Rücknahme oder Widerruf einer Zulassung. Sie ist Grundlage für weitere Rechtswirkungen und Nachweise.",
+    "synonyms": [
+      "Zulassungsantrag",
+      "Rücknahme der Zulassung",
+      "Widerruf der Zulassung"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "zulassungsfreier Freizeit-Lehrgang",
+    "slug": "zulassungsfreier-freizeit-lehrgang",
+    "definition": "Lehrgang, der nicht der Zulassungspflicht nach dem FernUSG unterliegt, weil er überwiegend der Freizeitgestaltung dient und die gesetzlichen Voraussetzungen nicht erfüllt. Die Abgrenzung muss sachlich nachvollziehbar sein.",
+    "synonyms": [
+      "Zulassungspflicht",
+      "Fernunterrichtsschutzgesetz (FernUSG)",
+      "Fernlehrgang"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassungsnummer",
+    "slug": "zulassungsnummer",
+    "definition": "Eindeutige Identifikationsnummer einer erteilten Zulassung. Sie dient der Identifikation in Dokumenten, Verzeichnissen und Verwaltungsverfahren.",
+    "synonyms": [
+      "Zertifikatsnummer",
+      "Maßnahmenummer",
+      "Trägerzertifikat"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassungspflicht",
+    "slug": "zulassungspflicht",
+    "definition": "Rechtliche Pflicht, vor dem Angebot bestimmter Leistungen – insbesondere entgeltlicher Fernlehrgänge – eine behördliche Zulassung einzuholen. Ohne Zulassung darf das Angebot nicht wirksam vermarktet werden.",
+    "synonyms": [
+      "Fernunterrichtsschutzgesetz (FernUSG)",
+      "ZFU-Zulassung",
+      "zugelassener Fernlehrgang"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "Zulassungsverfahren",
+    "slug": "zulassungsverfahren",
+    "definition": "Gesamter Prozess von Antragstellung über Prüfung und Nachreichungen bis zur Entscheidung über eine Zulassung. Er umfasst formale, fachliche und dokumentarische Anforderungen.",
+    "synonyms": [
+      "Zulassungsantrag",
+      "Zulassungsentscheidung",
+      "Verfahrensablauf"
+    ],
+    "abbreviation": null
+  },
+  {
+    "term": "zuständige Stelle",
+    "slug": "zustaendige-stelle",
+    "definition": "Die Organisation oder Behörde, die für einen bestimmten Vorgang rechtlich oder organisatorisch verantwortlich ist. Welche Stelle zuständig ist, hängt vom jeweiligen Verfahren ab.",
+    "synonyms": [
+      "Bundesagentur für Arbeit",
+      "ZfU (Staatliche Zentralstelle für Fernunterricht)",
+      "Fachkundige Stelle (FKS)"
+    ],
+    "abbreviation": null
+  }
+]

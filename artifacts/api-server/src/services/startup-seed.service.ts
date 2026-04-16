@@ -3,11 +3,14 @@ import {
   workflowTemplatesTable,
   workflowStepsTable,
   aiFieldProfilesTable,
+  glossaryTermsTable,
 } from "@workspace/db/schema";
+import { sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { seedNotificationRules } from "./workflow.service";
 import workflowSeedData from "../seed-data/workflow-templates.json";
 import aiProfilesSeedData from "../seed-data/ai-field-profiles.json";
+import glossarySeedData from "../data/glossary-seed.json";
 
 interface WorkflowSeed {
   template: {
@@ -114,6 +117,52 @@ async function seedAiFieldProfiles(): Promise<void> {
   );
 }
 
+interface GlossaryTermSeed {
+  term: string;
+  slug: string;
+  definition: string;
+  synonyms: string[] | null;
+  abbreviation: string | null;
+}
+
+async function seedGlossaryTerms(): Promise<void> {
+  const terms = glossarySeedData as GlossaryTermSeed[];
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(glossaryTermsTable);
+
+  if (Number(count) >= terms.length) {
+    logger.info(
+      { count, expected: terms.length },
+      "Glossary terms already up to date, skipping seed",
+    );
+    return;
+  }
+
+  logger.info(
+    { current: count, expected: terms.length },
+    "Upserting glossary terms...",
+  );
+
+  for (const t of terms) {
+    await db
+      .insert(glossaryTermsTable)
+      .values(t)
+      .onConflictDoUpdate({
+        target: glossaryTermsTable.slug,
+        set: {
+          term: t.term,
+          definition: t.definition,
+          synonyms: t.synonyms,
+          abbreviation: t.abbreviation,
+          updatedAt: new Date(),
+        },
+      });
+  }
+
+  logger.info({ count: terms.length }, "Glossary terms seeded");
+}
+
 async function deduplicatePrincipals(): Promise<void> {
   const { principalsTable } = await import("@workspace/db/schema");
   const { eq, sql: dsql } = await import("drizzle-orm");
@@ -162,6 +211,12 @@ export async function runStartupSeed(): Promise<void> {
     await seedNotificationRules();
   } catch (err) {
     logger.error({ err }, "Failed to seed notification rules");
+  }
+
+  try {
+    await seedGlossaryTerms();
+  } catch (err) {
+    logger.error({ err }, "Failed to seed glossary terms");
   }
 
   try {
