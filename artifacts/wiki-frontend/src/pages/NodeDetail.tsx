@@ -110,7 +110,7 @@ const CONTENT_HEADING_MAP: Record<string, string> = {
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
   const nodeId = params?.id;
-  const { data: node, isLoading } = useNode(nodeId);
+  const { data: node, isLoading, error: nodeError } = useNode(nodeId);
   const { data: currentUser } = useAuth();
   const { data: children } = useNodeChildren(nodeId);
   const { data: revisions } = useNodeRevisions(nodeId);
@@ -301,6 +301,48 @@ export function NodeDetail() {
     );
   }
 
+  const isConfidentialityDenied =
+    nodeError &&
+    typeof nodeError === "object" &&
+    "status" in (nodeError as any) &&
+    (nodeError as any).status === 403;
+
+  if (isConfidentialityDenied) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-20">
+        <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
+          <svg
+            className="h-8 w-8 text-amber-600 dark:text-amber-400"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold mb-3">Kein Zugang</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Du hast leider keine Freigabe, diese Seite zu {"\u00F6"}ffnen.
+          Liegt deines Erachtens ein Fehler in der Freigabe vor, wende dich
+          bitte an deine*n Vorgesetzte*n.
+        </p>
+        <Button
+          variant="outline"
+          className="mt-6"
+          onClick={() => navigate("/")}
+        >
+          Zur{"\u00FC"}ck zum Hub
+        </Button>
+      </div>
+    );
+  }
+
   if (!node) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
@@ -310,7 +352,7 @@ export function NodeDetail() {
           className="mt-4"
           onClick={() => navigate("/")}
         >
-          Zurück zum Hub
+          Zur{"\u00FC"}ck zum Hub
         </Button>
       </div>
     );

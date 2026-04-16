@@ -28,6 +28,7 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
 import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
+import { checkConfidentialityAccess, checkConfidentialityAccessBatch } from "../services/confidentiality.service";
 import { AppError } from "../lib/app-error";
 import {
   PAGE_TYPE_REGISTRY,
@@ -137,7 +138,17 @@ router.get(
         ),
       )
       .orderBy(contentNodesTable.sortOrder);
-    res.json(roots);
+
+    const rootIds = roots.map((r) => r.id);
+    const confidentialityMap = await checkConfidentialityAccessBatch(
+      _req.user!.principalId,
+      rootIds,
+    );
+    const filteredRoots = roots.filter(
+      (r) => confidentialityMap.get(r.id) !== false,
+    );
+
+    res.json(filteredRoots);
   },
 );
 
@@ -156,6 +167,21 @@ router.get(
       res.status(404).json({ error: "Node not found" });
       return;
     }
+
+    const { allowed, level } = await checkConfidentialityAccess(
+      req.user!.principalId,
+      id,
+    );
+    if (!allowed) {
+      res.status(403).json({
+        error: "CONFIDENTIALITY_DENIED",
+        message:
+          "Du hast leider keine Freigabe, diese Seite zu \u00F6ffnen. Liegt deines Erachtens ein Fehler in der Freigabe vor, wende dich bitte an deine*n Vorgesetzte*n.",
+        confidentialityLevel: level,
+      });
+      return;
+    }
+
     res.json(node);
   },
 );
@@ -356,7 +382,16 @@ router.get(
       )
       .orderBy(contentNodesTable.sortOrder);
 
-    res.json(children);
+    const childIds = children.map((c) => c.id);
+    const confidentialityMap = await checkConfidentialityAccessBatch(
+      req.user!.principalId,
+      childIds,
+    );
+    const filteredChildren = children.filter(
+      (c) => confidentialityMap.get(c.id) !== false,
+    );
+
+    res.json(filteredChildren);
   },
 );
 

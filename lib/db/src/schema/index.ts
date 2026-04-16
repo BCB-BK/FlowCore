@@ -23,3 +23,4 @@ export * from "./api-tokens";
 export * from "./rate-limits";
 export * from "./workflow-templates";
 export * from "./deletion-requests";
+export * from "./confidentiality";

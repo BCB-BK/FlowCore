@@ -16,6 +16,7 @@ import {
   getSearchVisibilityForRole,
   type SearchVisibility,
 } from "../services/rbac.service";
+import { checkConfidentialityAccessBatch } from "../services/confidentiality.service";
 
 const router: IRouter = Router();
 
@@ -289,9 +290,18 @@ router.get(
       }
     }
 
+    const nodeIds = results.map((r) => r.id);
+    const accessMap = await checkConfidentialityAccessBatch(
+      principalId,
+      nodeIds,
+    );
+    const filteredResults = results.filter(
+      (r) => accessMap.get(r.id) !== false,
+    );
+
     res.json({
-      results,
-      total: totalCount,
+      results: filteredResults,
+      total: filteredResults.length,
       limit,
       offset,
       queryId,

@@ -49,6 +49,7 @@ import { ReleaseTab } from "@/components/settings/ReleaseTab";
 import { AuditTrailTab } from "@/components/settings/AuditTrailTab";
 import { WorkflowsTab } from "@/components/settings/WorkflowsTab";
 import { GlossaryImportTab } from "@/components/settings/GlossaryImportTab";
+import { ConfidentialityTab } from "@/components/settings/ConfidentialityTab";
 import { useAuth } from "@/hooks/use-auth";
 import type { LucideIcon } from "lucide-react";
 
@@ -71,6 +72,7 @@ const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
   { value: "workflows", label: "Workflows", icon: GitBranch, requiredPermissions: ["manage_workflows"] },
   { value: "consistency", label: "Konsistenz", icon: ShieldCheck, requiredPermissions: ["manage_settings"] },
   { value: "releases", label: "Releases", icon: Tag, requiredPermissions: ["manage_settings"] },
+  { value: "confidentiality", label: "Vertraulichkeit", icon: Shield, requiredPermissions: ["manage_settings"] },
   { value: "glossary", label: "Glossar", icon: BookOpen, requiredPermissions: ["manage_settings"] },
 ];
 
@@ -205,6 +207,10 @@ export function SettingsPage() {
 
         <TabsContent value="releases" className="mt-6">
           <ReleaseTab />
+        </TabsContent>
+
+        <TabsContent value="confidentiality" className="mt-6">
+          <ConfidentialityTab />
         </TabsContent>
 
         <TabsContent value="glossary" className="mt-6">

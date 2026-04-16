@@ -20,6 +20,7 @@ import { workingCopiesRouter } from "./working-copies";
 import { notificationsRouter } from "./notifications";
 import apiTokensRouter from "./api-tokens";
 import { deletionRequestsRouter } from "./deletion-requests";
+import { confidentialityRouter } from "./confidentiality";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use("/quality", qualityRouter);
 router.use(teamsRouter);
 router.use(apiTokensRouter);
 router.use("/content", deletionRequestsRouter);
+router.use("/confidentiality-config", confidentialityRouter);
 
 export default router;

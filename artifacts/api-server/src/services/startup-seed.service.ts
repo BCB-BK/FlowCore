@@ -4,6 +4,7 @@ import {
   workflowStepsTable,
   aiFieldProfilesTable,
   glossaryTermsTable,
+  confidentialityAccessConfigTable,
 } from "@workspace/db/schema";
 import { sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
@@ -186,6 +187,46 @@ export async function reimportGlossarySeedTerms(): Promise<{ upserted: number }>
   return { upserted: terms.length };
 }
 
+async function seedConfidentialityConfig(): Promise<void> {
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(confidentialityAccessConfigTable);
+
+  if (Number(count) > 0) {
+    logger.info(
+      { count },
+      "Confidentiality config already exists, skipping seed",
+    );
+    return;
+  }
+
+  const ALL_ROLES = [
+    "system_admin",
+    "process_manager",
+    "compliance_manager",
+    "editor",
+    "reviewer",
+    "approver",
+    "viewer",
+  ];
+
+  const defaults = [
+    { level: "public", allowedRoles: [...ALL_ROLES] },
+    { level: "internal", allowedRoles: [...ALL_ROLES] },
+    {
+      level: "confidential",
+      allowedRoles: ["system_admin", "process_manager", "compliance_manager"],
+    },
+    { level: "strictly_confidential", allowedRoles: ["system_admin"] },
+  ];
+
+  for (const d of defaults) {
+    await db.insert(confidentialityAccessConfigTable).values(d);
+  }
+
+  logger.info("Seeded default confidentiality access config");
+}
+
 async function deduplicatePrincipals(): Promise<void> {
   const { principalsTable } = await import("@workspace/db/schema");
   const { eq, sql: dsql } = await import("drizzle-orm");
@@ -240,6 +281,12 @@ export async function runStartupSeed(): Promise<void> {
     await seedGlossaryTerms();
   } catch (err) {
     logger.error({ err }, "Failed to seed glossary terms");
+  }
+
+  try {
+    await seedConfidentialityConfig();
+  } catch (err) {
+    logger.error({ err }, "Failed to seed confidentiality config");
   }
 
   try {

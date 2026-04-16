@@ -40,6 +40,7 @@ The frontend (`wiki-frontend`) is a React application built with Vite, TailwindC
     - **Ausfüllhilfen (Field Help):** `FieldHelp` interface for guiding users with `fillHelp`, `example`, `badExample`, and `guidingQuestions`.
     - **Compound Field Editors:** Structured sub-field editors for complex sections like SIPOC, Q&A, Glossary, Checklists, RACI, and Competency Areas, storing data as JSON-serialized strings.
     - **Publish Validation:** `validateForPublication()` includes pseudo-content detection and `CompletenessIndicator` shows publish readiness.
+    - **Confidentiality Access Control:** Role-based confidentiality system with four levels (public, internal, confidential, strictly_confidential). Configurable via Settings > Vertraulichkeit tab. Backend enforces access on node fetch, search results, children lists, and root node lists. Named persons (owner, reviewer, approver) always bypass. Unknown/invalid levels fail-closed to strictly_confidential. Config cached 30s with explicit invalidation on update.
     - **Consistency Check:** Automated system consistency verification via Admin Settings.
     - **Release Management:** Full release lifecycle tracking with transition validation via Admin Settings.
     - **Audit Trail & Evidence:** Complete audit trail for all critical working copy lifecycle events, accessible via Admin API endpoints with query/filter/pagination/export functionality.
