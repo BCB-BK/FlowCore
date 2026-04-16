@@ -14,19 +14,59 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
-const EXCEL_PATH = path.resolve(
+const OLD_EXCEL_PATH = path.resolve(
+  import.meta.dirname,
+  "../../attached_assets/BCB_Glossar_v5_final_1774525714408.xlsx",
+);
+
+const NEW_EXCEL_PATH = path.resolve(
   import.meta.dirname,
   "../../attached_assets/Begriffe_1776326457078.xlsx",
 );
 
 async function importGlossary() {
-  const wb = XLSX.readFile(EXCEL_PATH);
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 });
+  // Step 1: Load OLD terms (BCB_Glossar_v5_final) and insert without deleting
+  const oldWb = XLSX.readFile(OLD_EXCEL_PATH);
+  const oldWs = oldWb.Sheets[oldWb.SheetNames[0]];
+  const oldRows = XLSX.utils.sheet_to_json<string[]>(oldWs, { header: 1 });
 
-  const dataRows = rows.slice(1);
+  const oldValues = oldRows
+    .slice(1)
+    .filter((row) => row[0] && row[1])
+    .map((row) => {
+      const [term, definition, synonymsRaw, abbreviation] = row;
+      const synonyms = synonymsRaw
+        ? synonymsRaw
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : null;
+      return {
+        term: term.trim(),
+        slug: slugify(term.trim()),
+        definition: definition.trim(),
+        synonyms: synonyms && synonyms.length > 0 ? synonyms : null,
+        abbreviation: abbreviation?.trim() || null,
+      };
+    });
 
-  const values = dataRows
+  console.log(`Old file: ${oldValues.length} terms`);
+
+  // Insert old terms, skip if already exists
+  const oldInserted = await db
+    .insert(glossaryTermsTable)
+    .values(oldValues)
+    .onConflictDoNothing()
+    .returning();
+  console.log(`Restored ${oldInserted.length} old terms`);
+
+  // Step 2: Load NEW terms (Begriffe) and upsert — overwrite duplicates
+  const newWb = XLSX.readFile(NEW_EXCEL_PATH);
+  const newWs = newWb.Sheets[newWb.SheetNames[0]];
+  const newRows = XLSX.utils.sheet_to_json<string[]>(newWs, { header: 1 });
+
+  const newValues = newRows
+    .slice(1)
     .filter((row) => row[0] && row[1])
     .map((row) => {
       const [term, definition, verweisRaw] = row;
@@ -36,7 +76,6 @@ async function importGlossary() {
             .map((s: string) => s.trim())
             .filter(Boolean)
         : null;
-
       return {
         term: term.trim(),
         slug: slugify(term.trim()),
@@ -46,22 +85,31 @@ async function importGlossary() {
       };
     });
 
-  console.log(`Read ${values.length} valid terms from Excel`);
+  console.log(`New file: ${newValues.length} terms`);
 
-  const deleted = await db.delete(glossaryTermsTable).returning();
-  console.log(`Deleted ${deleted.length} existing glossary terms`);
-
-  const inserted = await db
-    .insert(glossaryTermsTable)
-    .values(values)
-    .returning();
-
-  console.log(`Inserted ${inserted.length} new terms`);
+  let upserted = 0;
+  for (const v of newValues) {
+    await db
+      .insert(glossaryTermsTable)
+      .values(v)
+      .onConflictDoUpdate({
+        target: glossaryTermsTable.slug,
+        set: {
+          term: v.term,
+          definition: v.definition,
+          synonyms: v.synonyms,
+          abbreviation: v.abbreviation,
+          updatedAt: new Date(),
+        },
+      });
+    upserted++;
+  }
+  console.log(`Upserted ${upserted} new terms (new added, duplicates overwritten)`);
 
   const total = await db
     .select({ count: sql<number>`count(*)` })
     .from(glossaryTermsTable);
-  console.log(`Total terms now in DB: ${total[0]?.count}`);
+  console.log(`\nTotal terms now in DB: ${total[0]?.count}`);
 
   process.exit(0);
 }
