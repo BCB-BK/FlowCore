@@ -9,6 +9,14 @@ import {
 import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@workspace/ui/dialog";
+import {
   BookOpen,
   Upload,
   RefreshCw,
@@ -16,6 +24,9 @@ import {
   AlertCircle,
   FileSpreadsheet,
   Download,
+  Eye,
+  PlusCircle,
+  Pencil,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 
@@ -26,6 +37,16 @@ interface ImportResult {
   errors: string[];
 }
 
+interface DryRunResult {
+  dryRun: true;
+  added: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+  sampleAdded: string[];
+  sampleUpdated: string[];
+}
+
 interface ReimportResult {
   message: string;
   upserted: number;
@@ -34,6 +55,9 @@ interface ReimportResult {
 export function GlossaryImportTab() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [dryRunResult, setDryRunResult] = useState<DryRunResult | null>(null);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -48,14 +72,37 @@ export function GlossaryImportTab() {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     setSelectedFile(file);
+    setDryRunResult(null);
     setImportResult(null);
     setImportError(null);
+  }
+
+  async function handlePreview() {
+    if (!selectedFile) return;
+    setPreviewing(true);
+    setImportError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const result = await customFetch<DryRunResult>(
+        "/api/glossary/import?dryRun=true",
+        { method: "POST", body: formData },
+      );
+
+      setDryRunResult(result);
+      setShowPreviewDialog(true);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : "Netzwerkfehler");
+    } finally {
+      setPreviewing(false);
+    }
   }
 
   async function handleImport() {
     if (!selectedFile) return;
     setImporting(true);
-    setImportResult(null);
     setImportError(null);
 
     try {
@@ -68,10 +115,13 @@ export function GlossaryImportTab() {
       });
 
       setImportResult(result);
+      setShowPreviewDialog(false);
+      setDryRunResult(null);
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       setImportError(err instanceof Error ? err.message : "Netzwerkfehler");
+      setShowPreviewDialog(false);
     } finally {
       setImporting(false);
     }
@@ -241,16 +291,16 @@ export function GlossaryImportTab() {
             </div>
 
             <Button
-              onClick={handleImport}
-              disabled={!selectedFile || importing}
+              onClick={handlePreview}
+              disabled={!selectedFile || previewing || importing}
               className="flex items-center gap-2"
             >
-              {importing ? (
+              {previewing ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
-                <Upload className="h-4 w-4" />
+                <Eye className="h-4 w-4" />
               )}
-              {importing ? "Importiere..." : "Importieren"}
+              {previewing ? "Analyse läuft..." : "Vorschau anzeigen"}
             </Button>
           </div>
 
@@ -293,6 +343,130 @@ export function GlossaryImportTab() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Importvorschau</DialogTitle>
+            <DialogDescription>
+              Überprüfen Sie die Änderungen, bevor der Import ausgeführt wird.
+            </DialogDescription>
+          </DialogHeader>
+
+          {dryRunResult && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-md border bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 p-3 text-center">
+                  <div className="flex items-center justify-center gap-1 text-green-700 dark:text-green-400 mb-1">
+                    <PlusCircle className="h-4 w-4" />
+                    <span className="text-xs font-medium">Neu</span>
+                  </div>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    {dryRunResult.added}
+                  </p>
+                </div>
+                <div className="rounded-md border bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 p-3 text-center">
+                  <div className="flex items-center justify-center gap-1 text-blue-700 dark:text-blue-400 mb-1">
+                    <Pencil className="h-4 w-4" />
+                    <span className="text-xs font-medium">Aktualisiert</span>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+                    {dryRunResult.updated}
+                  </p>
+                </div>
+                <div className="rounded-md border bg-muted p-3 text-center">
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
+                    <span className="text-xs font-medium">Übersprungen</span>
+                  </div>
+                  <p className="text-2xl font-bold text-muted-foreground">
+                    {dryRunResult.skipped}
+                  </p>
+                </div>
+              </div>
+
+              {dryRunResult.sampleAdded.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    Neue Begriffe (Beispiele):
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {dryRunResult.sampleAdded.map((t) => (
+                      <Badge key={t} variant="outline" className="text-xs text-green-700 dark:text-green-400 border-green-300 dark:border-green-700">
+                        {t}
+                      </Badge>
+                    ))}
+                    {dryRunResult.added > dryRunResult.sampleAdded.length && (
+                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                        +{dryRunResult.added - dryRunResult.sampleAdded.length} weitere
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {dryRunResult.sampleUpdated.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    Zu aktualisierende Begriffe (Beispiele):
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {dryRunResult.sampleUpdated.map((t) => (
+                      <Badge key={t} variant="outline" className="text-xs text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700">
+                        {t}
+                      </Badge>
+                    ))}
+                    {dryRunResult.updated > dryRunResult.sampleUpdated.length && (
+                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                        +{dryRunResult.updated - dryRunResult.sampleUpdated.length} weitere
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {dryRunResult.errors.length > 0 && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950 p-3 space-y-1">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                    Hinweise ({dryRunResult.errors.length}):
+                  </p>
+                  {dryRunResult.errors.slice(0, 5).map((e, i) => (
+                    <p key={i} className="text-xs text-amber-700 dark:text-amber-400">
+                      {e}
+                    </p>
+                  ))}
+                  {dryRunResult.errors.length > 5 && (
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      … und {dryRunResult.errors.length - 5} weitere
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowPreviewDialog(false)}
+              disabled={importing}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleImport}
+              disabled={importing}
+              className="flex items-center gap-2"
+            >
+              {importing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              {importing ? "Importiere..." : "Import bestätigen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>

@@ -323,6 +323,8 @@ router.post(
       return;
     }
 
+    const dryRun = req.query.dryRun === "true";
+
     let workbook: XLSX.WorkBook;
     try {
       workbook = XLSX.read(req.file.buffer, { type: "buffer" });
@@ -347,9 +349,23 @@ router.post(
       return;
     }
 
+    const existingSlugs = dryRun
+      ? new Set(
+          (
+            await db
+              .select({ slug: glossaryTermsTable.slug })
+              .from(glossaryTermsTable)
+          ).map((r) => r.slug),
+        )
+      : null;
+
     const errors: string[] = [];
     let upserted = 0;
     let skipped = 0;
+    let added = 0;
+    let updated = 0;
+    const sampleAdded: string[] = [];
+    const sampleUpdated: string[] = [];
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -387,6 +403,18 @@ router.post(
 
       const slug = slugify(term);
 
+      if (dryRun && existingSlugs) {
+        const isUpdate = existingSlugs.has(slug);
+        if (isUpdate) {
+          updated++;
+          if (sampleUpdated.length < 5) sampleUpdated.push(term);
+        } else {
+          added++;
+          if (sampleAdded.length < 5) sampleAdded.push(term);
+        }
+        continue;
+      }
+
       await db
         .insert(glossaryTermsTable)
         .values({
@@ -409,6 +437,19 @@ router.post(
         });
 
       upserted++;
+    }
+
+    if (dryRun) {
+      res.json({
+        dryRun: true,
+        added,
+        updated,
+        skipped,
+        errors: errors.slice(0, 20),
+        sampleAdded,
+        sampleUpdated,
+      });
+      return;
     }
 
     res.json({
