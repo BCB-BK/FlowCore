@@ -163,6 +163,29 @@ async function seedGlossaryTerms(): Promise<void> {
   logger.info({ count: terms.length }, "Glossary terms seeded");
 }
 
+export async function reimportGlossarySeedTerms(): Promise<{ upserted: number }> {
+  const terms = glossarySeedData as GlossaryTermSeed[];
+
+  for (const t of terms) {
+    await db
+      .insert(glossaryTermsTable)
+      .values(t)
+      .onConflictDoUpdate({
+        target: glossaryTermsTable.slug,
+        set: {
+          term: t.term,
+          definition: t.definition,
+          synonyms: t.synonyms,
+          abbreviation: t.abbreviation,
+          updatedAt: new Date(),
+        },
+      });
+  }
+
+  logger.info({ count: terms.length }, "Glossary seed terms force-reimported");
+  return { upserted: terms.length };
+}
+
 async function deduplicatePrincipals(): Promise<void> {
   const { principalsTable } = await import("@workspace/db/schema");
   const { eq, sql: dsql } = await import("drizzle-orm");

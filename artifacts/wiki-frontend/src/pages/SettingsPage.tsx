@@ -32,6 +32,7 @@ import {
   Eye,
   HardDrive,
   GitBranch,
+  BookOpen,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -47,6 +48,7 @@ import { ConsistencyTab } from "@/components/settings/ConsistencyTab";
 import { ReleaseTab } from "@/components/settings/ReleaseTab";
 import { AuditTrailTab } from "@/components/settings/AuditTrailTab";
 import { WorkflowsTab } from "@/components/settings/WorkflowsTab";
+import { GlossaryImportTab } from "@/components/settings/GlossaryImportTab";
 import { useAuth } from "@/hooks/use-auth";
 import type { LucideIcon } from "lucide-react";
 
@@ -69,6 +71,7 @@ const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
   { value: "workflows", label: "Workflows", icon: GitBranch, requiredPermissions: ["manage_workflows"] },
   { value: "consistency", label: "Konsistenz", icon: ShieldCheck, requiredPermissions: ["manage_settings"] },
   { value: "releases", label: "Releases", icon: Tag, requiredPermissions: ["manage_settings"] },
+  { value: "glossary", label: "Glossar", icon: BookOpen, requiredPermissions: ["manage_settings"] },
 ];
 
 function hasTabAccess(perms: Set<string>, tab: SettingsTabDefinition): boolean {
@@ -202,6 +205,10 @@ export function SettingsPage() {
 
         <TabsContent value="releases" className="mt-6">
           <ReleaseTab />
+        </TabsContent>
+
+        <TabsContent value="glossary" className="mt-6">
+          <GlossaryImportTab />
         </TabsContent>
       </Tabs>
     </div>
