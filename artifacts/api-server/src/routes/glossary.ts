@@ -67,6 +67,43 @@ router.get(
 );
 
 router.get(
+  "/export",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (_req, res) => {
+    const terms = await db
+      .select()
+      .from(glossaryTermsTable)
+      .orderBy(glossaryTermsTable.term);
+
+    const rows = terms.map((t) => ({
+      term: t.term,
+      definition: t.definition,
+      synonyms: Array.isArray(t.synonyms) ? t.synonyms.join("; ") : "",
+      abbreviation: t.abbreviation ?? "",
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet(rows, {
+      header: ["term", "definition", "synonyms", "abbreviation"],
+    });
+    XLSX.utils.book_append_sheet(workbook, sheet, "Glossar");
+
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="glossar-export.xlsx"`,
+    );
+    res.send(buffer);
+  },
+);
+
+router.get(
   "/:id",
   requireAuth,
   requirePermission("read_page"),

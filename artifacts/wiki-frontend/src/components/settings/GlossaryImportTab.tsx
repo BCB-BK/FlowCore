@@ -38,6 +38,9 @@ export function GlossaryImportTab() {
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
   const [reimporting, setReimporting] = useState(false);
   const [reimportResult, setReimportResult] = useState<ReimportResult | null>(null);
   const [reimportError, setReimportError] = useState<string | null>(null);
@@ -91,6 +94,26 @@ export function GlossaryImportTab() {
     }
   }
 
+  async function handleExport() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const blob = await customFetch<Blob>("/api/glossary/export", {
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "glossar-export.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Netzwerkfehler");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function downloadTemplate() {
     const header = ["term", "definition", "synonyms", "abbreviation"];
     const example = [
@@ -113,6 +136,40 @@ export function GlossaryImportTab() {
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-5 w-5" />
+            Glossar exportieren
+          </CardTitle>
+          <CardDescription>
+            Laden Sie alle aktuellen Glossarbegriffe als Excel-Datei herunter.
+            Die Datei kann direkt bearbeitet und wieder importiert werden.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2"
+          >
+            {exporting ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {exporting ? "Exportiere..." : "Glossar exportieren"}
+          </Button>
+
+          {exportError && (
+            <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 p-3 flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700 dark:text-red-400">{exportError}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
