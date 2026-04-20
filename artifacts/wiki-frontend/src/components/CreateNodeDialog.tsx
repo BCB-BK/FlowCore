@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   useCreateNode,
   useRootNodes,
+  useNodeAncestors,
 } from "@/hooks/use-nodes";
 import {
   useCreateWorkingCopy,
@@ -66,6 +67,7 @@ import {
   Link2,
   Plus,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
 
 const VARIANT_CATEGORY_ICONS: Record<VariantCategory, React.ReactNode> = {
@@ -310,6 +312,14 @@ export function CreateNodeDialog({
 
   const effectiveParentId = parentNodeId ?? selectedParentId;
 
+  const { data: parentAncestors } = useNodeAncestors(
+    parentNodeId ?? undefined,
+  );
+  const newNodeDepth = parentNodeId
+    ? (parentAncestors?.length ?? 0) + 2
+    : 1;
+  const showDepthWarning = newNodeDepth >= 5;
+
   const resetAndClose = () => {
     setStep(0);
     setTitle("");
@@ -397,6 +407,24 @@ export function CreateNodeDialog({
             </div>
           )}
         </DialogHeader>
+
+        {mode === "create" && showDepthWarning && (
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-800 dark:bg-amber-950/30">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium text-amber-800 dark:text-amber-300">
+                Tiefe Hierarchie (Ebene {newNodeDepth})
+              </p>
+              <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">
+                Ab Ebene&nbsp;5 wird die Navigation f\u00FCr Nutzer schwerer.
+                Erw\u00E4gen Sie stattdessen, diesen Inhalt \u00FCber eine{" "}
+                <strong>Verlinkung</strong> an einem h\u00F6heren Knoten
+                einzuh\u00E4ngen, oder f\u00FCgen Sie ihn als{" "}
+                <strong>mitgeltendes Dokument</strong> bei.
+              </p>
+            </div>
+          </div>
+        )}
 
         {mode === "link" && (
           <div className="space-y-3 py-2">
