@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ interface MediaLibraryDialogProps {
   onSelect: (asset: MediaAsset) => void;
   filterType?: "image" | "video" | "file" | null;
   nodeId?: string;
+  defaultTab?: "upload" | "browse" | "sharepoint";
 }
 
 function formatBytes(bytes: number): string {
@@ -47,11 +48,19 @@ export function MediaLibraryDialog({
   onSelect,
   filterType,
   nodeId,
+  defaultTab = "upload",
 }: MediaLibraryDialogProps) {
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setActiveTab(defaultTab);
+    }
+  }, [open, defaultTab]);
   const [title, setTitle] = useState("");
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
@@ -147,8 +156,9 @@ export function MediaLibraryDialog({
         </DialogHeader>
 
         <Tabs
-          defaultValue="upload"
+          value={activeTab}
           onValueChange={(v) => {
+            setActiveTab(v);
             if (v === "browse") loadAssets();
           }}
         >

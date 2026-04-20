@@ -119,6 +119,12 @@ interface MediaRefPickerProps {
 
 function MediaRefPicker({ value, valueName, valueType, onChange, onClear }: MediaRefPickerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [defaultTab, setDefaultTab] = useState<"upload" | "browse" | "sharepoint">("upload");
+
+  const openDialog = (tab: "upload" | "sharepoint") => {
+    setDefaultTab(tab);
+    setDialogOpen(true);
+  };
 
   const isImage = valueType?.startsWith("image/") || (value && /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(value));
 
@@ -170,14 +176,14 @@ function MediaRefPicker({ value, valueName, valueType, onChange, onClear }: Medi
       ) : (
         <div className="flex gap-1.5">
           <button
-            onClick={() => setDialogOpen(true)}
+            onClick={() => openDialog("upload")}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-md border border-dashed text-xs text-muted-foreground hover:bg-accent hover:text-foreground hover:border-solid transition-colors"
           >
             <Upload className="h-3.5 w-3.5" />
             Hochladen
           </button>
           <button
-            onClick={() => setDialogOpen(true)}
+            onClick={() => openDialog("sharepoint")}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-md border border-dashed text-xs text-muted-foreground hover:bg-accent hover:text-foreground hover:border-solid transition-colors"
           >
             <Globe className="h-3.5 w-3.5" />
@@ -197,6 +203,7 @@ function MediaRefPicker({ value, valueName, valueType, onChange, onClear }: Medi
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSelect={handleSelect}
+        defaultTab={defaultTab}
       />
     </div>
   );
