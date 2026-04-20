@@ -214,6 +214,7 @@ interface NodePickerResult {
   title: string;
   displayCode?: string | null;
   templateType?: string;
+  status?: string;
 }
 
 interface NodeRefPickerProps {
@@ -235,7 +236,7 @@ function NodeRefPicker({ nodeId, nodeTitle, onChange, onClear }: NodeRefPickerPr
   }, [query]);
 
   const { data: searchData, isLoading } = useSearchContent(
-    { q: debouncedQuery || "", limit: 8 },
+    { q: debouncedQuery || "", limit: 8, includeUnpublished: true },
     {
       query: {
         enabled: debouncedQuery.length >= 2,
@@ -249,6 +250,7 @@ function NodeRefPicker({ nodeId, nodeTitle, onChange, onClear }: NodeRefPickerPr
     title: r.title,
     displayCode: r.displayCode,
     templateType: r.templateType,
+    status: r.status,
   }));
 
   useEffect(() => {
@@ -322,7 +324,14 @@ function NodeRefPicker({ nodeId, nodeTitle, onChange, onClear }: NodeRefPickerPr
                   }}
                 >
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs font-medium truncate block">{r.title}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium truncate">{r.title}</span>
+                      {r.status === "draft" && (
+                        <span className="shrink-0 text-[9px] font-medium px-1 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 leading-none">
+                          Entwurf
+                        </span>
+                      )}
+                    </div>
                     {r.displayCode && (
                       <span className="text-[10px] font-mono text-muted-foreground">
                         {r.displayCode}
