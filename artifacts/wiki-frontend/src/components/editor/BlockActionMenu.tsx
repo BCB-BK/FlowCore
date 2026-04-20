@@ -294,6 +294,7 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
   const [showActions, setShowActions] = useState(false);
   const [showInsertPicker, setShowInsertPicker] = useState(false);
   const [insertFilter, setInsertFilter] = useState("");
+  const [tablePickerOpen, setTablePickerOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const insertRef = useRef<HTMLDivElement>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
@@ -505,6 +506,7 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
             setShowInsertPicker((prev) => !prev);
             setShowActions(false);
             setInsertFilter("");
+            setTablePickerOpen(false);
           }}
           className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
           title="Block einfügen"
@@ -512,7 +514,40 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
           <Plus className="h-4 w-4" />
         </button>
 
-        {showInsertPicker && (
+        {showInsertPicker && tablePickerOpen && (
+          <div className="absolute left-0 top-full mt-1 w-64 rounded-lg border bg-popover shadow-lg z-50">
+            <div className="p-1.5 border-b flex items-center gap-2">
+              <button
+                onClick={() => setTablePickerOpen(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+                title="Zur\u00FCck"
+              >
+                {"\u2190"}
+              </button>
+              <span className="text-xs font-semibold">Tabelle einfügen</span>
+            </div>
+            <TableSizePicker
+              onPick={(rows, cols, withHeader) => {
+                const tableItem = INSERT_ITEMS.find((i) => i.isTable);
+                if (!tableItem) return;
+                const range = getBlockRange(editor.state);
+                const insertPos = range
+                  ? range.end
+                  : editor.state.doc.content.size;
+                tableItem.action(editor, insertPos, {
+                  rows,
+                  cols,
+                  withHeaderRow: withHeader,
+                });
+                setShowInsertPicker(false);
+                setTablePickerOpen(false);
+                setInsertFilter("");
+              }}
+            />
+          </div>
+        )}
+
+        {showInsertPicker && !tablePickerOpen && (
           <div className="absolute left-0 top-full mt-1 w-64 rounded-lg border bg-popover shadow-lg z-50">
             <div className="p-1.5 border-b">
               <input
@@ -541,41 +576,25 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
                   </div>
                   {items.map((item) => {
                     const Icon = item.icon;
-                    if (item.isTable) {
-                      return (
-                        <div key={item.title} className="px-2 py-1.5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            <span className="font-medium text-xs">
-                              {item.title}
-                            </span>
-                          </div>
-                          <TableSizePicker
-                            onPick={(rows, cols, withHeader) => {
-                              const range = getBlockRange(editor.state);
-                              const insertPos = range
-                                ? range.end
-                                : editor.state.doc.content.size;
-                              item.action(editor, insertPos, {
-                                rows,
-                                cols,
-                                withHeaderRow: withHeader,
-                              });
-                              setShowInsertPicker(false);
-                              setInsertFilter("");
-                            }}
-                          />
-                        </div>
-                      );
-                    }
                     return (
                       <button
                         key={item.title}
                         className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
-                        onClick={() => handleInsertItem(item)}
+                        onClick={() => {
+                          if (item.isTable) {
+                            setTablePickerOpen(true);
+                          } else {
+                            handleInsertItem(item);
+                          }
+                        }}
                       >
                         <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <span className="font-medium text-xs">{item.title}</span>
+                        {item.isTable && (
+                          <span className="ml-auto text-[10px] text-muted-foreground">
+                            ▸
+                          </span>
+                        )}
                       </button>
                     );
                   })}

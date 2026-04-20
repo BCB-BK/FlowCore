@@ -75,15 +75,17 @@ export function TableContextMenu({ editor }: TableContextMenuProps) {
 
   if (!state.visible) return null;
 
-  const run = (fn: () => void) => () => {
+  const run = (fn: () => boolean) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     fn();
-    editor.commands.focus();
   };
 
   return (
     <div
       className="absolute z-20 flex items-center gap-0.5 rounded-md border bg-popover px-1 py-0.5 shadow-sm"
       style={{ top: state.top, left: state.left }}
+      onMouseDown={(e) => e.preventDefault()}
     >
       <span className="flex items-center gap-1 px-1.5 text-[10px] font-semibold text-muted-foreground uppercase">
         <TableIcon className="h-3 w-3" />
@@ -160,13 +162,14 @@ function IconBtn({
 }: {
   icon: typeof TableIcon;
   title: string;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   destructive?: boolean;
 }) {
   return (
     <button
       type="button"
       title={title}
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={`p-1 rounded hover:bg-accent transition-colors ${
         destructive
