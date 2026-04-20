@@ -93,6 +93,7 @@
     "@tiptap/pm": "^3.20.5",
     "@tiptap/react": "^3.20.5",
     "@tiptap/starter-kit": "^3.20.5",
+    "bpmn-js": "^18.14.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
   }

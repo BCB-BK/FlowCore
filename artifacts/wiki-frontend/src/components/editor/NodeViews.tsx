@@ -38,6 +38,7 @@ import {
   type ProcessStep,
   type DiagramRole,
 } from "./extensions/diagram-block";
+import { BpmnEditor, DEFAULT_BPMN_XML } from "./BpmnEditor";
 import type { GalleryImage } from "./extensions/gallery-block";
 
 function SourceTypeBadge({ sourceType }: { sourceType?: MediaSourceType }) {
@@ -612,12 +613,8 @@ export function EmbedBlockNodeView({ node, editor }: NodeViewProps) {
 }
 
 export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
-  const { diagramType, src, caption, description, processSteps, roles } =
-    node.attrs;
-  const [showMeta, setShowMeta] = useState(false);
-
-  const steps = (processSteps || []) as ProcessStep[];
-  const diagramRoles = (roles || []) as DiagramRole[];
+  const { diagramType, src, caption, description, bpmnXml } = node.attrs;
+  const [editingBpmn, setEditingBpmn] = useState(false);
 
   const handleUpdateAttrs = useCallback(
     (attrs: Record<string, unknown>) => {
@@ -630,64 +627,65 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
     [editor],
   );
 
-  const addStep = useCallback(() => {
-    const newStep: ProcessStep = {
-      id: crypto.randomUUID(),
-      label: "",
-      description: "",
-      order: steps.length,
-    };
-    handleUpdateAttrs({ processSteps: [...steps, newStep] });
-  }, [steps, handleUpdateAttrs]);
-
-  const updateStep = useCallback(
-    (id: string, field: keyof ProcessStep, value: string | number) => {
-      handleUpdateAttrs({
-        processSteps: steps.map((s) =>
-          s.id === id ? { ...s, [field]: value } : s,
-        ),
-      });
+  const handleBpmnSave = useCallback(
+    (xml: string) => {
+      handleUpdateAttrs({ bpmnXml: xml, diagramType: "bpmn" });
+      setEditingBpmn(false);
     },
-    [steps, handleUpdateAttrs],
+    [handleUpdateAttrs],
   );
 
-  const removeStep = useCallback(
-    (id: string) => {
-      handleUpdateAttrs({
-        processSteps: steps
-          .filter((s) => s.id !== id)
-          .map((s, i) => ({ ...s, order: i })),
-      });
-    },
-    [steps, handleUpdateAttrs],
-  );
+  const handleBpmnCreate = useCallback(() => {
+    handleUpdateAttrs({ bpmnXml: DEFAULT_BPMN_XML, diagramType: "bpmn" });
+    setEditingBpmn(true);
+  }, [handleUpdateAttrs]);
 
-  const addRole = useCallback(() => {
-    const newRole: DiagramRole = {
-      id: crypto.randomUUID(),
-      name: "",
-      lane: "",
-    };
-    handleUpdateAttrs({ roles: [...diagramRoles, newRole] });
-  }, [diagramRoles, handleUpdateAttrs]);
+  if (bpmnXml) {
+    return (
+      <NodeViewWrapper>
+        <div className="rounded-lg border my-2 overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30">
+            <div className="flex items-center gap-2">
+              <GitBranch className="h-3.5 w-3.5 text-purple-600" />
+              <span className="text-xs font-medium text-muted-foreground">
+                BPMN 2.0 Prozessdiagramm
+              </span>
+            </div>
+            {editor.isEditable && !editingBpmn && (
+              <button
+                className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs border hover:bg-accent"
+                onClick={() => setEditingBpmn(true)}
+              >
+                <RefreshCw className="h-3 w-3" />
+                Bearbeiten
+              </button>
+            )}
+          </div>
 
-  const updateRole = useCallback(
-    (id: string, field: keyof DiagramRole, value: string) => {
-      handleUpdateAttrs({
-        roles: diagramRoles.map((r) =>
-          r.id === id ? { ...r, [field]: value } : r,
-        ),
-      });
-    },
-    [diagramRoles, handleUpdateAttrs],
-  );
+          {editingBpmn ? (
+            <BpmnEditor
+              xml={bpmnXml}
+              editable={true}
+              height={520}
+              onSave={handleBpmnSave}
+              onCancel={() => setEditingBpmn(false)}
+            />
+          ) : (
+            <BpmnEditor xml={bpmnXml} editable={false} height={400} />
+          )}
 
-  const removeRole = useCallback(
-    (id: string) => {
-      handleUpdateAttrs({ roles: diagramRoles.filter((r) => r.id !== id) });
-    },
-    [diagramRoles, handleUpdateAttrs],
-  );
+          {caption && (
+            <p className="text-sm text-center px-3 pb-2 text-muted-foreground border-t pt-2">
+              {caption}
+            </p>
+          )}
+          {description && (
+            <p className="text-xs text-muted-foreground px-3 pb-2">{description}</p>
+          )}
+        </div>
+      </NodeViewWrapper>
+    );
+  }
 
   if (src) {
     const isImage = /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(src);
@@ -704,15 +702,11 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
             {editor.isEditable && (
               <div className="flex items-center gap-1">
                 <button
-                  className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-0.5"
-                  onClick={() => setShowMeta(!showMeta)}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300"
+                  onClick={handleBpmnCreate}
                 >
-                  {showMeta ? (
-                    <ChevronUp className="h-3 w-3" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3" />
-                  )}
-                  Details
+                  <GitBranch className="h-3 w-3" />
+                  Auf BPMN upgraden
                 </button>
                 <button
                   className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
@@ -731,11 +725,7 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
             )}
           </div>
           {isImage ? (
-            <img
-              src={src}
-              alt={caption || "Diagramm"}
-              className="w-full rounded"
-            />
+            <img src={src} alt={caption || "Diagramm"} className="w-full rounded" />
           ) : (
             <iframe
               src={src}
@@ -745,33 +735,10 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
             />
           )}
           {caption && (
-            <p className="text-sm text-center mt-2 text-muted-foreground">
-              {caption}
-            </p>
+            <p className="text-sm text-center mt-2 text-muted-foreground">{caption}</p>
           )}
           {description && (
             <p className="text-xs text-muted-foreground mt-1">{description}</p>
-          )}
-
-          {editor.isEditable && showMeta && (
-            <DiagramMetaPanel
-              diagramType={diagramType as DiagramType}
-              caption={caption}
-              description={description}
-              steps={steps}
-              roles={diagramRoles}
-              onUpdateAttrs={handleUpdateAttrs}
-              onAddStep={addStep}
-              onUpdateStep={updateStep}
-              onRemoveStep={removeStep}
-              onAddRole={addRole}
-              onUpdateRole={updateRole}
-              onRemoveRole={removeRole}
-            />
-          )}
-
-          {!editor.isEditable && (steps.length > 0 || diagramRoles.length > 0) && (
-            <DiagramMetaReadOnly steps={steps} roles={diagramRoles} />
           )}
         </div>
       </NodeViewWrapper>
@@ -782,36 +749,28 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
     <NodeViewWrapper>
       <div className="rounded-lg border-2 border-dashed p-6 my-2">
         <div className="flex flex-col items-center justify-center text-muted-foreground">
-          <GitBranch className="h-10 w-10 mb-2" />
-          <p className="text-sm font-medium">
-            {DIAGRAM_TYPES[diagramType as DiagramType] || "Diagramm"}
-          </p>
-          <p className="text-xs mt-1">
-            Diagramm hochladen oder Prozessschritte definieren
+          <GitBranch className="h-10 w-10 mb-3 text-purple-500" />
+          <p className="text-sm font-semibold text-foreground">BPMN-Prozessdiagramm</p>
+          <p className="text-xs mt-1 text-center max-w-xs">
+            Professionelle Prozessmodellierung nach BPMN 2.0 — mit Swimlanes, Gateways, parallelen Pfaden und mehr
           </p>
         </div>
 
         {editor.isEditable && (
-          <>
-            <div className="flex justify-center gap-2 mt-4 flex-wrap">
-              {Object.entries(DIAGRAM_TYPES).map(([key, label]) => (
-                <button
-                  key={key}
-                  className={`px-2 py-1 text-xs rounded ${
-                    diagramType === key
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-muted/80"
-                  }`}
-                  onClick={() => handleUpdateAttrs({ diagramType: key })}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex justify-center gap-2 mt-3">
+          <div className="flex flex-col items-center gap-2 mt-5">
+            <button
+              className="text-xs px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-2 font-medium shadow-sm"
+              onClick={handleBpmnCreate}
+            >
+              <GitBranch className="h-4 w-4" />
+              BPMN-Diagramm erstellen
+            </button>
+            <p className="text-[10px] text-muted-foreground">
+              Startet mit einer Vorlage (Pool + 2 Lanes + Entscheidungsgateway)
+            </p>
+            <div className="flex gap-2 mt-1">
               <button
-                className="text-xs px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1"
+                className="text-[10px] px-2.5 py-1 rounded border hover:bg-accent flex items-center gap-1 text-muted-foreground"
                 onClick={() => {
                   window.dispatchEvent(
                     new CustomEvent("editor:open-media-library", {
@@ -821,40 +780,28 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
                 }}
               >
                 <ImageIcon className="h-3 w-3" />
-                Diagramm hochladen
+                Bild hochladen
               </button>
               <button
-                className="text-xs px-3 py-1.5 rounded border hover:bg-accent flex items-center gap-1"
+                className="text-[10px] px-2.5 py-1 rounded border hover:bg-accent flex items-center gap-1 text-muted-foreground"
                 onClick={() => {
-                  const url = prompt("Diagramm-URL eingeben (draw.io, Lucid etc.):");
-                  if (url) {
-                    handleUpdateAttrs({ src: url });
-                  }
+                  const url = prompt("Diagramm-URL (draw.io, Lucid etc.):");
+                  if (url) handleUpdateAttrs({ src: url });
                 }}
               >
                 <ExternalLink className="h-3 w-3" />
-                URL eingeben
+                URL verlinken
               </button>
             </div>
-
-            <div className="mt-4">
-              <DiagramMetaPanel
-                diagramType={diagramType as DiagramType}
-                caption={caption}
-                description={description}
-                steps={steps}
-                roles={diagramRoles}
-                onUpdateAttrs={handleUpdateAttrs}
-                onAddStep={addStep}
-                onUpdateStep={updateStep}
-                onRemoveStep={removeStep}
-                onAddRole={addRole}
-                onUpdateRole={updateRole}
-                onRemoveRole={removeRole}
-              />
-            </div>
-          </>
+          </div>
         )}
+
+        {!editor.isEditable && (
+          <div className="text-center mt-3">
+            <p className="text-xs text-muted-foreground italic">Kein Diagramm definiert</p>
+          </div>
+        )}
+
       </div>
     </NodeViewWrapper>
   );

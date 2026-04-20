@@ -52,12 +52,28 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
 
   addAttributes() {
     return {
-      diagramType: { default: "flowchart" as DiagramType },
+      diagramType: { default: "bpmn" as DiagramType },
       src: { default: null },
       caption: { default: "" },
       description: { default: "" },
       width: { default: "100%" },
-      height: { default: "400" },
+      height: { default: "480" },
+      bpmnXml: {
+        default: null as string | null,
+        parseHTML: (el: HTMLElement) => {
+          const encoded = el.getAttribute("data-bpmn-xml");
+          if (!encoded) return null;
+          try {
+            return decodeURIComponent(encoded);
+          } catch {
+            return encoded;
+          }
+        },
+        renderHTML: (attrs: { bpmnXml?: string | null }) => {
+          if (!attrs.bpmnXml) return {};
+          return { "data-bpmn-xml": encodeURIComponent(attrs.bpmnXml) };
+        },
+      },
       processSteps: {
         default: [] as ProcessStep[],
         parseHTML: (el: HTMLElement) => {
