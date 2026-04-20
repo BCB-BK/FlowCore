@@ -613,7 +613,7 @@ export function EmbedBlockNodeView({ node, editor }: NodeViewProps) {
 }
 
 export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
-  const { diagramType, src, caption, description, bpmnXml } = node.attrs;
+  const { diagramType, src, caption, description, bpmnXml, showLegend } = node.attrs;
   const [editingBpmn, setEditingBpmn] = useState(false);
 
   const handleUpdateAttrs = useCallback(
@@ -671,7 +671,17 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
               onCancel={() => setEditingBpmn(false)}
             />
           ) : (
-            <BpmnEditor xml={bpmnXml} editable={false} height={400} />
+            <BpmnEditor
+              xml={bpmnXml}
+              editable={false}
+              height={400}
+              showLegend={!!showLegend}
+              onToggleLegend={
+                editor.isEditable
+                  ? () => handleUpdateAttrs({ showLegend: !showLegend })
+                  : undefined
+              }
+            />
           )}
 
           {caption && (

@@ -10,7 +10,9 @@ import {
   X,
   Loader2,
   AlertCircle,
+  BookOpen,
 } from "lucide-react";
+import { DiagramLegend } from "@/components/qm/DiagramLegend";
 
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
@@ -131,6 +133,8 @@ interface BpmnEditorProps {
   height?: number;
   onSave?: (xml: string) => void;
   onCancel?: () => void;
+  showLegend?: boolean;
+  onToggleLegend?: () => void;
 }
 
 export function BpmnEditor({
@@ -139,6 +143,8 @@ export function BpmnEditor({
   height = 480,
   onSave,
   onCancel,
+  showLegend = false,
+  onToggleLegend,
 }: BpmnEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<unknown>(null);
@@ -313,6 +319,16 @@ export function BpmnEditor({
           <ToolBtn onClick={handleDownloadSvg} title="Als SVG herunterladen">
             <Download className="h-3.5 w-3.5" />
           </ToolBtn>
+          {onToggleLegend && (
+            <ToolBtn
+              onClick={onToggleLegend}
+              title={showLegend ? "Legende ausblenden" : "Legende anzeigen"}
+            >
+              <BookOpen
+                className={`h-3.5 w-3.5 ${showLegend ? "text-primary" : ""}`}
+              />
+            </ToolBtn>
+          )}
           <ToolBtn
             onClick={() => setFullscreen((f) => !f)}
             title={fullscreen ? "Vollbild beenden" : "Vollbild"}
@@ -356,6 +372,12 @@ export function BpmnEditor({
           <p className="text-[10px] text-muted-foreground">
             BPMN 2.0 \u2022 Drag &amp; Drop \u2022 Rechtsklick f\u00FCr Kontextmen\u00FC \u2022 Strg+Z/Y zum R\u00FCckg\u00E4ngig/Wiederholen
           </p>
+        </div>
+      )}
+
+      {showLegend && !editable && (
+        <div className="px-3 pb-3 border-t bg-background">
+          <DiagramLegend defaultOpen={true} />
         </div>
       )}
     </div>
