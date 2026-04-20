@@ -96,10 +96,35 @@ const LEGEND_ITEMS: LegendItem[] = [
 
 interface DiagramLegendProps {
   defaultOpen?: boolean;
+  inline?: boolean;
 }
 
-export function DiagramLegend({ defaultOpen = false }: DiagramLegendProps) {
+function LegendItems() {
+  return (
+    <div className="px-3 py-2 grid grid-cols-2 gap-x-4 gap-y-3 bg-background">
+      {LEGEND_ITEMS.map((item) => (
+        <div key={item.label} className="flex items-center gap-2">
+          <div className="shrink-0 flex items-center justify-center w-10">
+            {item.svg}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium leading-tight">{item.label}</p>
+            {item.description && (
+              <p className="text-[10px] text-muted-foreground leading-tight">{item.description}</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function DiagramLegend({ defaultOpen = false, inline = false }: DiagramLegendProps) {
   const [open, setOpen] = useState(defaultOpen);
+
+  if (inline) {
+    return <LegendItems />;
+  }
 
   return (
     <div className="mt-3 border rounded-md overflow-hidden">

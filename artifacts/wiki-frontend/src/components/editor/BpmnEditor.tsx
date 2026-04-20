@@ -152,6 +152,7 @@ export function BpmnEditor({
   const [error, setError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editorLegendOpen, setEditorLegendOpen] = useState(false);
 
   const effectiveXml = xml || DEFAULT_BPMN_XML;
 
@@ -319,7 +320,16 @@ export function BpmnEditor({
           <ToolBtn onClick={handleDownloadSvg} title="Als SVG herunterladen">
             <Download className="h-3.5 w-3.5" />
           </ToolBtn>
-          {onToggleLegend && (
+          {editable ? (
+            <ToolBtn
+              onClick={() => setEditorLegendOpen((v) => !v)}
+              title={editorLegendOpen ? "Legende ausblenden" : "Legende anzeigen"}
+            >
+              <BookOpen
+                className={`h-3.5 w-3.5 ${editorLegendOpen ? "text-primary" : ""}`}
+              />
+            </ToolBtn>
+          ) : onToggleLegend ? (
             <ToolBtn
               onClick={onToggleLegend}
               title={showLegend ? "Legende ausblenden" : "Legende anzeigen"}
@@ -328,7 +338,7 @@ export function BpmnEditor({
                 className={`h-3.5 w-3.5 ${showLegend ? "text-primary" : ""}`}
               />
             </ToolBtn>
-          )}
+          ) : null}
           <ToolBtn
             onClick={() => setFullscreen((f) => !f)}
             title={fullscreen ? "Vollbild beenden" : "Vollbild"}
@@ -342,29 +352,49 @@ export function BpmnEditor({
         </div>
       </div>
 
-      <div className="relative flex-1" style={{ minHeight: effectiveHeight }}>
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="flex flex-1 overflow-hidden" style={{ minHeight: effectiveHeight }}>
+        <div className="relative flex-1">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {error && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+              <p className="text-sm text-destructive text-center">{error}</p>
+              <button
+                className="text-xs px-3 py-1.5 rounded border hover:bg-accent"
+                onClick={initBpmn}
+              >
+                Erneut versuchen
+              </button>
+            </div>
+          )}
+          <div
+            ref={containerRef}
+            className="w-full h-full"
+            style={{ minHeight: effectiveHeight }}
+          />
+        </div>
+
+        {editable && editorLegendOpen && (
+          <div className="w-64 shrink-0 border-l bg-background overflow-y-auto flex flex-col">
+            <div className="px-3 py-2 border-b bg-muted/40 flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Legende &amp; Symbole</span>
+              <button
+                onClick={() => setEditorLegendOpen(false)}
+                className="p-0.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+                title="Schließen"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="flex flex-col">
+              <DiagramLegend inline />
+            </div>
           </div>
         )}
-        {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
-            <AlertCircle className="h-6 w-6 text-destructive" />
-            <p className="text-sm text-destructive text-center">{error}</p>
-            <button
-              className="text-xs px-3 py-1.5 rounded border hover:bg-accent"
-              onClick={initBpmn}
-            >
-              Erneut versuchen
-            </button>
-          </div>
-        )}
-        <div
-          ref={containerRef}
-          className="w-full h-full"
-          style={{ minHeight: effectiveHeight }}
-        />
       </div>
 
       {editable && (
