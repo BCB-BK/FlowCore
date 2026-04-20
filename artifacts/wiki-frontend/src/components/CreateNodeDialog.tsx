@@ -885,7 +885,7 @@ export function CreateNodeDialog({
                 className="mr-auto"
               >
                 <ArrowLeft className="mr-1 h-4 w-4" />
-                Zur\u00FCck
+                {"Zur\u00FCck"}
               </Button>
             )}
             <Button variant="outline" onClick={() => handleOpenChange(false)}>

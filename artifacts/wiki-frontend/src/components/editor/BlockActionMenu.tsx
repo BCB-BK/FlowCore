@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import type { Editor } from "@tiptap/react";
 import { TextSelection } from "@tiptap/pm/state";
+import { TableSizePicker } from "./TableSizePicker";
 import {
   GripVertical,
   Plus,
@@ -36,7 +37,12 @@ interface InsertItem {
   title: string;
   icon: LucideIcon;
   category: string;
-  action: (editor: Editor, pos: number) => void;
+  isTable?: boolean;
+  action: (
+    editor: Editor,
+    pos: number,
+    opts?: { rows?: number; cols?: number; withHeaderRow?: boolean },
+  ) => void;
 }
 
 function insertEmptyParagraphAt(editor: Editor, pos: number) {
@@ -161,12 +167,17 @@ const INSERT_ITEMS: InsertItem[] = [
     title: "Tabelle",
     icon: Table,
     category: "Struktur",
-    action: (editor, pos) => {
+    isTable: true,
+    action: (editor, pos, opts) => {
       insertEmptyParagraphAt(editor, pos);
       editor
         .chain()
         .focus()
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .insertTable({
+          rows: opts?.rows ?? 3,
+          cols: opts?.cols ?? 3,
+          withHeaderRow: opts?.withHeaderRow ?? true,
+        })
         .run();
     },
   },
@@ -410,17 +421,43 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
 
   const deleteBlock = useCallback(() => {
     const { state, dispatch } = editor.view;
-    const range = getBlockRange(state);
-    if (!range) return;
+    const blockPos = menuState.pos;
+    let start: number;
+    let end: number;
+    try {
+      const $pos = state.doc.resolve(blockPos);
+      const depth = $pos.depth > 0 ? 1 : 0;
+      if (depth > 0) {
+        start = $pos.before(depth);
+        end = $pos.after(depth);
+      } else {
+        const node = state.doc.nodeAt(blockPos);
+        if (!node) {
+          const range = getBlockRange(state);
+          if (!range) return;
+          start = range.start;
+          end = range.end;
+        } else {
+          start = blockPos;
+          end = blockPos + node.nodeSize;
+        }
+      }
+    } catch {
+      const range = getBlockRange(state);
+      if (!range) return;
+      start = range.start;
+      end = range.end;
+    }
 
     const tr = state.tr;
-    tr.delete(range.start, range.end);
-    if (state.doc.childCount === 1) {
+    tr.delete(start, end);
+    if (tr.doc.childCount === 0) {
       tr.insert(0, state.schema.nodes.paragraph.create());
     }
     dispatch(tr);
     setShowActions(false);
-  }, [editor]);
+    setMenuState((prev) => ({ ...prev, visible: false }));
+  }, [editor, menuState.pos]);
 
   const convertToParagraph = useCallback(() => {
     editor.chain().focus().setParagraph().run();
@@ -504,6 +541,33 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
                   </div>
                   {items.map((item) => {
                     const Icon = item.icon;
+                    if (item.isTable) {
+                      return (
+                        <div key={item.title} className="px-2 py-1.5">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span className="font-medium text-xs">
+                              {item.title}
+                            </span>
+                          </div>
+                          <TableSizePicker
+                            onPick={(rows, cols, withHeader) => {
+                              const range = getBlockRange(editor.state);
+                              const insertPos = range
+                                ? range.end
+                                : editor.state.doc.content.size;
+                              item.action(editor, insertPos, {
+                                rows,
+                                cols,
+                                withHeaderRow: withHeader,
+                              });
+                              setShowInsertPicker(false);
+                              setInsertFilter("");
+                            }}
+                          />
+                        </div>
+                      );
+                    }
                     return (
                       <button
                         key={item.title}

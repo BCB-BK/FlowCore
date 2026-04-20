@@ -37,6 +37,7 @@ import { EditorToolbar } from "./EditorToolbar";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { MediaLibraryDialog } from "./MediaLibraryDialog";
 import { BlockActionMenu } from "./BlockActionMenu";
+import { TableContextMenu } from "./TableContextMenu";
 import { EditorDropzone } from "./EditorDropzone";
 import { ContextualSubpageButton } from "./ContextualSubpageButton";
 import { ContentCompletenessBar } from "./ContentCompletenessBar";
@@ -464,6 +465,7 @@ export function BlockEditor({
       >
         <div className={`relative ${editable ? "pl-6" : ""}`}>
           {editable && <BlockActionMenu editor={editor} />}
+          {editable && <TableContextMenu editor={editor} />}
           {editable && onCreateSubpage && (
             <ContextualSubpageButton
               editor={editor}

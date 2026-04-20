@@ -243,24 +243,52 @@ router.get("/graph/photo/:userId", requireAuth, async (req, res) => {
 router.get(
   "/graph/people",
   requireAuth,
-  requirePermission("manage_permissions"),
+  requirePermission("edit_content"),
   async (req, res) => {
     const q = (req.query.q as string) ?? "";
     const accessToken = req.session?.graphAccessToken ?? "";
-    const results = await searchPeople(accessToken, q);
-    res.json(results);
+    const graphResults = await searchPeople(accessToken, q);
+    if (graphResults.length > 0) {
+      res.json(graphResults);
+      return;
+    }
+    const local = await searchPrincipals(q, 20);
+    const fallback = local
+      .filter((p) => p.principalType === "user")
+      .map((p) => ({
+        id: p.id,
+        displayName: p.displayName,
+        mail: p.email,
+        userPrincipalName: p.upn,
+        jobTitle: null,
+        department: null,
+      }));
+    res.json(fallback);
   },
 );
 
 router.get(
   "/graph/groups",
   requireAuth,
-  requirePermission("manage_permissions"),
+  requirePermission("edit_content"),
   async (req, res) => {
     const q = (req.query.q as string) ?? "";
     const accessToken = req.session?.graphAccessToken ?? "";
-    const results = await searchGroups(accessToken, q);
-    res.json(results);
+    const graphResults = await searchGroups(accessToken, q);
+    if (graphResults.length > 0) {
+      res.json(graphResults);
+      return;
+    }
+    const local = await searchPrincipals(q, 20);
+    const fallback = local
+      .filter((p) => p.principalType === "group")
+      .map((p) => ({
+        id: p.id,
+        displayName: p.displayName,
+        description: null,
+        mail: p.email,
+      }));
+    res.json(fallback);
   },
 );
 
