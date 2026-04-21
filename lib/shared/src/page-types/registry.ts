@@ -145,7 +145,7 @@ export interface ValidationResult {
   readinessPercentage: number;
 }
 
-export const DISABLED_TEMPLATE_TYPES: Set<TemplateType> = new Set(["glossary"]);
+export const DISABLED_TEMPLATE_TYPES: Set<TemplateType> = new Set(["glossary", "work_instruction", "process_page_text"]);
 
 export const REGISTRY_VERSION = "2.0.0";
 
