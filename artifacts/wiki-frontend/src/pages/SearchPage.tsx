@@ -75,6 +75,12 @@ export function SearchPage() {
   }, [canSeeUnpublished, authData]);
 
   useEffect(() => {
+    if (canSeeUnpublished) {
+      setIncludeUnpublished(true);
+    }
+  }, [canSeeUnpublished]);
+
+  useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(t);
   }, [query]);

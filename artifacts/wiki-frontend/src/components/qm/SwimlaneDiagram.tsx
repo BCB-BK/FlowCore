@@ -43,6 +43,7 @@ export interface SwimlaneData {
   detailLink?: string;
   detailNodeId?: string;
   detailNodeTitle?: string;
+  detailNodeStatus?: string;
   showLegend?: boolean;
 }
 
@@ -87,6 +88,7 @@ function normalize(raw: unknown): SwimlaneData | null {
     detailLink: typeof obj.detailLink === "string" ? obj.detailLink : undefined,
     detailNodeId: typeof obj.detailNodeId === "string" ? obj.detailNodeId : undefined,
     detailNodeTitle: typeof obj.detailNodeTitle === "string" ? obj.detailNodeTitle : undefined,
+    detailNodeStatus: typeof obj.detailNodeStatus === "string" ? obj.detailNodeStatus : undefined,
     showLegend: typeof obj.showLegend === "boolean" ? obj.showLegend : false,
   };
 }
@@ -220,11 +222,12 @@ interface NodePickerResult {
 interface NodeRefPickerProps {
   nodeId?: string;
   nodeTitle?: string;
-  onChange: (nodeId: string, title: string, link: string) => void;
+  nodeStatus?: string;
+  onChange: (nodeId: string, title: string, link: string, status?: string) => void;
   onClear: () => void;
 }
 
-function NodeRefPicker({ nodeId, nodeTitle, onChange, onClear }: NodeRefPickerProps) {
+function NodeRefPicker({ nodeId, nodeTitle, nodeStatus, onChange, onClear }: NodeRefPickerProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -270,6 +273,11 @@ function NodeRefPicker({ nodeId, nodeTitle, onChange, onClear }: NodeRefPickerPr
         <div className="flex items-center gap-2 h-9 px-2 rounded-md border bg-muted/30">
           <Link2 className="h-3.5 w-3.5 text-primary shrink-0" />
           <span className="text-xs flex-1 truncate">{nodeTitle}</span>
+          {nodeStatus === "draft" && (
+            <span className="shrink-0 text-[9px] font-medium px-1 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 leading-none">
+              Entwurf
+            </span>
+          )}
           <button
             onClick={onClear}
             className="text-muted-foreground hover:text-destructive shrink-0"
@@ -318,7 +326,7 @@ function NodeRefPicker({ nodeId, nodeTitle, onChange, onClear }: NodeRefPickerPr
                   className="w-full text-left px-3 py-2 hover:bg-accent transition-colors flex items-center gap-2"
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    onChange(r.id, r.title, `/nodes/${r.id}`);
+                    onChange(r.id, r.title, `/nodes/${r.id}`, r.status);
                     setQuery("");
                     setOpen(false);
                   }}
@@ -530,12 +538,14 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                     <NodeRefPicker
                       nodeId={draft.detailNodeId}
                       nodeTitle={draft.detailNodeTitle}
-                      onChange={(nodeId, title, link) =>
+                      nodeStatus={draft.detailNodeStatus}
+                      onChange={(nodeId, title, link, status) =>
                         setDraft((prev) => ({
                           ...prev,
                           detailNodeId: nodeId,
                           detailNodeTitle: title,
                           detailLink: link,
+                          detailNodeStatus: status,
                         }))
                       }
                       onClear={() =>
@@ -544,6 +554,7 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                           detailNodeId: undefined,
                           detailNodeTitle: undefined,
                           detailLink: undefined,
+                          detailNodeStatus: undefined,
                         }))
                       }
                     />
@@ -686,25 +697,32 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
             )}
 
             {!editing && detailLink && (
-              isInternalLink ? (
-                <Link
-                  href={detailLink}
-                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  <Link2 className="h-3 w-3" />
-                  {detailLabel}
-                </Link>
-              ) : (
-                <a
-                  href={detailLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  {detailLabel}
-                </a>
-              )
+              <div className="flex items-center gap-2">
+                {isInternalLink ? (
+                  <Link
+                    href={detailLink}
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    <Link2 className="h-3 w-3" />
+                    {detailLabel}
+                  </Link>
+                ) : (
+                  <a
+                    href={detailLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    {detailLabel}
+                  </a>
+                )}
+                {current?.detailNodeStatus === "draft" && (
+                  <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 leading-none">
+                    Entwurf
+                  </span>
+                )}
+              </div>
             )}
 
             {!editing && current.showLegend && <DiagramLegend />}
