@@ -10,6 +10,7 @@ export type FieldComponent =
   | "interfaces_systems_table"
   | "process_steps_table"
   | "swimlane_diagram"
+  | "bpmn_diagram"
   | "raci_matrix"
   | "competency_areas"
   | "check_items_editor"

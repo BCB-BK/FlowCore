@@ -45,7 +45,7 @@ export const processPageTextConfig: LayoutConfig = {
 
 export const processPageGraphicConfig: LayoutConfig = {
   rows: [
-    { key: "diagram", component: "swimlane_diagram" },
+    { key: "diagram", component: "bpmn_diagram" },
     { key: "description", component: "editable", label: "Erläuterung", description: "Textuelle Beschreibung zum Diagramm", icon: FileText, iconColor: "text-blue-600", emptyText: "Noch keine Erläuterung" },
     { key: "legend", component: "editable", label: "Legende & Symbole", description: "Erklärung der verwendeten Symbole und Farben", icon: List, iconColor: "text-amber-600", emptyText: "Keine Legende definiert" },
   ],
@@ -64,7 +64,7 @@ export const procedureConfig: LayoutConfig = {
       { key: "trigger", component: "editable", label: "Auslöser & Vorbedingungen", description: "Was löst das Verfahren aus?", icon: Zap, iconColor: "text-yellow-600", emptyText: "Noch keine Auslöser definiert" },
       { key: "inputs", component: "editable", label: "Eingaben & Voraussetzungen", description: "Benötigte Dokumente, Daten und Ressourcen", icon: PackageOpen, iconColor: "text-indigo-600", emptyText: "Noch keine Eingaben definiert" },
     ],
-    { key: "swimlane", component: "swimlane_diagram" },
+    { key: "swimlane", component: "bpmn_diagram" },
     { key: "responsibilities", component: "raci_matrix" },
     { key: "interfaces", component: "interfaces_systems_table" },
     { key: "outputs", component: "editable", label: "Ergebnisse & Ausgaben", description: "Was wird durch das Verfahren erzeugt?", icon: PackageCheck, iconColor: "text-green-600", emptyText: "Keine Ergebnisse definiert" },

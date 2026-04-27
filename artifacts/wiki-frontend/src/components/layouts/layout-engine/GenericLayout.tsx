@@ -1,5 +1,6 @@
 import { getPageType } from "@/lib/types";
 import { EditableSectionCard } from "../EditableSectionCard";
+import { BpmnDiagramSection } from "../BpmnDiagramSection";
 import {
   SIPOCTable,
   KPITable,
@@ -65,6 +66,8 @@ function FieldRenderer({
       return <ProcessStepsTable data={data} onSave={saveFn} readOnly={readOnly} />;
     case "swimlane_diagram":
       return <SwimlaneDiagram data={data} onSave={saveFn} readOnly={readOnly} />;
+    case "bpmn_diagram":
+      return <BpmnDiagramSection data={data} onSave={saveFn} readOnly={readOnly} />;
     case "raci_matrix":
       return <RACIMatrix data={data} onSave={saveFn} readOnly={readOnly} />;
     case "competency_areas":
