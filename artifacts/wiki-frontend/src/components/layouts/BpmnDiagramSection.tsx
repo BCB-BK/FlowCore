@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BpmnEditor, DEFAULT_BPMN_XML } from "@/components/editor/BpmnEditor";
+import { DiagramLegend } from "@/components/qm/DiagramLegend";
 import { Button } from "@workspace/ui/button";
 import { GitBranch, Pencil } from "lucide-react";
 
@@ -64,7 +65,7 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {!readOnly && !editing && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
@@ -80,6 +81,7 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
         onSave={handleSave}
         onCancel={handleCancel}
       />
+      <DiagramLegend defaultOpen={readOnly} />
     </div>
   );
 }

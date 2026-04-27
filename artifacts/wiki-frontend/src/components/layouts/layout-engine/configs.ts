@@ -47,7 +47,6 @@ export const processPageGraphicConfig: LayoutConfig = {
   rows: [
     { key: "diagram", component: "bpmn_diagram" },
     { key: "description", component: "editable", label: "Erläuterung", description: "Textuelle Beschreibung zum Diagramm", icon: FileText, iconColor: "text-blue-600", emptyText: "Noch keine Erläuterung" },
-    { key: "legend", component: "editable", label: "Legende & Symbole", description: "Erklärung der verwendeten Symbole und Farben", icon: List, iconColor: "text-amber-600", emptyText: "Keine Legende definiert" },
   ],
 };
 
