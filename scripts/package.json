@@ -11,6 +11,7 @@
     "dead-import-check": "tsx ./src/dead-import-check.ts",
     "rootfix-audit": "tsx ./src/rootfix-audit.ts",
     "task-completion-audit": "tsx ./src/task-completion-audit.ts",
+    "senior-self-review": "tsx ./src/senior-self-review.ts",
     "docs:check": "tsx ./src/docs-check.ts",
     "migrate-pilot": "tsx ./src/migrate-pilot-content.ts",
     "import-glossary": "tsx ./src/import-glossary.ts",
