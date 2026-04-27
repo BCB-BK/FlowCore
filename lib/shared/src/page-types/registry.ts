@@ -914,15 +914,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     type: "process_page_graphic",
     label: "Process Page (Graphic)",
     labelDe: "Prozessseite (Grafik)",
-    description: "Graphic/swimlane process documentation",
-    descriptionDe: "Grafische Prozessdokumentation mit Swimlane-Diagramm",
+    description: "Graphic BPMN 2.0 process documentation",
+    descriptionDe: "Grafische Prozessdokumentation mit BPMN 2.0-Diagramm",
     icon: "GitBranchPlus",
     color: "hsl(260, 50%, 55%)",
     category: "process",
     displayProfile: "process_document",
     displayIdPrefix: "PRZ",
     helpText:
-      "Erstellen Sie eine grafische Prozessdarstellung mit Swimlane-Diagramm. Ideal für Prozesse, die visuell besser verständlich sind als in Textform.",
+      "Erstellen Sie eine grafische Prozessdarstellung mit BPMN 2.0-Diagramm. Ideal für Prozesse, die visuell besser verständlich sind als in Textform.",
     allowedChildTypes: [
       "procedure_instruction",
       "work_instruction",
@@ -938,11 +938,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "diagram",
         label: "Diagramm",
-        description: "Swimlane-Darstellung",
+        description: "BPMN 2.0-Darstellung",
         helpText:
-          "Erstellen oder verlinken Sie ein Swimlane-Diagramm. Benennen Sie die Rollen/Bereiche in den Bahnen.",
+          "Erstellen Sie ein BPMN 2.0-Diagramm. Benennen Sie die Rollen/Bereiche in den Bahnen.",
         guidingQuestions: [
-          "Welche Rollen/Bereiche sind beteiligt (Swimlanes)?",
+          "Welche Rollen/Bereiche sind beteiligt (Bahnen)?",
           "Welche Aktivitäten werden in welcher Reihenfolge ausgeführt?",
           "Wo gibt es Entscheidungspunkte?",
         ],
@@ -984,13 +984,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
       {
         key: "swimlane",
-        label: "Grafisch (Swimlane)",
-        description: "Swimlane-Diagramm mit textueller Erläuterung und Legende",
+        label: "Grafisch (BPMN 2.0)",
+        description: "BPMN 2.0-Diagramm mit textueller Erläuterung",
         variantCategory: "grafisch",
         prefilledSections: ["diagram", "description", "legend"],
         initialBlocks: [
-          { type: "heading", content: "Swimlane-Diagramm", level: 2 },
-          { type: "callout", content: "Fügen Sie hier Ihr Swimlane-Diagramm ein oder erstellen Sie es direkt." },
+          { type: "heading", content: "BPMN 2.0-Diagramm", level: 2 },
+          { type: "callout", content: "Erstellen Sie Ihr BPMN 2.0-Prozessdiagramm direkt im Editor." },
           { type: "divider" },
           { type: "heading", content: "Erläuterung", level: 2 },
           { type: "paragraph", content: "" },
@@ -1158,10 +1158,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
       {
         key: "swimlane",
-        label: "Swimlane-Diagramm",
+        label: "BPMN 2.0-Diagramm",
         description: "Grafische Darstellung des Ablaufs mit Verantwortlichkeiten in Bahnen",
         helpText:
-          "Erstellen Sie ein Swimlane-Diagramm, das den Ablauf visuell mit Rollen/Bereichen in den Bahnen darstellt.",
+          "Erstellen Sie ein BPMN 2.0-Diagramm, das den Ablauf visuell mit Rollen/Bereichen in den Bahnen darstellt.",
         guidingQuestions: [
           "Welche Rollen/Bereiche sind beteiligt (Bahnen)?",
           "Welche Aktivitäten werden in welcher Reihenfolge ausgeführt?",
@@ -1358,7 +1358,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "detailed",
         label: "Vollständig (QM)",
-        description: "Alle Abschnitte nach QM-Muster inkl. SIPOC, Swimlane, KPI, Compliance",
+        description: "Alle Abschnitte nach QM-Muster inkl. SIPOC, BPMN 2.0-Diagramm, KPI, Compliance",
         variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
