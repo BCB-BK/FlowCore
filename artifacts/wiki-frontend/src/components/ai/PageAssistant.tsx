@@ -149,12 +149,27 @@ export function PageAssistant({
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeAction, setActiveAction] = useState<Action | null>(null);
   const [copied, setCopied] = useState(false);
+  const [noTextWarning, setNoTextWarning] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const savedSelectionRef = useRef<string>("");
+
+  const captureSelection = useCallback(() => {
+    const text = getSelectedText();
+    if (text.trim()) {
+      savedSelectionRef.current = text;
+    }
+  }, [getSelectedText]);
 
   const handleAction = useCallback(
     async (action: Action) => {
-      const text = getSelectedText();
-      if (!text.trim()) return;
+      const text = savedSelectionRef.current || getSelectedText();
+      savedSelectionRef.current = "";
+      if (!text.trim()) {
+        setNoTextWarning(true);
+        setTimeout(() => setNoTextWarning(false), 3000);
+        return;
+      }
+      setNoTextWarning(false);
 
       setActiveAction(action);
       setResult("");
@@ -270,8 +285,14 @@ export function PageAssistant({
 
       <CardContent className="p-4 space-y-4">
         <p className="text-xs text-muted-foreground">
-          Wählen Sie Text im Editor aus und klicken Sie eine Aktion:
+          Text im Editor markieren, dann Aktion wählen:
         </p>
+
+        {noTextWarning && (
+          <p className="text-xs text-destructive font-medium">
+            Bitte zuerst Text im Editor markieren.
+          </p>
+        )}
 
         <div className="grid grid-cols-2 gap-1.5">
           {ACTIONS.map((a) => (
@@ -282,6 +303,7 @@ export function PageAssistant({
                   size="sm"
                   className="justify-start gap-2 text-xs"
                   disabled={isStreaming}
+                  onMouseDown={captureSelection}
                   onClick={() => handleAction(a.key)}
                 >
                   {isStreaming && activeAction === a.key ? (
