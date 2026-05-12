@@ -17,7 +17,7 @@ interface Participant {
   status: string;
 }
 
-const STATUS_OPTIONS = [
+export const STATUS_OPTIONS = [
   { value: "anwesend", label: "Anwesend (vor Ort)" },
   { value: "online", label: "Online zugeschaltet" },
   { value: "entschuldigt", label: "Entschuldigt" },
@@ -31,17 +31,44 @@ const STATUS_STYLES: Record<string, string> = {
   unentschuldigt: "bg-red-50 text-red-700 border-red-200",
 };
 
+const KNOWN_STATUS_LABELS: Record<string, string> = {
+  "anwesend (vor ort)": "anwesend",
+  "anwesend (nur dm)": "online",
+  "online zugeschaltet": "online",
+  "entschuldigt": "entschuldigt",
+  "unentschuldigt abwesend": "unentschuldigt",
+};
+
+function normalizeStatus(raw: string): string {
+  if (!raw) return "anwesend";
+  if (STATUS_OPTIONS.some((o) => o.value === raw)) return raw;
+  const mapped = KNOWN_STATUS_LABELS[raw.toLowerCase().trim()];
+  return mapped ?? "anwesend";
+}
+
 function parseParticipants(raw: string): Participant[] {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed)) {
+      return parsed.map((p) => ({
+        name: typeof p.name === "string" ? p.name : "",
+        role: typeof p.role === "string" ? p.role : "",
+        status: normalizeStatus(typeof p.status === "string" ? p.status : ""),
+      }));
+    }
   } catch {}
   if (raw.trim()) {
     return raw
       .split("\n")
       .filter((l) => l.trim())
-      .map((l) => ({ name: l.trim(), role: "", status: "anwesend" }));
+      .map((l) => {
+        const trimmed = l.trim();
+        const asStatus = KNOWN_STATUS_LABELS[trimmed.toLowerCase()];
+        if (asStatus) return { name: "", role: "", status: asStatus };
+        return { name: trimmed, role: "", status: "anwesend" };
+      })
+      .filter((p) => p.name !== "");
   }
   return [];
 }
@@ -131,28 +158,32 @@ export function ParticipantsEditor({
       <CardContent>
         {editing ? (
           <div className="space-y-2">
-            <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide px-1">
-              <span>Name</span>
-              <span>Rolle / Funktion</span>
-              <span>Status</span>
-              <span />
-            </div>
             {rows.map((row, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr_auto_auto] gap-1.5 items-center">
-                <Input
-                  value={row.name}
-                  onChange={(e) => updateRow(i, "name", e.target.value)}
-                  placeholder="Name"
-                  className="h-8 text-sm"
-                />
+              <div key={i} className="rounded-md border bg-muted/30 p-2 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    value={row.name}
+                    onChange={(e) => updateRow(i, "name", e.target.value)}
+                    placeholder="Name"
+                    className="h-7 text-xs flex-1 min-w-0"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeRow(i)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
                 <Input
                   value={row.role}
                   onChange={(e) => updateRow(i, "role", e.target.value)}
                   placeholder="Rolle / Funktion"
-                  className="h-8 text-sm"
+                  className="h-7 text-xs w-full"
                 />
                 <Select value={row.status} onValueChange={(v) => updateRow(i, "status", v)}>
-                  <SelectTrigger className="h-8 text-xs w-[160px]">
+                  <SelectTrigger className="h-7 text-xs w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -163,37 +194,28 @@ export function ParticipantsEditor({
                     ))}
                   </SelectContent>
                 </Select>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => removeRow(i)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full mt-2 text-xs" onClick={addRow}>
+            <Button variant="outline" size="sm" className="w-full mt-1 text-xs h-8" onClick={addRow}>
               <Plus className="h-3.5 w-3.5 mr-1" />
               Teilnehmer hinzufügen
             </Button>
           </div>
         ) : displayRows.length > 0 ? (
           <div className="space-y-1.5">
-            <div className="grid grid-cols-[1fr_1fr_auto] gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wide px-1 pb-1 border-b">
-              <span>Name</span>
-              <span>Rolle / Funktion</span>
-              <span>Status</span>
-            </div>
             {displayRows.map((row, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center py-1 px-1 rounded hover:bg-muted/30 transition-colors">
-                <span className="text-sm font-medium">{row.name || "—"}</span>
-                <span className="text-sm text-muted-foreground">{row.role || "—"}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${STATUS_STYLES[row.status] ?? "bg-muted text-muted-foreground border-border"}`}
-                >
-                  {STATUS_OPTIONS.find((o) => o.value === row.status)?.label ?? row.status}
-                </span>
+              <div key={i} className="flex flex-col gap-0.5 py-1.5 px-1 rounded hover:bg-muted/30 transition-colors border-b last:border-b-0">
+                <div className="flex items-center justify-between gap-1 min-w-0">
+                  <span className="text-sm font-medium truncate">{row.name || "—"}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap shrink-0 ${STATUS_STYLES[row.status] ?? "bg-muted text-muted-foreground border-border"}`}
+                  >
+                    {STATUS_OPTIONS.find((o) => o.value === row.status)?.label ?? row.status}
+                  </span>
+                </div>
+                {row.role && (
+                  <span className="text-xs text-muted-foreground truncate">{row.role}</span>
+                )}
               </div>
             ))}
           </div>
