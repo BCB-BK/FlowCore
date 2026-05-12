@@ -917,6 +917,7 @@ export function WorkingCopyEditorPage() {
                   value={getReferencesValue(validationSFSnapshot, node.templateType)}
                   onSave={canEdit ? handleSectionSave : undefined}
                   sectionKey={getReferencesKey(node.templateType)}
+                  nodeId={node.id}
                 />
                 <div>
                   <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
@@ -989,6 +990,7 @@ export function WorkingCopyEditorPage() {
                       value={getReferencesValue(validationSFSnapshot, node.templateType)}
                       onSave={canEdit ? handleSectionSave : undefined}
                       sectionKey={getReferencesKey(node.templateType)}
+                      nodeId={node.id}
                     />
                   </div>
                 )}

@@ -123,6 +123,7 @@ function FieldRenderer({
           value={str(data)}
           onSave={onSectionSave}
           sectionKey={field.key}
+          nodeId={nodeId}
           help={sectionDef?.help}
           helpText={sectionDef?.helpText}
           guidingQuestions={sectionDef?.guidingQuestions}

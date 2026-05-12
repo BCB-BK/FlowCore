@@ -712,6 +712,7 @@ export function NodeDetail() {
               <ReferencesEditor
                 value={getReferencesValue(structuredFields, node.templateType)}
                 sectionKey={getReferencesKey(node.templateType)}
+                nodeId={nodeId}
               />
             </div>
           )}
@@ -971,6 +972,7 @@ export function NodeDetail() {
                 <ReferencesEditor
                   value={getReferencesValue(structuredFields, node.templateType)}
                   sectionKey={getReferencesKey(node.templateType)}
+                  nodeId={nodeId}
                 />
               )}
               {!isFieldEmpty(editorContent) && (
@@ -1027,6 +1029,7 @@ export function NodeDetail() {
                   <ReferencesEditor
                     value={getReferencesValue(structuredFields, node.templateType)}
                     sectionKey={getReferencesKey(node.templateType)}
+                    nodeId={nodeId}
                   />
                 </div>
               )}
