@@ -343,6 +343,16 @@ export function WorkingCopyEditorPage() {
     [validationSFSnapshot._clusters, wcStructuredFields._clusters],
   );
 
+  const validationSectionData = useMemo(() => {
+    if (node?.templateType === "meeting_protocol") {
+      return {
+        ...validationSFSnapshot,
+        discussion: validationSFSnapshot._editorContent ?? validationSFSnapshot.discussion,
+      };
+    }
+    return validationSFSnapshot;
+  }, [node, validationSFSnapshot]);
+
   const handleClusterChange = useCallback(
     (updatedClusters: Cluster[]) => {
       const sf = { ...localStructuredFieldsRef.current, _clusters: updatedClusters };
@@ -434,14 +444,14 @@ export function WorkingCopyEditorPage() {
 
   const submitValidation = useMemo<ValidationResult | null>(() => {
     if (!node) return null;
-    return validateForPublication(node.templateType, editableMetadata, validationSFSnapshot);
-  }, [node, editableMetadata, validationSFSnapshot]);
+    return validateForPublication(node.templateType, editableMetadata, validationSectionData);
+  }, [node, editableMetadata, validationSectionData]);
 
   const handleSubmit = useCallback(async () => {
     if (!activeWC || !node) return;
 
     if (!isSetupMode) {
-      const validation = validateForPublication(node.templateType, editableMetadata, validationSFSnapshot);
+      const validation = validateForPublication(node.templateType, editableMetadata, validationSectionData);
       if (validation && !validation.valid) {
         toast({
           variant: "destructive",
@@ -719,7 +729,7 @@ export function WorkingCopyEditorPage() {
       )}
 
       {!showPreview && canEdit && node && (() => {
-        const readiness = getPublicationReadiness(node.templateType, editableMetadata, validationSFSnapshot);
+        const readiness = getPublicationReadiness(node.templateType, editableMetadata, validationSectionData);
         const guided = getGuidedSections(node.templateType);
         return (
           <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
@@ -759,28 +769,6 @@ export function WorkingCopyEditorPage() {
                 </ul>
               </div>
             )}
-            {node.templateType === "meeting_protocol" && (() => {
-              const ec = validationSFSnapshot._editorContent as { type?: string; content?: unknown[] } | undefined;
-              const hasDecisions = !!(ec?.content && ec.content.length > 0 &&
-                !(ec.content.length === 1 && (ec.content[0] as { type?: string; content?: unknown[] })?.type === "paragraph" && !(ec.content[0] as { content?: unknown[] })?.content?.length));
-              return (
-                <div className="space-y-1 pt-1 border-t">
-                  <p className="text-xs font-medium text-muted-foreground">Weitere Prüfungen:</p>
-                  <ul className="text-xs text-muted-foreground space-y-0.5">
-                    <li className="flex items-center gap-1">
-                      {hasDecisions ? (
-                        <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" />
-                      ) : (
-                        <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
-                      )}
-                      <span className={hasDecisions ? "text-green-700 dark:text-green-400" : ""}>
-                        Entscheidungen sind erfasst
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              );
-            })()}
           </div>
         );
       })()}
