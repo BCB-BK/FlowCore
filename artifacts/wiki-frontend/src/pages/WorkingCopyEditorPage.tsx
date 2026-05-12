@@ -177,20 +177,29 @@ export function WorkingCopyEditorPage() {
 
   const autoCreateAttempted = useRef(false);
   useEffect(() => {
-    if (!wcLoading && !activeWC && nodeId && !autoCreateAttempted.current) {
-      autoCreateAttempted.current = true;
-      createWorkingCopy.mutateAsync({ nodeId }).then(() => {
-        queryClient.invalidateQueries({
-          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
-        });
-      }).catch(() => {
-        toast({
-          variant: "destructive",
-          title: "Arbeitskopie konnte nicht erstellt werden",
-        });
-        navigate(`/node/${nodeId}`);
-      });
+    if (wcLoading || !nodeId) return;
+    if (activeWC) return;
+
+    // WC war zuvor vorhanden und ist jetzt weg → veröffentlicht oder abgebrochen
+    // Nicht neu erstellen, sondern zur Ansichtsseite navigieren
+    if (wcRef.current !== null) {
+      navigate(`/node/${nodeId}`);
+      return;
     }
+
+    if (autoCreateAttempted.current) return;
+    autoCreateAttempted.current = true;
+    createWorkingCopy.mutateAsync({ nodeId }).then(() => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+      });
+    }).catch(() => {
+      toast({
+        variant: "destructive",
+        title: "Arbeitskopie konnte nicht erstellt werden",
+      });
+      navigate(`/node/${nodeId}`);
+    });
   }, [wcLoading, activeWC, nodeId, createWorkingCopy, toast, navigate, queryClient]);
 
   const wcContent = useMemo(() => {
