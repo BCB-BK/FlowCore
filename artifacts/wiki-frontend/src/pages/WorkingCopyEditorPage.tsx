@@ -37,6 +37,8 @@ import {
   FolderOpen,
   ShieldCheck,
   Pencil,
+  Plus,
+  Network,
 } from "lucide-react";
 import { Input } from "@workspace/ui/input";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
@@ -45,6 +47,7 @@ import { parseClusters, groupChildrenByClusters } from "@/lib/clusters";
 import type { Cluster } from "@/lib/clusters";
 import { isFieldEmpty } from "@/lib/field-empty";
 import { ClusterManager } from "@/components/clusters/ClusterManager";
+import { DocRegistryView } from "@/components/registry/DocRegistryView";
 import { useNodeChildren } from "@/hooks/use-nodes";
 import {
   useGetActiveWorkingCopy,
@@ -352,6 +355,11 @@ export function WorkingCopyEditorPage() {
     () => parseClusters(validationSFSnapshot._clusters ?? wcStructuredFields._clusters),
     [validationSFSnapshot._clusters, wcStructuredFields._clusters],
   );
+
+  const clusterGroupsForEditor = useMemo(() => {
+    if (!nodeChildren || nodeChildren.length === 0 || editorClusters.length === 0) return [];
+    return groupChildrenByClusters(nodeChildren, editorClusters);
+  }, [nodeChildren, editorClusters]);
 
   const validationSectionData = useMemo(() => {
     if (node?.templateType === "meeting_protocol") {
@@ -925,6 +933,17 @@ export function WorkingCopyEditorPage() {
         <Tabs defaultValue="content" className="w-full">
           <TabsList>
             <TabsTrigger value="content">Inhalt</TabsTrigger>
+            {isOverviewPage && (
+              <TabsTrigger value="structure" className="gap-1.5">
+                <Network className="h-3.5 w-3.5" />
+                Struktur
+                {nodeChildren && nodeChildren.length > 0 && (
+                  <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium leading-none">
+                    {nodeChildren.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            )}
             <TabsTrigger value="metadata">Metadaten</TabsTrigger>
           </TabsList>
 
@@ -977,22 +996,6 @@ export function WorkingCopyEditorPage() {
                   nodeId={node.id}
                 />
 
-                {isOverviewPage && canEdit && nodeChildren && (
-                  <div className="mt-6 rounded-lg border p-4">
-                    <ClusterManager
-                      clusters={editorClusters}
-                      children={nodeChildren.map((c) => ({
-                        id: c.id,
-                        title: c.title,
-                        templateType: c.templateType,
-                        displayCode: c.displayCode,
-                      }))}
-                      onChange={handleClusterChange}
-                      onCreateInCluster={handleCreateInCluster}
-                    />
-                  </div>
-                )}
-
                 <div className="mt-6">
                   <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
                   <BlockEditor
@@ -1022,6 +1025,72 @@ export function WorkingCopyEditorPage() {
               </>
             )}
           </TabsContent>
+
+          {isOverviewPage && (
+            <TabsContent value="structure" className="mt-4 space-y-6">
+              <div className="rounded-lg border p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Network className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold">Cluster & Unterseiten</h3>
+                  </div>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => { setPendingClusterId(null); setShowCreate(true); }}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Neue Unterseite
+                    </Button>
+                  )}
+                </div>
+                {canEdit ? (
+                  <ClusterManager
+                    clusters={editorClusters}
+                    children={(nodeChildren ?? []).map((c) => ({
+                      id: c.id,
+                      title: c.title,
+                      templateType: c.templateType,
+                      displayCode: c.displayCode,
+                    }))}
+                    onChange={handleClusterChange}
+                    onCreateInCluster={handleCreateInCluster}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Keine Berechtigung zum Bearbeiten der Cluster-Struktur.
+                  </p>
+                )}
+              </div>
+
+              {nodeChildren && nodeChildren.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="text-sm font-semibold">Vorschau der Registerstruktur</h3>
+                    <Badge variant="secondary" className="text-xs">
+                      {nodeChildren.length} {nodeChildren.length === 1 ? "Seite" : "Seiten"}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">— Stand der Arbeitskopie</span>
+                  </div>
+                  <DocRegistryView
+                    clusterGroups={clusterGroupsForEditor}
+                    allChildren={nodeChildren.map((c) => ({
+                      id: c.id,
+                      title: c.title,
+                      displayCode: c.displayCode,
+                      templateType: c.templateType,
+                      status: c.status,
+                      updatedAt: c.updatedAt,
+                    }))}
+                    canCreate={false}
+                    onCreateInCluster={() => {}}
+                  />
+                </div>
+              )}
+            </TabsContent>
+          )}
 
           <TabsContent value="metadata" className="mt-4 space-y-4">
             <CompletenessIndicator
