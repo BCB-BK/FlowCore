@@ -153,7 +153,7 @@ export function SectionBlockEditor({
 
   useEffect(() => {
     if (!editor || editing) return;
-    editor.commands.setContent(parseSectionContent(value), false);
+    editor.commands.setContent(parseSectionContent(value), { emitUpdate: false });
   }, [value, editor, editing]);
 
   const displayContent = parseSectionContent(value);
