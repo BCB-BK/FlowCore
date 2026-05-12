@@ -45,6 +45,7 @@ import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
   useGetActiveWorkingCopy,
   useCreateWorkingCopy,
+  useUpdateWorkingCopy,
   useGetPrincipal,
   useCreateDeletionRequest,
   useGetNodeDeletionRequest,
@@ -52,6 +53,7 @@ import {
   getGetNodeDeletionRequestQueryKey,
 } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
+import { DocRegistryView } from "@/components/registry/DocRegistryView";
 import { MoveNodeDialog } from "@/components/MoveNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
@@ -116,11 +118,13 @@ export function NodeDetail() {
   const queryClient = useQueryClient();
   const updateNode = useUpdateNode();
   const createWorkingCopy = useCreateWorkingCopy();
+  const updateWorkingCopy = useUpdateWorkingCopy();
   const createDeletionRequest = useCreateDeletionRequest();
   const cancelDeletionRequest = useCancelDeletionRequest();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
+  const [createInClusterId, setCreateInClusterId] = useState<string | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
   const [showMoveNode, setShowMoveNode] = useState(false);
@@ -133,7 +137,8 @@ export function NodeDetail() {
   }, [node]);
 
   const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
-  const showQuickFacts = !isOverviewPage && !!pageDef;
+  const isDocRegistry = getDisplayProfile(node?.templateType ?? "") === "doc_registry";
+  const showQuickFacts = !isOverviewPage && !isDocRegistry && !!pageDef;
 
   const allowedChildTypes = useMemo(() => {
     if (!node) return [];
@@ -288,6 +293,52 @@ export function NodeDetail() {
       });
     }
   }, [nodeId, activeWC, createWorkingCopy, navigate, toast]);
+
+  const handleNodeCreatedInCluster = useCallback(
+    async (newNodeId: string) => {
+      if (!nodeId) return;
+      const clusterId = createInClusterId;
+      setCreateInClusterId(null);
+      if (!clusterId) return;
+      try {
+        let wc = activeWC;
+        if (!wc) {
+          wc = await createWorkingCopy.mutateAsync({ nodeId });
+        }
+        const currentClusters = parseClusters(
+          (wc.structuredFields as Record<string, unknown>)?._clusters,
+        );
+        const updatedClusters = currentClusters.map((c) =>
+          c.id === clusterId
+            ? { ...c, childNodeIds: [...c.childNodeIds, newNodeId] }
+            : c,
+        );
+        await updateWorkingCopy.mutateAsync({
+          workingCopyId: wc.id,
+          data: {
+            structuredFields: {
+              ...((wc.structuredFields as Record<string, unknown>) ?? {}),
+              _clusters: updatedClusters,
+            },
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/children`],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Cluster-Zuordnung fehlgeschlagen",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+  );
 
   if (isLoading) {
     return (
@@ -599,6 +650,38 @@ export function NodeDetail() {
                 isCreating={createWorkingCopy.isPending}
               />
               <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
+            </div>
+          )}
+
+          {isDocRegistry && (
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold">Registereinträge</h3>
+                {canCreate && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCreateInClusterId(null);
+                      setCreatePresetType(undefined);
+                      setShowCreate(true);
+                    }}
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    Neue Seite
+                  </Button>
+                )}
+              </div>
+              <DocRegistryView
+                clusterGroups={clusterGroups}
+                allChildren={children ?? []}
+                canCreate={canCreate}
+                onCreateInCluster={(clusterId) => {
+                  setCreateInClusterId(clusterId);
+                  setCreatePresetType(undefined);
+                  setShowCreate(true);
+                }}
+              />
             </div>
           )}
 
@@ -1104,6 +1187,7 @@ export function NodeDetail() {
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
         presetType={createPresetType}
+        onNodeCreated={createInClusterId ? handleNodeCreatedInCluster : undefined}
       />
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>

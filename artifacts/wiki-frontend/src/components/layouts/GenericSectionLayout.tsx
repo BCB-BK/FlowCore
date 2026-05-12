@@ -26,6 +26,7 @@ const PROFILE_ICON_MAP: Record<DisplayProfile, React.ReactNode> = {
   governance_document: <Shield className="h-4 w-4 text-muted-foreground" />,
   system_document: <Server className="h-4 w-4 text-muted-foreground" />,
   module_page: <LayoutDashboard className="h-4 w-4 text-muted-foreground" />,
+  doc_registry: <LayoutDashboard className="h-4 w-4 text-muted-foreground" />,
 };
 
 export function GenericSectionLayout({

@@ -16,7 +16,8 @@ export type TemplateType =
   | "interface_description"
   | "meeting_protocol"
   | "training_resource"
-  | "audit_object";
+  | "audit_object"
+  | "doc_registry";
 
 export type MetadataGroupKey =
   | "identity"
@@ -108,7 +109,8 @@ export type DisplayProfile =
   | "reference_article"
   | "governance_document"
   | "system_document"
-  | "module_page";
+  | "module_page"
+  | "doc_registry";
 
 export interface PublicationRules {
   minimumSections: string[];
@@ -3236,6 +3238,63 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
     ],
   },
+
+  doc_registry: {
+    type: "doc_registry",
+    label: "Documentation Registry",
+    labelDe: "Dokumentationsregister",
+    description: "Index page grouping child documents by cluster, sorted newest first",
+    descriptionDe: "Indexseite, die untergeordnete Dokumente nach Cluster gruppiert, neueste zuerst",
+    icon: "LayoutList",
+    color: "hsl(258, 65%, 55%)",
+    category: "documentation",
+    displayProfile: "doc_registry",
+    displayIdPrefix: "REG",
+    helpText:
+      "Ein Dokumentationsregister organisiert untergeordnete Seiten in Clustern und zeigt die neuesten Einträge zuerst an. Ideal als Indexseite für thematisch verwandte Dokumente.",
+    allowedChildTypes: [
+      "meeting_protocol",
+      "audit_object",
+      "training_resource",
+      "procedure_instruction",
+      "work_instruction",
+      "policy",
+      "use_case",
+      "checklist",
+      "faq",
+      "role_profile",
+      "system_documentation",
+      "interface_description",
+    ],
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+    ],
+    sections: [
+      {
+        key: "description",
+        label: "Beschreibung",
+        description: "Kurze Beschreibung des Registers und seines Zwecks",
+        helpText:
+          "Beschreiben Sie kurz, welche Dokumente in diesem Register gesammelt werden und für wen es gedacht ist.",
+        required: false,
+      },
+    ],
+    publicationRules: {
+      minimumSections: [],
+      minimumMetadata: [],
+      minSectionContentLength: 0,
+    },
+    variants: [
+      {
+        key: "blank",
+        label: "Leer",
+        description: "Leeres Dokumentationsregister",
+        variantCategory: "schlank",
+        prefilledSections: [],
+      },
+    ],
+  },
 };
 
 export const ALL_TEMPLATE_TYPES = Object.keys(
@@ -3418,6 +3477,11 @@ export const DISPLAY_PROFILE_LABELS: Record<
     label: "Module Page",
     labelDe: "Modulseite",
     description: "Structured interactive content with specialized rendering (e.g. checklist, training resource)",
+  },
+  doc_registry: {
+    label: "Documentation Registry",
+    labelDe: "Dokumentationsregister",
+    description: "Index pages grouping child documents by cluster, sorted newest first",
   },
 };
 
