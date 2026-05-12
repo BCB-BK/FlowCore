@@ -404,10 +404,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "procedure_instruction",
       "work_instruction",
       "use_case",
+      "policy",
       "role_profile",
       "system_documentation",
       "interface_description",
       "checklist",
+      "meeting_protocol",
+      "training_resource",
+      "audit_object",
     ],
     recommendedChildTypes: [
       "process_page_text",
@@ -657,15 +661,26 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     allowedChildTypes: [
       "core_process_overview",
       "process_page_text",
+      "process_page_graphic",
+      "procedure_instruction",
+      "work_instruction",
+      "use_case",
       "policy",
       "role_profile",
       "system_documentation",
+      "interface_description",
+      "glossary",
+      "checklist",
       "faq",
+      "meeting_protocol",
+      "training_resource",
+      "audit_object",
     ],
     recommendedChildTypes: [
       "core_process_overview",
       "process_page_text",
       "policy",
+      "meeting_protocol",
     ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -789,6 +804,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "work_instruction",
       "use_case",
       "checklist",
+      "meeting_protocol",
+      "training_resource",
     ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -927,6 +944,9 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "procedure_instruction",
       "work_instruction",
       "use_case",
+      "checklist",
+      "meeting_protocol",
+      "training_resource",
     ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -1017,7 +1037,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "VA",
     helpText:
       "Erstellen Sie eine detaillierte Verfahrensanweisung nach QM-Standard. Definieren Sie Zweck, Geltungsbereich, Auslöser, Ablauf, Verantwortlichkeiten, Schnittstellen, Risiken und mitgeltende Unterlagen.",
-    allowedChildTypes: ["work_instruction", "checklist"],
+    allowedChildTypes: ["work_instruction", "checklist", "meeting_protocol"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -1397,7 +1417,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "UC",
     helpText:
       "Beschreiben Sie einen konkreten Anwendungsfall mit Akteuren, Vor-/Nachbedingungen, Normalablauf und Alternativabläufen.",
-    allowedChildTypes: [],
+    allowedChildTypes: ["checklist", "work_instruction", "meeting_protocol"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -1485,7 +1505,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "RL",
     helpText:
       "Erstellen Sie eine Richtlinie mit klarem Zweck, Geltungsbereich, Richtlinientext und Durchsetzungsmaßnahmen. Verknüpfen Sie bei Bedarf Verfahrensanweisungen.",
-    allowedChildTypes: ["procedure_instruction", "work_instruction", "checklist"],
+    allowedChildTypes: ["procedure_instruction", "work_instruction", "checklist", "role_profile", "meeting_protocol"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -1656,7 +1676,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "ROL",
     helpText:
       "Definieren Sie ein vollständiges Stellenprofil: Zielsetzung, Kernaufgaben, Verantwortlichkeiten, Kompetenzen (fachlich/methodisch/sozial/persönlich), Routinen, Messerfolg und Arbeitsmittel.",
-    allowedChildTypes: [],
+    allowedChildTypes: ["checklist", "training_resource", "meeting_protocol"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       {
@@ -2135,7 +2155,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "SYS",
     helpText:
       "Dokumentieren Sie ein IT-System mit Schnittstellen, Datenobjekten, Zugriffsrechten und technischen Details.",
-    allowedChildTypes: ["interface_description"],
+    allowedChildTypes: ["interface_description", "checklist", "meeting_protocol", "training_resource"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -2917,7 +2937,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "SCH",
     helpText:
       "Erstellen Sie Schulungsmaterial oder Lernressourcen. Ideal für Einarbeitungspläne, Schulungsunterlagen und Wissenstransfer.",
-    allowedChildTypes: ["checklist", "faq"],
+    allowedChildTypes: ["checklist", "faq", "work_instruction", "meeting_protocol"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -3070,7 +3090,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "AUD",
     helpText:
       "Dokumentieren Sie ein Kontroll- oder Prüfobjekt. Verwenden Sie diesen Typ für Audit-Feststellungen, Kontrollmaßnahmen und Qualitätsprüfpunkte.",
-    allowedChildTypes: ["checklist"],
+    allowedChildTypes: ["checklist", "meeting_protocol"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
