@@ -756,16 +756,28 @@ export function WorkingCopyEditorPage() {
                 </ul>
               </div>
             )}
-            {guided.length > 0 && (
-              <div className="space-y-1 pt-1 border-t">
-                <p className="text-xs font-medium text-muted-foreground">Empfohlene Bearbeitungsreihenfolge:</p>
-                <ol className="text-xs text-muted-foreground space-y-0.5 list-decimal list-inside">
-                  {guided.map((s) => (
-                    <li key={s.key}>{s.label}{s.helpText ? ` — ${s.helpText}` : ""}</li>
-                  ))}
-                </ol>
-              </div>
-            )}
+            {node.templateType === "meeting_protocol" && (() => {
+              const ec = validationSFSnapshot._editorContent as { type?: string; content?: unknown[] } | undefined;
+              const hasDecisions = !!(ec?.content && ec.content.length > 0 &&
+                !(ec.content.length === 1 && (ec.content[0] as { type?: string; content?: unknown[] })?.type === "paragraph" && !(ec.content[0] as { content?: unknown[] })?.content?.length));
+              return (
+                <div className="space-y-1 pt-1 border-t">
+                  <p className="text-xs font-medium text-muted-foreground">Weitere Prüfungen:</p>
+                  <ul className="text-xs text-muted-foreground space-y-0.5">
+                    <li className="flex items-center gap-1">
+                      {hasDecisions ? (
+                        <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-3 w-3 text-amber-500 shrink-0" />
+                      )}
+                      <span className={hasDecisions ? "text-green-700 dark:text-green-400" : ""}>
+                        Entscheidungen sind erfasst
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              );
+            })()}
           </div>
         );
       })()}
