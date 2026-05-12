@@ -1,0 +1,125 @@
+#109 - Meeting-Protokoll: Feldstruktur für Entscheidungsprotokolle schärfen
+
+What & Why
+Das meeting_protocol-Template soll fachlich und visuell so umgebaut werden, dass Entscheidungsprotokolle sauber zwischen Kontext, Referenzen, Entscheidungen, offenen Klärungspunkten, Maßnahmen und Wiedervorlage unterscheiden.
+
+Aktuell vermischen sich „Besprechungspunkte“, „Entscheidungen“ und „Maßnahmen / To-dos“. Künftig soll das Protokoll folgende Logik abbilden:
+
+- Kontext: Was ist Thema, Ausgangslage, Informationsstand?
+- Referenzen: Welche Dokumente / Quellen / mitgeltenden Unterlagen gehören dazu?
+- Entscheidungen: Was gilt verbindlich ab jetzt?
+- Offene Punkte: Was ist noch unklar und muss geklärt werden?
+- Maßnahmen: Wer macht was bis wann?
+- Wiedervorlage: Wann wird nachgehalten oder weiter entschieden?
+
+Done looks like
+Beim Öffnen / Bearbeiten eines Meeting-/Entscheidungsprotokolls erscheinen die Felder in dieser Reihenfolge:
+
+1. Teilnehmer links + Tagesordnung / Sachstand / Kontext rechts
+   - participants bleibt schmal.
+   - agenda wird umbenannt in „Tagesordnung / Sachstand / Kontext“.
+   - agenda erhält eine größere Eingabefläche.
+   - agenda beschreibt künftig nicht nur geplante TOPs, sondern auch Ausgangslage, Informationsstand und relevanten Kontext.
+
+2. Referenzen & mitgeltende Dokumente
+   - Der bestehende ReferencesEditor wird in den Seitenfluss integriert.
+   - Position: nach participants/agenda und vor Entscheidungen.
+
+3. Entscheidungen
+   - Der bestehende Haupt-BlockEditor für Entscheidungen bleibt an dieser Stelle.
+   - Inhalt: verbindliche Beschlüsse/Festlegungen.
+
+4. Offene Punkte / Klärungsbedarf
+   - Neues Feld open_points.
+   - EditableSectionCard oder äquivalente einfache Textsektion.
+   - Zweck: offene Fragen, fehlende Informationen, Klärungsbedarfe, die vor Entscheidung oder Umsetzung relevant sind.
+
+5. Maßnahmen / To-dos
+   - action_items wird von einfacher Textarea auf vollwertigen WYSIWYG-Editor umgestellt.
+   - Umsetzung über neuen component-Typ section_block_editor.
+   - Kein Medien-Upload, kein Slash-Menü, schlanker TipTap-Editor.
+   - Speichert Inhalt als JSON-String im Section-Feld.
+   - Bestehende action_items-String-Inhalte bleiben im Read-only-Modus lesbar.
+   - Wenn alte action_items-Inhalte kein valides TipTap-JSON sind, werden sie als Plain-Text/Absatz angezeigt.
+
+6. Nächster Termin / Wiedervorlage
+   - next_meeting bleibt als Textfeld.
+   - Label optional schärfen auf „Nächster Termin / Wiedervorlage“.
+
+Out of scope
+- Änderungen an anderen Seitentypen.
+- Datenmigration bestehender action_items-Daten.
+- Änderungen am Metadaten-Bereich (owner, meeting_date, meeting_type etc.).
+- Migration bestehender discussion-Inhalte.
+
+Technical Steps
+
+1. registry.ts
+- Section agenda:
+  - label ändern zu „Tagesordnung / Sachstand / Kontext“.
+  - description ändern zu „Tagesordnung, Ausgangslage, relevanter Sachstand und Kontext des Meetings“.
+  - helpText ändern zu „Dokumentieren Sie kurz, worum es geht, welche Ausgangslage besteht und welche Themen behandelt werden. Keine Entscheidungen und keine Maßnahmen eintragen.“
+- Neue Section open_points hinzufügen:
+  - key: "open_points"
+  - label: "Offene Punkte / Klärungsbedarf"
+  - description: "Offene Fragen, fehlende Informationen und Klärungsbedarfe"
+  - helpText: "Dokumentieren Sie, was noch unklar ist und vor Entscheidung oder Umsetzung geklärt werden muss."
+  - required: false
+- discussion nicht aus der Registry löschen, aber im meetingProtocolConfig nicht mehr rendern.
+- publicationRules.minimumSections unverändert lassen, sofern aktuell keine neue Pflicht entstehen soll.
+- Varianten prüfen:
+  - standard enthält participants, agenda, decisions, open_points, action_items, next_meeting.
+  - decision enthält participants, agenda, decisions, open_points, action_items.
+  - discussion wird nicht mehr als prefilledSection genutzt.
+
+2. AI field profiles / seed data
+- Profil für meeting_protocol / agenda an neue Bedeutung anpassen:
+  - nicht mehr nur klassische Tagesordnung.
+  - Fokus auf Thema, Ausgangslage, Sachstand, Kontext.
+- Neues Profil für meeting_protocol / open_points ergänzen:
+  - Zweck: offene Fragen und Klärungsbedarfe.
+  - Guardrails: keine Entscheidungen erfinden, keine Verantwortlichkeiten oder Fristen ergänzen.
+- Profil für action_items unverändert inhaltlich beibehalten, aber sicherstellen, dass WYSIWYG/JSON-Inhalt textuell verarbeitet werden kann.
+
+3. layout-engine/types.ts
+- FieldComponent-Union um "section_block_editor" erweitern.
+
+4. layout-engine/GenericLayout.tsx
+- Neuen Rendering-Zweig für component === "section_block_editor" ergänzen.
+- Der Editor rendert einen schlanken TipTap-BlockEditor:
+  - ohne Medien
+  - ohne Slash-Menü
+  - geeignet für strukturierte Listen, Tabellen/Absätze soweit vom bestehenden Editor unterstützt
+- Lesen:
+  - Wenn value valides TipTap-JSON ist: als Editor-Dokument laden.
+  - Wenn value String/plain text ist: als Absatz oder Plain-Text in Editor laden.
+- Speichern:
+  - als JSON-String im jeweiligen Section-Feld speichern.
+- Read-only:
+  - JSON sauber rendern.
+  - Plain-Text-Bestandsdaten lesbar anzeigen.
+
+5. layout-engine/configs.ts
+meetingProtocolConfig auf neue Feldreihenfolge umbauen:
+- Row 1, 2-spaltig:
+  - participants: schmal
+  - agenda: breit / größere Eingabefläche
+- Danach NICHT discussion rendern.
+- open_points als editable Sektion einfügen.
+- action_items mit component "section_block_editor" einfügen.
+- next_meeting als editable Sektion.
+
+Wichtig:
+Die final sichtbare Reihenfolge wird teilweise außerhalb von GenericLayout hergestellt, weil Referenzen und Entscheidungen separat gerendert werden. GenericLayout darf daher nur die strukturierten Sections rendern, die nicht separat im Page-Flow positioniert werden.
+
+6. WorkingCopyEditorPage.tsx und NodeDetail.tsx
+- ReferencesEditor aus bisheriger Position lösen.
+- ReferencesEditor direkt nach dem oberen GenericLayout-Teil für participants/agenda anzeigen.
+- Haupt-BlockEditor für Entscheidungen direkt nach ReferencesEditor anzeigen.
+- Danach GenericLayout-Teil mit open_points, action_items und next_meeting anzeigen.
+- Sicherstellen, dass Edit- und Read-only-Modus dieselbe Reihenfolge verwenden.
+
+7. Bestandsschutz
+- Bestehende action_items-Inhalte bleiben lesbar.
+- Bestehende discussion-Inhalte werden nicht migriert.
+- Falls discussion-Inhalte vorhanden sind, optional read-only als Legacy-Hinweis anzeigen oder zunächst ignorieren, aber keine Daten löschen.

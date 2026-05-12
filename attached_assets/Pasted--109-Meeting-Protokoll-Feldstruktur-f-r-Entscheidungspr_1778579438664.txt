@@ -1,0 +1,53 @@
+#109 - Meeting-Protokoll: Feldstruktur für Entscheidungsprotokolle schärfen
+
+What & Why
+Das meeting_protocol-Template soll fachlich und visuell so umgebaut werden, dass Entscheidungsprotokolle sauber zwischen Kontext, Referenzen, Entscheidungen, offenen Klärungspunkten, Maßnahmen und Wiedervorlage unterscheiden.
+
+Aktuell vermischen sich „Besprechungspunkte“, „Entscheidungen“ und „Maßnahmen / To-dos“. Künftig soll das Protokoll folgende Logik abbilden:
+
+- Kontext: Was ist Thema, Ausgangslage, Informationsstand?
+- Referenzen: Welche Dokumente / Quellen / mitgeltenden Unterlagen gehören dazu?
+- Entscheidungen: Was gilt verbindlich ab jetzt?
+- Offene Punkte: Was ist noch unklar und muss geklärt werden?
+- Maßnahmen: Wer macht was bis wann?
+- Wiedervorlage: Wann wird nachgehalten oder weiter entschieden?
+
+Done looks like
+Beim Öffnen / Bearbeiten eines Meeting-/Entscheidungsprotokolls erscheinen die Felder in dieser Reihenfolge:
+
+1. Teilnehmer links + Tagesordnung / Sachstand / Kontext rechts
+   - participants bleibt schmal.
+   - agenda wird umbenannt in „Tagesordnung / Sachstand / Kontext“.
+   - agenda erhält eine größere Eingabefläche.
+   - agenda beschreibt künftig nicht nur geplante TOPs, sondern auch Ausgangslage, Informationsstand und relevanten Kontext.
+
+2. Referenzen & mitgeltende Dokumente
+   - Der bestehende ReferencesEditor wird in den Seitenfluss integriert.
+   - Position: nach participants/agenda und vor Entscheidungen.
+
+3. Entscheidungen
+   - Der bestehende Haupt-BlockEditor für Entscheidungen bleibt an dieser Stelle.
+   - Inhalt: verbindliche Beschlüsse/Festlegungen.
+
+4. Offene Punkte / Klärungsbedarf
+   - Neues Feld open_points.
+   - EditableSectionCard oder äquivalente einfache Textsektion.
+   - Zweck: offene Fragen, fehlende Informationen, Klärungsbedarfe, die vor Entscheidung oder Umsetzung relevant sind.
+
+5. Maßnahmen / To-dos
+   - action_items wird von einfacher Textarea auf vollwertigen WYSIWYG-Editor umgestellt.
+   - Umsetzung über neuen component-Typ section_block_editor.
+   - Kein Medien-Upload, kein Slash-Menü, schlanker TipTap-Editor.
+   - Speichert Inhalt als JSON-String im Section-Feld.
+   - Bestehende action_items-String-Inhalte bleiben im Read-only-Modus lesbar.
+   - Wenn alte action_items-Inhalte kein valides TipTap-JSON sind, werden sie als Plain-Text/Absatz angezeigt.
+
+6. Nächster Termin / Wiedervorlage
+   - next_meeting bleibt als Textfeld.
+   - Label optional schärfen auf „Nächster Termin / Wiedervorlage“.
+
+Out of scope
+- Änderungen an anderen Seitentypen.
+- Datenmigration bestehender action_items-Daten.
+- Änderungen am Metadaten-Bereich (owner, meeting_date, meeting_type etc.).
+- Migration bestehender discussion-Inhalte.
