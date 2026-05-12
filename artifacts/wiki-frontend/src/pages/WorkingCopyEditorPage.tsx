@@ -165,6 +165,7 @@ export function WorkingCopyEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
+  const [localTitle, setLocalTitle] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [validationSFSnapshot, setValidationSFSnapshot] = useState<Record<string, unknown>>({});
@@ -594,7 +595,9 @@ export function WorkingCopyEditorPage() {
               onBlur={async () => {
                 setIsTitleEditing(false);
                 const trimmed = titleDraft.trim();
-                if (trimmed && trimmed !== (activeWC.title || node.title)) {
+                const currentTitle = localTitle ?? activeWC.title ?? node.title;
+                if (trimmed && trimmed !== currentTitle) {
+                  setLocalTitle(trimmed);
                   await doSave({ title: trimmed });
                 }
               }}
@@ -603,19 +606,19 @@ export function WorkingCopyEditorPage() {
                   e.currentTarget.blur();
                 } else if (e.key === "Escape") {
                   setIsTitleEditing(false);
-                  setTitleDraft(activeWC.title || node.title);
+                  setTitleDraft(localTitle ?? activeWC.title ?? node.title);
                 }
               }}
               className="text-2xl font-bold tracking-tight h-auto py-0.5 px-1 border-primary"
             />
           ) : (
             <div className="flex items-center gap-2 group">
-              <h1 className="text-2xl font-bold tracking-tight break-words">{activeWC.title || node.title}</h1>
+              <h1 className="text-2xl font-bold tracking-tight break-words">{localTitle ?? activeWC.title ?? node.title}</h1>
               {canEdit && (
                 <button
                   type="button"
                   onClick={() => {
-                    setTitleDraft(activeWC.title || node.title);
+                    setTitleDraft(localTitle ?? activeWC.title ?? node.title);
                     setIsTitleEditing(true);
                     setTimeout(() => titleInputRef.current?.focus(), 0);
                   }}
