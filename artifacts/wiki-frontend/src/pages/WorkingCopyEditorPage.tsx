@@ -1,6 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useNode, useNodeRevisions } from "@/hooks/use-nodes";
+import { useNode, useNodeRevisions, useUpdateNode } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
@@ -56,7 +56,7 @@ import {
   useGetPrincipal,
   getGetActiveWorkingCopyQueryKey,
 } from "@workspace/api-client-react";
-import type { WorkingCopy } from "@workspace/api-client-react";
+import type { WorkingCopy, UpdateNodeInput } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { GenericLayout, meetingProtocolTopConfig, meetingProtocolBottomConfig } from "@/components/layouts/layout-engine";
@@ -167,6 +167,9 @@ export function WorkingCopyEditorPage() {
   const [titleDraft, setTitleDraft] = useState("");
   const [localTitle, setLocalTitle] = useState<string | null>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [typeDraft, setTypeDraft] = useState("");
+  const updateNode = useUpdateNode();
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [validationSFSnapshot, setValidationSFSnapshot] = useState<Record<string, unknown>>({});
 
@@ -601,9 +604,24 @@ export function WorkingCopyEditorPage() {
                 <PageTypeIcon iconName={pageDef.icon} className="h-3.5 w-3.5" />
               </div>
             )}
-            <Badge variant="secondary">
-              {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
-            </Badge>
+            <div className="flex items-center gap-1 group/type">
+              <Badge variant="secondary">
+                {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
+              </Badge>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTypeDraft(node.templateType);
+                    setShowTypeDialog(true);
+                  }}
+                  className="opacity-0 group-hover/type:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
+                  title="Seitentyp ändern"
+                >
+                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              )}
+            </div>
             <Badge variant="outline">Arbeitskopie</Badge>
           </div>
           {isTitleEditing && canEdit ? (
@@ -1218,6 +1236,61 @@ export function WorkingCopyEditorPage() {
         parentTemplateType={node.templateType}
         onNodeCreated={pendingClusterId ? handleNodeCreatedInCluster : undefined}
       />
+
+      <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Seitentyp ändern</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              Der Seitentyp bestimmt die verfügbaren Felder und die Struktur der Seite.
+            </p>
+            <Select value={typeDraft} onValueChange={setTypeDraft}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(PAGE_TYPE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTypeDialog(false)}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!typeDraft || typeDraft === node.templateType) {
+                  setShowTypeDialog(false);
+                  return;
+                }
+                try {
+                  await updateNode.mutateAsync({
+                    nodeId: node.id,
+                    data: { templateType: typeDraft as NonNullable<UpdateNodeInput["templateType"]> },
+                  });
+                  setShowTypeDialog(false);
+                  toast({ title: "Seitentyp geändert" });
+                } catch (err) {
+                  toast({
+                    variant: "destructive",
+                    title: "Fehler",
+                    description: err instanceof Error ? err.message : "Unbekannter Fehler",
+                  });
+                }
+              }}
+              disabled={updateNode.isPending || !typeDraft || typeDraft === node.templateType}
+            >
+              {updateNode.isPending ? "Wird gespeichert…" : "Speichern"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
