@@ -20,19 +20,17 @@ import {
   createRelation,
   removeRelation,
   getNodeRelations,
-  getNodeChildren,
   getNodeTree,
   getSiblings,
 } from "../services/graph.service";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
-import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
+import { hasPermissionBatch } from "../services/rbac.service";
 import { checkConfidentialityAccess, checkConfidentialityAccessBatch } from "../services/confidentiality.service";
 import { AppError } from "../lib/app-error";
 import {
   PAGE_TYPE_REGISTRY,
-  ALL_TEMPLATE_TYPES,
   getPageType as getPageTypeDef,
 } from "@workspace/shared/page-types";
 import {

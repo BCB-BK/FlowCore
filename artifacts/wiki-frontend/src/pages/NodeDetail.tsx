@@ -196,7 +196,7 @@ export function NodeDetail() {
   const wcLoading = activeWCQuery.isLoading;
 
   const pendingDeletionQuery = useGetNodeDeletionRequest(nodeId || "", {
-    query: { enabled: !!nodeId },
+    query: { queryKey: getGetNodeDeletionRequestQueryKey(nodeId || ""), enabled: !!nodeId },
   });
 
   const wcAuthorId = activeWC?.authorId;

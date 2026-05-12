@@ -3,10 +3,10 @@ import {
   Target, BookOpen, Ban, Zap, PackageOpen, ListChecks, PackageCheck,
   History, FileStack, GraduationCap, Clock, Brain, Heart, BarChart3,
   Monitor, Wallet, Shield, BookMarked, Gavel,
-  FileText, LayoutDashboard, ShieldAlert, Wrench, ListOrdered, CheckCircle,
-  List, SearchCheck, FileCheck, GitBranch, Server, Layers, Database,
+  FileText, LayoutDashboard, ShieldAlert, Wrench, CheckCircle,
+  SearchCheck, FileCheck, GitBranch, Server, Layers, Database,
   Lock, Settings, Dumbbell, ClipboardCheck, MessageSquare, Calendar,
-  ArrowRight, CheckCircle2, Flag, Cpu, AlertCircle, Info,
+  CheckCircle2, Flag, Cpu, AlertCircle, Info,
 } from "lucide-react";
 import type { LayoutConfig } from "./types";
 

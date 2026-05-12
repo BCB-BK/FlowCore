@@ -2,7 +2,6 @@ import { db } from "@workspace/db";
 import {
   roleAssignmentsTable,
   pagePermissionsTable,
-  contentNodesTable,
   nodeOwnershipTable,
   deputyDelegationsTable,
   sodConfigTable,

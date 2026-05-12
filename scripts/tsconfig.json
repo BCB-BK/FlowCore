@@ -8,5 +8,6 @@
   "references": [
     { "path": "../lib/db" }
   ],
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/export-page-types.ts"]
 }

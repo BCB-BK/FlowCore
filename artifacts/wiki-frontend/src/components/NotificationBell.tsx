@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Bell, Check, CheckCheck, ExternalLink } from "lucide-react";
 import { Button } from "@workspace/ui/button";
-import { Badge } from "@workspace/ui/badge";
 import { ScrollArea } from "@workspace/ui/scroll-area";
 import {
   Popover,

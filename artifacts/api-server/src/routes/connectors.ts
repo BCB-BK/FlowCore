@@ -6,7 +6,7 @@ import {
   sourceReferencesTable,
   auditEventsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, sql, count } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import {

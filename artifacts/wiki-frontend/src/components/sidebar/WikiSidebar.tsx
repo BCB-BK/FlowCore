@@ -15,8 +15,6 @@ import {
   Home,
   BookOpen,
   Search,
-  Database,
-  Bot,
   BarChart3,
   ClipboardList,
   Settings,

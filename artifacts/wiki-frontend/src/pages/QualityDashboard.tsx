@@ -72,8 +72,6 @@ import {
   X,
   Loader2,
   FolderOpen,
-  CheckSquare,
-  Square,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
@@ -97,6 +95,7 @@ import {
   getGetQualityByProcessQueryKey,
   getListRootNodesQueryKey,
   getListNodesQueryKey,
+  getGetNodeChildrenQueryKey,
 } from "@workspace/api-client-react";
 import type {
   GetQualityPagesFilter,
@@ -507,7 +506,7 @@ function BulkMoveTreeNode({
 }) {
   const [expanded, setExpanded] = useState(depth < 1);
   const { data: children } = useGetNodeChildren(node.id, {
-    query: { enabled: expanded },
+    query: { queryKey: getGetNodeChildrenQueryKey(node.id), enabled: expanded },
   });
 
   const isExcluded = excludedIds.has(node.id);
@@ -566,7 +565,7 @@ function BulkMoveDialog({
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: roots } = useListRootNodes({ query: { enabled: open } });
+  const { data: roots } = useListRootNodes({ query: { queryKey: getListRootNodesQueryKey(), enabled: open } });
   const excludedIds = useMemo(() => new Set(nodeIds), [nodeIds]);
 
   useEffect(() => {
@@ -831,16 +830,6 @@ export function QualityDashboard() {
     clearSelection();
   }, [pageFilter, pagesViewMode, clearSelection]);
 
-  useEffect(() => {
-    if (!pages) return;
-    const currentIds = new Set(pages.items.map((p) => p.nodeId));
-    setSelectedNodeIds((prev) => {
-      const pruned = new Set([...prev].filter((id) => currentIds.has(id)));
-      if (pruned.size === prev.size) return prev;
-      return pruned;
-    });
-  }, [pages]);
-
   const invalidateAfterBulk = useCallback(() => {
     clearSelection();
     const keysToRemove = [
@@ -863,6 +852,17 @@ export function QualityDashboard() {
   const { data: pages, isLoading: pagesLoading } = useGetQualityPages(
     pageFilter === "all" ? {} : { filter: pageFilter as GetQualityPagesFilter },
   );
+
+  useEffect(() => {
+    if (!pages) return;
+    const currentIds = new Set(pages.items.map((p) => p.nodeId));
+    setSelectedNodeIds((prev) => {
+      const pruned = new Set([...prev].filter((id) => currentIds.has(id)));
+      if (pruned.size === prev.size) return prev;
+      return pruned;
+    });
+  }, [pages]);
+
   const { data: duplicates, isLoading: duplicatesLoading } =
     useGetQualityDuplicates();
   const { data: hints, isLoading: hintsLoading } = useGetMaintenanceHints();

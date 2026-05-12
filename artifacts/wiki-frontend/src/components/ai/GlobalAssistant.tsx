@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Card, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import { ScrollArea } from "@workspace/ui/scroll-area";
 import { Switch } from "@workspace/ui/switch";

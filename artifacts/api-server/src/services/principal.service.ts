@@ -4,7 +4,7 @@ import {
   roleAssignmentsTable,
   type InsertPrincipal,
 } from "@workspace/db/schema";
-import { eq, and, ilike, or, sql, inArray } from "drizzle-orm";
+import { eq, and, ilike, or, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 export async function upsertPrincipal(input: {

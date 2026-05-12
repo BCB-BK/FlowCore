@@ -14,8 +14,7 @@ import {
   Calendar,
   ChevronRight,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, PAGE_TYPE_CATEGORIES, getPageType } from "@/lib/types";
-import type { TemplateType } from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { OPEN_ASSISTANT_EVENT } from "@/components/ai/GlobalAssistant";
 import { PageTypeIcon } from "@/components/PageTypeIcon";

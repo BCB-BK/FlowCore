@@ -3,7 +3,6 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNode, useNodeRevisions, useUpdateNode } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import { Button } from "@workspace/ui/button";
 import { Progress } from "@workspace/ui/progress";
@@ -35,7 +34,6 @@ import {
   EyeOff,
   Layers,
   FolderOpen,
-  Plus,
   ShieldCheck,
   Pencil,
 } from "lucide-react";

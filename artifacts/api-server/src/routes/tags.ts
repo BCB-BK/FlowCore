@@ -3,7 +3,6 @@ import { db } from "@workspace/db";
 import {
   contentTagsTable,
   contentNodeTagsTable,
-  contentNodesTable,
   auditEventsTable,
 } from "@workspace/db/schema";
 import { eq, ilike, sql, and } from "drizzle-orm";

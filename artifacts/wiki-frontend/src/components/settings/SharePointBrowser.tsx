@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Input } from "@workspace/ui/input";
 import { Button } from "@workspace/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Card, CardContent, CardHeader } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import { Separator } from "@workspace/ui/separator";
 import {

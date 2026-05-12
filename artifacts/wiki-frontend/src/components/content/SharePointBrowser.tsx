@@ -10,13 +10,6 @@ import {
   DialogFooter,
 } from "@workspace/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/select";
-import {
   Folder,
   FileText,
   ArrowLeft,

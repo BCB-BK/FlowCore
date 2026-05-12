@@ -9,7 +9,7 @@ import {
   mediaAssetsTable,
   auditEventsTable,
 } from "@workspace/db/schema";
-import { eq, desc, and, lt, asc, sql } from "drizzle-orm";
+import { eq, desc, asc, sql } from "drizzle-orm";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs";

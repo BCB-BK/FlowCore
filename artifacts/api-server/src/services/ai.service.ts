@@ -13,7 +13,6 @@ import {
   hasPermission,
   getHighestRole,
   getSearchVisibilityForRole,
-  type WikiRole,
 } from "./rbac.service";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
 

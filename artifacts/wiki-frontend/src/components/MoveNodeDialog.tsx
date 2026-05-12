@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -53,7 +53,7 @@ function TreePickerNode({
 }) {
   const [expanded, setExpanded] = useState(depth < 1);
   const { data: children } = useGetNodeChildren(node.id, {
-    query: { enabled: expanded },
+    query: { queryKey: getGetNodeChildrenQueryKey(node.id), enabled: expanded },
   });
 
   if (node.id === excludeId) return null;
@@ -129,7 +129,7 @@ export function MoveNodeDialog({
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { data: roots } = useListRootNodes({
-    query: { enabled: open },
+    query: { queryKey: getListRootNodesQueryKey(), enabled: open },
   });
 
   const moveMutation = useMoveNode({

@@ -5,7 +5,6 @@ import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
 import { Skeleton } from "@workspace/ui/skeleton";
 import { ScrollArea } from "@workspace/ui/scroll-area";
-import { Separator } from "@workspace/ui/separator";
 import {
   History,
   GitBranch,

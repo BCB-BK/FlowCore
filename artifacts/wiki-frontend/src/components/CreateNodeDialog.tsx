@@ -44,7 +44,6 @@ import {
   PAGE_TYPE_CATEGORIES,
   VARIANT_CATEGORY_LABELS,
   PAGE_TYPE_LABELS,
-  buildInitialEditorContent,
   DISABLED_TEMPLATE_TYPES,
   getPageType,
   type TemplateType,

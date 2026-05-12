@@ -11,7 +11,6 @@ import {
 import { useLocation } from "wouter";
 import { Home } from "lucide-react";
 import { Fragment, useMemo } from "react";
-import { PAGE_TYPE_LABELS } from "@/lib/types";
 
 interface BreadcrumbsProps {
   nodeId?: string;
