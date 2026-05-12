@@ -37,7 +37,9 @@ import {
   FolderOpen,
   Plus,
   ShieldCheck,
+  Pencil,
 } from "lucide-react";
+import { Input } from "@workspace/ui/input";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
 import { parseClusters, groupChildrenByClusters } from "@/lib/clusters";
@@ -161,6 +163,9 @@ export function WorkingCopyEditorPage() {
   const [pendingClusterId, setPendingClusterId] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTitleEditing, setIsTitleEditing] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [validationSFSnapshot, setValidationSFSnapshot] = useState<Record<string, unknown>>({});
 
@@ -581,7 +586,47 @@ export function WorkingCopyEditorPage() {
             </Badge>
             <Badge variant="outline">Arbeitskopie</Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight break-words">{activeWC.title || node.title}</h1>
+          {isTitleEditing && canEdit ? (
+            <Input
+              ref={titleInputRef}
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={async () => {
+                setIsTitleEditing(false);
+                const trimmed = titleDraft.trim();
+                if (trimmed && trimmed !== (activeWC.title || node.title)) {
+                  await doSave({ title: trimmed });
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                } else if (e.key === "Escape") {
+                  setIsTitleEditing(false);
+                  setTitleDraft(activeWC.title || node.title);
+                }
+              }}
+              className="text-2xl font-bold tracking-tight h-auto py-0.5 px-1 border-primary"
+            />
+          ) : (
+            <div className="flex items-center gap-2 group">
+              <h1 className="text-2xl font-bold tracking-tight break-words">{activeWC.title || node.title}</h1>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTitleDraft(activeWC.title || node.title);
+                    setIsTitleEditing(true);
+                    setTimeout(() => titleInputRef.current?.focus(), 0);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
+                  title="Titel bearbeiten"
+                >
+                  <Pencil className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+          )}
           <p className="text-sm text-muted-foreground">{node.displayCode}</p>
         </div>
 
