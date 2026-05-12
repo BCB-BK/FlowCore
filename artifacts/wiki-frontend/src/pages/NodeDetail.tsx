@@ -6,6 +6,7 @@ import {
   useUpdateNode,
 } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
@@ -114,6 +115,7 @@ export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
   const nodeId = params?.id;
   const { data: node, isLoading, error: nodeError } = useNode(nodeId);
+  useDocumentTitle(node?.title);
   const { data: currentUser } = useAuth();
   const { data: children } = useNodeChildren(nodeId);
   const { data: revisions } = useNodeRevisions(nodeId);

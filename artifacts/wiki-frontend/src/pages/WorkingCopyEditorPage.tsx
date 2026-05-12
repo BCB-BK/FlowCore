@@ -2,6 +2,7 @@ import { useRoute, useLocation } from "wouter";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNode, useNodeRevisions, useUpdateNode } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { NodeBreadcrumbs } from "@/components/Breadcrumbs";
 import { Badge } from "@workspace/ui/badge";
 import { Button } from "@workspace/ui/button";
@@ -113,6 +114,7 @@ export function WorkingCopyEditorPage() {
   const [, params] = useRoute("/nodes/:id/edit");
   const nodeId = params?.id;
   const { data: node, isLoading: nodeLoading } = useNode(nodeId);
+  useDocumentTitle(node?.title);
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
