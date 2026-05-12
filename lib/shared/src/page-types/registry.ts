@@ -2846,24 +2846,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
       {
         key: "discussion",
-        label: "Besprechungspunkte",
-        description: "Ergebnisse und Diskussion zu den Tagesordnungspunkten",
-        helpText:
-          "Dokumentieren Sie die Diskussion und Ergebnisse zu jedem Tagesordnungspunkt.",
-        required: true,
-      },
-      {
-        key: "decisions",
         label: "Entscheidungen",
-        description: "Getroffene Entscheidungen mit Begründung",
+        description: "Getroffene Entscheidungen und Ergebnisse der Besprechung",
         helpText:
-          "Dokumentieren Sie alle Entscheidungen klar und eindeutig.",
+          "Dokumentieren Sie alle getroffenen Entscheidungen, Ergebnisse und beschlossenen Punkte.",
         guidingQuestions: [
           "Was wurde entschieden?",
           "Mit welcher Begründung?",
           "War die Entscheidung einstimmig?",
         ],
-        required: false,
+        required: true,
       },
       {
         key: "action_items",
@@ -2908,7 +2900,6 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           "participants",
           "agenda",
           "discussion",
-          "decisions",
           "action_items",
         ],
       },
@@ -2917,7 +2908,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         label: "Entscheidungsprotokoll",
         description: "Fokus auf Entscheidungen und Maßnahmen",
         variantCategory: "schlank",
-        prefilledSections: ["participants", "decisions", "action_items"],
+        prefilledSections: ["participants", "discussion", "action_items"],
       },
     ],
   },

@@ -86,7 +86,7 @@ const CONTENT_HEADING_MAP: Record<string, string> = {
   policy: "Richtlinientext",
   procedure_instruction: "Ablaufbeschreibung",
   work_instruction: "Arbeitsschritte",
-  meeting_protocol: "Besprechungspunkte",
+  meeting_protocol: "Entscheidungen",
   training_resource: "Schulungsinhalt",
   use_case: "Normalablauf",
 };

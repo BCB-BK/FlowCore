@@ -209,7 +209,6 @@ export const meetingProtocolConfig: LayoutConfig = {
       { key: "participants", component: "editable", label: "Teilnehmer", description: "Anwesende und entschuldigte Teilnehmer", icon: Users, iconColor: "text-primary", emptyText: "Keine Teilnehmer erfasst" },
       { key: "agenda", component: "editable", label: "Tagesordnung", description: "Geplante Tagesordnungspunkte", icon: List, iconColor: "text-blue-600", emptyText: "Keine Tagesordnung erfasst" },
     ],
-    { key: "decisions", component: "editable", label: "Entscheidungen", description: "Getroffene Entscheidungen mit Begründung", icon: Gavel, iconColor: "text-amber-600", emptyText: "Keine Entscheidungen erfasst" },
     { key: "action_items", component: "editable", label: "Maßnahmen / ToDos", description: "Vereinbarte Maßnahmen mit Verantwortlichem und Termin", icon: ClipboardList, iconColor: "text-orange-600", emptyText: "Keine Maßnahmen definiert" },
     { key: "next_meeting", component: "editable", label: "Nächster Termin", description: "Datum und Ort der nächsten Sitzung", icon: Calendar, iconColor: "text-green-600", emptyText: "Kein nächster Termin festgelegt" },
   ],
