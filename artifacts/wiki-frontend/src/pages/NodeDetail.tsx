@@ -55,6 +55,7 @@ import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { MoveNodeDialog } from "@/components/MoveNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
+import { GenericLayout, meetingProtocolTopConfig, meetingProtocolBottomConfig } from "@/components/layouts/layout-engine";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { QuickFactsStrip } from "@/components/layouts/QuickFactsStrip";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
@@ -877,10 +878,32 @@ export function NodeDetail() {
             </div>
           )}
 
-          {!isOverviewPage && (
+          {!isOverviewPage && node.templateType === "meeting_protocol" ? (
             <div className="mb-6 space-y-4">
-              <PageLayout
-                templateType={node.templateType}
+              <GenericLayout
+                config={meetingProtocolTopConfig}
+                structuredFields={structuredFields}
+              />
+              {!isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
+                <ReferencesEditor
+                  value={getReferencesValue(structuredFields, node.templateType)}
+                  sectionKey={getReferencesKey(node.templateType)}
+                />
+              )}
+              {!isFieldEmpty(editorContent) && (
+                <div>
+                  <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                  <BlockEditor
+                    content={editorContent}
+                    onSave={async () => {}}
+                    editable={false}
+                    nodeId={nodeId}
+                    parentTemplateType={node?.templateType}
+                  />
+                </div>
+              )}
+              <GenericLayout
+                config={meetingProtocolBottomConfig}
                 structuredFields={structuredFields}
               />
               {nodeId && (
@@ -889,29 +912,43 @@ export function NodeDetail() {
                 </div>
               )}
             </div>
-          )}
+          ) : !isOverviewPage ? (
+            <>
+              <div className="mb-6 space-y-4">
+                <PageLayout
+                  templateType={node.templateType}
+                  structuredFields={structuredFields}
+                />
+                {nodeId && (
+                  <div className="mt-4">
+                    <TagManager nodeId={nodeId} />
+                  </div>
+                )}
+              </div>
 
-          {!isOverviewPage && !isFieldEmpty(editorContent) && (
-          <div className="mt-6">
-            <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-            <BlockEditor
-              content={editorContent}
-              onSave={async () => {}}
-              editable={false}
-              nodeId={nodeId}
-              parentTemplateType={node?.templateType}
-            />
-          </div>
-          )}
+              {!isFieldEmpty(editorContent) && (
+              <div className="mt-6">
+                <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                <BlockEditor
+                  content={editorContent}
+                  onSave={async () => {}}
+                  editable={false}
+                  nodeId={nodeId}
+                  parentTemplateType={node?.templateType}
+                />
+              </div>
+              )}
 
-          {!isOverviewPage && !isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
-            <div className="mt-6">
-              <ReferencesEditor
-                value={getReferencesValue(structuredFields, node.templateType)}
-                sectionKey={getReferencesKey(node.templateType)}
-              />
-            </div>
-          )}
+              {!isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
+                <div className="mt-6">
+                  <ReferencesEditor
+                    value={getReferencesValue(structuredFields, node.templateType)}
+                    sectionKey={getReferencesKey(node.templateType)}
+                  />
+                </div>
+              )}
+            </>
+          ) : null}
 
           {!isOverviewPage && nodeId && (
             <>

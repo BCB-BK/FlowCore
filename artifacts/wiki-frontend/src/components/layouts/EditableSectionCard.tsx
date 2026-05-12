@@ -69,7 +69,7 @@ export function EditableSectionCard({
       textareaRef.current.focus();
       textareaRef.current.setSelectionRange(draft.length, draft.length);
     }
-  }, [editing, draft.length]);
+  }, [editing]);
 
   useEffect(() => {
     setDraft(value);

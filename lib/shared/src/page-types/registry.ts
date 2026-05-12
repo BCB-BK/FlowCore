@@ -2838,10 +2838,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
       {
         key: "agenda",
-        label: "Tagesordnung",
-        description: "Geplante Tagesordnungspunkte",
+        label: "Tagesordnung / Sachstand / Kontext",
+        description: "Geplante Tagesordnungspunkte, Ausgangslage und Kontext",
         helpText:
-          "Listen Sie die Tagesordnungspunkte auf.",
+          "Erfassen Sie alle Tagesordnungspunkte sowie den relevanten Sachstand und Kontext der Besprechung.",
         required: true,
       },
       {
@@ -2858,8 +2858,21 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: true,
       },
       {
+        key: "open_points",
+        label: "Offene Punkte / Klärungsbedarf",
+        description: "Offene Fragen und Klärungsbedarfe",
+        helpText:
+          "Dokumentieren Sie alle offenen Punkte, fehlenden Informationen und Klärungsbedarfe.",
+        guidingQuestions: [
+          "Was ist noch unklar?",
+          "Welche Informationen fehlen?",
+          "Wer muss noch einbezogen werden?",
+        ],
+        required: false,
+      },
+      {
         key: "action_items",
-        label: "Maßnahmen / ToDos",
+        label: "Maßnahmen / To-dos",
         description: "Vereinbarte Maßnahmen mit Verantwortlichem und Termin",
         helpText:
           "Dokumentieren Sie alle vereinbarten Maßnahmen mit Verantwortlichem und Fälligkeitsdatum.",
@@ -2872,8 +2885,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
       {
         key: "next_meeting",
-        label: "Nächster Termin",
-        description: "Datum und Ort der nächsten Sitzung",
+        label: "Nächster Termin / Wiedervorlage",
+        description: "Datum und Ort der nächsten Sitzung sowie Wiedervorlage",
         required: false,
         requirement: "recommended",
         guidedModeStep: 6,

@@ -203,14 +203,30 @@ export const interfaceDescriptionConfig: LayoutConfig = {
   ],
 };
 
-export const meetingProtocolConfig: LayoutConfig = {
+export const meetingProtocolTopConfig: LayoutConfig = {
+  pageTypeKey: "meeting_protocol",
   rows: [
     [
-      { key: "participants", component: "editable", label: "Teilnehmer", description: "Anwesende und entschuldigte Teilnehmer", icon: Users, iconColor: "text-primary", emptyText: "Keine Teilnehmer erfasst" },
-      { key: "agenda", component: "editable", label: "Tagesordnung", description: "Geplante Tagesordnungspunkte", icon: List, iconColor: "text-blue-600", emptyText: "Keine Tagesordnung erfasst" },
+      { key: "participants", component: "participants_editor" },
+      { key: "agenda", component: "agenda_editor" },
     ],
-    { key: "action_items", component: "editable", label: "Maßnahmen / ToDos", description: "Vereinbarte Maßnahmen mit Verantwortlichem und Termin", icon: ClipboardList, iconColor: "text-orange-600", emptyText: "Keine Maßnahmen definiert" },
-    { key: "next_meeting", component: "editable", label: "Nächster Termin", description: "Datum und Ort der nächsten Sitzung", icon: Calendar, iconColor: "text-green-600", emptyText: "Kein nächster Termin festgelegt" },
+  ],
+};
+
+export const meetingProtocolBottomConfig: LayoutConfig = {
+  pageTypeKey: "meeting_protocol",
+  rows: [
+    { key: "open_points", component: "editable", label: "Offene Punkte / Klärungsbedarf", description: "Offene Fragen und Klärungsbedarfe", icon: MessageSquare, iconColor: "text-yellow-600", emptyText: "Keine offenen Punkte erfasst" },
+    { key: "action_items", component: "section_block_editor", label: "Maßnahmen / To-dos", icon: ClipboardList, iconColor: "text-orange-600", emptyText: "Keine Maßnahmen definiert" },
+    { key: "next_meeting", component: "editable", label: "Nächster Termin / Wiedervorlage", description: "Datum und Ort der nächsten Sitzung", icon: Calendar, iconColor: "text-green-600", emptyText: "Kein nächster Termin festgelegt" },
+  ],
+};
+
+export const meetingProtocolConfig: LayoutConfig = {
+  pageTypeKey: "meeting_protocol",
+  rows: [
+    ...meetingProtocolTopConfig.rows,
+    ...meetingProtocolBottomConfig.rows,
   ],
 };
 

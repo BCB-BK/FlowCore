@@ -57,6 +57,7 @@ import {
 import type { WorkingCopy } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
+import { GenericLayout, meetingProtocolTopConfig, meetingProtocolBottomConfig } from "@/components/layouts/layout-engine";
 import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
@@ -855,54 +856,95 @@ export function WorkingCopyEditorPage() {
           </TabsList>
 
           <TabsContent value="content" className="mt-4">
-            <PageLayout
-              templateType={node.templateType}
-              structuredFields={validationSFSnapshot}
-              onSectionSave={canEdit ? handleSectionSave : undefined}
-              pageType={node.templateType}
-              nodeId={node.id}
-            />
-
-            {isOverviewPage && canEdit && nodeChildren && (
-              <div className="mt-6 rounded-lg border p-4">
-                <ClusterManager
-                  clusters={editorClusters}
-                  children={nodeChildren.map((c) => ({
-                    id: c.id,
-                    title: c.title,
-                    templateType: c.templateType,
-                    displayCode: c.displayCode,
-                  }))}
-                  onChange={handleClusterChange}
-                  onCreateInCluster={handleCreateInCluster}
+            {node.templateType === "meeting_protocol" ? (
+              <div className="space-y-4">
+                <GenericLayout
+                  config={meetingProtocolTopConfig}
+                  structuredFields={validationSFSnapshot}
+                  onSectionSave={canEdit ? handleSectionSave : undefined}
+                  pageType={node.templateType}
+                  nodeId={node.id}
                 />
-              </div>
-            )}
-
-            <div className="mt-6">
-              <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-              <BlockEditor
-                content={editorContent}
-                onSave={handleEditorSave}
-                onContentChange={handleEditorContentChange}
-                editable={canEdit}
-                nodeId={nodeId}
-                lastSavedAt={lastSavedAt}
-                onTrackMediaUsage={handleTrackMediaUsage}
-                onCreateSubpage={() => setShowCreate(true)}
-                parentTemplateType={node?.templateType}
-                fieldKey="content"
-              />
-            </div>
-
-            {node && (
-              <div className="mt-6">
                 <ReferencesEditor
                   value={getReferencesValue(validationSFSnapshot, node.templateType)}
                   onSave={canEdit ? handleSectionSave : undefined}
                   sectionKey={getReferencesKey(node.templateType)}
                 />
+                <div>
+                  <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                  <BlockEditor
+                    content={editorContent}
+                    onSave={handleEditorSave}
+                    onContentChange={handleEditorContentChange}
+                    editable={canEdit}
+                    nodeId={nodeId}
+                    lastSavedAt={lastSavedAt}
+                    onTrackMediaUsage={handleTrackMediaUsage}
+                    onCreateSubpage={() => setShowCreate(true)}
+                    parentTemplateType={node?.templateType}
+                    fieldKey="content"
+                  />
+                </div>
+                <GenericLayout
+                  config={meetingProtocolBottomConfig}
+                  structuredFields={validationSFSnapshot}
+                  onSectionSave={canEdit ? handleSectionSave : undefined}
+                  pageType={node.templateType}
+                  nodeId={node.id}
+                />
               </div>
+            ) : (
+              <>
+                <PageLayout
+                  templateType={node.templateType}
+                  structuredFields={validationSFSnapshot}
+                  onSectionSave={canEdit ? handleSectionSave : undefined}
+                  pageType={node.templateType}
+                  nodeId={node.id}
+                />
+
+                {isOverviewPage && canEdit && nodeChildren && (
+                  <div className="mt-6 rounded-lg border p-4">
+                    <ClusterManager
+                      clusters={editorClusters}
+                      children={nodeChildren.map((c) => ({
+                        id: c.id,
+                        title: c.title,
+                        templateType: c.templateType,
+                        displayCode: c.displayCode,
+                      }))}
+                      onChange={handleClusterChange}
+                      onCreateInCluster={handleCreateInCluster}
+                    />
+                  </div>
+                )}
+
+                <div className="mt-6">
+                  <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                  <BlockEditor
+                    content={editorContent}
+                    onSave={handleEditorSave}
+                    onContentChange={handleEditorContentChange}
+                    editable={canEdit}
+                    nodeId={nodeId}
+                    lastSavedAt={lastSavedAt}
+                    onTrackMediaUsage={handleTrackMediaUsage}
+                    onCreateSubpage={() => setShowCreate(true)}
+                    parentTemplateType={node?.templateType}
+                    fieldKey="content"
+                  />
+                </div>
+
+                {node && (
+                  <div className="mt-6">
+                    <ReferencesEditor
+                      value={getReferencesValue(validationSFSnapshot, node.templateType)}
+                      onSave={canEdit ? handleSectionSave : undefined}
+                      sectionKey={getReferencesKey(node.templateType)}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 

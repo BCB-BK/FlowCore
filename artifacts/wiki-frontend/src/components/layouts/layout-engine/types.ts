@@ -16,7 +16,10 @@ export type FieldComponent =
   | "check_items_editor"
   | "qa_repeater"
   | "term_repeater"
-  | "references_editor";
+  | "references_editor"
+  | "participants_editor"
+  | "agenda_editor"
+  | "section_block_editor";
 
 export interface LayoutField {
   key: string;

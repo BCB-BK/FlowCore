@@ -15,6 +15,9 @@ import { CheckItemsEditor } from "@/components/compound/CheckItemsEditor";
 import { QaRepeater } from "@/components/compound/QaRepeater";
 import { TermRepeater } from "@/components/compound/TermRepeater";
 import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
+import { ParticipantsEditor } from "@/components/compound/ParticipantsEditor";
+import { AgendaEditor } from "@/components/compound/AgendaEditor";
+import { SectionBlockEditor } from "@/components/compound/SectionBlockEditor";
 import { isFieldEmpty } from "@/lib/field-empty";
 import type { LayoutConfig, LayoutField, LayoutRow, PageTypeSection } from "./types";
 
@@ -125,6 +128,39 @@ function FieldRenderer({
           guidingQuestions={sectionDef?.guidingQuestions}
         />
       );
+    case "participants_editor":
+      return (
+        <ParticipantsEditor
+          value={str(data)}
+          onSave={onSectionSave}
+          sectionKey={field.key}
+          readOnly={readOnly}
+        />
+      );
+    case "agenda_editor":
+      return (
+        <AgendaEditor
+          value={str(data)}
+          onSave={onSectionSave}
+          sectionKey={field.key}
+          readOnly={readOnly}
+        />
+      );
+    case "section_block_editor": {
+      const Icon = field.icon;
+      return (
+        <SectionBlockEditor
+          value={str(data)}
+          onSave={onSectionSave}
+          sectionKey={field.key}
+          label={field.label ?? field.key}
+          icon={Icon}
+          iconColor={field.iconColor}
+          emptyText={field.emptyText}
+          readOnly={readOnly}
+        />
+      );
+    }
     case "editable": {
       const Icon = field.icon;
       return (
