@@ -58,7 +58,18 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
   const publishValidation = useMemo(() => {
     if (!templateType) return null;
     const metadata = (workingCopy.content as Record<string, unknown>) ?? {};
-    const sectionData = (workingCopy.structuredFields as Record<string, unknown>) ?? {};
+    const rawSectionData = (workingCopy.structuredFields as Record<string, unknown>) ?? {};
+
+    // Für meeting_protocol: Block-Editor-Inhalt ist unter _editorContent gespeichert,
+    // muss aber für die Validierung als "discussion" (Entscheidungen) verfügbar sein.
+    const sectionData =
+      templateType === "meeting_protocol"
+        ? {
+            ...rawSectionData,
+            discussion: rawSectionData._editorContent ?? rawSectionData.discussion,
+          }
+        : rawSectionData;
+
     return validateForPublication(templateType, metadata, sectionData);
   }, [templateType, workingCopy.content, workingCopy.structuredFields]);
 
