@@ -36,10 +36,12 @@ import {
   Loader2,
   Eye,
   ArrowRightLeft,
+  Check,
+  X,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
-import { parseClusters, groupChildrenByClusters } from "@/lib/clusters";
+import { parseClusters, groupChildrenByClusters, generateClusterId } from "@/lib/clusters";
 import { Layers } from "lucide-react";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
@@ -129,6 +131,9 @@ export function NodeDetail() {
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
   const [showMoveNode, setShowMoveNode] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
+  const [showAddCluster, setShowAddCluster] = useState(false);
+  const [newClusterTitle, setNewClusterTitle] = useState("");
+  const [isAddingCluster, setIsAddingCluster] = useState(false);
   const { toast } = useToast();
 
   const pageDef = useMemo(() => {
@@ -339,6 +344,48 @@ export function NodeDetail() {
     },
     [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
   );
+
+  const handleAddCluster = useCallback(async () => {
+    if (!nodeId || !newClusterTitle.trim()) return;
+    setIsAddingCluster(true);
+    try {
+      let wc = activeWC;
+      if (!wc) {
+        wc = await createWorkingCopy.mutateAsync({ nodeId });
+      }
+      const currentClusters = parseClusters(
+        (wc.structuredFields as Record<string, unknown>)?._clusters,
+      );
+      const newCluster = {
+        id: generateClusterId(),
+        title: newClusterTitle.trim(),
+        sortOrder: currentClusters.length,
+        childNodeIds: [],
+      };
+      await updateWorkingCopy.mutateAsync({
+        workingCopyId: wc.id,
+        data: {
+          structuredFields: {
+            ...((wc.structuredFields as Record<string, unknown>) ?? {}),
+            _clusters: [...currentClusters, newCluster],
+          },
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+      });
+      setNewClusterTitle("");
+      setShowAddCluster(false);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Cluster konnte nicht angelegt werden",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    } finally {
+      setIsAddingCluster(false);
+    }
+  }, [nodeId, newClusterTitle, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast]);
 
   if (isLoading) {
     return (
@@ -655,21 +702,63 @@ export function NodeDetail() {
 
           {isDocRegistry && (
             <div className="mb-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold">Registereinträge</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-base font-semibold shrink-0">Registereinträge</h3>
                 {canCreate && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setCreateInClusterId(null);
-                      setCreatePresetType(undefined);
-                      setShowCreate(true);
-                    }}
-                  >
-                    <Plus className="mr-1 h-4 w-4" />
-                    Neue Seite
-                  </Button>
+                  <div className="flex items-center gap-2 flex-1 justify-end">
+                    {showAddCluster ? (
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          value={newClusterTitle}
+                          onChange={(e) => setNewClusterTitle(e.target.value)}
+                          placeholder="Cluster-Name..."
+                          className="h-8 text-sm w-44"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleAddCluster();
+                            if (e.key === "Escape") {
+                              setShowAddCluster(false);
+                              setNewClusterTitle("");
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="h-8 w-8 p-0 shrink-0"
+                          onClick={handleAddCluster}
+                          disabled={!newClusterTitle.trim() || isAddingCluster}
+                        >
+                          {isAddingCluster ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 shrink-0"
+                          onClick={() => {
+                            setShowAddCluster(false);
+                            setNewClusterTitle("");
+                          }}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        title="Neuen Cluster anlegen"
+                        onClick={() => setShowAddCluster(true)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
               <DocRegistryView
