@@ -73,9 +73,7 @@ import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
 import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { PageAssistant } from "@/components/ai/PageAssistant";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
-import { Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { isFieldEmpty } from "@/lib/field-empty";
 
@@ -123,7 +121,6 @@ export function NodeDetail() {
   const [showCreate, setShowCreate] = useState(false);
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [showEdit, setShowEdit] = useState(false);
-  const [showPageAssist, setShowPageAssist] = useState(false);
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
   const [showMoveNode, setShowMoveNode] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
@@ -615,42 +612,14 @@ export function NodeDetail() {
 
           {isOverviewPage && !isFieldEmpty(editorContent) && (
           <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-              <h3 className="text-base font-semibold">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={showPageAssist ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setShowPageAssist(!showPageAssist)}
-                >
-                  <Bot className="h-3.5 w-3.5 mr-1" />
-                  FlowCore-Assistent
-                </Button>
-              </div>
-            </div>
-            <div
-              className={
-                showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
-              }
-            >
-              <BlockEditor
-                content={editorContent}
-                onSave={async () => {}}
-                editable={false}
-                nodeId={nodeId}
-                parentTemplateType={node?.templateType}
-              />
-              {showPageAssist && (
-                <PageAssistant
-                  nodeId={nodeId}
-                  getSelectedText={() => {
-                    const sel = window.getSelection();
-                    return sel ? sel.toString() : "";
-                  }}
-                  onClose={() => setShowPageAssist(false)}
-                />
-              )}
-            </div>
+            <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+            <BlockEditor
+              content={editorContent}
+              onSave={async () => {}}
+              editable={false}
+              nodeId={nodeId}
+              parentTemplateType={node?.templateType}
+            />
           </div>
           )}
 
@@ -924,42 +893,14 @@ export function NodeDetail() {
 
           {!isOverviewPage && !isFieldEmpty(editorContent) && (
           <div className="mt-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-              <h3 className="text-base font-semibold">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={showPageAssist ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setShowPageAssist(!showPageAssist)}
-                >
-                  <Bot className="h-3.5 w-3.5 mr-1" />
-                  FlowCore-Assistent
-                </Button>
-              </div>
-            </div>
-            <div
-              className={
-                showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
-              }
-            >
-              <BlockEditor
-                content={editorContent}
-                onSave={async () => {}}
-                editable={false}
-                nodeId={nodeId}
-                parentTemplateType={node?.templateType}
-              />
-              {showPageAssist && (
-                <PageAssistant
-                  nodeId={nodeId}
-                  getSelectedText={() => {
-                    const sel = window.getSelection();
-                    return sel ? sel.toString() : "";
-                  }}
-                  onClose={() => setShowPageAssist(false)}
-                />
-              )}
-            </div>
+            <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+            <BlockEditor
+              content={editorContent}
+              onSave={async () => {}}
+              editable={false}
+              nodeId={nodeId}
+              parentTemplateType={node?.templateType}
+            />
           </div>
           )}
 

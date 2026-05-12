@@ -64,12 +64,11 @@ import { useSetupMode } from "@/hooks/use-setup-mode";
 import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
-import { PageAssistant } from "@/components/ai/PageAssistant";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import type { JSONContent } from "@tiptap/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
-import { Bot, Sparkles, AlertCircle, Info } from "lucide-react";
+import { Sparkles, AlertCircle, Info } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 const AUTOSAVE_DELAY_MS = 2000;
@@ -156,7 +155,6 @@ export function WorkingCopyEditorPage() {
   const [changeType, setChangeType] = useState("editorial");
   const [changeSummary, setChangeSummary] = useState("");
   const [submitComment, setSubmitComment] = useState("");
-  const [showPageAssist, setShowPageAssist] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [pendingClusterId, setPendingClusterId] = useState<string | null>(null);
@@ -882,46 +880,19 @@ export function WorkingCopyEditorPage() {
             )}
 
             <div className="mt-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                <h3 className="text-base font-semibold">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={showPageAssist ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setShowPageAssist(!showPageAssist)}
-                  >
-                    <Bot className="h-3.5 w-3.5 mr-1" />
-                    FlowCore-Assistent
-                  </Button>
-                </div>
-              </div>
-              <div
-                className={
-                  showPageAssist ? "flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-4" : ""
-                }
-              >
-                <BlockEditor
-                  content={editorContent}
-                  onSave={handleEditorSave}
-                  onContentChange={handleEditorContentChange}
-                  editable={canEdit}
-                  nodeId={nodeId}
-                  lastSavedAt={lastSavedAt}
-                  onTrackMediaUsage={handleTrackMediaUsage}
-                  onCreateSubpage={() => setShowCreate(true)}
-                  parentTemplateType={node?.templateType}
-                />
-                {showPageAssist && (
-                  <PageAssistant
-                    nodeId={nodeId}
-                    getSelectedText={() => {
-                      const sel = window.getSelection();
-                      return sel ? sel.toString() : "";
-                    }}
-                    onClose={() => setShowPageAssist(false)}
-                  />
-                )}
-              </div>
+              <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+              <BlockEditor
+                content={editorContent}
+                onSave={handleEditorSave}
+                onContentChange={handleEditorContentChange}
+                editable={canEdit}
+                nodeId={nodeId}
+                lastSavedAt={lastSavedAt}
+                onTrackMediaUsage={handleTrackMediaUsage}
+                onCreateSubpage={() => setShowCreate(true)}
+                parentTemplateType={node?.templateType}
+                fieldKey="content"
+              />
             </div>
 
             {node && (

@@ -45,6 +45,23 @@ import { EDITOR_CONFIG } from "@/lib/editor-config";
 
 import { Badge } from "@workspace/ui/badge";
 import { Save, AlertTriangle } from "lucide-react";
+import { FieldAiButton } from "@/components/ai/FieldAiButton";
+
+function textToTiptapContent(text: string): JSONContent {
+  const paragraphs = text.split(/\n{2,}/).filter((p) => p.trim());
+  if (paragraphs.length === 0) {
+    return { type: "doc", content: [{ type: "paragraph" }] };
+  }
+  return {
+    type: "doc",
+    content: paragraphs.map((p) => ({
+      type: "paragraph",
+      content: p.trim()
+        ? [{ type: "text", text: p.replace(/\n/g, " ").trim() }]
+        : undefined,
+    })),
+  };
+}
 
 interface BlockEditorProps {
   content: JSONContent | null;
@@ -58,6 +75,7 @@ interface BlockEditorProps {
   onTrackMediaUsage?: (assetId: string) => void;
   onCreateSubpage?: (context: { headingText: string; afterPos: number }) => void;
   parentTemplateType?: string;
+  fieldKey?: string;
 }
 
 const AUTOSAVE_INTERVAL = EDITOR_CONFIG.autosaveIntervalMs;
@@ -78,6 +96,7 @@ export function BlockEditor({
   onTrackMediaUsage,
   onCreateSubpage,
   parentTemplateType,
+  fieldKey,
 }: BlockEditorProps) {
   const [slashMenu, setSlashMenu] = useState<{
     isOpen: boolean;
@@ -493,13 +512,28 @@ export function BlockEditor({
               parentTemplateType={parentTemplateType}
             />
           </div>
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-1 px-3 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
-          >
-            <Save className="h-3 w-3" />
-            Speichern
-          </button>
+          <div className="flex items-center gap-1">
+            {fieldKey && parentTemplateType && (
+              <FieldAiButton
+                fieldKey={fieldKey}
+                pageType={parentTemplateType}
+                nodeId={nodeId}
+                getValue={() => editor.getText()}
+                onApply={async (text) => {
+                  const newContent = textToTiptapContent(text);
+                  editor.commands.setContent(newContent);
+                  await onSave(newContent);
+                }}
+              />
+            )}
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-1 px-3 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
+            >
+              <Save className="h-3 w-3" />
+              Speichern
+            </button>
+          </div>
         </div>
       )}
 
