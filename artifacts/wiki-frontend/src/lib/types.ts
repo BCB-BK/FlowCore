@@ -117,4 +117,14 @@ export const ENUM_LABELS: Record<string, Record<string, string>> = {
     support: "Unterstützungsprozess",
     management: "Managementprozess",
   },
+  meeting_type: {
+    project_meeting: "Projektbesprechung",
+    steering_committee: "Lenkungsausschuss",
+    team_meeting: "Teambesprechung",
+    board_meeting: "Vorstandssitzung",
+    workshop: "Workshop",
+    review: "Review",
+    retrospective: "Retrospektive",
+    other: "Sonstige",
+  },
 };
