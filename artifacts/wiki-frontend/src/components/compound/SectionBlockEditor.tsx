@@ -25,6 +25,7 @@ import {
   AlignCenter,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { FieldAiButton } from "@/components/ai/FieldAiButton";
 
 function parseSectionContent(raw: string): JSONContent {
   if (!raw) return { type: "doc", content: [{ type: "paragraph" }] };
@@ -49,6 +50,18 @@ function isEmptyDoc(content: JSONContent | null): boolean {
   return content.content.every(
     (node) => !node.content || node.content.length === 0,
   );
+}
+
+function extractPlainText(doc: JSONContent): string {
+  function walk(node: JSONContent): string {
+    if (node.type === "text") return node.text ?? "";
+    if (!node.content) return "";
+    const childText = node.content.map(walk).join("");
+    if (node.type === "paragraph" || node.type === "heading") return childText + "\n";
+    if (node.type === "listItem") return "- " + childText;
+    return childText;
+  }
+  return walk(doc).trim();
 }
 
 interface ToolbarButtonProps {
@@ -87,6 +100,8 @@ interface SectionBlockEditorProps {
   emptyText?: string;
   placeholder?: string;
   readOnly?: boolean;
+  pageType?: string;
+  nodeId?: string;
 }
 
 export function SectionBlockEditor({
@@ -99,6 +114,8 @@ export function SectionBlockEditor({
   emptyText = "Noch kein Inhalt",
   placeholder,
   readOnly = false,
+  pageType,
+  nodeId,
 }: SectionBlockEditorProps) {
   const [editing, setEditing] = useState(false);
   const isEditable = !readOnly && !!onSave;
@@ -156,6 +173,25 @@ export function SectionBlockEditor({
     editor.commands.setContent(parseSectionContent(value), { emitUpdate: false });
   }, [value, editor, editing]);
 
+  const getFieldValue = useCallback(() => {
+    if (editor) return extractPlainText(editor.getJSON());
+    return extractPlainText(parseSectionContent(value));
+  }, [editor, value]);
+
+  const handleAiApply = useCallback(
+    (newText: string) => {
+      if (!editor) return;
+      const newContent = parseSectionContent(newText);
+      if (editing) {
+        editor.commands.setContent(newContent);
+      } else {
+        editor.commands.setContent(newContent, { emitUpdate: false });
+        onSave?.(sectionKey, JSON.stringify(newContent));
+      }
+    },
+    [editor, editing, onSave, sectionKey],
+  );
+
   const displayContent = parseSectionContent(value);
   const displayEmpty = isEmptyDoc(displayContent);
 
@@ -168,6 +204,15 @@ export function SectionBlockEditor({
             {label}
           </CardTitle>
           <div className="flex items-center gap-1">
+            {isEditable && pageType && (
+              <FieldAiButton
+                fieldKey={sectionKey}
+                pageType={pageType}
+                nodeId={nodeId}
+                getValue={getFieldValue}
+                onApply={handleAiApply}
+              />
+            )}
             {isEditable && !editing && (
               <Button
                 variant="ghost"

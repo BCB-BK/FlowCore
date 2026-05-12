@@ -162,6 +162,8 @@ function FieldRenderer({
           iconColor={field.iconColor}
           emptyText={field.emptyText}
           readOnly={readOnly}
+          pageType={pageType}
+          nodeId={nodeId}
         />
       );
     }
