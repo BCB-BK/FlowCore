@@ -241,10 +241,15 @@ export function NodeDetail() {
     [latestRevision?.structuredFields],
   );
 
-  const clusters = useMemo(
-    () => parseClusters(structuredFields._clusters),
-    [structuredFields._clusters],
-  );
+  const clusters = useMemo(() => {
+    // Prefer working copy's _clusters once loaded — so cluster assignments
+    // made via handleNodeCreatedInCluster are immediately visible without publish
+    if (!wcLoading) {
+      const wcSF = activeWC?.structuredFields as Record<string, unknown> | null | undefined;
+      if (wcSF?._clusters) return parseClusters(wcSF._clusters);
+    }
+    return parseClusters(structuredFields._clusters);
+  }, [structuredFields._clusters, activeWC, wcLoading]);
 
   const clusterGroups = useMemo(() => {
     if (!children || children.length === 0 || clusters.length === 0) return [];
@@ -343,6 +348,48 @@ export function NodeDetail() {
       }
     },
     [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+  );
+
+  const handleAssignToCluster = useCallback(
+    async (childId: string, clusterId: string | null) => {
+      if (!nodeId) return;
+      try {
+        let wc = activeWC;
+        if (!wc) {
+          wc = await createWorkingCopy.mutateAsync({ nodeId });
+        }
+        const currentClusters = parseClusters(
+          (wc.structuredFields as Record<string, unknown>)?._clusters,
+        );
+        const updated = currentClusters.map((c) => ({
+          ...c,
+          childNodeIds: c.childNodeIds.filter((id) => id !== childId),
+        }));
+        if (clusterId) {
+          const target = updated.find((c) => c.id === clusterId);
+          if (target) target.childNodeIds = [...target.childNodeIds, childId];
+        }
+        await updateWorkingCopy.mutateAsync({
+          workingCopyId: wc.id,
+          data: {
+            structuredFields: {
+              ...((wc.structuredFields as Record<string, unknown>) ?? {}),
+              _clusters: updated,
+            },
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Zuordnung fehlgeschlagen",
+          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
   );
 
   const handleAddCluster = useCallback(async () => {
@@ -765,6 +812,8 @@ export function NodeDetail() {
                 clusterGroups={clusterGroups}
                 allChildren={children ?? []}
                 canCreate={canCreate}
+                clusters={clusters}
+                onAssignToCluster={clusters.length > 0 ? handleAssignToCluster : undefined}
                 onCreateInCluster={(clusterId) => {
                   setCreateInClusterId(clusterId);
                   setCreatePresetType(undefined);
