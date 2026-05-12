@@ -144,6 +144,10 @@ function FieldRenderer({
           onSave={onSectionSave}
           sectionKey={field.key}
           readOnly={readOnly}
+          label={field.label}
+          icon={field.icon}
+          iconColor={field.iconColor}
+          emptyText={field.emptyText}
         />
       );
     case "section_block_editor": {

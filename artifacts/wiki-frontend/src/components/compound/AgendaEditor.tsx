@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
 import { List, Plus, Trash2, Pencil, Check, X, ChevronUp, ChevronDown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 function parseAgenda(raw: string): string[] {
   if (!raw) return [];
@@ -21,6 +22,10 @@ interface AgendaEditorProps {
   onSave?: (key: string, value: unknown) => void;
   sectionKey: string;
   readOnly?: boolean;
+  label?: string;
+  icon?: LucideIcon;
+  iconColor?: string;
+  emptyText?: string;
 }
 
 export function AgendaEditor({
@@ -28,6 +33,10 @@ export function AgendaEditor({
   onSave,
   sectionKey,
   readOnly = false,
+  label = "Tagesordnung / Sachstand / Kontext",
+  icon: Icon,
+  iconColor = "text-blue-600",
+  emptyText = "Keine Punkte erfasst",
 }: AgendaEditorProps) {
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState<string[]>(() => parseAgenda(value));
@@ -92,8 +101,8 @@ export function AgendaEditor({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <List className="h-4 w-4 text-blue-600" />
-            Tagesordnung / Sachstand / Kontext
+            {Icon ? <Icon className={`h-4 w-4 ${iconColor}`} /> : <List className={`h-4 w-4 ${iconColor}`} />}
+            {label}
             {displayItems.length > 0 && (
               <span className="text-xs font-normal text-muted-foreground">
                 ({displayItems.length} {displayItems.length === 1 ? "Punkt" : "Punkte"})
@@ -141,7 +150,7 @@ export function AgendaEditor({
                   value={item}
                   onChange={(e) => updateItem(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(e, i)}
-                  placeholder={`Tagesordnungspunkt ${i + 1}`}
+                  placeholder={`Punkt ${i + 1}`}
                   className="h-8 text-sm flex-1"
                 />
                 <div className="flex flex-col shrink-0">
@@ -190,7 +199,7 @@ export function AgendaEditor({
           </ol>
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
-            Keine Tagesordnungspunkte erfasst
+            {emptyText}
           </p>
         )}
       </CardContent>

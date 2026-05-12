@@ -216,7 +216,7 @@ export const meetingProtocolTopConfig: LayoutConfig = {
 export const meetingProtocolBottomConfig: LayoutConfig = {
   pageTypeKey: "meeting_protocol",
   rows: [
-    { key: "open_points", component: "editable", label: "Offene Punkte / Klärungsbedarf", description: "Offene Fragen und Klärungsbedarfe", icon: MessageSquare, iconColor: "text-yellow-600", emptyText: "Keine offenen Punkte erfasst" },
+    { key: "open_points", component: "agenda_editor", label: "Offene Punkte / Klärungsbedarf", icon: MessageSquare, iconColor: "text-yellow-600", emptyText: "Keine offenen Punkte erfasst" },
     { key: "action_items", component: "section_block_editor", label: "Maßnahmen / To-dos", icon: ClipboardList, iconColor: "text-orange-600", emptyText: "Keine Maßnahmen definiert" },
     { key: "next_meeting", component: "editable", label: "Nächster Termin / Wiedervorlage", description: "Datum und Ort der nächsten Sitzung", icon: Calendar, iconColor: "text-green-600", emptyText: "Kein nächster Termin festgelegt" },
   ],
