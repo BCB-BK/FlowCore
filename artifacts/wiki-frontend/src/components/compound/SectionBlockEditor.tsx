@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -150,6 +150,11 @@ export function SectionBlockEditor({
     editor.setEditable(false);
     setEditing(false);
   }, [editor, value]);
+
+  useEffect(() => {
+    if (!editor || editing) return;
+    editor.commands.setContent(parseSectionContent(value), false);
+  }, [value, editor, editing]);
 
   const displayContent = parseSectionContent(value);
   const displayEmpty = isEmptyDoc(displayContent);
