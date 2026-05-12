@@ -207,8 +207,8 @@ export const meetingProtocolTopConfig: LayoutConfig = {
   pageTypeKey: "meeting_protocol",
   rows: [
     [
-      { key: "participants", component: "participants_editor" },
-      { key: "agenda", component: "agenda_editor" },
+      { key: "participants", component: "participants_editor", colSpan: 1 },
+      { key: "agenda", component: "agenda_editor", colSpan: 2 },
     ],
   ],
 };

@@ -31,6 +31,7 @@ export interface LayoutField {
   emptyText?: string;
   requirement?: "required" | "recommended" | "conditional";
   required?: boolean;
+  colSpan?: number;
 }
 
 export type LayoutRow = LayoutField | LayoutField[];

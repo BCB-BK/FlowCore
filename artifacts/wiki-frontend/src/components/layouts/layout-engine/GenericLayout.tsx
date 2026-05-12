@@ -210,11 +210,30 @@ function RowRenderer({
       ? row.filter((field) => !isFieldEmpty(structuredFields[field.key]))
       : row;
     if (visibleFields.length === 0) return null;
+    const GRID_COLS: Record<number, string> = {
+      1: "grid grid-cols-1 gap-4",
+      2: "grid grid-cols-1 md:grid-cols-2 gap-4",
+      3: "grid grid-cols-1 md:grid-cols-3 gap-4",
+      4: "grid grid-cols-1 md:grid-cols-4 gap-4",
+    };
+    const COL_SPAN: Record<number, string> = {
+      1: "md:col-span-1",
+      2: "md:col-span-2",
+      3: "md:col-span-3",
+    };
+    const hasColSpan = visibleFields.some((f) => f.colSpan !== undefined);
+    const totalCols = hasColSpan
+      ? visibleFields.reduce((sum, f) => sum + (f.colSpan ?? 1), 0)
+      : Math.min(visibleFields.length, 2);
+    const gridClass = GRID_COLS[totalCols] ?? GRID_COLS[2];
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={gridClass}>
         {visibleFields.map((field) => (
-          <FieldRenderer
+          <div
             key={field.key}
+            className={field.colSpan ? COL_SPAN[field.colSpan] : undefined}
+          >
+          <FieldRenderer
             field={field}
             structuredFields={structuredFields}
             onSectionSave={onSectionSave}
@@ -222,6 +241,7 @@ function RowRenderer({
             nodeId={nodeId}
             sectionDef={sectionDefs.get(field.key)}
           />
+          </div>
         ))}
       </div>
     );
