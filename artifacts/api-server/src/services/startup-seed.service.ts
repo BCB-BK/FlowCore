@@ -105,7 +105,7 @@ async function seedAiFieldProfiles(): Promise<void> {
         promptInstruction: p.prompt_instruction,
         style: p.style,
         guardrails: p.guardrails,
-        allowedOperations: p.allowed_operations,
+        allowedOperations: p.allowed_operations ?? [],
         isActive: p.is_active,
       })),
     );

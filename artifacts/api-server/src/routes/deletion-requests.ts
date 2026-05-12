@@ -151,7 +151,7 @@ router.post("/deletion-requests", requireAuth, async (req, res) => {
 });
 
 router.get("/deletion-requests/:requestId", requireAuth, async (req, res) => {
-  const { requestId } = req.params;
+  const requestId = String(req.params.requestId);
 
   const [request] = await db
     .select({
@@ -188,7 +188,7 @@ router.post(
   requireAuth,
   requirePermission("archive_page"),
   async (req, res) => {
-    const { requestId } = req.params;
+    const requestId = String(req.params.requestId);
     const { decision, comment } = req.body as {
       decision: "approved" | "rejected";
       comment?: string;
@@ -292,7 +292,7 @@ router.post(
   "/deletion-requests/:requestId/cancel",
   requireAuth,
   async (req, res) => {
-    const { requestId } = req.params;
+    const requestId = String(req.params.requestId);
     const userId = req.user!.principalId;
 
     const [request] = await db
@@ -349,7 +349,7 @@ router.post(
 );
 
 router.get("/nodes/:nodeId/deletion-request", requireAuth, async (req, res) => {
-  const { nodeId } = req.params;
+  const nodeId = String(req.params.nodeId);
 
   const [request] = await db
     .select({

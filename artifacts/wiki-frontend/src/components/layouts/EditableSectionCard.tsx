@@ -64,11 +64,14 @@ export function EditableSectionCard({
   const [draft, setDraft] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Dependency intentionally limited to [editing] — cursor-placement runs only
+  // when entering edit mode, not on every keystroke (which would jump cursor to end).
   useEffect(() => {
     if (editing && textareaRef.current) {
       textareaRef.current.focus();
       textareaRef.current.setSelectionRange(draft.length, draft.length);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editing]);
 
   useEffect(() => {
