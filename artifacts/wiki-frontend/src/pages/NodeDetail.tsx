@@ -256,11 +256,9 @@ export function NodeDetail() {
   }, [children, clusters, isPublished, sortByDisplayCode]);
 
   const editorContent = useMemo(() => {
-    if (
-      structuredFields._editorContent &&
-      typeof structuredFields._editorContent === "object"
-    ) {
-      return structuredFields._editorContent as JSONContent;
+    const raw = structuredFields._editorContent ?? structuredFields.discussion;
+    if (raw && typeof raw === "object") {
+      return raw as JSONContent;
     }
     return null;
   }, [structuredFields]);

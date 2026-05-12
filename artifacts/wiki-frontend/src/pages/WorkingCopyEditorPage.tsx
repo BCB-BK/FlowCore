@@ -227,11 +227,9 @@ export function WorkingCopyEditorPage() {
   }, [activeWC]);
 
   const editorContent = useMemo(() => {
-    if (
-      wcStructuredFields._editorContent &&
-      typeof wcStructuredFields._editorContent === "object"
-    ) {
-      return wcStructuredFields._editorContent as JSONContent;
+    const raw = wcStructuredFields._editorContent ?? wcStructuredFields.discussion;
+    if (raw && typeof raw === "object") {
+      return raw as JSONContent;
     }
     return null;
   }, [wcStructuredFields]);

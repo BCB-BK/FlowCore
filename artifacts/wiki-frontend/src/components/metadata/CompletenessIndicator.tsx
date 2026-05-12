@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { calculateCompleteness, getFieldsByRequirement, getSectionsByRequirement, validateForPublication } from "@/lib/types";
 import { useSetupMode } from "@/hooks/use-setup-mode";
 import { Progress } from "@workspace/ui/progress";
@@ -26,13 +26,24 @@ export function CompletenessIndicator({
 }: CompletenessIndicatorProps) {
   const { setupMode } = useSetupMode();
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const normalizedSectionData = useMemo(() => {
+    if (templateType === "meeting_protocol") {
+      return {
+        ...sectionData,
+        discussion: sectionData._editorContent ?? sectionData.discussion,
+      };
+    }
+    return sectionData;
+  }, [templateType, sectionData]);
+
   const { percentage, filled, total, missing } = calculateCompleteness(
     templateType,
     metadata,
-    sectionData,
+    normalizedSectionData,
   );
 
-  const validation = validateForPublication(templateType, metadata, sectionData);
+  const validation = validateForPublication(templateType, metadata, normalizedSectionData);
   const fieldReqs = getFieldsByRequirement(templateType);
   const sectionReqs = getSectionsByRequirement(templateType);
 

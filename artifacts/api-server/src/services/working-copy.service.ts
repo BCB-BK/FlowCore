@@ -562,7 +562,14 @@ export async function publishWorkingCopy(
 
   if (pubNode && !(await isSetupMode())) {
     const metadata = (wc.content as Record<string, unknown>) ?? {};
-    const sectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
+    const rawSectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
+    const sectionData =
+      pubNode.templateType === "meeting_protocol"
+        ? {
+            ...rawSectionData,
+            discussion: rawSectionData._editorContent ?? rawSectionData.discussion,
+          }
+        : rawSectionData;
     const validation = validateForPublication(pubNode.templateType, metadata, sectionData);
     if (validation && !validation.valid) {
       const errorMessages = validation.errors.map((e) => e.message).join("; ");
