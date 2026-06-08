@@ -9,7 +9,7 @@ import {
   mediaAssetsTable,
   auditEventsTable,
 } from "@workspace/db/schema";
-import { eq, desc, asc, sql } from "drizzle-orm";
+import { eq, desc, asc, sql, and } from "drizzle-orm";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs";
@@ -199,6 +199,25 @@ export async function validateBackupTarget(
 }
 
 async function getConnectorConfig(): Promise<Record<string, string> | null> {
+  const [provider] = await db
+    .select()
+    .from(storageProvidersTable)
+    .where(
+      and(
+        eq(storageProvidersTable.purpose, "backup_target"),
+        eq(storageProvidersTable.providerType, "sharepoint"),
+        eq(storageProvidersTable.isActive, true),
+      ),
+    )
+    .limit(1);
+
+  if (provider?.config) {
+    const cfg = provider.config as Record<string, string>;
+    if (cfg.tenantId && cfg.clientId && cfg.clientSecret) {
+      return cfg;
+    }
+  }
+
   const [system] = await db
     .select()
     .from(sourceSystemsTable)

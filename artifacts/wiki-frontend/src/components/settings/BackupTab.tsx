@@ -40,6 +40,7 @@ import {
   Settings,
   History,
   Shield,
+  Info,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -359,8 +360,25 @@ function BackupConfigSection() {
             </div>
           )}
 
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-1.5">
+            <p className="text-sm font-medium text-blue-900 flex items-center gap-2">
+              <Info className="w-4 h-4 shrink-0" />
+              SharePoint-Zugangsdaten (Konnektoren)
+            </p>
+            <p className="text-xs text-blue-700 leading-relaxed">
+              Die Anmeldedaten für SharePoint (Mandanten-ID, App-ID, Client-Secret) werden
+              aus dem Speicheranbieter mit dem Zweck <strong>„Backup-Ziel"</strong> unter{" "}
+              <strong>Einstellungen → Konnektoren → Speicheranbieter</strong> bezogen.
+              Stellen Sie sicher, dass dort ein aktiver SharePoint-Eintrag mit Zweck „Backup-Ziel"
+              und vollständigen App-Credentials hinterlegt ist.
+            </p>
+          </div>
+
           <div>
             <Label className="mb-2 block">SharePoint-Zielordner</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Wählen Sie den Ordner innerhalb der konfigurierten Backup-Bibliothek aus.
+            </p>
             <SharePointSiteDrivePicker
               value={spSelection}
               onChange={setSpSelection}
