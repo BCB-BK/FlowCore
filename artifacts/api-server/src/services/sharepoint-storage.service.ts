@@ -16,10 +16,20 @@ export interface SharePointStorageConfig {
 }
 
 async function getAppToken(config: SharePointStorageConfig): Promise<string> {
-  const tokenUrl = `https://login.microsoftonline.com/${config.tenantId}/oauth2/v2.0/token`;
+  const tenantId = config.tenantId || process.env.ENTRA_TENANT_ID;
+  const clientId = config.clientId || process.env.ENTRA_CLIENT_ID;
+  const clientSecret = config.clientSecret || process.env.ENTRA_CLIENT_SECRET;
+
+  if (!tenantId || !clientId || !clientSecret) {
+    throw new Error(
+      "SharePoint credentials missing: tenantId, clientId and clientSecret must be set in the provider config or as ENTRA_TENANT_ID / ENTRA_CLIENT_ID / ENTRA_CLIENT_SECRET environment variables",
+    );
+  }
+
+  const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
   const body = new URLSearchParams({
-    client_id: config.clientId,
-    client_secret: config.clientSecret,
+    client_id: clientId,
+    client_secret: clientSecret,
     scope: "https://graph.microsoft.com/.default",
     grant_type: "client_credentials",
   });
@@ -32,7 +42,7 @@ async function getAppToken(config: SharePointStorageConfig): Promise<string> {
 
   if (!resp.ok) {
     const body = await resp.text().catch(() => "");
-    logger.error({ status: resp.status, body, tenantId: config.tenantId, clientId: config.clientId }, "SharePoint app token request failed");
+    logger.error({ status: resp.status, body, tenantId, clientId }, "SharePoint app token request failed");
     throw new Error(`Failed to acquire app token: ${resp.status} – ${body}`);
   }
 
