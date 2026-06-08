@@ -31,7 +31,9 @@ async function getAppToken(config: SharePointStorageConfig): Promise<string> {
   });
 
   if (!resp.ok) {
-    throw new Error(`Failed to acquire app token: ${resp.status}`);
+    const body = await resp.text().catch(() => "");
+    logger.error({ status: resp.status, body, tenantId: config.tenantId, clientId: config.clientId }, "SharePoint app token request failed");
+    throw new Error(`Failed to acquire app token: ${resp.status} – ${body}`);
   }
 
   const data = (await resp.json()) as { access_token: string };

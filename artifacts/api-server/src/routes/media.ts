@@ -24,6 +24,7 @@ import {
   getStorageProvider,
 } from "../services/storage.service";
 import { getDriveItemContent } from "../services/sharepoint.service";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -199,6 +200,7 @@ router.post(
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error({ err }, `Media upload failed: ${message}`);
       res.status(500).json({ error: message });
     }
   },
@@ -299,6 +301,7 @@ router.post(
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error({ err }, `SharePoint import failed: ${message}`);
       res.status(500).json({ error: message });
     }
   },
