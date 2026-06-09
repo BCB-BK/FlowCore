@@ -1,46 +1,68 @@
-# Configuration & Environment
+# Konfiguration & Umgebungsvariablen – FlowCore
 
-## Overview
+## Übersicht
 
-All configuration is validated at startup using Zod schemas. The application fails fast if required values are missing — no silent fallbacks or dummy defaults.
+Alle Konfigurationswerte werden beim Start via Zod-Schema validiert (`artifacts/api-server/src/lib/config.ts`). Die Anwendung bricht sofort ab, wenn Pflichtfelder fehlen – keine stillen Fallbacks.
 
-## Configuration Categories
+## Vollständige Variablenliste
 
-| Category      | Prefix/Key       | Required | Description                          |
-|---------------|------------------|----------|--------------------------------------|
-| App           | `PORT`           | Yes      | Server port                          |
-| App           | `NODE_ENV`       | No       | Environment mode (defaults to "development" for local dev; must be set explicitly in production) |
-| Database      | `DATABASE_URL`   | Yes      | PostgreSQL connection string         |
-| Auth (future) | `AZURE_*`        | No       | Microsoft Entra ID SSO credentials   |
-| Graph (future)| `GRAPH_*`        | No       | Microsoft Graph API configuration    |
-| AI (future)   | `OPENAI_*`       | No       | ChatGPT API credentials              |
-| Logging       | `LOG_LEVEL`      | No       | pino log level (default: info)       |
+### Pflichtfelder (Produktion)
 
-## Config Validation
+| Variable | Beschreibung | Beispiel |
+|---|---|---|
+| `PORT` | Server-Port | `8080` |
+| `NODE_ENV` | Umgebung | `production` |
+| `DATABASE_URL` | PostgreSQL-Verbindungszeichenfolge | `postgresql://user:pass@host:5432/db` |
+| `SESSION_SECRET` | Session-Schlüssel (mind. 32 Zeichen, kryptographisch zufällig) | — |
+| `ENTRA_CLIENT_ID` | Azure AD App-Registrierung Client-ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `ENTRA_CLIENT_SECRET` | Azure AD App-Registrierung Client-Secret | — |
+| `ENTRA_TENANT_ID` | Azure AD Tenant-ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `ENTRA_REDIRECT_URI` | OAuth-Callback-URL | `https://flowcore.bildungscampus-backnang.de/api/auth/callback` |
 
-The config schema is defined in `artifacts/api-server/src/lib/config.ts`. It uses Zod for type-safe validation at startup.
+### Optionale Felder
+
+| Variable | Beschreibung | Standard |
+|---|---|---|
+| `LOG_LEVEL` | Logging-Stufe (`trace`/`debug`/`info`/`warn`/`error`) | `info` |
+| `TEAMS_APP_ID` | Microsoft Teams App-ID für Deep Links | — |
+| `OPENAI_API_KEY` | OpenAI API-Schlüssel für KI-Assistent | — |
+| `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Entra-Prüfung) | `false` |
+
+### Credential-Nutzung durch SharePoint-Speicheranbieter
+
+Die Variablen `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID` und `ENTRA_CLIENT_SECRET` werden doppelt genutzt:
+
+1. **Benutzeranmeldung (SSO)**: OIDC-Login-Flow über Entra ID
+2. **SharePoint-Zugriff (App-to-App)**: Client-Credentials-Flow für Datei-Upload (Medienablage) und automatische Backups
+
+SharePoint-Speicheranbieter, die in der Konnektoren-Verwaltung angelegt wurden, können eigene Credentials in ihrer Konfiguration hinterlegen. Sind diese leer, werden automatisch die obigen Env-Vars als Fallback verwendet.
+
+## Konfigurationsdatei
+
+Das Schema befindet sich in `artifacts/api-server/src/lib/config.ts`:
 
 ```typescript
 import { appConfig } from "./lib/config";
 // appConfig.port, appConfig.nodeEnv, appConfig.databaseUrl
+// appConfig.entraClientId, appConfig.entraTenantId, etc.
 ```
 
-## Environment Files
+## Geheimnisverwaltung
 
-- **Development**: Environment variables are managed by Replit (Secrets tab)
-- **Production**: Set via Replit deployment environment
-- **No `.env` files committed** — all secrets managed through Replit's secret management
+- **Entwicklung**: Replit Secrets-Tab (verschlüsselt gespeichert)
+- **Produktion**: Replit Deployment-Umgebungsvariablen
+- **Keine `.env`-Dateien im Repository** – alle Geheimnisse über Replit-Secrets-Management
 
-## Adding New Config Values
+## Health-Check
 
-1. Add the value to the Zod schema in `artifacts/api-server/src/lib/config.ts`
-2. Mark it as required (`.min(1)`) or optional (`.optional()`) with a default
-3. Document it in this file
-4. Update the health endpoint if it's a critical dependency
+`GET /api/healthz` gibt zurück:
+- `{ status: "ok", database: "connected" }` – alle Systeme betriebsbereit
+- `{ status: "degraded", database: "disconnected" }` – Datenbank nicht erreichbar
+- HTTP 503 bei kritischen Systemfehlern
 
-## Health Check
+## Neue Konfigurationswerte hinzufügen
 
-`GET /api/healthz` returns:
-- `{ status: "ok", database: "connected" }` — all systems operational
-- `{ status: "degraded", database: "disconnected" }` — database unreachable
-- HTTP 503 if critical systems are down
+1. Wert im Zod-Schema in `artifacts/api-server/src/lib/config.ts` ergänzen
+2. Als Pflicht (`.min(1)`) oder optional (`.optional()`) mit Standardwert markieren
+3. In dieser Datei dokumentieren
+4. Health-Endpunkt aktualisieren, falls kritische Abhängigkeit

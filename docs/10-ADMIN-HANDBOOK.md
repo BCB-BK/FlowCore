@@ -2,30 +2,41 @@
 
 ## Überblick
 
-Dieses Handbuch beschreibt die Systemadministration von FlowCore, einschließlich Konfiguration, Benutzerverwaltung, Sicherheit und Wartung.
+Dieses Handbuch beschreibt die Systemadministration von FlowCore, einschließlich Konfiguration, Benutzerverwaltung, Konnektoren, Backup-System, Sicherheit und Wartung.
+
+---
 
 ## Systemarchitektur
 
-- **Frontend**: React + Vite (SPA, wird über Reverse-Proxy bereitgestellt)
-- **Backend**: Express 5 API-Server (Node.js)
+- **Frontend**: React + Vite (SPA, bereitgestellt über Replit Autoscale)
+- **Backend**: Express 5 API-Server (Node.js 24)
 - **Datenbank**: PostgreSQL mit Drizzle ORM
 - **Authentifizierung**: Microsoft Entra ID (SSO via OIDC/PKCE)
+- **Medienablage**: SharePoint (Microsoft Graph API)
+- **Backup**: Automatisch in SharePoint (konfigurierbar)
 - **Teams-Integration**: Microsoft Teams JS SDK v2
 
+---
+
 ## Umgebungsvariablen
+
+Vollständige Dokumentation: [05-CONFIG-ENV.md](./05-CONFIG-ENV.md)
 
 | Variable | Beschreibung | Pflicht |
 |---|---|---|
 | `DATABASE_URL` | PostgreSQL-Verbindungszeichenfolge | Ja |
-| `SESSION_SECRET` | Starkes Session-Secret (mind. 32 Zeichen) | Ja (Produktion) |
-| `ENTRA_CLIENT_ID` | Azure AD App-Registrierung Client-ID | Ja (Produktion) |
-| `ENTRA_CLIENT_SECRET` | Azure AD App-Registrierung Secret | Ja (Produktion) |
-| `ENTRA_TENANT_ID` | Azure AD Tenant-ID | Ja (Produktion) |
-| `ENTRA_REDIRECT_URI` | OAuth Callback-URL | Ja (Produktion) |
+| `SESSION_SECRET` | Session-Schlüssel (mind. 32 Zeichen) | Ja |
+| `ENTRA_CLIENT_ID` | Azure AD App-Registrierung Client-ID | Ja |
+| `ENTRA_CLIENT_SECRET` | Azure AD App-Registrierung Secret | Ja |
+| `ENTRA_TENANT_ID` | Azure AD Tenant-ID | Ja |
+| `ENTRA_REDIRECT_URI` | OAuth-Callback-URL | Ja |
 | `TEAMS_APP_ID` | Teams App-ID für Deep Links | Optional |
-| `AUTH_DEV_MODE` | `true` aktiviert Entwicklungsmodus | Nur Entwicklung |
-| `LOG_LEVEL` | Logging-Stufe (trace/debug/info/warn/error) | Optional (default: info) |
-| `NODE_ENV` | Umgebung (development/production/test) | Ja |
+| `OPENAI_API_KEY` | OpenAI API-Schlüssel für KI-Assistent | Optional |
+| `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Auth-Prüfung) | Nur Entwicklung |
+| `LOG_LEVEL` | Logging-Stufe (trace/debug/info/warn/error) | Optional |
+| `NODE_ENV` | Umgebung (development/production) | Ja |
+
+---
 
 ## Benutzerverwaltung
 
@@ -53,11 +64,113 @@ Das System verwendet 13+ feingranulare Berechtigungen:
 
 ### Rollenzuweisung
 
-Rollen werden über die Principals-API zugewiesen:
+Unter **Einstellungen → Benutzer & Rollen** können Administratoren Rollen zuweisen.
+
+API:
 ```
 POST /api/principals/:id/roles
 { "role": "editor", "scope": null }
 ```
+
+---
+
+## Konnektoren-Verwaltung
+
+Konnektoren verbinden FlowCore mit externen Diensten. Die Verwaltung erfolgt unter **Einstellungen → Konnektoren**.
+
+### Speicheranbieter
+
+Speicheranbieter definieren, wohin Dateien hochgeladen werden und wo Backups gespeichert werden.
+
+**Tabs**: Speicheranbieter | Sync-Status | SharePoint-Bibliotheken
+
+#### Speicheranbieter anlegen
+
+1. **Einstellungen → Konnektoren → Speicheranbieter → „Speicheranbieter hinzufügen"**
+2. Felder ausfüllen:
+   - **Name**: Anzeigename (z.B. „Medienablage Hauptsite")
+   - **Slug**: Technischer Bezeichner (z.B. `media-main`)
+   - **Typ**: `sharepoint`
+   - **Zweck**: `media_archive` (Medienablage) oder `backup_target` (Backup-Ziel)
+   - **Zugriffsmodus**: `Lesen & Schreiben`
+   - **Als Standard setzen**: Ja/Nein
+3. SharePoint-Site und -Bibliothek über den integrierten Picker auswählen
+4. Speichern
+
+#### Credential-Logik
+
+Speicheranbieter des Typs SharePoint nutzen für den API-Zugriff (Client-Credentials-Flow):
+1. **Eigene Credentials** aus der Konfiguration des Anbieters (falls hinterlegt)
+2. **Fallback**: Umgebungsvariablen `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET`
+
+Die App-Registrierung muss die Anwendungsberechtigung **`Files.ReadWrite.All`** (oder `Sites.ReadWrite.All`) in Microsoft Graph besitzen, mit erteilt**em Admin-Consent**.
+
+#### Zwecke der Speicheranbieter
+
+| Zweck | Beschreibung | Standard |
+|---|---|---|
+| `media_archive` | Ziel für alle Datei-Uploads aus dem Editor | Einer als Standard markiert |
+| `backup_target` | Ziel für automatische und manuelle Backups | — |
+| `knowledge_source` | Quellbibliothek für Content-Sync | — |
+
+### Quellsysteme
+
+Quellsysteme (z.B. SharePoint-Bibliotheken) können als Wissensquellen konfiguriert werden. Content kann von dort in das Wiki synchronisiert werden.
+
+---
+
+## Backup-Konfiguration
+
+Die Backup-Konfiguration erfolgt unter **Einstellungen → Backup**.
+
+### Konfiguration
+
+- **Automatischer Backup**: Ein/Aus-Schalter
+- **SharePoint-Zielordner**: Picker für den Backup-Zielordner in SharePoint
+- **Aufbewahrungsregeln**: Tägliche / Wöchentliche / Monatliche Anzahl
+- **Backup-Inhalte**: Template-Definitionen, Konnektor-Konfiguration, Medien-Index, Audit-Metadaten
+
+### Backup-Historie
+
+Unter dem Tab **„Backup-Historie"** sind alle durchgeführten Backups einsehbar.
+
+Vollständige Dokumentation: [12-BACKUP-RESTORE.md](./12-BACKUP-RESTORE.md)
+
+---
+
+## Seitenvorlagen (Templates)
+
+Unter **Einstellungen → Seitenvorlagen** können Administratoren:
+- Bestehende Vorlagen ansehen und deren Feldschemas einsehen
+- Vorlagen aktivieren/deaktivieren
+- Neue benutzerdefinierte Vorlagen erstellen
+
+### Vorhandene Template-Typen (11)
+
+| Typ | Deutsch | Hauptfelder |
+|---|---|---|
+| `core_process_overview` | Kernprozess-Übersicht | SIPOC, KPIs, Compliance |
+| `area_overview` | Bereichsübersicht | Beschreibung |
+| `process_page_text` | Prozessseite (Text) | Schritte, RACI, Schnittstellen |
+| `process_page_graphic` | Prozessseite (BPMN) | BPMN-Diagramm |
+| `procedure_instruction` | Verfahrensanweisung | Zweck, Schritte, Verantwortliche |
+| `work_instruction` | Arbeitsanweisung | Detaillierte Schritte |
+| `policy` | Richtlinie | Zweck, Geltungsbereich, Regelwerk |
+| `role_profile` | Rollenprofil | Aufgaben, Qualifikationen |
+| `form_template` | Formularvorlage | Formularfelder |
+| `faq` | FAQ | Fragen & Antworten |
+| `info_page` | Infoseite | Freier Inhalt |
+
+---
+
+## KI-Einstellungen
+
+Unter **Einstellungen → KI** (bzw. **KI-Einstellungen**) können Administratoren:
+- KI-Feldsprofile konfigurieren (automatische Vorschläge für strukturierte Felder)
+- KI-Assistent (FlowCore-Assistent) aktivieren/deaktivieren
+- OpenAI-Modell und Parameter einstellen
+
+---
 
 ## Sicherheit
 
@@ -85,6 +198,8 @@ POST /api/principals/:id/roles
 - Audit-Trail für alle sicherheitsrelevanten Aktionen
 - CSRF-Schutz via OAuth-State-Parameter
 
+---
+
 ## Datenbank-Verwaltung
 
 ### Schema-Updates
@@ -92,8 +207,21 @@ POST /api/principals/:id/roles
 pnpm --filter @workspace/db run push-force
 ```
 
-### Backup
-Siehe [Backup- und Wiederherstellungsverfahren](./12-BACKUP-RESTORE.md)
+### Wichtige Tabellen
+
+| Tabelle | Inhalt |
+|---|---|
+| `content_nodes` | Wiki-Seiten (Identität) |
+| `content_revisions` | Revisionshistorie (unveränderlich) |
+| `principals` | Benutzer und Gruppen |
+| `audit_events` | Audit-Trail |
+| `storage_providers` | Speicheranbieter-Konfiguration |
+| `source_systems` | Quellsysteme |
+| `backup_configs` | Backup-Konfiguration |
+| `media_assets` | Medien-Asset-Metadaten |
+| `notifications` | In-App-Benachrichtigungen |
+
+---
 
 ## Monitoring
 
@@ -109,6 +237,7 @@ Logs werden im JSON-Format (pino) ausgegeben und enthalten:
 - Fehler mit Stack-Traces
 
 ### Wichtige Audit-Events
+
 | Event-Typ | Aktion | Beschreibung |
 |---|---|---|
 | `auth` | `login` | Benutzeranmeldung |
@@ -119,3 +248,28 @@ Logs werden im JSON-Format (pino) ausgegeben und enthalten:
 | `revision` | `submit_review` | Revision zur Prüfung eingereicht |
 | `revision` | `approve` | Revision genehmigt |
 | `revision` | `publish` | Revision veröffentlicht |
+| `connector` | `storage_provider_created` | Speicheranbieter angelegt |
+| `connector` | `storage_provider_updated` | Speicheranbieter geändert |
+| `backup` | `backup_completed` | Backup erfolgreich |
+| `backup` | `backup_failed` | Backup fehlgeschlagen |
+
+---
+
+## Wartungsaufgaben
+
+### Regelmäßige Aufgaben
+
+| Häufigkeit | Aufgabe |
+|---|---|
+| Täglich | Automatisches Backup prüfen (Backup-Historie) |
+| Wöchentlich | Audit-Log auf ungewöhnliche Aktivitäten prüfen |
+| Monatlich | Benutzer-Rollen überprüfen und aktualisieren |
+| Vierteljährlich | Wiederherstellungstest aus Backup durchführen |
+| Jährlich | Entra-Client-Secret rotieren |
+
+### Entra Client-Secret rotieren
+
+1. Neues Secret im Azure Portal erstellen (App-Registrierungen → FlowCore → Zertifikate & Geheimnisse)
+2. `ENTRA_CLIENT_SECRET` in Replit Secrets aktualisieren
+3. App neu deployen
+4. Altes Secret im Azure Portal löschen
