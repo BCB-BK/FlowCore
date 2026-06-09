@@ -123,6 +123,110 @@ function parsePromptPolicies(raw: unknown): PromptPolicies {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Docs knowledge base helpers
+// ---------------------------------------------------------------------------
+
+const DOCS_KB: Array<{
+  filename: string;
+  title: string;
+  keywords: string[];
+  isHandbook?: boolean;
+}> = [
+  {
+    filename: "10-ADMIN-HANDBOOK.md",
+    title: "Administrationshandbuch",
+    keywords: ["admin", "konfiguration", "einstellungen", "benutzer", "rollen", "backup", "sicherheit", "wartung", "installation", "deployment"],
+    isHandbook: true,
+  },
+  { filename: "22-QUICK-START.md", title: "Quick-Start", keywords: ["start", "anmelden", "login", "einstieg", "erste", "schritte", "anfang"] },
+  { filename: "20-EDITOR-GUIDE.md", title: "Editor-Leitfaden", keywords: ["editor", "bpmn", "block", "inhalt", "erstellen", "bearbeiten", "sharepoint", "ki", "assistent"] },
+  { filename: "21-REVIEWER-GUIDE.md", title: "Reviewer-Leitfaden", keywords: ["review", "prüfen", "freigabe", "genehmigung", "kommentar"] },
+  { filename: "01-ARCHITECTURE.md", title: "Systemarchitektur", keywords: ["architektur", "stack", "technologie", "react", "express", "postgresql", "deployment", "infrastruktur"] },
+  { filename: "02-DATA-MODEL.md", title: "Datenmodell", keywords: ["datenbank", "schema", "tabelle", "modell", "entität", "relation"] },
+  { filename: "03-BENCHMARK-FEATURE-REGISTER.md", title: "Feature-Register", keywords: ["feature", "funktion", "implementiert", "status", "register", "roadmap"] },
+  { filename: "05-CONFIG-ENV.md", title: "Konfiguration & Umgebungsvariablen", keywords: ["umgebungsvariable", "env", "config", "secret", "entra", "azure", "openai", "sharepoint", "port"] },
+  { filename: "06-LOGGING-AUDIT.md", title: "Logging & Audit", keywords: ["log", "audit", "protokoll", "pino", "fehler", "debug"] },
+  { filename: "11-RUNBOOKS.md", title: "Runbooks", keywords: ["runbook", "neustart", "fehler", "problem", "ausfall", "wiederherstellung", "rollback"] },
+  { filename: "12-BACKUP-RESTORE.md", title: "Backup & Wiederherstellung", keywords: ["backup", "sicherung", "restore", "wiederherstellung", "export", "sharepoint"] },
+  { filename: "13-PERFORMANCE.md", title: "Performance & Kapazität", keywords: ["performance", "leistung", "kapazität", "optimierung", "cache", "geschwindigkeit"] },
+  { filename: "14-GO-LIVE-CHECKLIST.md", title: "Go-Live-Checkliste", keywords: ["go-live", "produktiv", "checkliste", "launch", "abnahme", "produktion"] },
+  { filename: "15-SOURCE-OF-TRUTH.md", title: "Source of Truth", keywords: ["datenquelle", "konsistenz", "wahrheit", "referenz", "master"] },
+  { filename: "23-UAT-PROTOCOL.md", title: "UAT-Protokoll", keywords: ["uat", "abnahmetest", "akzeptanz", "test", "testfall", "protokoll"] },
+  { filename: "00-INDEX.md", title: "Dokumentations-Index", keywords: ["index", "übersicht", "dokumentation", "alle", "liste"] },
+];
+
+function getDocsRootForAi(): string {
+  const replHome = process.env["REPL_HOME"] ?? "";
+  const candidates = [
+    require("path").join(replHome, "docs"),
+    require("path").join(process.cwd(), "docs"),
+    require("path").join(process.cwd(), "../../../docs"),
+    require("path").join(process.cwd(), "../../../../docs"),
+  ];
+  for (const c of candidates) {
+    if (require("fs").existsSync(c)) return c;
+  }
+  return require("path").join(replHome, "docs");
+}
+
+function readDocForAi(docsRoot: string, filename: string): string | null {
+  const fs = require("fs");
+  const path = require("path");
+  const filePath = path.join(docsRoot, path.basename(filename));
+  if (!fs.existsSync(filePath)) return null;
+  return fs.readFileSync(filePath, "utf-8") as string;
+}
+
+function buildDocsContext(query: string): string {
+  const docsRoot = getDocsRootForAi();
+  const queryLower = query.toLowerCase();
+
+  // Score every doc: how many of its keywords appear in the query
+  const scored = DOCS_KB.map((doc) => {
+    const score = doc.keywords.reduce(
+      (s, kw) => s + (queryLower.includes(kw) ? 1 : 0),
+      0,
+    );
+    return { doc, score };
+  });
+
+  // Always include handbook; pick up to 3 more by score
+  const handbook = DOCS_KB.find((d) => d.isHandbook);
+  const topOthers = scored
+    .filter((s) => !s.doc.isHandbook && s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((s) => s.doc);
+
+  const docsToInclude = [
+    ...(handbook ? [handbook] : []),
+    ...topOthers,
+  ];
+
+  const sections: string[] = [];
+
+  // Brief index so the AI knows what docs exist
+  const index = DOCS_KB.map((d) => `- **${d.title}** (${d.filename})`).join("\n");
+  sections.push(`### Verfügbare Dokumentation (Übersicht)\n${index}`);
+
+  // Full content of selected docs (capped per doc to avoid token bloat)
+  const CAP_HANDBOOK = 8000;
+  const CAP_OTHER = 4000;
+
+  for (const doc of docsToInclude) {
+    const content = readDocForAi(docsRoot, doc.filename);
+    if (!content) continue;
+    const cap = doc.isHandbook ? CAP_HANDBOOK : CAP_OTHER;
+    const truncated = content.length > cap
+      ? content.slice(0, cap) + "\n\n[... Inhalt gekürzt – vollständig unter /docs abrufbar ...]"
+      : content;
+    sections.push(`### ${doc.title} (${doc.filename})\n\n${truncated}`);
+  }
+
+  return sections.join("\n\n---\n\n");
+}
+
 function buildPolicyInstructions(policies: PromptPolicies): string {
   const parts: string[] = [];
 
@@ -480,7 +584,8 @@ export async function streamAskAnswer(
 - Wenn Informationen veraltet erscheinen oder Quellen im Status 'draft'/'in_review' sind, kennzeichne dies.
 - Wenn relevante Informationen fehlen könnten, erwähne dies am Ende der Antwort.`;
 
-  const instructions = `${systemPrompt}${roleContext}\n\n${policyInstructions}${publishedWarning}${qualityHints}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
+  const docsContext = buildDocsContext(query);
+  const instructions = `${systemPrompt}${roleContext}\n\n${policyInstructions}${publishedWarning}${qualityHints}\n\n## FlowCore Technische Wissensbasis (Dokumentation)\n\nDie folgende technische Dokumentation steht dir als Wissensbasis zur Verfügung. Nutze sie, um Fragen zu Konfiguration, Bedienung, Architektur und Betrieb von FlowCore zu beantworten.\n\n${docsContext}\n\nRelevante Wiki-Inhalte:\n\n${contextText}`;
 
   let hasError = false;
   let errorMessage: string | undefined;
