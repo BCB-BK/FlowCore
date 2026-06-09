@@ -5,7 +5,6 @@ import remarkGfm from "remark-gfm";
 import { customFetch } from "@workspace/api-client-react";
 import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
-import { ScrollArea } from "@workspace/ui/scroll-area";
 import {
   BookOpen,
   Download,
@@ -92,7 +91,7 @@ export function DocsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       <div className="border-b px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <BookOpen className="h-5 w-5 text-primary" />
@@ -133,8 +132,8 @@ export function DocsPage() {
 
       {data && (
         <div className="flex flex-1 min-h-0 overflow-hidden">
-          <aside className="w-72 shrink-0 border-r flex flex-col">
-            <ScrollArea className="flex-1">
+          <aside className="w-64 shrink-0 border-r flex flex-col">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
               <div className="p-3 space-y-1">
                 {handbook && (
                   <button
@@ -213,27 +212,27 @@ export function DocsPage() {
                   </button>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </aside>
 
-          <main className="flex-1 min-w-0 flex flex-col">
+          <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
             {activeEntry && (
-              <div className="border-b px-6 py-2 flex items-center gap-2 shrink-0 bg-muted/30">
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-sm font-medium">{activeEntry.title}</span>
-                <span className="text-muted-foreground text-xs opacity-60">
+              <div className="border-b px-4 py-2 flex items-center gap-2 shrink-0 bg-muted/30 min-w-0">
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium truncate">{activeEntry.title}</span>
+                <span className="text-muted-foreground text-xs opacity-60 truncate hidden sm:block">
                   {activeEntry.filename}
                 </span>
                 {activeEntry.lastModified && (
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    Geändert: {formatDate(activeEntry.lastModified)} ·{" "}
+                  <span className="ml-auto text-xs text-muted-foreground shrink-0">
+                    {formatDate(activeEntry.lastModified)} ·{" "}
                     {formatBytes(activeEntry.sizeBytes)}
                   </span>
                 )}
               </div>
             )}
 
-            <ScrollArea className="flex-1">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
               {contentLoading && (
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -241,7 +240,7 @@ export function DocsPage() {
               )}
 
               {!contentLoading && docContent && (
-                <div className="px-8 py-6 max-w-4xl mx-auto">
+                <div className="px-6 py-6 max-w-4xl">
                   <div className="prose prose-sm prose-slate dark:prose-invert max-w-none [&_table]:text-xs [&_pre]:overflow-x-auto [&_code]:text-xs [&_h1]:text-xl [&_h2]:text-lg [&_h2]:border-b [&_h2]:pb-1 [&_h2]:mt-6">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {docContent.content}
@@ -263,7 +262,7 @@ export function DocsPage() {
                   <span className="text-sm">Wählen Sie ein Dokument aus</span>
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </main>
         </div>
       )}
