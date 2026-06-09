@@ -28,5 +28,4 @@ export const UpdateNodeInputTemplateType = {
   meeting_protocol: "meeting_protocol",
   training_resource: "training_resource",
   audit_object: "audit_object",
-  doc_registry: "doc_registry",
 } as const;

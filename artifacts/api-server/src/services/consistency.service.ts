@@ -391,7 +391,8 @@ function checkCodegenFreshness(): ConsistencyCheckResult[] {
   const workspaceRoot = getWorkspaceRoot();
 
   const specFile = path.join(workspaceRoot, "lib/api-spec/openapi.yaml");
-  const generatedDir = path.join(workspaceRoot, "lib/api-zod/src");
+  // Orval generates into lib/api-zod/src/generated/ — not the src/ root
+  const generatedDir = path.join(workspaceRoot, "lib/api-zod/src/generated");
 
   try {
     if (fs.existsSync(specFile) && fs.existsSync(generatedDir)) {
