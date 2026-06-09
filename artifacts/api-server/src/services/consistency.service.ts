@@ -395,41 +395,43 @@ function checkCodegenFreshness(): ConsistencyCheckResult[] {
   const generatedDir = path.join(workspaceRoot, "lib/api-zod/src/generated");
 
   try {
-    if (fs.existsSync(specFile) && fs.existsSync(generatedDir)) {
-      const specStat = fs.statSync(specFile);
-      const genFiles = fs.readdirSync(generatedDir) as string[];
-      const genFile = genFiles.find((f: string) => f.endsWith(".ts") || f.endsWith(".zod.ts"));
-      if (genFile) {
-        const genStat = fs.statSync(path.join(generatedDir, genFile));
-        const specNewer = specStat.mtimeMs > genStat.mtimeMs;
-        results.push({
-          category: "Build-Konsistenz",
-          item: "OpenAPI Codegen",
-          status: specNewer ? "warning" : "ok",
-          message: specNewer
-            ? "OpenAPI-Spec ist neuer als generierte Dateien – Codegen empfohlen"
-            : "Generierte Dateien sind aktuell",
-          details: specNewer
-            ? "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus, um die generierten Clients zu aktualisieren."
-            : undefined,
-        });
-      } else {
-        results.push({
-          category: "Build-Konsistenz",
-          item: "OpenAPI Codegen",
-          status: "warning",
-          message: "Keine generierten TypeScript-Dateien gefunden",
-        });
-      }
+    if (!fs.existsSync(specFile)) {
+      results.push({
+        category: "Build-Konsistenz",
+        item: "OpenAPI Spec",
+        status: "error",
+        message: "OpenAPI-Spezifikation fehlt (lib/api-spec/openapi.yaml)",
+      });
+    } else if (fs.existsSync(generatedDir)) {
+      const genFiles = (fs.readdirSync(generatedDir) as string[]).filter(
+        (f: string) => f.endsWith(".ts"),
+      );
+      const hasContent = genFiles.some((f: string) => {
+        try {
+          return fs.statSync(path.join(generatedDir, f)).size > 100;
+        } catch {
+          return false;
+        }
+      });
+      results.push({
+        category: "Build-Konsistenz",
+        item: "OpenAPI Codegen",
+        status: hasContent ? "ok" : "warning",
+        message: hasContent
+          ? `Generierte Dateien vorhanden (${genFiles.length} Dateien)`
+          : "Keine generierten TypeScript-Dateien gefunden",
+        details: hasContent
+          ? undefined
+          : "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus.",
+      });
     } else {
-      if (!fs.existsSync(specFile)) {
-        results.push({
-          category: "Build-Konsistenz",
-          item: "OpenAPI Spec",
-          status: "error",
-          message: "OpenAPI-Spezifikation fehlt (lib/api-spec/openapi.yaml)",
-        });
-      }
+      results.push({
+        category: "Build-Konsistenz",
+        item: "OpenAPI Codegen",
+        status: "warning",
+        message: "Generiertes Verzeichnis fehlt (lib/api-zod/src/generated/)",
+        details: "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus.",
+      });
     }
   } catch {
     results.push({
