@@ -132,7 +132,7 @@ export function DocsPage() {
       )}
 
       {data && (
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           <aside className="w-72 shrink-0 border-r flex flex-col">
             <ScrollArea className="flex-1">
               <div className="p-3 space-y-1">
