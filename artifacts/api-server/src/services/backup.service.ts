@@ -223,7 +223,17 @@ async function getConnectorConfig(): Promise<Record<string, string> | null> {
     .from(sourceSystemsTable)
     .where(eq(sourceSystemsTable.systemType, "sharepoint"))
     .limit(1);
-  return (system?.connectionConfig as Record<string, string>) ?? null;
+
+  const fromSystem = (system?.connectionConfig as Record<string, string>) ?? {};
+  const tenantId = fromSystem.tenantId || process.env.ENTRA_TENANT_ID || "";
+  const clientId = fromSystem.clientId || process.env.ENTRA_CLIENT_ID || "";
+  const clientSecret = fromSystem.clientSecret || process.env.ENTRA_CLIENT_SECRET || "";
+
+  if (!tenantId || !clientId || !clientSecret) {
+    return null;
+  }
+
+  return { ...fromSystem, tenantId, clientId, clientSecret };
 }
 
 export async function runBackup(
