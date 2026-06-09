@@ -19,12 +19,28 @@ import {
   createFieldProfile,
   updateFieldProfile,
   deleteFieldProfile,
+  listAvailableModels,
   type PageAssistAction,
   type FieldAssistAction,
 } from "../services/ai.service";
 import { logger } from "../lib/logger";
 
 export const aiRouter: IRouter = Router();
+
+aiRouter.get(
+  "/models",
+  requireAuth,
+  requirePermission("manage_settings"),
+  async (_req, res) => {
+    try {
+      const models = await listAvailableModels();
+      res.json({ models });
+    } catch (err) {
+      logger.error({ err }, "Failed to list AI models");
+      res.status(500).json({ error: "Failed to list AI models" });
+    }
+  },
+);
 
 aiRouter.get(
   "/settings",

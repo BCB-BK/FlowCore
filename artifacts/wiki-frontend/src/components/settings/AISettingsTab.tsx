@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "@workspace/ui/input";
 import { Button } from "@workspace/ui/button";
 import {
@@ -19,23 +20,40 @@ import {
   SelectValue,
 } from "@workspace/ui/select";
 import { Badge } from "@workspace/ui/badge";
-import { Save, BarChart3, AlertCircle, CheckCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
+import { Save, BarChart3, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import {
   useGetAiSettings,
   useUpdateAiSettings,
   useGetAiUsageStats,
   getGetAiSettingsQueryKey,
+  customFetch,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AiFieldProfilesPanel } from "./AiFieldProfilesPanel";
+
+interface AvailableModel {
+  id: string;
+  label: string;
+}
+
+function useAvailableModels() {
+  return useQuery<{ models: AvailableModel[] }>({
+    queryKey: ["ai-available-models"],
+    queryFn: () => customFetch<{ models: AvailableModel[] }>("/api/ai/models"),
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function AISettingsTab() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: settings, isLoading } = useGetAiSettings();
   const { data: stats } = useGetAiUsageStats({ days: 30 });
+  const { data: modelsData, isLoading: modelsLoading } = useAvailableModels();
   const updateMutation = useUpdateAiSettings();
+  const availableModels = modelsData?.models ?? [];
 
   const [enabled, setEnabled] = useState(false);
   const [model, setModel] = useState("gpt-5.2");
@@ -151,26 +169,50 @@ export function AISettingsTab() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="model">Modell</Label>
-              <Select value={model} onValueChange={setModel}>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="model">Modell</Label>
+                {modelsLoading && (
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                )}
+                {!modelsLoading && availableModels.length > 0 && (
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                    {availableModels.length} verfügbar
+                  </Badge>
+                )}
+              </div>
+              <Select value={model} onValueChange={setModel} disabled={modelsLoading}>
                 <SelectTrigger id="model">
-                  <SelectValue />
+                  <SelectValue placeholder="Modell wählen…" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gpt-5.2">GPT-5.2 (empfohlen)</SelectItem>
-                  <SelectItem value="gpt-5-mini">
-                    GPT-5 Mini (schneller)
-                  </SelectItem>
-                  <SelectItem value="gpt-5-nano">
-                    GPT-5 Nano (schnellstes)
-                  </SelectItem>
+                  {availableModels.length > 0 ? (
+                    availableModels.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.id}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <>
+                      <SelectItem value="gpt-4o">gpt-4o</SelectItem>
+                      <SelectItem value="gpt-4o-mini">gpt-4o-mini</SelectItem>
+                      <SelectItem value="gpt-4-turbo">gpt-4-turbo</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
+              {!modelsLoading && availableModels.length === 0 && (
+                <p className="text-xs text-amber-600">
+                  Modelle konnten nicht von der API abgerufen werden – Fallback-Liste aktiv
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="source-mode">Quellmodus</Label>
-              <Select value={sourceMode} onValueChange={setSourceMode}>
+              <Select value={sourceMode} onValueChange={(v) => {
+                if (v === "wiki_connectors_web") return;
+                setSourceMode(v);
+              }}>
                 <SelectTrigger id="source-mode">
                   <SelectValue />
                 </SelectTrigger>
@@ -179,27 +221,34 @@ export function AISettingsTab() {
                   <SelectItem value="wiki_and_connectors">
                     Wiki + Konnektoren
                   </SelectItem>
-                  <SelectItem value="wiki_connectors_web">
-                    Wiki + Konnektoren + Web
+                  <SelectItem value="wiki_connectors_web" disabled className="opacity-40 cursor-not-allowed">
+                    Wiki + Konnektoren + Web (demnächst)
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="web-search">Web-Suche erlauben</Label>
-              <p className="text-sm text-muted-foreground">
-                Erlaubt dem Assistenten, zusätzlich im Web zu suchen
-              </p>
-            </div>
-            <Switch
-              id="web-search"
-              checked={webSearchEnabled}
-              onCheckedChange={setWebSearchEnabled}
-            />
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-between opacity-40 cursor-not-allowed select-none">
+                <div>
+                  <Label className="cursor-not-allowed">Web-Suche erlauben</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Web-Suche ist noch nicht freigegeben
+                  </p>
+                </div>
+                <Switch
+                  id="web-search"
+                  checked={false}
+                  disabled
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              Web-Suche wird in einer zukünftigen Version freigeschaltet
+            </TooltipContent>
+          </Tooltip>
 
           <div className="space-y-2">
             <Label htmlFor="max-tokens">Max. Antwort-Tokens</Label>

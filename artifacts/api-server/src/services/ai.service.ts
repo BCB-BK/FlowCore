@@ -33,6 +33,36 @@ async function getOpenAI(): Promise<OpenAI> {
   return _openaiClient!;
 }
 
+// Chat-fähige Modell-Prefixe die von OpenAI unterstützt werden
+const CHAT_MODEL_PREFIXES = ["gpt-", "o1", "o3", "o4", "chatgpt-"];
+const EXCLUDED_SUFFIXES = [
+  "instruct", "embedding", "whisper", "tts", "dall-e", "babbage", "davinci",
+];
+
+export interface AvailableModel {
+  id: string;
+  label: string;
+}
+
+export async function listAvailableModels(): Promise<AvailableModel[]> {
+  try {
+    const client = await getOpenAI();
+    const response = await client.models.list();
+    const models = response.data
+      .filter((m) => {
+        const id = m.id.toLowerCase();
+        const isChatModel = CHAT_MODEL_PREFIXES.some((p) => id.startsWith(p));
+        const isExcluded = EXCLUDED_SUFFIXES.some((s) => id.includes(s));
+        return isChatModel && !isExcluded;
+      })
+      .sort((a, b) => b.created - a.created)
+      .map((m) => ({ id: m.id, label: m.id }));
+    return models;
+  } catch {
+    return [];
+  }
+}
+
 export type SourceType = "wiki" | "connector" | "web";
 
 export interface AiSource {
