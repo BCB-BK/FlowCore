@@ -19,6 +19,7 @@ import { WorkingCopyEditorPage } from "@/pages/WorkingCopyEditorPage";
 import { WorkingCopyReviewPage } from "@/pages/WorkingCopyReviewPage";
 import { TeamsTabConfig } from "@/pages/TeamsTabConfig";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { DocsPage } from "@/pages/DocsPage";
 import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
 import { LoginPage } from "@/pages/LoginPage";
 import { useAuth } from "@/hooks/use-auth";
@@ -91,6 +92,7 @@ function Router() {
         <Route path="/my-work" component={MyWorkPage} />
         <Route path="/review-inbox" component={ReviewInboxPage} />
         <Route path="/teams/tab-config" component={TeamsTabConfig} />
+        <Route path="/docs" component={DocsPage} />
         <Route component={NotFound} />
       </Switch>
       <GlobalAssistant />

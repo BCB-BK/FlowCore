@@ -19,6 +19,7 @@ import {
   ClipboardList,
   Settings,
   ShieldCheck,
+  Library,
 } from "lucide-react";
 import { SidebarMenuButton, SidebarMenuItem } from "@workspace/ui/sidebar";
 import { useLocation } from "wouter";
@@ -124,6 +125,15 @@ export function WikiSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={location === "/docs"}
+                onClick={() => navigate("/docs")}
+              >
+                <Library className="h-4 w-4" />
+                <span>Doku / Handbuch</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
