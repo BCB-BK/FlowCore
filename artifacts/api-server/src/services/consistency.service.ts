@@ -24,8 +24,10 @@ export interface ConsistencyReport {
 function getWorkspaceRoot(): string {
   const path = require("path");
   if (process.env["WORKSPACE_ROOT"]) return process.env["WORKSPACE_ROOT"];
-  if (process.env["REPL_HOME"]) return path.join(process.env["REPL_HOME"], "workspace");
-  return path.resolve(__dirname, "../../../../..");
+  // REPL_HOME is already the workspace root (e.g. /home/runner/workspace)
+  if (process.env["REPL_HOME"]) return process.env["REPL_HOME"];
+  // Fallback: __dirname is artifacts/api-server/src/services → 4 levels up = workspace root
+  return path.resolve(__dirname, "../../../..");
 }
 
 function getExpectedTablesFromSchema(): string[] {
