@@ -414,8 +414,9 @@ export function NodeDetail() {
             structuredFields: { ...sfNow, _clusters: updatedClusters, _linkedNodeIds: updatedLinked },
           },
         });
-        // Pre-fetch linked node so it is in cache before WC invalidation triggers re-render
-        void queryClient.prefetchQuery({
+        // Pre-fetch linked node und dann WC invalidieren – Reihenfolge kritisch:
+        // Daten müssen im Cache sein BEVOR der WC-Re-render linkedNodeQueries triggert
+        await queryClient.prefetchQuery({
           queryKey: [`/api/content/nodes/${linkedNodeId}`],
           queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${linkedNodeId}`),
         });
@@ -451,7 +452,7 @@ export function NodeDetail() {
             structuredFields: { ...sfNow, _linkedNodeIds: [...currentLinked, linkedNodeId] },
           },
         });
-        void queryClient.prefetchQuery({
+        await queryClient.prefetchQuery({
           queryKey: [`/api/content/nodes/${linkedNodeId}`],
           queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${linkedNodeId}`),
         });
