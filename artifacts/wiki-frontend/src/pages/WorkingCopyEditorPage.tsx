@@ -870,7 +870,7 @@ export function WorkingCopyEditorPage() {
             const childIdSet = new Set(nodeChildrenArr.map((c) => c.id));
             const allPreviewNodes = [
               ...nodeChildrenArr,
-              ...previewLinkedNodes.filter((ln) => !childIdSet.has(ln.id as string)) as typeof nodeChildrenArr,
+              ...(previewLinkedNodes.filter((ln) => !childIdSet.has(ln.id as string)) as unknown as typeof nodeChildrenArr),
             ];
             if (allPreviewNodes.length === 0) return null;
             const previewClusters = parseClusters(previewStructuredFields._clusters);
@@ -933,7 +933,7 @@ export function WorkingCopyEditorPage() {
                   ))
                 ) : (
                   <div className="rounded-lg border bg-card divide-y">
-                    {nodeChildren.map((child, idx) => {
+                    {(nodeChildren ?? []).map((child, idx) => {
                       const childDef = getPageType(child.templateType);
                       return (
                         <div
