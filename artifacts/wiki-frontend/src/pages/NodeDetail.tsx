@@ -1415,7 +1415,10 @@ export function NodeDetail() {
 
       <CreateNodeDialog
         open={showCreate}
-        onOpenChange={setShowCreate}
+        onOpenChange={(open) => {
+          setShowCreate(open);
+          if (!open) setCreateInClusterId(null);
+        }}
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
         presetType={createPresetType}

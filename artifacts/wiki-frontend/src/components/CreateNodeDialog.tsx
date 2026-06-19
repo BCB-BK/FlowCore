@@ -116,7 +116,7 @@ export function CreateNodeDialog({
 
   const [linkQuery, setLinkQuery] = useState("");
   const [debouncedLinkQuery, setDebouncedLinkQuery] = useState("");
-  const [linking, setLinking] = useState(false);
+  const [linking] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedLinkQuery(linkQuery), 300);
@@ -145,47 +145,15 @@ export function CreateNodeDialog({
     );
   }, [linkResults, parentNodeId, parentTemplateType]);
 
-  const handleLinkPage = useCallback(async (nodeId: string, nodeTitle: string, _oldParentId?: string | null) => {
-    if (!parentNodeId || linking) return;
-
-    // Wenn onLinkExistingNode vorhanden: reine Verlinkung (kein Verschieben)
-    if (onLinkExistingNode) {
-      onLinkExistingNode(nodeId);
-      resetAndClose();
-      toast({
-        title: "Seite verlinkt",
-        description: `"${nodeTitle}" wurde als Verknüpfung hinzugefügt.`,
-      });
-      return;
-    }
-
-    // Fallback ohne onLinkExistingNode: Seite einordnen (Elternwechsel)
-    setLinking(true);
-    try {
-      await customFetch(`/api/content/nodes/${nodeId}/move`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newParentNodeId: parentNodeId }),
-      });
-      queryClient.removeQueries({ queryKey: [`/api/content/nodes/${parentNodeId}/children`] });
-      queryClient.removeQueries({ queryKey: [`/api/content/nodes/roots`] });
-      queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${parentNodeId}/children`] });
-      onNodeCreated?.(nodeId);
-      resetAndClose();
-      toast({
-        title: "Seite eingeordnet",
-        description: `"${nodeTitle}" wurde als Unterseite eingeordnet.`,
-      });
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Fehler beim Einordnen",
-        description: err instanceof Error ? err.message : "Unbekannter Fehler",
-      });
-    } finally {
-      setLinking(false);
-    }
-  }, [parentNodeId, linking, queryClient, toast, onNodeCreated, onLinkExistingNode]);
+  const handleLinkPage = useCallback((nodeId: string, nodeTitle: string) => {
+    if (!onLinkExistingNode) return;
+    onLinkExistingNode(nodeId);
+    resetAndClose();
+    toast({
+      title: "Seite verlinkt",
+      description: `"${nodeTitle}" wurde als Verknüpfung hinzugefügt.`,
+    });
+  }, [onLinkExistingNode, toast]);
 
   const allowedTypes = useMemo(() => {
     let types: TemplateType[];
@@ -383,7 +351,7 @@ export function CreateNodeDialog({
                 ? "Unterseite anlegen"
                 : "Neue Seite anlegen"}
           </DialogTitle>
-          {parentNodeId && (
+          {parentNodeId && onLinkExistingNode && (
             <div className="flex gap-1 mt-2">
               <Button
                 size="sm"
@@ -483,8 +451,8 @@ export function CreateNodeDialog({
                     tabIndex={0}
                     aria-disabled={linking}
                     className={`transition-colors ${linking ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"}`}
-                    onClick={() => !linking && handleLinkPage(result.id, result.title, result.parentNodeId)}
-                    onKeyDown={(e) => { if (!linking && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); handleLinkPage(result.id, result.title, result.parentNodeId); } }}
+                    onClick={() => handleLinkPage(result.id, result.title)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleLinkPage(result.id, result.title); } }}
                   >
                     <CardContent className="flex items-center gap-3 p-3">
                       {pageDef ? (
