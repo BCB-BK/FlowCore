@@ -460,6 +460,22 @@ export function WorkingCopyEditorPage() {
     [pendingClusterId, doSave],
   );
 
+  // Verlinkt eine bestehende Seite ohne Cluster-Kontext (allgemeine Verlinkung im Editor)
+  const handleLinkExistingNode = useCallback(
+    (linkedNodeId: string) => {
+      const sfNow = localStructuredFieldsRef.current;
+      const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+        ? (sfNow._linkedNodeIds as string[])
+        : [];
+      if (currentLinked.includes(linkedNodeId)) return;
+      const sf = { ...sfNow, _linkedNodeIds: [...currentLinked, linkedNodeId] };
+      localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
+      scheduleAutosave({ structuredFields: sf });
+    },
+    [scheduleAutosave],
+  );
+
   const handleMetadataChange = useCallback(
     (key: string, value: unknown, displayValue?: string) => {
       setEditableMetadata((prev) => {
@@ -872,8 +888,8 @@ export function WorkingCopyEditorPage() {
               ...nodeChildrenArr,
               ...(previewLinkedNodes.filter((ln) => !childIdSet.has(ln.id as string)) as unknown as typeof nodeChildrenArr),
             ];
-            if (allPreviewNodes.length === 0) return null;
             const previewClusters = parseClusters(previewStructuredFields._clusters);
+            if (allPreviewNodes.length === 0 && previewClusters.length === 0) return null;
             const clusterGroups = previewClusters.length > 0
               ? groupChildrenByClusters(allPreviewNodes, previewClusters)
               : [];
@@ -1359,7 +1375,7 @@ export function WorkingCopyEditorPage() {
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
         onNodeCreated={pendingClusterId ? handleNodeCreatedInCluster : undefined}
-        onLinkExistingNode={pendingClusterId ? handleLinkExistingInCluster : undefined}
+        onLinkExistingNode={pendingClusterId ? handleLinkExistingInCluster : handleLinkExistingNode}
       />
 
       <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>

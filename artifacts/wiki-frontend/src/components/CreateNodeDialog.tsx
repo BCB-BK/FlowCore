@@ -351,7 +351,7 @@ export function CreateNodeDialog({
                 ? "Unterseite anlegen"
                 : "Neue Seite anlegen"}
           </DialogTitle>
-          {parentNodeId && onLinkExistingNode && (
+          {parentNodeId && (
             <div className="flex gap-1 mt-2">
               <Button
                 size="sm"

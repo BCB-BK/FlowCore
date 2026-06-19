@@ -284,7 +284,7 @@ export function NodeDetail() {
     const childIdSet = new Set(childrenArr.map((c) => c.id));
     // Echte Kinder + verlinkte Nodes zusammenführen (ohne Duplikate)
     const allNodes = [...childrenArr, ...linkedNodes.filter((ln) => !childIdSet.has(ln.id))];
-    if (allNodes.length === 0) return [];
+    // Auch bei leerem allNodes Cluster-Boxen rendern (verlinkte Nodes könnten noch laden)
     const raw = groupChildrenByClusters(allNodes, clusters);
     return raw.map((group) => {
       // Cluster-Kinder: childNodeIds-Reihenfolge beibehalten (vom Editor gesetzt)
@@ -394,9 +394,7 @@ export function NodeDetail() {
       if (!clusterId) return;
       try {
         let wc = activeWC;
-        if (!wc) {
-          wc = await createWorkingCopy.mutateAsync({ nodeId });
-        }
+        if (!wc) wc = await createWorkingCopy.mutateAsync({ nodeId });
         const sfNow = (wc.structuredFields as Record<string, unknown>) ?? {};
         const currentClusters = parseClusters(sfNow._clusters);
         const updatedClusters = currentClusters.map((c) =>
@@ -413,12 +411,13 @@ export function NodeDetail() {
         await updateWorkingCopy.mutateAsync({
           workingCopyId: wc.id,
           data: {
-            structuredFields: {
-              ...sfNow,
-              _clusters: updatedClusters,
-              _linkedNodeIds: updatedLinked,
-            },
+            structuredFields: { ...sfNow, _clusters: updatedClusters, _linkedNodeIds: updatedLinked },
           },
+        });
+        // Pre-fetch linked node so it is in cache before WC invalidation triggers re-render
+        void queryClient.prefetchQuery({
+          queryKey: [`/api/content/nodes/${linkedNodeId}`],
+          queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${linkedNodeId}`),
         });
         await queryClient.invalidateQueries({
           queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
@@ -432,6 +431,42 @@ export function NodeDetail() {
       }
     },
     [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+  );
+
+  // Verlinkt eine bestehende Seite ohne Cluster-Kontext (allgemeine Verlinkung)
+  const handleLinkExistingNode = useCallback(
+    async (linkedNodeId: string) => {
+      if (!nodeId) return;
+      try {
+        let wc = activeWC;
+        if (!wc) wc = await createWorkingCopy.mutateAsync({ nodeId });
+        const sfNow = (wc.structuredFields as Record<string, unknown>) ?? {};
+        const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+          ? (sfNow._linkedNodeIds as string[])
+          : [];
+        if (currentLinked.includes(linkedNodeId)) return;
+        await updateWorkingCopy.mutateAsync({
+          workingCopyId: wc.id,
+          data: {
+            structuredFields: { ...sfNow, _linkedNodeIds: [...currentLinked, linkedNodeId] },
+          },
+        });
+        void queryClient.prefetchQuery({
+          queryKey: [`/api/content/nodes/${linkedNodeId}`],
+          queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${linkedNodeId}`),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Verlinkung fehlgeschlagen",
+          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
   );
 
   const handleAssignToCluster = useCallback(
@@ -1423,7 +1458,7 @@ export function NodeDetail() {
         parentTemplateType={node.templateType}
         presetType={createPresetType}
         onNodeCreated={createInClusterId ? handleNodeCreatedInCluster : undefined}
-        onLinkExistingNode={createInClusterId ? handleLinkExistingInCluster : undefined}
+        onLinkExistingNode={createInClusterId ? handleLinkExistingInCluster : handleLinkExistingNode}
       />
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
