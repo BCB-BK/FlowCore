@@ -39,6 +39,7 @@ import {
   Pencil,
   Plus,
   Network,
+  Link2,
 } from "lucide-react";
 import { Input } from "@workspace/ui/input";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
@@ -71,7 +72,7 @@ import { StatusBadge } from "@/components/versioning/StatusBadge";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import type { JSONContent } from "@tiptap/react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQueries } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { Sparkles, AlertCircle, Info } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -244,6 +245,26 @@ export function WorkingCopyEditorPage() {
     return { ...localStructuredFieldsRef.current };
   }, [showPreview, wcStructuredFields]);
 
+  const previewLinkedNodeIds = useMemo(() => {
+    const ids = previewStructuredFields._linkedNodeIds;
+    return Array.isArray(ids) ? (ids as string[]) : [];
+  }, [previewStructuredFields]);
+
+  const previewLinkedNodeQueries = useQueries({
+    queries: previewLinkedNodeIds.map((id) => ({
+      queryKey: [`/api/content/nodes/${id}`],
+      queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${id}`),
+    })),
+  });
+
+  const previewLinkedNodes = useMemo(
+    () => previewLinkedNodeQueries.filter((q) => q.data != null).map((q) => q.data as Record<string, unknown>),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [previewLinkedNodeQueries.map((q) => q.dataUpdatedAt).join(",")],
+  );
+
+  const previewLinkedNodeIdSet = useMemo(() => new Set(previewLinkedNodeIds), [previewLinkedNodeIds]);
+
   const previewEditorContent = useMemo(() => {
     const sf = showPreview ? localStructuredFieldsRef.current : wcStructuredFields;
     if (sf._editorContent && typeof sf._editorContent === "object") {
@@ -399,6 +420,35 @@ export function WorkingCopyEditorPage() {
           : c,
       );
       const sf = { ...localStructuredFieldsRef.current, _clusters: updated };
+      localStructuredFieldsRef.current = sf;
+      setValidationSFSnapshot(sf);
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+      const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
+      pendingPatchRef.current = {};
+      doSave(merged).catch(() => {});
+      setPendingClusterId(null);
+    },
+    [pendingClusterId, doSave],
+  );
+
+  // Verlinkt eine bestehende Seite im Cluster ohne parentNodeId-Änderung
+  const handleLinkExistingInCluster = useCallback(
+    (linkedNodeId: string) => {
+      if (!pendingClusterId) return;
+      const sfNow = localStructuredFieldsRef.current;
+      const currentClusters = parseClusters(sfNow._clusters);
+      const updated = currentClusters.map((c) =>
+        c.id === pendingClusterId
+          ? { ...c, childNodeIds: [...c.childNodeIds, linkedNodeId] }
+          : c,
+      );
+      const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+        ? (sfNow._linkedNodeIds as string[])
+        : [];
+      const updatedLinked = currentLinked.includes(linkedNodeId)
+        ? currentLinked
+        : [...currentLinked, linkedNodeId];
+      const sf = { ...sfNow, _clusters: updated, _linkedNodeIds: updatedLinked };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
@@ -815,10 +865,17 @@ export function WorkingCopyEditorPage() {
             nodeId={node.id}
           />
 
-          {isOverviewPage && nodeChildren && nodeChildren.length > 0 && (() => {
+          {isOverviewPage && (() => {
+            const nodeChildrenArr = nodeChildren ?? [];
+            const childIdSet = new Set(nodeChildrenArr.map((c) => c.id));
+            const allPreviewNodes = [
+              ...nodeChildrenArr,
+              ...previewLinkedNodes.filter((ln) => !childIdSet.has(ln.id as string)) as typeof nodeChildrenArr,
+            ];
+            if (allPreviewNodes.length === 0) return null;
             const previewClusters = parseClusters(previewStructuredFields._clusters);
             const clusterGroups = previewClusters.length > 0
-              ? groupChildrenByClusters(nodeChildren, previewClusters)
+              ? groupChildrenByClusters(allPreviewNodes, previewClusters)
               : [];
             return (
               <div className="space-y-6">
@@ -1302,6 +1359,7 @@ export function WorkingCopyEditorPage() {
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
         onNodeCreated={pendingClusterId ? handleNodeCreatedInCluster : undefined}
+        onLinkExistingNode={pendingClusterId ? handleLinkExistingInCluster : undefined}
       />
 
       <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>

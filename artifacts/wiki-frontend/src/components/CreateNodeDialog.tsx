@@ -84,6 +84,7 @@ interface CreateNodeDialogProps {
   parentTemplateType?: string;
   presetType?: string;
   onNodeCreated?: (nodeId: string) => void;
+  onLinkExistingNode?: (nodeId: string) => void;
 }
 
 export function CreateNodeDialog({
@@ -93,6 +94,7 @@ export function CreateNodeDialog({
   parentTemplateType,
   presetType,
   onNodeCreated,
+  onLinkExistingNode,
 }: CreateNodeDialogProps) {
   const [mode, setMode] = useState<"create" | "link">("create");
   const [step, setStep] = useState(0);
@@ -143,8 +145,21 @@ export function CreateNodeDialog({
     );
   }, [linkResults, parentNodeId, parentTemplateType]);
 
-  const handleLinkPage = useCallback(async (nodeId: string, nodeTitle: string, oldParentId?: string | null) => {
+  const handleLinkPage = useCallback(async (nodeId: string, nodeTitle: string, _oldParentId?: string | null) => {
     if (!parentNodeId || linking) return;
+
+    // Wenn onLinkExistingNode vorhanden: reine Verlinkung (kein Verschieben)
+    if (onLinkExistingNode) {
+      onLinkExistingNode(nodeId);
+      resetAndClose();
+      toast({
+        title: "Seite verlinkt",
+        description: `"${nodeTitle}" wurde als Verknüpfung hinzugefügt.`,
+      });
+      return;
+    }
+
+    // Fallback ohne onLinkExistingNode: Seite einordnen (Elternwechsel)
     setLinking(true);
     try {
       await customFetch(`/api/content/nodes/${nodeId}/move`, {
@@ -154,26 +169,23 @@ export function CreateNodeDialog({
       });
       queryClient.removeQueries({ queryKey: [`/api/content/nodes/${parentNodeId}/children`] });
       queryClient.removeQueries({ queryKey: [`/api/content/nodes/roots`] });
-      if (oldParentId) {
-        queryClient.removeQueries({ queryKey: [`/api/content/nodes/${oldParentId}/children`] });
-      }
       queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${parentNodeId}/children`] });
       onNodeCreated?.(nodeId);
       resetAndClose();
       toast({
-        title: "Seite verkn\u00FCpft",
+        title: "Seite eingeordnet",
         description: `"${nodeTitle}" wurde als Unterseite eingeordnet.`,
       });
     } catch (err) {
       toast({
         variant: "destructive",
-        title: "Fehler beim Verkn\u00FCpfen",
+        title: "Fehler beim Einordnen",
         description: err instanceof Error ? err.message : "Unbekannter Fehler",
       });
     } finally {
       setLinking(false);
     }
-  }, [parentNodeId, linking, queryClient, toast, onNodeCreated]);
+  }, [parentNodeId, linking, queryClient, toast, onNodeCreated, onLinkExistingNode]);
 
   const allowedTypes = useMemo(() => {
     let types: TemplateType[];
@@ -362,11 +374,11 @@ export function CreateNodeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-xl flex flex-col max-h-[85vh] overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle>
             {mode === "link"
-              ? "Bestehende Seite einordnen"
+              ? "Bestehende Seite verlinken"
               : parentNodeId
                 ? "Unterseite anlegen"
                 : "Neue Seite anlegen"}
@@ -407,6 +419,7 @@ export function CreateNodeDialog({
           )}
         </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto">
         {mode === "create" && showDepthWarning && (
           <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-800 dark:bg-amber-950/30">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
@@ -428,7 +441,7 @@ export function CreateNodeDialog({
         {mode === "link" && (
           <div className="space-y-3 py-2">
             <DialogDescription>
-              Suchen Sie nach Titel oder Kennung einer bestehenden Seite, um sie hier als Unterseite einzuordnen.
+              Suchen Sie nach Titel oder Kennung einer bestehenden Seite. Sie verbleibt an ihrem Ursprungsort – es wird nur eine Verknüpfung hergestellt.
             </DialogDescription>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -903,8 +916,10 @@ export function CreateNodeDialog({
           </div>
         )}
 
+        </div>
+
         {mode === "create" && (
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-0 shrink-0">
             {step > 0 && (
               <Button
                 variant="outline"

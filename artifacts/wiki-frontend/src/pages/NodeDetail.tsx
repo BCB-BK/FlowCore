@@ -39,6 +39,7 @@ import {
   ArrowRightLeft,
   Check,
   X,
+  Link2,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
@@ -54,6 +55,7 @@ import {
   useGetNodeDeletionRequest,
   useCancelDeletionRequest,
   getGetNodeDeletionRequestQueryKey,
+  customFetch,
 } from "@workspace/api-client-react";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { DocRegistryView } from "@/components/registry/DocRegistryView";
@@ -78,7 +80,7 @@ import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
 import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQueries } from "@tanstack/react-query";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { useAuth } from "@/hooks/use-auth";
 import { isFieldEmpty } from "@/lib/field-empty";
@@ -251,9 +253,39 @@ export function NodeDetail() {
     return parseClusters(structuredFields._clusters);
   }, [structuredFields._clusters, activeWC, wcLoading]);
 
+  // Verlinkte Nodes (Cross-References): im Working-Copy als _linkedNodeIds gespeichert
+  const linkedNodeIds = useMemo(() => {
+    if (!wcLoading && activeWC) {
+      const wcSF = activeWC.structuredFields as Record<string, unknown> | null | undefined;
+      if (Array.isArray(wcSF?._linkedNodeIds)) return wcSF!._linkedNodeIds as string[];
+    }
+    const ids = structuredFields._linkedNodeIds;
+    return Array.isArray(ids) ? (ids as string[]) : [];
+  }, [activeWC, wcLoading, structuredFields]);
+
+  const linkedNodeQueries = useQueries({
+    queries: linkedNodeIds.map((id) => ({
+      queryKey: [`/api/content/nodes/${id}`],
+      queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${id}`),
+    })),
+  });
+
+  const linkedNodes = useMemo(
+    () => linkedNodeQueries.filter((q) => q.data != null).map((q) => q.data as unknown as NonNullable<typeof children>[number]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [linkedNodeQueries.map((q) => q.dataUpdatedAt).join(",")],
+  );
+
+  const linkedNodeIdSet = useMemo(() => new Set(linkedNodeIds), [linkedNodeIds]);
+
   const clusterGroups = useMemo(() => {
-    if (!children || children.length === 0 || clusters.length === 0) return [];
-    const raw = groupChildrenByClusters(children, clusters);
+    if (clusters.length === 0) return [];
+    const childrenArr = children ?? [];
+    const childIdSet = new Set(childrenArr.map((c) => c.id));
+    // Echte Kinder + verlinkte Nodes zusammenführen (ohne Duplikate)
+    const allNodes = [...childrenArr, ...linkedNodes.filter((ln) => !childIdSet.has(ln.id))];
+    if (allNodes.length === 0) return [];
+    const raw = groupChildrenByClusters(allNodes, clusters);
     return raw.map((group) => {
       // Cluster-Kinder: childNodeIds-Reihenfolge beibehalten (vom Editor gesetzt)
       // Nicht-zugeordnete Kinder: nach displayCode sortieren
@@ -263,7 +295,7 @@ export function NodeDetail() {
           : group.children;
       return { ...group, children: processedChildren };
     }).filter((g) => g.children.length > 0 || g.cluster !== null);
-  }, [children, clusters, isPublished, sortByDisplayCode]);
+  }, [children, clusters, linkedNodes, isPublished, sortByDisplayCode]);
 
   const editorContent = useMemo(() => {
     const raw = structuredFields._editorContent ?? structuredFields.discussion;
@@ -347,6 +379,55 @@ export function NodeDetail() {
           title: "Cluster-Zuordnung fehlgeschlagen",
           description:
             err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+  );
+
+  // Verlinkt eine bestehende Seite im Cluster, ohne ihren parentNodeId zu ändern
+  const handleLinkExistingInCluster = useCallback(
+    async (linkedNodeId: string) => {
+      if (!nodeId) return;
+      const clusterId = createInClusterId;
+      setCreateInClusterId(null);
+      if (!clusterId) return;
+      try {
+        let wc = activeWC;
+        if (!wc) {
+          wc = await createWorkingCopy.mutateAsync({ nodeId });
+        }
+        const sfNow = (wc.structuredFields as Record<string, unknown>) ?? {};
+        const currentClusters = parseClusters(sfNow._clusters);
+        const updatedClusters = currentClusters.map((c) =>
+          c.id === clusterId
+            ? { ...c, childNodeIds: [...c.childNodeIds, linkedNodeId] }
+            : c,
+        );
+        const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+          ? (sfNow._linkedNodeIds as string[])
+          : [];
+        const updatedLinked = currentLinked.includes(linkedNodeId)
+          ? currentLinked
+          : [...currentLinked, linkedNodeId];
+        await updateWorkingCopy.mutateAsync({
+          workingCopyId: wc.id,
+          data: {
+            structuredFields: {
+              ...sfNow,
+              _clusters: updatedClusters,
+              _linkedNodeIds: updatedLinked,
+            },
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Verlinkung fehlgeschlagen",
+          description: err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },
@@ -920,9 +1001,16 @@ export function NodeDetail() {
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                                    {child.title}
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                      {child.title}
+                                    </p>
+                                    {linkedNodeIdSet.has(child.id) && (
+                                      <span title="Verlinkte Seite (kein Kind dieser Seite)" className="shrink-0">
+                                        <Link2 className="h-3 w-3 text-muted-foreground" />
+                                      </span>
+                                    )}
+                                  </div>
                                   <div className="flex items-center gap-2 mt-0.5">
                                     <span className="text-xs text-muted-foreground">{child.displayCode}</span>
                                     {childDef && (
@@ -1332,6 +1420,7 @@ export function NodeDetail() {
         parentTemplateType={node.templateType}
         presetType={createPresetType}
         onNodeCreated={createInClusterId ? handleNodeCreatedInCluster : undefined}
+        onLinkExistingNode={createInClusterId ? handleLinkExistingInCluster : undefined}
       />
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
