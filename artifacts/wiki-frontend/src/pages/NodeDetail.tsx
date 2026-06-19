@@ -255,10 +255,13 @@ export function NodeDetail() {
     if (!children || children.length === 0 || clusters.length === 0) return [];
     const raw = groupChildrenByClusters(children, clusters);
     return raw.map((group) => {
-      const sorted = sortByDisplayCode(
-        group.cluster === null ? group.children.filter(isPublished) : group.children,
-      );
-      return { ...group, children: sorted };
+      // Cluster-Kinder: childNodeIds-Reihenfolge beibehalten (vom Editor gesetzt)
+      // Nicht-zugeordnete Kinder: nach displayCode sortieren
+      const processedChildren =
+        group.cluster === null
+          ? sortByDisplayCode(group.children.filter(isPublished))
+          : group.children;
+      return { ...group, children: processedChildren };
     }).filter((g) => g.children.length > 0 || g.cluster !== null);
   }, [children, clusters, isPublished, sortByDisplayCode]);
 
