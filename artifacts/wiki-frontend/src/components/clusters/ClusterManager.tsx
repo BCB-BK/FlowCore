@@ -6,6 +6,7 @@ import {
   useSensor,
   useSensors,
   closestCenter,
+  useDroppable,
   type DragStartEvent,
   type DragEndEvent,
   type DragOverEvent,
@@ -386,14 +387,16 @@ export function ClusterManager({
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-2 space-y-1">
+              <DroppableClusterBody clusterId={cluster.id} isDragging={!!activeId}>
                 <SortableContext
                   id={cluster.id}
                   items={cluster.childNodeIds}
                   strategy={verticalListSortingStrategy}
                 >
                   {clusterChildren.length === 0 ? (
-                    <p className="text-xs text-muted-foreground py-1 px-1">Noch keine Unterseiten zugeordnet</p>
+                    <p className="text-xs text-muted-foreground py-1 px-1 select-none">
+                      {activeId ? "Hierher ziehen …" : "Noch keine Unterseiten zugeordnet"}
+                    </p>
                   ) : (
                     clusterChildren.map((child) => (
                       <SortableChildRow
@@ -433,7 +436,7 @@ export function ClusterManager({
                     </Button>
                   )}
                 </div>
-              </CardContent>
+              </DroppableClusterBody>
             </Card>
           );
         })}
@@ -465,6 +468,33 @@ export function ClusterManager({
         )}
       </DragOverlay>
     </DndContext>
+  );
+}
+
+/**
+ * Registriert jeden Cluster-Container als explizite Drop-Zone via useDroppable.
+ * Das ist notwendig, damit auch LEERE Cluster als Drop-Ziel erkannt werden –
+ * SortableContext allein erzeugt ohne Items keine Drop-Zone.
+ */
+function DroppableClusterBody({
+  clusterId,
+  isDragging,
+  children,
+}: {
+  clusterId: string;
+  isDragging: boolean;
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: clusterId });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`p-2 space-y-1 min-h-[40px] rounded transition-colors ${
+        isOver && isDragging ? "bg-primary/5 ring-1 ring-inset ring-primary/30" : ""
+      }`}
+    >
+      {children}
+    </div>
   );
 }
 
