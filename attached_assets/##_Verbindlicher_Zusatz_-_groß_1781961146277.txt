@@ -1,0 +1,226 @@
+## Verbindlicher Zusatz für diesen Auftrag: Realer Workflow-Nachweis / Live-Completion
+
+Dieser Auftrag gilt nicht als abgeschlossen, wenn nur Code geschrieben wurde oder Unit-Tests, Typecheck, Lint, CI, lokale Tests, Mock-Tests, E2E-Tests auf künstlichen Daten oder Dokumentation erfolgreich sind.
+
+Der Auftrag gilt erst als abgeschlossen, wenn die Änderung im real vorgesehenen DEV-/Staging-/Test-Workflow nachweislich wirkt.
+
+### 1. Root-Cause-first
+
+Vor jeder Codeänderung muss zuerst die tatsächliche Ursache bewiesen werden.
+
+Der Agent muss dokumentieren:
+
+* Was ist der beobachtete Fehler?
+* Wo tritt er im realen Workflow auf?
+* Welche Daten, Logs, UI-Zustände, API-Antworten, DB-Zustände oder Audit-Artefakte belegen den Fehler?
+* Wo entsteht der erste kaputte Zustand?
+* In welchem Codepfad / Datenpfad / Prozessschritt liegt die Ursache?
+* Warum ist der geplante Fix am richtigen Layer?
+* Warum ist es kein Symptom-Fix?
+
+Wenn sich während der Analyse zeigt, dass die ursprüngliche Annahme falsch oder unvollständig ist, muss der Agent stoppen, die korrigierte Root Cause dokumentieren und den Fix entsprechend anpassen. Keine Implementierung auf Basis einer widerlegten Annahme.
+
+### 2. Scope einhalten
+
+Der Agent darf nur innerhalb des beschriebenen Auftrags arbeiten.
+
+Nicht erlaubt:
+
+* fremde Module nebenbei umbauen,
+* opportunistische Architekturänderungen,
+* neue Logik außerhalb des Scopes,
+* Qualitätsregeln abschwächen,
+* Validatoren deaktivieren,
+* Severity-Level senken,
+* Pflichtfelder optional machen,
+* Fehler im Frontend nur ausblenden,
+* direkte DB-Manipulation zur Herstellung eines erfolgreichen Zustands,
+* manuelles Statuspatching,
+* Dummy-Daten erzeugen,
+* Tests löschen oder lockern,
+* Silent-Fallbacks einbauen,
+* Hardcodings auf das aktuelle Testobjekt.
+
+Wenn ein notwendiger Fix außerhalb des Scopes liegt, muss der Agent stoppen, den Befund dokumentieren und einen isolierten Folgetask vorschlagen.
+
+### 3. Implementierung
+
+Der Agent muss den Fix minimal-invasiv und root-cause-gerecht umsetzen.
+
+Dabei muss er prüfen und dokumentieren:
+
+* Welche Dateien/Funktionen wurden geändert?
+* Welche Datenfelder, Variablen oder Zustände sind betroffen?
+* Welche bestehenden Architekturentscheidungen werden berührt?
+* Welche Validatoren, Gates, Business Rules, UI-Komponenten oder Audits müssen die Änderung berücksichtigen?
+* Warum wurde keine Qualitätsregel abgeschwächt?
+
+### 4. Tests
+
+Der Agent muss passende Tests ergänzen oder aktualisieren.
+
+Mindestens prüfen, soweit für den Auftrag relevant:
+
+* Unit-Test,
+* Integration-Test,
+* Regression-Test,
+* Persistenz-/DB-Test,
+* Validator-/Business-Rule-Test,
+* Workflow-/E2E-Test,
+* Negativtest gegen Dummy-/Fallback-/Hardcoding-Verhalten.
+
+Tests allein reichen aber nicht als Abschlussnachweis.
+
+### 5. Live-Completion-Phase
+
+Am Ende des Auftrags muss der Agent den real vorgesehenen Workflow ausführen oder auswerten.
+
+Der Agent muss dokumentieren:
+
+* verwendete Umgebung,
+* verwendetes reales Testobjekt bzw. reale Testdaten,
+* Startzustand vor dem Fix,
+* ausgeführter realer Workflow,
+* Endzustand nach dem Fix,
+* relevante Logs,
+* relevante DB-/API-/Persistenznachweise,
+* relevante UI-/Frontend-/Export-/Audit-Nachweise,
+* ob der ursprüngliche Fehler real nicht mehr auftritt.
+
+Wenn der Live-Test fehlschlägt, darf der Agent den Auftrag nicht als erledigt melden.
+
+Dann muss er innerhalb dieses Scopes:
+
+1. Live-Fehler dokumentieren,
+2. Root Cause bestimmen,
+3. minimal-invasiv fixen,
+4. Tests erneut ausführen,
+5. realen Workflow erneut validieren.
+
+Maximal 2 Fix-/Validierungszyklen innerhalb dieses Auftrags.
+
+Wenn der Fehler danach weiter besteht oder außerhalb des Scopes liegt, muss der Agent den Auftrag als `TEILWEISE BESTANDEN` oder `NICHT BESTANDEN` markieren und einen isolierten Folgetask vorschlagen.
+
+### 6. Datenkettennachweis
+
+Der Agent muss die relevante Datenkette nachweisen:
+
+Erzeugung
+→ Übergabe
+→ Speicherung
+→ erneutes Laden
+→ Weiterverarbeitung
+→ Validierung
+→ Ausgabe / Frontend / Export / Audit
+
+Für zentrale Felder, Datenobjekte oder Zustände muss dokumentiert werden:
+
+| Prüfpunkt                                                             | Soll | Ist im realen System | Nachweis | Ergebnis |
+| --------------------------------------------------------------------- | ---- | -------------------- | -------- | -------- |
+| Datenobjekt/Feld wird erzeugt                                         |      |                      |          |          |
+| Datenobjekt/Feld wird weitergegeben                                   |      |                      |          |          |
+| Datenobjekt/Feld wird gespeichert                                     |      |                      |          |          |
+| Datenobjekt/Feld wird erneut geladen                                  |      |                      |          |          |
+| Datenobjekt/Feld wird von nachgelagerter Logik genutzt                |      |                      |          |          |
+| Datenobjekt/Feld wird von Validator/Gate/Business Rule berücksichtigt |      |                      |          |          |
+| Zustand ist in UI/Export/Audit korrekt sichtbar                       |      |                      |          |          |
+
+Wenn ein Glied der Kette fehlt, ist der Auftrag nicht vollständig bestanden.
+
+### 7. Live-Wirksamkeitsmatrix
+
+Der Abschlussbericht muss eine Live-Wirksamkeitsmatrix enthalten:
+
+| Prüfpunkt                                                | Soll | Ist im Live-System | Nachweis | Ergebnis |
+| -------------------------------------------------------- | ---- | ------------------ | -------- | -------- |
+| Codepfad ist aktiv                                       |      |                    |          |          |
+| Änderung wird im realen Workflow erzeugt                 |      |                    |          |          |
+| Änderung wird gespeichert                                |      |                    |          |          |
+| Änderung wird neu geladen                                |      |                    |          |          |
+| Nachgelagerte Logik nutzt die Änderung                   |      |                    |          |          |
+| Validator/Gate/Business Rule berücksichtigt die Änderung |      |                    |          |          |
+| UI/Export/Audit zeigt den Zustand korrekt                |      |                    |          |          |
+| ursprünglicher Fehler tritt real nicht mehr auf          |      |                    |          |          |
+| keine Qualitätsabsenkung vorgenommen                     |      |                    |          |          |
+
+### 8. Qualitätsprüfung
+
+Der Abschlussbericht muss diese Fragen explizit beantworten:
+
+| Frage                                                       | Antwort |
+| ----------------------------------------------------------- | ------- |
+| Wurden Validatoren abgeschwächt?                            | ja/nein |
+| Wurden Severity-Level gesenkt?                              | ja/nein |
+| Wurden Pflichtfelder optional gemacht?                      | ja/nein |
+| Wurden Fallbacks eingeführt oder verändert?                 | ja/nein |
+| Wurden Fehler unterdrückt?                                  | ja/nein |
+| Wurden Dummy-Daten erzeugt?                                 | ja/nein |
+| Wurden Tests entfernt oder gelockert?                       | ja/nein |
+| Wurde direkt in der DB manipuliert, um Erfolg herzustellen? | ja/nein |
+| Wurde ein Status künstlich gesetzt?                         | ja/nein |
+| Wurde bestehende Architektur verletzt?                      | ja/nein |
+| Gibt es offene Risiken?                                     | ja/nein |
+
+Wenn eine Frage mit „ja“ beantwortet wird, muss der Agent begründen, warum das fachlich zulässig war. In kritischen Systemen ist der Auftrag dann in der Regel nicht vollständig bestanden.
+
+### 9. Abschlussstatus
+
+Der Agent darf nicht nur „done“, „completed“, „merged“ oder „alle Checks grün“ melden.
+
+Er muss exakt einen dieser Status vergeben:
+
+* `BESTANDEN`
+* `TEILWEISE BESTANDEN`
+* `NICHT BESTANDEN`
+
+#### BESTANDEN nur, wenn:
+
+* Root Cause dokumentiert,
+* Fix implementiert,
+* Tests bestanden,
+* realer Workflow validiert,
+* ursprünglicher Fehler tritt real nicht mehr auf,
+* Datenkette vollständig nachgewiesen,
+* Frontend/Export/Audit stimmt mit Datenzustand überein,
+* keine Qualitätsabsenkung.
+
+#### TEILWEISE BESTANDEN, wenn:
+
+* Code implementiert,
+* Tests bestanden,
+* realer Workflow teilweise validiert,
+* mindestens ein Live-Kriterium nicht erfüllt,
+* Restfehler klar dokumentiert,
+* isolierter Folgetask vorgeschlagen.
+
+#### NICHT BESTANDEN, wenn:
+
+* Live-Wirksamkeit nicht nachgewiesen wurde,
+* ursprünglicher Fehler weiter besteht,
+* Datenkette gebrochen ist,
+* Scope verletzt wurde,
+* Qualitätsmechanismen abgeschwächt wurden,
+* Erfolg künstlich hergestellt wurde.
+
+### 10. Abschlussbericht
+
+Der Abschlussbericht muss mindestens enthalten:
+
+1. Executive Summary
+2. Ausgangsbefund
+3. Root Cause
+4. Implementierung
+5. Tests
+6. Live-Wirksamkeitsmatrix
+7. Datenkettennachweis
+8. UI-/Frontend-/Export-/Audit-Abgleich, soweit relevant
+9. Qualitätsprüfung
+10. offene Risiken
+11. Abschlussstatus: `BESTANDEN`, `TEILWEISE BESTANDEN` oder `NICHT BESTANDEN`
+12. empfohlene Folgetasks, falls erforderlich
+
+### Kernformel
+
+Nicht nur implementieren.
+
+Implementieren und im realen vorgesehenen Workflow beweisen, dass die Änderung korrekt, dauerhaft, auditierbar und ohne Qualitätsabsenkung wirkt.

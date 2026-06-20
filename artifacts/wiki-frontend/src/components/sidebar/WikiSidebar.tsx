@@ -24,11 +24,13 @@ import {
 import { SidebarMenuButton, SidebarMenuItem } from "@workspace/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@workspace/ui/skeleton";
+import { useSafeNavigate } from "@/hooks/use-unsaved-changes";
 
 export function WikiSidebar() {
   const { data: roots, isLoading } = useRootNodes();
   const { data: user } = useAuth();
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
+  const navigate = useSafeNavigate();
   const permissions = new Set(user?.permissions ?? []);
 
   return (

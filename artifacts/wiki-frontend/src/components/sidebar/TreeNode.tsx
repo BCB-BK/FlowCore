@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNodeChildren } from "@/hooks/use-nodes";
 import { useLocation } from "wouter";
+import { useSafeNavigate } from "@/hooks/use-unsaved-changes";
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -54,7 +55,8 @@ function StatusDot({ status }: { status: string }) {
 
 export function TreeNode({ node, level }: TreeNodeProps) {
   const [open, setOpen] = useState(false);
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
+  const navigate = useSafeNavigate();
   const { data: children } = useNodeChildren(open ? node.id : undefined);
 
   const isActive = location === `/node/${node.id}`;
