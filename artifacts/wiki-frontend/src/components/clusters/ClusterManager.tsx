@@ -1,4 +1,4 @@
-import { useState, useCallback, useId } from "react";
+import { useState, useCallback, useId, useEffect, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -69,8 +69,19 @@ export function ClusterManager({
   const [addingNew, setAddingNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overClusterId, setOverClusterId] = useState<string | null>(null);
   const dndId = useId();
+
+  // Lokaler State für DnD – wird in onDragOver in Echtzeit aktualisiert
+  // damit SortableContext-Instanzen unterschiedlicher Cluster das Item "sehen"
+  const [localClusters, setLocalClusters] = useState<Cluster[]>(clusters);
+  const isDragging = useRef(false);
+
+  // Prop-Sync: Wenn clusters von außen kommt (z.B. nach autosave) und kein Drag läuft
+  useEffect(() => {
+    if (!isDragging.current) {
+      setLocalClusters(clusters);
+    }
+  }, [clusters]);
 
   const linkedNodeIdSet = new Set(linkedNodeIds);
 
@@ -78,14 +89,17 @@ export function ClusterManager({
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
 
+  // assignedMap und unassigned nutzen localClusters damit DnD sofort sichtbar ist
   const assignedMap = new Map<string, string>();
-  for (const cl of clusters) {
+  for (const cl of localClusters) {
     for (const childId of cl.childNodeIds) {
       assignedMap.set(childId, cl.id);
     }
   }
 
   const unassigned = children.filter((c) => !assignedMap.has(c.id));
+
+  // --- Nicht-DnD-Handler: operieren weiterhin auf `clusters`-Prop via onChange ---
 
   const handleAddCluster = useCallback(() => {
     if (!newTitle.trim()) return;
@@ -169,66 +183,96 @@ export function ClusterManager({
     [clusters, linkedNodeIdSet, onChange],
   );
 
-  const findClusterForItem = (itemId: string) =>
-    clusters.find((c) => c.childNodeIds.includes(itemId))?.id ?? null;
+  // --- DnD-Handler ---
+
+  const findContainerForItem = (itemId: string, inClusters: Cluster[]) =>
+    inClusters.find((c) => c.childNodeIds.includes(itemId))?.id ?? null;
 
   const handleDragStart = (event: DragStartEvent) => {
+    isDragging.current = true;
     setActiveId(event.active.id as string);
   };
 
+  /**
+   * Cross-Container-Move in Echtzeit:
+   * Wenn das Item über einen anderen Cluster (oder ein Item darin) bewegt wird,
+   * verschieben wir es sofort in localClusters. So "sieht" der Ziel-SortableContext
+   * das Item und kann korrekt sortieren.
+   */
   const handleDragOver = (event: DragOverEvent) => {
-    const overId = event.over?.id as string | null;
-    if (!overId) { setOverClusterId(null); return; }
-    const clusterHit = clusters.find((c) => c.id === overId);
-    if (clusterHit) { setOverClusterId(clusterHit.id); return; }
-    const itemCluster = findClusterForItem(overId);
-    setOverClusterId(itemCluster);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveId(null);
-    setOverClusterId(null);
     if (!over) return;
 
     const draggedId = active.id as string;
     const overId = over.id as string;
-    const sourceClusterId = findClusterForItem(draggedId);
-    const overIsCluster = clusters.some((c) => c.id === overId);
-    const targetClusterId = overIsCluster ? overId : findClusterForItem(overId);
 
-    if (!targetClusterId) return;
+    const sourceContainerId = findContainerForItem(draggedId, localClusters);
+    const overIsCluster = localClusters.some((c) => c.id === overId);
+    const targetContainerId = overIsCluster
+      ? overId
+      : findContainerForItem(overId, localClusters);
 
-    const updated = clusters.map((c) => ({
-      ...c,
-      childNodeIds: c.childNodeIds.filter((id) => id !== draggedId),
-    }));
+    // Nichts tun wenn gleicher Container oder Ziel unbekannt
+    if (!targetContainerId || sourceContainerId === targetContainerId) return;
 
-    const targetCluster = updated.find((c) => c.id === targetClusterId);
-    if (!targetCluster) return;
+    setLocalClusters((prev) => {
+      const next = prev.map((c) => ({ ...c, childNodeIds: [...c.childNodeIds] }));
+      const src = next.find((c) => c.id === sourceContainerId);
+      const tgt = next.find((c) => c.id === targetContainerId);
+      if (!src || !tgt) return prev;
 
-    if (sourceClusterId === targetClusterId && !overIsCluster) {
-      const sourceCluster = updated.find((c) => c.id === sourceClusterId);
-      if (sourceCluster) {
-        const oldIndex = sourceCluster.childNodeIds.indexOf(draggedId);
-        sourceCluster.childNodeIds.splice(0, 0, draggedId);
-        const freshCluster = clusters.find((c) => c.id === sourceClusterId)!;
-        const originalIds = freshCluster.childNodeIds.filter((id) => id !== draggedId);
-        const overIdx = originalIds.indexOf(overId);
-        const newIds = [...originalIds];
-        newIds.splice(overIdx >= 0 ? overIdx : newIds.length, 0, draggedId);
-        sourceCluster.childNodeIds = newIds;
-      }
-    } else {
+      // Aus Quelle entfernen
+      src.childNodeIds = src.childNodeIds.filter((id) => id !== draggedId);
+
+      // In Ziel einfügen: vor dem over-Item oder ans Ende
       if (overIsCluster) {
-        targetCluster.childNodeIds = [...targetCluster.childNodeIds, draggedId];
+        tgt.childNodeIds = [...tgt.childNodeIds, draggedId];
       } else {
-        const overIdx = targetCluster.childNodeIds.indexOf(overId);
-        targetCluster.childNodeIds.splice(overIdx >= 0 ? overIdx : targetCluster.childNodeIds.length, 0, draggedId);
+        const overIdx = tgt.childNodeIds.indexOf(overId);
+        tgt.childNodeIds.splice(overIdx >= 0 ? overIdx : tgt.childNodeIds.length, 0, draggedId);
       }
-    }
 
-    onChange(updated);
+      return next;
+    });
+  };
+
+  /**
+   * Finales Reordering:
+   * Bei Drop im gleichen Container → arrayMove.
+   * Danach localClusters an Parent melden (onChange).
+   */
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    isDragging.current = false;
+    setActiveId(null);
+
+    setLocalClusters((prev) => {
+      let next = prev;
+
+      if (over) {
+        const draggedId = active.id as string;
+        const overId = over.id as string;
+        const overIsCluster = prev.some((c) => c.id === overId);
+
+        // Nur intra-Container Reordering – Cross-Container wurde schon in onDragOver erledigt
+        if (!overIsCluster) {
+          const containerId = findContainerForItem(draggedId, prev);
+          const overContainerId = findContainerForItem(overId, prev);
+          if (containerId && containerId === overContainerId) {
+            next = prev.map((c) => {
+              if (c.id !== containerId) return c;
+              const oldIdx = c.childNodeIds.indexOf(draggedId);
+              const newIdx = c.childNodeIds.indexOf(overId);
+              if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return c;
+              return { ...c, childNodeIds: arrayMove(c.childNodeIds, oldIdx, newIdx) };
+            });
+          }
+        }
+      }
+
+      onChange(next);
+      return next;
+    });
   };
 
   const activeNode = activeId ? children.find((c) => c.id === activeId) : null;
@@ -248,8 +292,8 @@ export function ClusterManager({
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-semibold">Cluster-Gruppen</h3>
-            {clusters.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{clusters.length}</Badge>
+            {localClusters.length > 0 && (
+              <Badge variant="secondary" className="text-xs">{localClusters.length}</Badge>
             )}
           </div>
           {!addingNew && (
@@ -260,7 +304,7 @@ export function ClusterManager({
           )}
         </div>
 
-        {clusters.length === 0 && !addingNew && (
+        {localClusters.length === 0 && !addingNew && (
           <p className="text-xs text-muted-foreground py-2">
             Keine Cluster angelegt. Erstellen Sie Cluster, um Unterseiten thematisch zu gruppieren.
           </p>
@@ -288,7 +332,7 @@ export function ClusterManager({
           </div>
         )}
 
-        {clusters.map((cluster, idx) => {
+        {localClusters.map((cluster, idx) => {
           const clusterChildren = cluster.childNodeIds
             .map((id) => children.find((c) => c.id === id))
             .filter((c): c is ChildNode => !!c);
@@ -296,7 +340,7 @@ export function ClusterManager({
           return (
             <Card
               key={cluster.id}
-              className={`overflow-hidden transition-colors ${overClusterId === cluster.id && activeId && !cluster.childNodeIds.includes(activeId) ? "ring-2 ring-primary/40 bg-primary/5" : ""}`}
+              className="overflow-hidden transition-colors"
             >
               <CardHeader className="py-2 px-3 bg-muted/30">
                 <div className="flex items-center gap-2">
@@ -328,7 +372,7 @@ export function ClusterManager({
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleMoveUp(idx)} disabled={idx === 0}>
                           <ChevronUp className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleMoveDown(idx)} disabled={idx === clusters.length - 1}>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleMoveDown(idx)} disabled={idx === localClusters.length - 1}>
                           <ChevronDown className="h-3 w-3" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => { setEditingId(cluster.id); setEditingTitle(cluster.title); }}>
