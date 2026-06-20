@@ -22,6 +22,7 @@ import { SettingsPage } from "@/pages/SettingsPage";
 import { DocsPage } from "@/pages/DocsPage";
 import { GlobalAssistant } from "@/components/ai/GlobalAssistant";
 import { LoginPage } from "@/pages/LoginPage";
+import { UnsavedChangesProvider } from "@/components/UnsavedChangesProvider";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
@@ -108,7 +109,9 @@ function App() {
           <TeamsProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <AuthGate>
-                <Router />
+                <UnsavedChangesProvider>
+                  <Router />
+                </UnsavedChangesProvider>
               </AuthGate>
             </WouterRouter>
           </TeamsProvider>

@@ -76,6 +76,7 @@ import { useQueryClient, useQueries } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { Sparkles, AlertCircle, Info } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 const AUTOSAVE_DELAY_MS = 2000;
 
@@ -124,6 +125,11 @@ export function WorkingCopyEditorPage() {
   const queryClient = useQueryClient();
   const { data: currentUser } = useAuth();
   const { setupMode: isSetupMode } = useSetupMode();
+  const { setDirty, confirmLeave } = useUnsavedChanges();
+
+  useEffect(() => {
+    return () => { setDirty(false); };
+  }, [setDirty]);
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
     query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
@@ -316,15 +322,17 @@ export function WorkingCopyEditorPage() {
           data: patch,
         });
         setLastSavedAt(new Date());
+        setDirty(false);
       } finally {
         setIsSaving(false);
       }
     },
-    [updateWorkingCopy],
+    [updateWorkingCopy, setDirty],
   );
 
   const scheduleAutosave = useCallback(
     (patch: SavePatch) => {
+      setDirty(true);
       pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = setTimeout(() => {
@@ -333,7 +341,7 @@ export function WorkingCopyEditorPage() {
         doSave(merged).catch(() => {});
       }, AUTOSAVE_DELAY_MS);
     },
-    [doSave],
+    [doSave, setDirty],
   );
 
   const handleEditorSave = useCallback(
@@ -614,6 +622,7 @@ export function WorkingCopyEditorPage() {
           );
         }
       }
+      setDirty(false);
       navigate(`/node/${nodeId}`);
     } catch (err) {
       toast({
@@ -623,7 +632,7 @@ export function WorkingCopyEditorPage() {
     }
   }, [
     activeWC, node, doSave, editableMetadata, validationSFSnapshot, changeType,
-    changeSummary, submitComment, submitWorkingCopy, toast, nodeId, queryClient, navigate, isSetupMode,
+    changeSummary, submitComment, submitWorkingCopy, toast, nodeId, queryClient, navigate, isSetupMode, setDirty,
   ]);
 
   const handleCancel = useCallback(async () => {
@@ -637,6 +646,7 @@ export function WorkingCopyEditorPage() {
       if (nodeId) {
         queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
       }
+      setDirty(false);
       navigate(`/node/${nodeId}`);
     } catch (err) {
       toast({
@@ -644,7 +654,7 @@ export function WorkingCopyEditorPage() {
         title: err instanceof Error ? err.message : "Fehler",
       });
     }
-  }, [activeWC, cancelWorkingCopy, toast, nodeId, queryClient, navigate]);
+  }, [activeWC, cancelWorkingCopy, toast, nodeId, queryClient, navigate, setDirty]);
 
   if (nodeLoading || wcLoading) {
     return (
@@ -767,7 +777,7 @@ export function WorkingCopyEditorPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          <Button variant="ghost" size="sm" onClick={() => navigate(`/node/${nodeId}`)}>
+          <Button variant="ghost" size="sm" onClick={() => confirmLeave(() => navigate(`/node/${nodeId}`))}>
             <ArrowLeft className="mr-1 h-4 w-4" />
             Zurück
           </Button>
