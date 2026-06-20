@@ -40,11 +40,11 @@ import {
   Check,
   X,
   Link2,
+  Layers,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
 import { parseClusters, groupChildrenByClusters, generateClusterId } from "@/lib/clusters";
-import { Layers } from "lucide-react";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
   useGetActiveWorkingCopy,
@@ -510,6 +510,51 @@ export function NodeDetail() {
       }
     },
     [nodeId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+  );
+
+  const handleRemoveFromCluster = useCallback(
+    async (childId: string, clusterId: string) => {
+      if (!nodeId) return;
+      try {
+        let wc = activeWC;
+        if (!wc) {
+          wc = await createWorkingCopy.mutateAsync({ nodeId });
+        }
+        const sfNow = (wc.structuredFields as Record<string, unknown>) ?? {};
+        const currentClusters = parseClusters(sfNow._clusters);
+        const updatedClusters = currentClusters.map((c) =>
+          c.id === clusterId
+            ? { ...c, childNodeIds: c.childNodeIds.filter((id) => id !== childId) }
+            : c,
+        );
+        const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+          ? (sfNow._linkedNodeIds as string[])
+          : [];
+        const updatedLinked = linkedNodeIdSet.has(childId)
+          ? currentLinked.filter((id) => id !== childId)
+          : currentLinked;
+        await updateWorkingCopy.mutateAsync({
+          workingCopyId: wc.id,
+          data: {
+            structuredFields: {
+              ...sfNow,
+              _clusters: updatedClusters,
+              _linkedNodeIds: updatedLinked,
+            },
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Entfernen fehlgeschlagen",
+          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, activeWC, linkedNodeIdSet, createWorkingCopy, updateWorkingCopy, queryClient, toast],
   );
 
   const handleAddCluster = useCallback(async () => {
@@ -1015,6 +1060,7 @@ export function NodeDetail() {
                         <div className="divide-y">
                           {groupChildren.map((child, idx) => {
                             const childDef = getPageType(child.templateType);
+                            const clusterId = cluster?.id ?? "";
                             return (
                               <div
                                 key={child.id}
@@ -1061,6 +1107,18 @@ export function NodeDetail() {
                                   status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
                                   compact
                                 />
+                                {activeWC && canEdit && clusterId && (
+                                  <button
+                                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded ml-1"
+                                    aria-label={linkedNodeIdSet.has(child.id) ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      void handleRemoveFromCluster(child.id, clusterId);
+                                    }}
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
                               </div>
                             );
                           })}

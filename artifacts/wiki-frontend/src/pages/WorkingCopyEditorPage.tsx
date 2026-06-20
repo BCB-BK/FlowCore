@@ -393,13 +393,37 @@ export function WorkingCopyEditorPage() {
   }, [node, validationSFSnapshot]);
 
   const handleClusterChange = useCallback(
-    (updatedClusters: Cluster[]) => {
-      const sf = { ...localStructuredFieldsRef.current, _clusters: updatedClusters };
+    (updatedClusters: Cluster[], removedLinkedNodeIds?: string[]) => {
+      const sfNow = localStructuredFieldsRef.current;
+      const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+        ? (sfNow._linkedNodeIds as string[])
+        : [];
+      const newLinked =
+        removedLinkedNodeIds && removedLinkedNodeIds.length > 0
+          ? currentLinked.filter((id) => !removedLinkedNodeIds.includes(id))
+          : currentLinked;
+      const sf = { ...sfNow, _clusters: updatedClusters, _linkedNodeIds: newLinked };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       scheduleAutosave({ structuredFields: sf });
     },
     [scheduleAutosave],
+  );
+
+  const handleCreateInClusterFromManager = useCallback(
+    (clusterId: string) => {
+      setPendingClusterId(clusterId);
+      setShowCreate(true);
+    },
+    [],
+  );
+
+  const handleLinkExistingFromManager = useCallback(
+    (clusterId: string) => {
+      setPendingClusterId(clusterId);
+      setShowCreate(true);
+    },
+    [],
   );
 
   const handleCreateInCluster = useCallback(
@@ -1122,14 +1146,30 @@ export function WorkingCopyEditorPage() {
                 {canEdit ? (
                   <ClusterManager
                     clusters={editorClusters}
-                    children={(nodeChildren ?? []).map((c) => ({
-                      id: c.id,
-                      title: c.title,
-                      templateType: c.templateType,
-                      displayCode: c.displayCode,
-                    }))}
+                    children={[
+                      ...(nodeChildren ?? []).map((c) => ({
+                        id: c.id,
+                        title: c.title,
+                        templateType: c.templateType,
+                        displayCode: c.displayCode,
+                      })),
+                      ...previewLinkedNodes
+                        .filter((ln) => !(nodeChildren ?? []).find((c) => c.id === (ln.id as string)))
+                        .map((ln) => ({
+                          id: ln.id as string,
+                          title: (ln.title as string) ?? (ln.id as string),
+                          templateType: (ln.templateType as string) ?? "",
+                          displayCode: (ln.displayCode as string | null | undefined) ?? null,
+                        })),
+                    ]}
+                    linkedNodeIds={
+                      Array.isArray(localStructuredFieldsRef.current._linkedNodeIds)
+                        ? (localStructuredFieldsRef.current._linkedNodeIds as string[])
+                        : []
+                    }
                     onChange={handleClusterChange}
-                    onCreateInCluster={handleCreateInCluster}
+                    onCreateInCluster={handleCreateInClusterFromManager}
+                    onLinkExistingNode={handleLinkExistingFromManager}
                   />
                 ) : (
                   <p className="text-sm text-muted-foreground">
