@@ -1,0 +1,34 @@
+## Zusatz: Live-Completion-Pflicht
+
+Dieser Auftrag gilt nicht als abgeschlossen, wenn nur Code, Unit-Tests, Typecheck, Lint, CI, Mock-Tests oder Dokumentation erfolgreich sind.
+
+Der Agent muss zuerst die Root Cause im realen Workflow belegen, dann minimal-invasiv fixen und anschließend im real vorgesehenen DEV-/Staging-/Test-Workflow nachweisen, dass die Änderung tatsächlich wirkt.
+
+Nicht erlaubt:
+
+* Validatoren abschwächen,
+* Severity-Level senken,
+* Pflichtfelder optional machen,
+* Fehler ausblenden,
+* Dummy-Daten erzeugen,
+* direkte DB-Manipulation zur Herstellung eines erfolgreichen Zustands,
+* manuelles Statuspatching,
+* Tests entfernen oder lockern,
+* Hardcodings,
+* Frontend-Kosmetik statt Datenfix,
+* Silent-Fallbacks.
+
+Wenn die Live-Validierung fehlschlägt, muss der Agent innerhalb des Scopes maximal 2 Fix-/Validierungszyklen durchführen. Wenn der Fehler außerhalb des Scopes liegt oder danach weiter besteht, muss der Agent stoppen und den Auftrag als `TEILWEISE BESTANDEN` oder `NICHT BESTANDEN` markieren.
+
+Der Abschlussbericht muss enthalten:
+
+1. Root Cause
+2. Implementierung
+3. Tests
+4. Live-Wirksamkeitsmatrix
+5. Datenkettennachweis
+6. Qualitätsprüfung
+7. offene Risiken
+8. Abschlussstatus: `BESTANDEN`, `TEILWEISE BESTANDEN` oder `NICHT BESTANDEN`
+
+Ein Task ist nur `BESTANDEN`, wenn der reale Workflow validiert wurde, der ursprüngliche Fehler real nicht mehr auftritt, die Datenkette vollständig nachgewiesen ist und keine Qualitätsabsenkung erfolgt ist.

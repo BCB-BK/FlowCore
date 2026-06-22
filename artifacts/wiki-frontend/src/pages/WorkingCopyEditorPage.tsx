@@ -252,9 +252,17 @@ export function WorkingCopyEditorPage() {
   }, [showPreview, wcStructuredFields]);
 
   const previewLinkedNodeIds = useMemo(() => {
-    const ids = previewStructuredFields._linkedNodeIds;
-    return Array.isArray(ids) ? (ids as string[]) : [];
-  }, [previewStructuredFields]);
+    // validationSFSnapshot ist React-State und wird bei jeder Verlinkung sofort aktualisiert.
+    // previewStructuredFields ist im Edit-Mode = wcStructuredFields (Server-Stand) und hinkt nach.
+    // Vereinigung beider Listen damit neu verlinkte Nodes sofort in useQueries erscheinen.
+    const fromPreview = Array.isArray(previewStructuredFields._linkedNodeIds)
+      ? (previewStructuredFields._linkedNodeIds as string[])
+      : [];
+    const fromLocal = Array.isArray(validationSFSnapshot._linkedNodeIds)
+      ? (validationSFSnapshot._linkedNodeIds as string[])
+      : [];
+    return [...new Set([...fromPreview, ...fromLocal])];
+  }, [previewStructuredFields, validationSFSnapshot]);
 
   const previewLinkedNodeQueries = useQueries({
     queries: previewLinkedNodeIds.map((id) => ({
@@ -465,8 +473,15 @@ export function WorkingCopyEditorPage() {
 
   // Verlinkt eine bestehende Seite im Cluster ohne parentNodeId-Änderung
   const handleLinkExistingInCluster = useCallback(
-    (linkedNodeId: string) => {
+    (linkedNodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => {
       if (!pendingClusterId) return;
+      // Node-Daten sofort in QueryClient-Cache schreiben → kein Netzwerk-Roundtrip nötig
+      if (nodeData) {
+        queryClient.setQueryData(
+          [`/api/content/nodes/${linkedNodeId}`],
+          (old: Record<string, unknown> | undefined) => old ?? { id: linkedNodeId, ...nodeData },
+        );
+      }
       const sfNow = localStructuredFieldsRef.current;
       const currentClusters = parseClusters(sfNow._clusters);
       const updated = currentClusters.map((c) =>
@@ -489,12 +504,19 @@ export function WorkingCopyEditorPage() {
       doSave(merged).catch(() => {});
       setPendingClusterId(null);
     },
-    [pendingClusterId, doSave],
+    [pendingClusterId, doSave, queryClient],
   );
 
   // Verlinkt eine bestehende Seite ohne Cluster-Kontext (allgemeine Verlinkung im Editor)
   const handleLinkExistingNode = useCallback(
-    (linkedNodeId: string) => {
+    (linkedNodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => {
+      // Node-Daten sofort in QueryClient-Cache schreiben → kein Netzwerk-Roundtrip nötig
+      if (nodeData) {
+        queryClient.setQueryData(
+          [`/api/content/nodes/${linkedNodeId}`],
+          (old: Record<string, unknown> | undefined) => old ?? { id: linkedNodeId, ...nodeData },
+        );
+      }
       const sfNow = localStructuredFieldsRef.current;
       const currentLinked = Array.isArray(sfNow._linkedNodeIds)
         ? (sfNow._linkedNodeIds as string[])
@@ -505,7 +527,7 @@ export function WorkingCopyEditorPage() {
       setValidationSFSnapshot(sf);
       scheduleAutosave({ structuredFields: sf });
     },
-    [scheduleAutosave],
+    [scheduleAutosave, queryClient],
   );
 
   const handleMetadataChange = useCallback(

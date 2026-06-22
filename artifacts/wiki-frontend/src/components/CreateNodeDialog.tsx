@@ -84,7 +84,7 @@ interface CreateNodeDialogProps {
   parentTemplateType?: string;
   presetType?: string;
   onNodeCreated?: (nodeId: string) => void;
-  onLinkExistingNode?: (nodeId: string) => void;
+  onLinkExistingNode?: (nodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => void;
 }
 
 export function CreateNodeDialog({
@@ -145,9 +145,9 @@ export function CreateNodeDialog({
     );
   }, [linkResults, parentNodeId, parentTemplateType]);
 
-  const handleLinkPage = useCallback((nodeId: string, nodeTitle: string) => {
+  const handleLinkPage = useCallback((nodeId: string, nodeTitle: string, nodeTemplateType: string, nodeDisplayCode?: string | null) => {
     if (!onLinkExistingNode) return;
-    onLinkExistingNode(nodeId);
+    onLinkExistingNode(nodeId, { title: nodeTitle, templateType: nodeTemplateType, displayCode: nodeDisplayCode });
     resetAndClose();
     toast({
       title: "Seite verlinkt",
@@ -451,8 +451,8 @@ export function CreateNodeDialog({
                     tabIndex={0}
                     aria-disabled={linking}
                     className={`transition-colors ${linking ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"}`}
-                    onClick={() => handleLinkPage(result.id, result.title)}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleLinkPage(result.id, result.title); } }}
+                    onClick={() => handleLinkPage(result.id, result.title, result.templateType, result.displayCode)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleLinkPage(result.id, result.title, result.templateType, result.displayCode); } }}
                   >
                     <CardContent className="flex items-center gap-3 p-3">
                       {pageDef ? (
