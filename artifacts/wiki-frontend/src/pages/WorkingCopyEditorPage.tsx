@@ -40,6 +40,7 @@ import {
   Plus,
   Network,
   Link2,
+  Trash2,
 } from "lucide-react";
 import { Input } from "@workspace/ui/input";
 import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
@@ -58,6 +59,9 @@ import {
   useCancelWorkingCopy,
   useGetPrincipal,
   getGetActiveWorkingCopyQueryKey,
+  useCreateDeletionRequest,
+  useGetNodeDeletionRequest,
+  getGetNodeDeletionRequestQueryKey,
 } from "@workspace/api-client-react";
 import type { WorkingCopy, UpdateNodeInput } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
@@ -163,6 +167,10 @@ export function WorkingCopyEditorPage() {
   const updateWorkingCopy = useUpdateWorkingCopy();
   const submitWorkingCopy = useSubmitWorkingCopy();
   const cancelWorkingCopy = useCancelWorkingCopy();
+  const createDeletionRequest = useCreateDeletionRequest();
+  const pendingDeletionQuery = useGetNodeDeletionRequest(nodeId || "", {
+    query: { queryKey: getGetNodeDeletionRequestQueryKey(nodeId || ""), enabled: !!nodeId },
+  });
 
   const [submitOpen, setSubmitOpen] = useState(false);
   const [changeType, setChangeType] = useState("editorial");
@@ -170,6 +178,8 @@ export function WorkingCopyEditorPage() {
   const [submitComment, setSubmitComment] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showDeleteRequest, setShowDeleteRequest] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
   const [pendingClusterId, setPendingClusterId] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -714,7 +724,29 @@ export function WorkingCopyEditorPage() {
   const hasAmendPermission = currentUser?.permissions?.includes("amend_working_copy_in_review") ?? false;
   const isDraftOrReturned = activeWC.status === "draft" || activeWC.status === "changes_requested";
   const canEdit = ((isOwnWc || hasEditPermission) && isDraftOrReturned) || (isReviewPhase && hasAmendPermission);
+  const canArchive = currentUser?.permissions?.includes("archive_page") ?? false;
   const pageDef = getPageType(node.templateType);
+
+  const handleDeletionRequest = async () => {
+    if (!deleteReason.trim()) return;
+    try {
+      await createDeletionRequest.mutateAsync({
+        data: { nodeId: node.id, reason: deleteReason.trim() },
+      });
+      toast({ title: "Löschanfrage eingereicht" });
+      setShowDeleteRequest(false);
+      setDeleteReason("");
+      queryClient.invalidateQueries({
+        queryKey: getGetNodeDeletionRequestQueryKey(node.id),
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Fehler beim Einreichen der Löschanfrage",
+        description: err instanceof Error ? err.message : "Unbekannter Fehler",
+      });
+    }
+  };
   const metadata: Record<string, unknown> = editableMetadata;
 
   return (
@@ -841,6 +873,17 @@ export function WorkingCopyEditorPage() {
                 Einreichen
               </Button>
             </>
+          )}
+          {canArchive && !pendingDeletionQuery.data && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive"
+              onClick={() => setShowDeleteRequest(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Löschanfrage
+            </Button>
           )}
         </div>
       </div>
@@ -1500,6 +1543,55 @@ export function WorkingCopyEditorPage() {
               disabled={updateNode.isPending || !typeDraft || typeDraft === node.templateType}
             >
               {updateNode.isPending ? "Wird gespeichert…" : "Speichern"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showDeleteRequest}
+        onOpenChange={(open) => {
+          setShowDeleteRequest(open);
+          if (!open) setDeleteReason("");
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Löschanfrage stellen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              {"Die Seite \u201E"}{node.title}{"\u201C wird zur Löschung vorgeschlagen. Ein Administrator muss die Anfrage genehmigen."}
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="wc-delete-reason">Begründung</Label>
+              <Input
+                id="wc-delete-reason"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                placeholder="Warum soll die Seite gelöscht werden?"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && deleteReason.trim()) handleDeletionRequest();
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteRequest(false);
+                setDeleteReason("");
+              }}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeletionRequest}
+              disabled={!deleteReason.trim() || createDeletionRequest.isPending}
+            >
+              {createDeletionRequest.isPending ? "Wird eingereicht…" : "Löschanfrage einreichen"}
             </Button>
           </DialogFooter>
         </DialogContent>
