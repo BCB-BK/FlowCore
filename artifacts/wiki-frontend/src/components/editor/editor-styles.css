@@ -57,6 +57,18 @@
   margin: 0.15em 0;
 }
 
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+
+.ProseMirror ol ol ol {
+  list-style-type: lower-roman;
+}
+
 .ProseMirror code {
   background: hsl(var(--muted));
   border-radius: 0.25rem;
@@ -176,6 +188,25 @@
 .ProseMirror img.ProseMirror-selectednode {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
+}
+
+.ProseMirror img[data-float="left"] {
+  float: left;
+  margin-right: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror img[data-float="right"] {
+  float: right;
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror img[data-float="none"] {
+  float: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .ProseMirror hr {
