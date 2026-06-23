@@ -1,4 +1,4 @@
-import { useRoute, useLocation } from "wouter";
+import { useRoute, useLocation, useSearch } from "wouter";
 import {
   useNode,
   useNodeChildren,
@@ -128,6 +128,12 @@ export function NodeDetail() {
   const createDeletionRequest = useCreateDeletionRequest();
   const cancelDeletionRequest = useCancelDeletionRequest();
   const [, navigate] = useLocation();
+  const search = useSearch();
+  const activeTab = useMemo(() => new URLSearchParams(search).get("tab") ?? "content", [search]);
+  const handleTabChange = useCallback(
+    (value: string) => { navigate(`/node/${nodeId}?tab=${value}`, { replace: true }); },
+    [navigate, nodeId],
+  );
   const [showCreate, setShowCreate] = useState(false);
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [createInClusterId, setCreateInClusterId] = useState<string | null>(null);
@@ -741,7 +747,7 @@ export function NodeDetail() {
     undefined;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl w-full mx-auto space-y-6 min-w-0">
       <NodeBreadcrumbs nodeId={nodeId} />
 
       <div className="flex items-center justify-end gap-2 shrink-0 flex-wrap">
@@ -857,7 +863,7 @@ export function NodeDetail() {
         />
       )}
 
-      <Tabs defaultValue="content" className="w-full min-h-[300px]">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-h-[300px]">
         <TabsList>
           <TabsTrigger value="content">Inhalt</TabsTrigger>
           <TabsTrigger value="metadata">Metadaten</TabsTrigger>
