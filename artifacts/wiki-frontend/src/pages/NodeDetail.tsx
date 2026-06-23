@@ -129,7 +129,12 @@ export function NodeDetail() {
   const cancelDeletionRequest = useCancelDeletionRequest();
   const [, navigate] = useLocation();
   const search = useSearch();
-  const activeTab = useMemo(() => new URLSearchParams(search).get("tab") ?? "content", [search]);
+  const VALID_TABS = ["content", "metadata", "versions", "children"] as const;
+  type ValidTab = (typeof VALID_TABS)[number];
+  const activeTab = useMemo<ValidTab>(() => {
+    const t = new URLSearchParams(search).get("tab");
+    return (VALID_TABS as readonly string[]).includes(t ?? "") ? (t as ValidTab) : "content";
+  }, [search]);
   const handleTabChange = useCallback(
     (value: string) => { navigate(`/node/${nodeId}?tab=${value}`, { replace: true }); },
     [navigate, nodeId],
@@ -878,7 +883,7 @@ export function NodeDetail() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="content" className="mt-4">
+        <TabsContent value="content" className="mt-4 w-full min-w-0">
           {pendingDeletionQuery.data && (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-4">
               <div className="flex items-center justify-between">
@@ -1375,7 +1380,7 @@ export function NodeDetail() {
           {nodeId && <SourceReferencesPanel nodeId={nodeId} />}
         </TabsContent>
 
-        <TabsContent value="metadata" className="mt-4 space-y-4">
+        <TabsContent value="metadata" className="mt-4 space-y-4 w-full min-w-0">
           <CompletenessIndicator
             templateType={node.templateType}
             metadata={metadata}
@@ -1397,7 +1402,7 @@ export function NodeDetail() {
           )}
         </TabsContent>
 
-        <TabsContent value="versions" className="mt-4 space-y-4">
+        <TabsContent value="versions" className="mt-4 space-y-4 w-full min-w-0">
           {activeWC && nodeId && (
             <Card>
               <CardHeader className="pb-3">
@@ -1417,7 +1422,7 @@ export function NodeDetail() {
           {nodeId && <VersionHistoryPanel nodeId={nodeId} activeWorkingCopy={activeWC ? { id: activeWC.id, status: activeWC.status, title: activeWC.title ?? "", authorId: activeWC.authorId, createdAt: activeWC.createdAt, updatedAt: activeWC.updatedAt, changeSummary: activeWC.changeSummary } : null} />}
         </TabsContent>
 
-        <TabsContent value="children" className="mt-4">
+        <TabsContent value="children" className="mt-4 w-full min-w-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Unterseiten</h2>
             {canCreate && activeWC && (

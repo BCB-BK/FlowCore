@@ -71,7 +71,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </ErrorBoundary>
         <div className="flex flex-1 flex-col overflow-hidden">
           <AppHeader />
-          <main className="flex-1 overflow-auto p-4 sm:p-6 flex flex-col [scrollbar-gutter:stable]">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 flex flex-col [scrollbar-gutter:stable]">
             <ErrorBoundary fallbackTitle="Inhaltsfehler" fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden.">
               {children}
             </ErrorBoundary>
