@@ -39,7 +39,6 @@ import {
   Pencil,
   Plus,
   Network,
-  Link2,
   Trash2,
 } from "lucide-react";
 import { Input } from "@workspace/ui/input";

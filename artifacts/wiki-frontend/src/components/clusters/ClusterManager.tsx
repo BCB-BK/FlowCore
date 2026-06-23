@@ -20,7 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
+import { Card, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import {
   Plus,
