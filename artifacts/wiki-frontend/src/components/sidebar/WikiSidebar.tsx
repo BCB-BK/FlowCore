@@ -24,21 +24,21 @@ import {
 import { SidebarMenuButton, SidebarMenuItem } from "@workspace/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@workspace/ui/skeleton";
-import { useSafeNavigate } from "@/hooks/use-unsaved-changes";
+import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
 
 export function WikiSidebar() {
   const { data: roots, isLoading } = useRootNodes();
   const { data: user } = useAuth();
   const [location] = useLocation();
-  const navigate = useSafeNavigate();
+  const getLinkProps = useSafeLinkProps();
   const permissions = new Set(user?.permissions ?? []);
 
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-3">
-        <button
-          className="flex items-center cursor-pointer bg-transparent border-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-          onClick={() => navigate("/")}
+        <a
+          {...getLinkProps("/")}
+          className="flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Zur Startseite"
         >
           <img
@@ -46,94 +46,89 @@ export function WikiSidebar() {
             alt="BildungsCampus"
             className="h-7 w-auto shrink-0"
           />
-        </button>
+        </a>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/"}
-                onClick={() => navigate("/")}
-              >
-                <Home className="h-4 w-4" />
-                <span>Startseite</span>
+              <SidebarMenuButton asChild isActive={location === "/"}>
+                <a {...getLinkProps("/")}>
+                  <Home className="h-4 w-4" />
+                  <span>Startseite</span>
+                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/search"}
-                onClick={() => navigate("/search")}
-              >
-                <Search className="h-4 w-4" />
-                <span>Suche</span>
+              <SidebarMenuButton asChild isActive={location === "/search"}>
+                <a {...getLinkProps("/search")}>
+                  <Search className="h-4 w-4" />
+                  <span>Suche</span>
+                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/glossary"}
-                onClick={() => navigate("/glossary")}
-              >
-                <BookOpen className="h-4 w-4" />
-                <span>Glossar</span>
+              <SidebarMenuButton asChild isActive={location === "/glossary"}>
+                <a {...getLinkProps("/glossary")}>
+                  <BookOpen className="h-4 w-4" />
+                  <span>Glossar</span>
+                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {permissions.has("view_dashboard") && (
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={location === "/dashboard"}
-                  onClick={() => navigate("/dashboard")}
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Dashboard</span>
+                <SidebarMenuButton asChild isActive={location === "/dashboard"}>
+                  <a {...getLinkProps("/dashboard")}>
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             {permissions.has("view_tasks") && (
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={location === "/my-work"}
-                  onClick={() => navigate("/my-work")}
-                >
-                  <ClipboardList className="h-4 w-4" />
-                  <span>Meine Aufgaben</span>
+                <SidebarMenuButton asChild isActive={location === "/my-work"}>
+                  <a {...getLinkProps("/my-work")}>
+                    <ClipboardList className="h-4 w-4" />
+                    <span>Meine Aufgaben</span>
+                  </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             {permissions.has("review_working_copy") && (
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={location === "/review-inbox"}
-                  onClick={() => navigate("/review-inbox")}
-                >
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Review-Inbox</span>
+                <SidebarMenuButton asChild isActive={location === "/review-inbox"}>
+                  <a {...getLinkProps("/review-inbox")}>
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>Review-Inbox</span>
+                  </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             {permissions.has("view_settings") && (
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  asChild
                   isActive={
                     location === "/settings" ||
                     location === "/connectors" ||
                     location === "/ai-settings"
                   }
-                  onClick={() => navigate("/settings")}
                 >
-                  <Settings className="h-4 w-4" />
-                  <span>Einstellungen</span>
+                  <a {...getLinkProps("/settings")}>
+                    <Settings className="h-4 w-4" />
+                    <span>Einstellungen</span>
+                  </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={location === "/docs"}
-                onClick={() => navigate("/docs")}
-              >
-                <Library className="h-4 w-4" />
-                <span>Doku / Handbuch</span>
+              <SidebarMenuButton asChild isActive={location === "/docs"}>
+                <a {...getLinkProps("/docs")}>
+                  <Library className="h-4 w-4" />
+                  <span>Doku / Handbuch</span>
+                </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

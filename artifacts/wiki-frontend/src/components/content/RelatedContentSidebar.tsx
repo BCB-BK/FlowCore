@@ -11,7 +11,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-import { useLocation } from "wouter";
+import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
 import {
   useGetBacklinks,
   useGetForwardLinks,
@@ -68,7 +68,7 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
   const { data: siblings } = useNodeSiblings(nodeId);
   const { data: children } = useNodeChildren(nodeId);
   const { data: currentNode } = useNode(nodeId);
-  const [, navigate] = useLocation();
+  const getLinkProps = useSafeLinkProps();
 
   const parentId = currentNode?.parentNodeId;
   const { data: parentNode } = useNode(parentId ?? undefined);
@@ -140,9 +140,9 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
               <ArrowUp className="h-3 w-3" />
               Übergeordnete Seite
             </p>
-            <button
+            <a
               className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent flex items-center gap-2"
-              onClick={() => navigate(`/node/${parentNode.id}`)}
+              {...getLinkProps(`/node/${parentNode.id}`)}
             >
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-xs truncate">
@@ -154,7 +154,7 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                 </p>
               </div>
               <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
-            </button>
+            </a>
           </div>
         )}
 
@@ -166,10 +166,10 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
             </p>
             <div className="space-y-0.5">
               {children.slice(0, 5).map((child) => (
-                <button
+                <a
                   key={child.id}
                   className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent flex items-center gap-2"
-                  onClick={() => navigate(`/node/${child.id}`)}
+                  {...getLinkProps(`/node/${child.id}`)}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-xs truncate">
@@ -180,7 +180,7 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                     </p>
                   </div>
                   <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
-                </button>
+                </a>
               ))}
               {children.length > 5 && (
                 <p className="text-[10px] text-muted-foreground px-2 pt-1">
@@ -199,10 +199,10 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
             </p>
             <div className="space-y-0.5">
               {siblings.slice(0, 5).map((sib) => (
-                <button
+                <a
                   key={sib.id}
                   className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent flex items-center gap-2"
-                  onClick={() => navigate(`/node/${sib.id}`)}
+                  {...getLinkProps(`/node/${sib.id}`)}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-xs truncate">
@@ -213,7 +213,7 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                     </p>
                   </div>
                   <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
-                </button>
+                </a>
               ))}
               {siblings.length > 5 && (
                 <p className="text-[10px] text-muted-foreground px-2 pt-1">
@@ -236,10 +236,10 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
               </p>
               <div className="space-y-0.5">
                 {links.map((link) => (
-                  <button
+                  <a
                     key={link.id}
                     className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent flex items-center gap-2"
-                    onClick={() => navigate(`/node/${link.nodeId}`)}
+                    {...getLinkProps(`/node/${link.nodeId}`)}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-xs truncate">
@@ -253,7 +253,7 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                     <Badge variant="outline" className="text-[10px] shrink-0">
                       {RELATION_TYPE_LABELS[link.relationType] || link.relationType}
                     </Badge>
-                  </button>
+                  </a>
                 ))}
               </div>
             </div>

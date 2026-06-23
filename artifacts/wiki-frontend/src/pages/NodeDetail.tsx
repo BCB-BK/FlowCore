@@ -1,4 +1,5 @@
 import { useRoute, useLocation, useSearch } from "wouter";
+import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
 import {
   useNode,
   useNodeChildren,
@@ -128,6 +129,7 @@ export function NodeDetail() {
   const createDeletionRequest = useCreateDeletionRequest();
   const cancelDeletionRequest = useCancelDeletionRequest();
   const [, navigate] = useLocation();
+  const getLinkProps = useSafeLinkProps();
   const search = useSearch();
   const VALID_TABS = ["content", "metadata", "versions", "children"] as const;
   type ValidTab = (typeof VALID_TABS)[number];
@@ -1444,44 +1446,45 @@ export function NodeDetail() {
                 return (
                   <Card
                     key={child.id}
-                    className="cursor-pointer hover:shadow-sm transition-shadow"
-                    onClick={() => navigate(`/node/${child.id}`)}
+                    className="hover:shadow-sm transition-shadow overflow-hidden"
                   >
-                    <CardContent className="flex items-center gap-3 p-4">
-                      {childDef ? (
-                        <div
-                          className="flex h-8 w-8 items-center justify-center rounded-md text-white"
-                          style={{ backgroundColor: childDef.color }}
-                        >
-                          <PageTypeIcon
-                            iconName={childDef.icon}
-                            className="h-4 w-4"
-                          />
+                    <a {...getLinkProps(`/node/${child.id}`)} className="block">
+                      <CardContent className="flex items-center gap-3 p-4">
+                        {childDef ? (
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-md text-white"
+                            style={{ backgroundColor: childDef.color }}
+                          >
+                            <PageTypeIcon
+                              iconName={childDef.icon}
+                              className="h-4 w-4"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
+                            <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {child.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {child.displayCode} ·{" "}
+                            {PAGE_TYPE_LABELS[child.templateType] ||
+                              child.templateType}
+                          </p>
                         </div>
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
-                          <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">
-                          {child.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {child.displayCode} ·{" "}
-                          {PAGE_TYPE_LABELS[child.templateType] ||
-                            child.templateType}
-                        </p>
-                      </div>
-                      <StatusBadge
-                        status={
-                          child.status as Parameters<
-                            typeof StatusBadge
-                          >[0]["status"]
-                        }
-                        compact
-                      />
-                    </CardContent>
+                        <StatusBadge
+                          status={
+                            child.status as Parameters<
+                              typeof StatusBadge
+                            >[0]["status"]
+                          }
+                          compact
+                        />
+                      </CardContent>
+                    </a>
                   </Card>
                 );
               })}

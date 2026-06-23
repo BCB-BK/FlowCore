@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNodeChildren } from "@/hooks/use-nodes";
 import { useLocation } from "wouter";
-import { useSafeNavigate } from "@/hooks/use-unsaved-changes";
+import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -56,7 +56,7 @@ function StatusDot({ status }: { status: string }) {
 export function TreeNode({ node, level }: TreeNodeProps) {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
-  const navigate = useSafeNavigate();
+  const getLinkProps = useSafeLinkProps();
   const { data: children } = useNodeChildren(open ? node.id : undefined);
 
   const isActive = location === `/node/${node.id}`;
@@ -68,13 +68,15 @@ export function TreeNode({ node, level }: TreeNodeProps) {
     return (
       <SidebarMenuItem role="treeitem" aria-selected={isActive}>
         <SidebarMenuButton
+          asChild
           isActive={isActive}
-          onClick={() => navigate(`/node/${node.id}`)}
           tooltip={PAGE_TYPE_LABELS[node.templateType] || node.templateType}
         >
-          <Icon className="h-4 w-4 shrink-0" />
-          <span className="truncate">{node.title}</span>
-          <StatusDot status={node.status} />
+          <a {...getLinkProps(`/node/${node.id}`)}>
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{node.title}</span>
+            <StatusDot status={node.status} />
+          </a>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
@@ -99,13 +101,15 @@ export function TreeNode({ node, level }: TreeNodeProps) {
             />
           </button>
           <SidebarMenuButton
+            asChild
             isActive={isActive}
-            onClick={() => navigate(`/node/${node.id}`)}
             className="flex-1"
           >
-            <Icon className="h-4 w-4 shrink-0" />
-            <span className="truncate">{node.title}</span>
-            <StatusDot status={node.status} />
+            <a {...getLinkProps(`/node/${node.id}`)}>
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{node.title}</span>
+              <StatusDot status={node.status} />
+            </a>
           </SidebarMenuButton>
         </div>
 

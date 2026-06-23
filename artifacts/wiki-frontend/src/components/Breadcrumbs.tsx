@@ -8,9 +8,9 @@ import {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 } from "@workspace/ui/breadcrumb";
-import { useLocation } from "wouter";
 import { Home } from "lucide-react";
 import { Fragment, useMemo } from "react";
+import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
 
 interface BreadcrumbsProps {
   nodeId?: string;
@@ -21,7 +21,7 @@ const MAX_VISIBLE = 3;
 export function NodeBreadcrumbs({ nodeId }: BreadcrumbsProps) {
   const { data: ancestors } = useNodeAncestors(nodeId);
   const { data: currentNode } = useNode(nodeId);
-  const [, navigate] = useLocation();
+  const getLinkProps = useSafeLinkProps();
 
   const { collapsed, visible } = useMemo(() => {
     if (!ancestors || ancestors.length <= MAX_VISIBLE) {
@@ -38,8 +38,8 @@ export function NodeBreadcrumbs({ nodeId }: BreadcrumbsProps) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink
-            className="cursor-pointer flex items-center gap-1"
-            onClick={() => navigate("/")}
+            className="flex items-center gap-1"
+            {...getLinkProps("/")}
           >
             <Home className="h-3.5 w-3.5" />
             Hub
@@ -51,8 +51,7 @@ export function NodeBreadcrumbs({ nodeId }: BreadcrumbsProps) {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink
-                className="cursor-pointer"
-                onClick={() => navigate(`/node/${collapsed[collapsed.length - 1].id}`)}
+                {...getLinkProps(`/node/${collapsed[collapsed.length - 1].id}`)}
                 title={collapsed.map((a) => a.title).join(" → ")}
               >
                 <BreadcrumbEllipsis />
@@ -68,8 +67,8 @@ export function NodeBreadcrumbs({ nodeId }: BreadcrumbsProps) {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink
-                  className="cursor-pointer flex items-center gap-1.5"
-                  onClick={() => navigate(`/node/${ancestor.id}`)}
+                  className="flex items-center gap-1.5"
+                  {...getLinkProps(`/node/${ancestor.id}`)}
                 >
                   <span className="hidden sm:inline text-[10px] text-muted-foreground font-mono bg-muted/60 px-1 rounded">
                     L{depth}
