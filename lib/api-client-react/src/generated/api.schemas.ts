@@ -1924,6 +1924,7 @@ export interface WorkingCopy {
   submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  authorDisplayName?: string | null;
 }
 
 export type UpdateWorkingCopyInputContent = { [key: string]: unknown };

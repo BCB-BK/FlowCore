@@ -5,7 +5,7 @@ import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
 import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
 import type { WorkingCopy } from "@workspace/db/schema";
-import { auditEventsTable, contentWorkingCopiesTable } from "@workspace/db/schema";
+import { auditEventsTable, contentWorkingCopiesTable, principalsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
@@ -143,7 +143,11 @@ router.get(
       res.status(404).json({ error: "No active working copy" });
       return;
     }
-    res.json(wc);
+    const [authorRecord] = await db
+      .select({ displayName: principalsTable.displayName })
+      .from(principalsTable)
+      .where(eq(principalsTable.id, wc.authorId));
+    res.json({ ...wc, authorDisplayName: authorRecord?.displayName ?? null });
   },
 );
 

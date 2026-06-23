@@ -75,6 +75,7 @@ import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@workspace/ui/tooltip";
 import { WatchButton } from "@/components/versioning/WatchButton";
 import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
@@ -1414,7 +1415,7 @@ export function NodeDetail() {
                 <WorkingCopyBanner
                   workingCopy={activeWC}
                   currentUserId={currentUser?.principalId}
-                  authorName={wcAuthor?.displayName ?? undefined}
+                  authorName={activeWC.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
                 <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
@@ -1443,6 +1444,7 @@ export function NodeDetail() {
             <div className="space-y-2">
               {sortByDisplayCode(children).map((child) => {
                 const childDef = getPageType(child.templateType);
+                const wcAuthorName = (child as unknown as { activeWorkingCopyAuthorName?: string | null }).activeWorkingCopyAuthorName;
                 return (
                   <Card
                     key={child.id}
@@ -1475,6 +1477,24 @@ export function NodeDetail() {
                               child.templateType}
                           </p>
                         </div>
+                        {wcAuthorName && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span
+                                  role="status"
+                                  className="shrink-0 text-amber-500 dark:text-amber-400 cursor-default"
+                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                >
+                                  <FileEdit className="h-4 w-4" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Arbeitskopie von {wcAuthorName} geöffnet
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         <StatusBadge
                           status={
                             child.status as Parameters<

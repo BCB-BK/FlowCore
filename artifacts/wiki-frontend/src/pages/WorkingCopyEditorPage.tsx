@@ -892,7 +892,7 @@ export function WorkingCopyEditorPage() {
         <WorkingCopyBanner
           workingCopy={activeWC}
           currentUserId={currentUser?.principalId}
-          authorName={wcAuthor?.displayName ?? undefined}
+          authorName={activeWC?.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
         />
       )}
 

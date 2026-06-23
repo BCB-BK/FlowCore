@@ -7,8 +7,10 @@ import {
   contentAliasesTable,
   contentTemplatesTable,
   auditEventsTable,
+  contentWorkingCopiesTable,
+  principalsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, isNull, sql } from "drizzle-orm";
+import { eq, and, desc, isNull, sql, inArray, notInArray } from "drizzle-orm";
 import { createContentNode, moveNode } from "../services/identity.service";
 import {
   getVersionTree,
@@ -389,7 +391,31 @@ router.get(
       (c) => confidentialityMap.get(c.id) !== false,
     );
 
-    res.json(filteredChildren);
+    let wcAuthorNameMap = new Map<string, string | null>();
+    if (filteredChildren.length > 0) {
+      const filteredIds = filteredChildren.map((c) => c.id);
+      const activeWCs = await db
+        .select({
+          nodeId: contentWorkingCopiesTable.nodeId,
+          authorDisplayName: principalsTable.displayName,
+        })
+        .from(contentWorkingCopiesTable)
+        .leftJoin(principalsTable, sql`${contentWorkingCopiesTable.authorId}::uuid = ${principalsTable.id}`)
+        .where(
+          and(
+            inArray(contentWorkingCopiesTable.nodeId, filteredIds),
+            notInArray(contentWorkingCopiesTable.status, ["cancelled", "published"]),
+          ),
+        );
+      wcAuthorNameMap = new Map(activeWCs.map((wc) => [wc.nodeId, wc.authorDisplayName ?? null]));
+    }
+
+    const result = filteredChildren.map((c) => ({
+      ...c,
+      activeWorkingCopyAuthorName: wcAuthorNameMap.get(c.id) ?? null,
+    }));
+
+    res.json(result);
   },
 );
 
