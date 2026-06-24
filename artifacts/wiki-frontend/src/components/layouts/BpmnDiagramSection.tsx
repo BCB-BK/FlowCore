@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { BpmnEditor, DEFAULT_BPMN_XML } from "@/components/editor/BpmnEditor";
 import { DiagramLegend } from "@/components/qm/DiagramLegend";
 import { Button } from "@workspace/ui/button";
-import { GitBranch, Pencil, ImageUp, ArrowLeftRight, X, Upload, Link2 } from "lucide-react";
+import { GitBranch, Pencil, ImageUp, ArrowLeftRight, X, Upload, Link2, Trash2 } from "lucide-react";
 
 interface BpmnDiagramData {
   xml: string;
@@ -269,7 +269,7 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
     );
   }
 
-  if (!hasContent && !hasSvgEmbed && !readOnly) {
+  if (!hasContent && !hasSvgEmbed && !readOnly && !editing && !svgEditing) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-primary/40 bg-muted/20 py-14 text-center">
         <GitBranch className="h-10 w-10 text-primary/50" />
@@ -280,10 +280,7 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
         <div className="flex gap-3 flex-wrap justify-center">
           <Button
             size="sm"
-            onClick={() => {
-              onSave?.({ xml: DEFAULT_BPMN_XML, mode: "bpmn" });
-              setEditing(true);
-            }}
+            onClick={() => setEditing(true)}
           >
             <GitBranch className="mr-2 h-4 w-4" />
             BPMN-Diagramm erstellen
@@ -291,10 +288,7 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
           <Button
             size="sm"
             variant="outline"
-            onClick={() => {
-              onSave?.({ xml: DEFAULT_BPMN_XML, mode: "svg" });
-              setSvgEditing(true);
-            }}
+            onClick={() => setSvgEditing(true)}
           >
             <ImageUp className="mr-2 h-4 w-4" />
             SVG einbetten
@@ -347,6 +341,21 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
               <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
                 <Pencil className="mr-2 h-3.5 w-3.5" />
                 Diagramm bearbeiten
+              </Button>
+            )}
+            {!editing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => {
+                  if (window.confirm("Diagramm wirklich entfernen? Diese Aktion kann rückgängig gemacht werden, solange die Arbeitskopie noch nicht gespeichert ist.")) {
+                    onSave?.(null);
+                  }
+                }}
+              >
+                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                Entfernen
               </Button>
             )}
           </div>
