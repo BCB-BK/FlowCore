@@ -306,11 +306,11 @@ export function NodeDetail() {
       // Nicht-zugeordnete Kinder: nach displayCode sortieren
       const processedChildren =
         group.cluster === null
-          ? sortByDisplayCode(group.children.filter(isPublished))
+          ? sortByDisplayCode(group.children)
           : group.children;
       return { ...group, children: processedChildren };
     }).filter((g) => g.children.length > 0 || g.cluster !== null);
-  }, [children, clusters, linkedNodes, isPublished, sortByDisplayCode]);
+  }, [children, clusters, linkedNodes, sortByDisplayCode]);
 
   const editorContent = useMemo(() => {
     const raw = structuredFields._editorContent ?? structuredFields.discussion;
