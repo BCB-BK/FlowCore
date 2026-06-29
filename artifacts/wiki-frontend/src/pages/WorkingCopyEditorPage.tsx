@@ -148,7 +148,9 @@ export function WorkingCopyEditorPage() {
 
   const { data: revisions } = useNodeRevisions(nodeId);
   const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
-  const { data: nodeChildren } = useNodeChildren(isOverviewPage ? nodeId : undefined);
+  const isDocRegistry = getDisplayProfile(node?.templateType ?? "") === "doc_registry";
+  const showStructureTab = isOverviewPage || isDocRegistry;
+  const { data: nodeChildren } = useNodeChildren(showStructureTab ? nodeId : undefined);
 
   const publishedSF = useMemo<Record<string, unknown>>(() => {
     if (!revisions || !Array.isArray(revisions) || revisions.length === 0) return {};
@@ -1104,7 +1106,7 @@ export function WorkingCopyEditorPage() {
         <Tabs defaultValue="content" className="w-full">
           <TabsList>
             <TabsTrigger value="content">Inhalt</TabsTrigger>
-            {isOverviewPage && (
+            {showStructureTab && (
               <TabsTrigger value="structure" className="gap-1.5">
                 <Network className="h-3.5 w-3.5" />
                 Struktur
@@ -1197,7 +1199,7 @@ export function WorkingCopyEditorPage() {
             )}
           </TabsContent>
 
-          {isOverviewPage && (
+          {showStructureTab && (
             <TabsContent value="structure" className="mt-4 space-y-6">
               <div className="rounded-lg border p-4">
                 <div className="flex items-center justify-between mb-4">
