@@ -162,7 +162,9 @@ export function NodeDetail() {
 
   const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
   const isDocRegistry = getDisplayProfile(node?.templateType ?? "") === "doc_registry";
-  const showQuickFacts = !isOverviewPage && !isDocRegistry && !!pageDef;
+  const isDashboard = node?.templateType === "dashboard";
+  const showsClusterArea = isDocRegistry || isDashboard;
+  const showQuickFacts = !isOverviewPage && !showsClusterArea && !!pageDef;
 
   const allowedChildTypes = useMemo(() => {
     if (!node) return [];
@@ -927,10 +929,10 @@ export function NodeDetail() {
             </div>
           )}
 
-          {isDocRegistry && (
+          {showsClusterArea && (
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-semibold shrink-0">Registereinträge</h3>
+                <h3 className="text-base font-semibold shrink-0">{isDashboard ? "Dashboard-Inhalte" : "Registereinträge"}</h3>
                 {canCreate && (
                   <div className="flex items-center gap-2 flex-1 justify-end">
                     {showAddCluster ? (
