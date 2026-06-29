@@ -13,6 +13,8 @@ export {
   getPageType,
   getAllowedChildTypes,
   getRecommendedChildTypes,
+  getSuitableChildTypes,
+  getContainerCapabilities,
   getMetadataGroups,
   calculateCompleteness,
   validateForPublication,

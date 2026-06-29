@@ -149,7 +149,7 @@ export interface ValidationResult {
 
 export const DISABLED_TEMPLATE_TYPES: Set<TemplateType> = new Set(["glossary", "work_instruction", "process_page_text"]);
 
-export const REGISTRY_VERSION = "2.0.0";
+export const REGISTRY_VERSION = "2.1.0";
 
 export interface PageTypeDefinition {
   type: TemplateType;
@@ -162,6 +162,7 @@ export interface PageTypeDefinition {
   displayProfile: DisplayProfile;
   allowedChildTypes: TemplateType[];
   recommendedChildTypes?: TemplateType[];
+  suitableChildTypes?: TemplateType[];
   metadataFields: MetadataFieldDef[];
   sections: PageTypeSection[];
   category: PageTypeCategory;
@@ -169,6 +170,16 @@ export interface PageTypeDefinition {
   helpText?: string;
   variants: TemplateVariant[];
   publicationRules: PublicationRules;
+  /** Unterstützt dieser Typ Cluster-Gruppen (übergeordneter Container mit Cluster-Logik) */
+  supportsClusterGroups?: boolean;
+  /** Kann dieser Typ direkte Unterseiten anlegen */
+  supportsChildPages?: boolean;
+  /** Darf dieser Typ als Root-Knoten (ohne Elternteil) existieren */
+  canBeRootNode?: boolean;
+  /** Fungiert dieser Typ als Hub/Register für untergeordnete Dokumente */
+  canBeReferenceHub?: boolean;
+  /** Kurzer fachlicher Nutzungshinweis (für Dialog und Tooltip) */
+  usageHint?: string;
 }
 
 const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
@@ -414,12 +425,25 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "meeting_protocol",
       "training_resource",
       "audit_object",
+      "doc_registry",
     ],
     recommendedChildTypes: [
       "process_page_text",
       "procedure_instruction",
       "work_instruction",
     ],
+    suitableChildTypes: [
+      "doc_registry",
+      "policy",
+      "use_case",
+      "system_documentation",
+      "role_profile",
+    ],
+    supportsClusterGroups: true,
+    supportsChildPages: true,
+    canBeRootNode: true,
+    canBeReferenceHub: true,
+    usageHint: "Übergeordneter Prozesscontainer mit SIPOC, KPIs und Schnittstellen. Kann Unterseiten, Cluster-Gruppen und Dokumentationsregister enthalten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -677,6 +701,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "meeting_protocol",
       "training_resource",
       "audit_object",
+      "doc_registry",
     ],
     recommendedChildTypes: [
       "core_process_overview",
@@ -684,6 +709,18 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "policy",
       "meeting_protocol",
     ],
+    suitableChildTypes: [
+      "doc_registry",
+      "core_process_overview",
+      "use_case",
+      "system_documentation",
+      "role_profile",
+    ],
+    supportsClusterGroups: true,
+    supportsChildPages: true,
+    canBeRootNode: true,
+    canBeReferenceHub: true,
+    usageHint: "Organisationsbereich oder Abteilung als Container. Kann Kernprozesse, Dokumentationsregister, Richtlinien und alle Inhaltstypen enthalten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -1508,6 +1545,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     helpText:
       "Erstellen Sie eine Richtlinie mit klarem Zweck, Geltungsbereich, Richtlinientext und Durchsetzungsmaßnahmen. Verknüpfen Sie bei Bedarf Verfahrensanweisungen.",
     allowedChildTypes: ["procedure_instruction", "work_instruction", "checklist", "role_profile", "meeting_protocol"],
+    supportsClusterGroups: false,
+    supportsChildPages: true,
+    canBeRootNode: false,
+    canBeReferenceHub: false,
+    usageHint: "Verbindliche Richtlinie für Governance und Compliance. Kein Ersatz für Register- oder Hub-Seiten – nutze dafür Dokumentationsregister.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -3266,6 +3308,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "system_documentation",
       "interface_description",
     ],
+    supportsClusterGroups: true,
+    supportsChildPages: true,
+    canBeRootNode: false,
+    canBeReferenceHub: true,
+    usageHint: "Für Sammlungen, Register, Markenprofile, Entscheidungsdokumentationen, Vorlagen oder strategische Referenzdokumente. Fasst Unterseiten in Clustern zusammen.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -3880,6 +3927,37 @@ export function getRecommendedChildTypes(parentType: string): TemplateType[] {
   const def = getPageType(parentType);
   if (!def) return [];
   return def.recommendedChildTypes ?? def.allowedChildTypes.slice(0, 3);
+}
+
+/**
+ * Gibt die "weiteren passenden" Kindtypen zurück –
+ * explizit als suitableChildTypes definiert oder leer.
+ * Wird im Dialog als mittlere Ebene zwischen "Empfohlen" und "Alle zulässigen" angezeigt.
+ */
+export function getSuitableChildTypes(parentType: string): TemplateType[] {
+  const def = getPageType(parentType);
+  if (!def) return [];
+  const recommended = new Set(def.recommendedChildTypes ?? []);
+  const suitable = def.suitableChildTypes ?? [];
+  return suitable.filter((t) => !recommended.has(t));
+}
+
+/**
+ * Gibt alle Container-Capabilities eines Seitentyps zurück.
+ */
+export function getContainerCapabilities(type: string): {
+  supportsClusterGroups: boolean;
+  supportsChildPages: boolean;
+  canBeRootNode: boolean;
+  canBeReferenceHub: boolean;
+} {
+  const def = getPageType(type);
+  return {
+    supportsClusterGroups: def?.supportsClusterGroups ?? false,
+    supportsChildPages: (def?.allowedChildTypes.length ?? 0) > 0,
+    canBeRootNode: def?.canBeRootNode ?? false,
+    canBeReferenceHub: def?.canBeReferenceHub ?? false,
+  };
 }
 
 export function getVariantsByCategory(type: string): Record<VariantCategory, TemplateVariant[]> {

@@ -39,6 +39,7 @@ import {
   PAGE_TYPE_REGISTRY,
   getAllowedChildTypes,
   getRecommendedChildTypes,
+  getSuitableChildTypes,
   getVariantsByCategory,
   PAGE_TYPE_CATEGORIES,
   VARIANT_CATEGORY_LABELS,
@@ -66,6 +67,8 @@ import {
   Plus,
   Loader2,
   AlertTriangle,
+  Layers,
+  List,
 } from "lucide-react";
 
 const VARIANT_CATEGORY_ICONS: Record<VariantCategory, React.ReactNode> = {
@@ -194,26 +197,32 @@ export function CreateNodeDialog({
 
   const groupedTypes = useMemo(() => {
     const recommended = new Set(recommendedTypes);
-    const groups: Record<string, { types: TemplateType[]; isRecommended: boolean }> = {};
+    const suitable = new Set(
+      parentTemplateType ? getSuitableChildTypes(parentTemplateType) : [],
+    );
+    const groups: Record<string, { types: TemplateType[]; tier: "recommended" | "suitable" | "all" }> = {};
 
     if (recommended.size > 0) {
       const recTypes = allowedTypes.filter((t) => recommended.has(t));
       if (recTypes.length > 0) {
-        groups["__recommended__"] = { types: recTypes, isRecommended: true };
+        groups["__recommended__"] = { types: recTypes, tier: "recommended" };
       }
     }
 
-    for (const t of allowedTypes) {
-      if (recommended.has(t)) continue;
-      const def = PAGE_TYPE_REGISTRY[t];
-      if (def) {
-        const cat = def.category;
-        if (!groups[cat]) groups[cat] = { types: [], isRecommended: false };
-        groups[cat].types.push(t);
+    if (suitable.size > 0) {
+      const suitableTypes = allowedTypes.filter((t) => !recommended.has(t) && suitable.has(t));
+      if (suitableTypes.length > 0) {
+        groups["__suitable__"] = { types: suitableTypes, tier: "suitable" };
       }
     }
+
+    const remaining = allowedTypes.filter((t) => !recommended.has(t) && !suitable.has(t));
+    if (remaining.length > 0) {
+      groups["__all__"] = { types: remaining, tier: "all" };
+    }
+
     return groups;
-  }, [allowedTypes, recommendedTypes]);
+  }, [allowedTypes, recommendedTypes, parentTemplateType]);
 
   const selectedDef = PAGE_TYPE_REGISTRY[templateType as TemplateType];
 
@@ -505,18 +514,24 @@ export function CreateNodeDialog({
             <p className="text-sm text-muted-foreground">
               Wählen Sie den Seitentyp für die neue Seite.
             </p>
-            {Object.entries(groupedTypes).map(([category, { types, isRecommended }]) => (
+            {Object.entries(groupedTypes).map(([category, { types, tier }]) => (
               <div key={category}>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                  {isRecommended ? (
+                  {tier === "recommended" ? (
                     <>
                       <Star className="h-3 w-3 text-amber-500" />
                       <span className="text-amber-700 dark:text-amber-400">Empfohlen</span>
                     </>
+                  ) : tier === "suitable" ? (
+                    <>
+                      <Layers className="h-3 w-3 text-blue-500" />
+                      <span className="text-blue-700 dark:text-blue-400">Weitere passende Typen</span>
+                    </>
                   ) : (
-                    PAGE_TYPE_CATEGORIES[
-                      category as keyof typeof PAGE_TYPE_CATEGORIES
-                    ]?.labelDe ?? category
+                    <>
+                      <List className="h-3 w-3" />
+                      <span>Alle zulässigen Typen</span>
+                    </>
                   )}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -524,7 +539,6 @@ export function CreateNodeDialog({
                     const def = PAGE_TYPE_REGISTRY[t];
                     if (!def) return null;
                     const isSelected = templateType === t;
-                    const isRec = recommendedTypes.includes(t);
                     return (
                       <Card
                         key={t}
@@ -535,7 +549,7 @@ export function CreateNodeDialog({
                           isSelected
                             ? "ring-2 ring-primary border-primary"
                             : "hover:border-primary/40"
-                        } ${isRec && !isRecommended ? "border-amber-200 dark:border-amber-800" : ""}`}
+                        }`}
                         onClick={() =>
                           setTemplateType(t as CreateNodeInput["templateType"])
                         }
@@ -559,12 +573,9 @@ export function CreateNodeDialog({
                           <div className="min-w-0">
                             <p className="font-medium text-sm flex items-center gap-1.5">
                               {def.labelDe}
-                              {isRec && !isRecommended && (
-                                <Star className="h-3 w-3 text-amber-500 shrink-0" />
-                              )}
                             </p>
                             <p className="text-xs text-muted-foreground line-clamp-2">
-                              {def.descriptionDe}
+                              {(def as { usageHint?: string }).usageHint ?? def.descriptionDe}
                             </p>
                           </div>
                           {isSelected && (

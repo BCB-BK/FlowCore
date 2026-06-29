@@ -1,0 +1,207 @@
+Task 1 – AllowedChildTypes vollständig auditieren
+Auftrag
+
+Prüfe die aktuelle Seitentyp-Registry und dokumentiere für jeden Seitentyp:
+
+erlaubte Kindtypen
+verbotene Kindtypen
+empfohlene Kindtypen
+ob der Typ Cluster-Gruppen unterstützt
+ob der Typ Unterseiten unterstützt
+ob der Typ als Root-Knoten zulässig ist
+ob der Typ als Hub / Register zulässig ist
+Zu prüfen
+
+Insbesondere:
+
+core_process_overview
+area_overview
+documentation_register
+policy
+procedure_instruction
+info_page
+use_case
+system_documentation
+dashboard
+Definition of Done
+Vollständige Matrix ist dokumentiert.
+Abweichungen zwischen UI, Registry, Backend-Validierung und Doku sind sichtbar.
+Keine Änderungen ohne Root-Cause-Nachweis.
+Task 2 – Containerfähigkeit als eigenes Konzept einführen
+Auftrag
+
+Führe eine fachliche Eigenschaft ein, z. B.:
+
+supportsClusterGroups: boolean
+supportsChildPages: boolean
+supportsLinkedPages: boolean
+canBeRootNode: boolean
+canBeReferenceHub: boolean
+
+Diese Logik darf nicht implizit über einzelne Template-Namen verstreut sein.
+
+Definition of Done
+Containerfähigkeit ist zentral in der Seitentyp-Registry definiert.
+UI nutzt diese Eigenschaften.
+Backend validiert dieselbe Logik.
+Keine doppelte oder widersprüchliche Typdefinition.
+Task 3 – Dokumentationsregister als Unterseite von Container-/Cluster-Gruppen erlauben
+Auftrag
+
+Erlaube documentation_register als Unterseitentyp unter:
+
+core_process_overview
+Cluster-Gruppen innerhalb von core_process_overview
+area_overview
+optional policy, wenn Policy als Hub markiert ist
+optional neuem process_domain_overview / governance_domain_overview
+Konkreter Use Case
+
+Unter:
+
+Management & Governance
+→ Cluster: Marken-, Portfolio- und Organisationsentwicklung
+
+muss auswählbar sein:
+
+Markenarchitektur & Markenprofile
+Seitentyp: Dokumentationsregister
+Definition of Done
+Dokumentationsregister wird im Dialog an dieser Stelle angeboten.
+Es erscheint nicht zwingend als empfohlener Typ, aber als zulässiger Typ.
+Nach Anlage kann die Seite Unterseiten und Cluster-/Registerlogik sinnvoll darstellen.
+Keine Regression bei bestehenden Seitentypen.
+Task 4 – Richtlinie / Policy nicht als Container missbrauchen
+Auftrag
+
+Stelle sicher, dass policy als Inhalts-/Governance-Seite behandelt wird, nicht als primärer Strukturcontainer.
+
+Eine Policy darf Unterseiten haben, wenn fachlich erlaubt, aber sie darf nicht die einzige Ausweichlösung für Register-/Hub-Seiten sein.
+
+Definition of Done
+Policy bleibt für verbindliche Inhalte geeignet.
+Hub-/Registerlogik läuft über documentation_register oder dedizierte Hub-Typen.
+UI empfiehlt nicht mehr irreführend Verfahrensanweisung oder Policy, wenn eigentlich ein Register gebraucht wird.
+Task 5 – Kontextsensitiven Erstellungsdialog verbessern
+Auftrag
+
+Der Dialog „Unterseite anlegen“ soll künftig drei Ebenen sauber unterscheiden:
+
+Empfohlen
+Weitere passende Typen
+Alle zulässigen Typen
+
+Zusätzlich soll pro Seitentyp eine kurze fachliche Erklärung angezeigt werden:
+
+Beispiel:
+
+Dokumentationsregister
+Für Sammlungen, Register, Markenprofile, Entscheidungsdokumentationen, Vorlagen oder strategische Referenzdokumente.
+Definition of Done
+Nutzer erkennt, welcher Typ fachlich passt.
+Nicht nur technisch erlaubte Typen werden angezeigt, sondern auch sinnvoll priorisiert.
+Dialog verhindert Workarounds durch falsche Typwahl.
+Task 6 – Root-Struktur und bestehende Fehlanlage bereinigen
+Auftrag
+
+Prüfe bestehende Seiten, die durch den aktuellen Workaround falsch angelegt wurden.
+
+Konkret:
+
+Management & Governance
+aktuell ggf. als Richtlinie / Policy
+
+muss korrigiert werden zu:
+
+Management & Governance
+Seitentyp: Kernprozess-Übersicht
+
+oder, falls neu eingeführt:
+
+Management & Governance
+Seitentyp: Governance-/Prozessdomäne
+Wichtig
+
+Keine Daten löschen. Wenn ein Seitentypwechsel erforderlich ist, muss FlowCore die bestehende Seite konvertieren oder eine saubere neue Seite mit Migration anbieten.
+
+Die Doku beschreibt bereits, dass Typwechsel grundsätzlich möglich sind und bestehende Daten erhalten bleiben sollen. Das muss hier real geprüft werden.
+
+Definition of Done
+Management & Governance ist wieder containerfähig.
+Cluster-Gruppen bleiben erhalten oder werden sauber migriert.
+Keine Content- oder ID-Verluste.
+Display-Code und immutable ID bleiben nachvollziehbar.
+Task 7 – Zielstruktur als Validierungsfall testen
+Auftrag
+
+Setze folgenden realen Testfall vollständig im UI um:
+
+Management & Governance
+└── Marken-, Portfolio- und Organisationsentwicklung
+    └── Markenarchitektur & Markenprofile
+        ├── Gruppenweite Markenarchitektur
+        ├── OneCampus Group – Markenprofil
+        ├── Academy of Sports – Markenprofil
+        ├── DeLSt – Markenprofil
+        ├── EHiP Academy – Markenprofil
+        └── EHiP Hochschule – Markenprofil
+Erwartete Seitentypen
+Management & Governance
+= Kernprozess-Übersicht / Governance-Domäne
+
+Markenarchitektur & Markenprofile
+= Dokumentationsregister
+
+Gruppenweite Markenarchitektur
+= Richtlinie / Policy
+
+Einzelne Markenprofile
+= Richtlinie / Policy oder neuer Typ Markenprofil, falls eingeführt
+Definition of Done
+Struktur kann vollständig über UI angelegt werden.
+Keine direkte DB-Manipulation.
+Keine API-Bypasses.
+Alle Seiten erscheinen in Navigation und Breadcrumb korrekt.
+Unterseiten können später weiter gepflegt werden.
+Review-/Arbeitskopie-Logik funktioniert weiterhin.
+Playwright-/Frontend-Nachweis vorhanden.
+Optionaler Zusatz: Neuer Seitentyp „Markenprofil“
+Empfehlung
+
+Wenn FlowCore professioneller werden soll, ist ein eigener Seitentyp sinnvoll:
+
+brand_profile
+Deutsch: Markenprofil
+Kategorie: Governance / Strategie
+Felder
+Markenrolle
+Primäre Zielgruppen
+Kernversprechen
+Leitidee
+Claim
+Tonalität
+Sprachleitplanken
+Zielgruppenarchitektur
+Website-/Journey-Logik
+KI-/StudyGuide-Logik
+Go-to-Market
+Handover-Punkte
+No-Gos
+Schnittstellen
+Governance / Owner / Review
+Allowed Parent Types
+documentation_register
+core_process_overview
+area_overview
+policy nur optional
+Allowed Child Types
+policy
+faq
+use_case
+work_instruction
+checklist
+documentation_register
+Definition of Done
+brand_profile ist in Registry, Backend, UI, Migration, Diff, Review und Export sauber integriert.
+Kein Hardcoding nur im Frontend.
+Bestehende Markenprofile können später migriert werden.
