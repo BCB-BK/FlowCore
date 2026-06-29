@@ -147,9 +147,7 @@ export function WorkingCopyEditorPage() {
   });
 
   const { data: revisions } = useNodeRevisions(nodeId);
-  const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
-  const isDocRegistry = getDisplayProfile(node?.templateType ?? "") === "doc_registry";
-  const showStructureTab = isOverviewPage || isDocRegistry;
+  const showStructureTab = !!(getPageType(node?.templateType ?? "")?.supportsClusterGroups);
   const { data: nodeChildren } = useNodeChildren(showStructureTab ? nodeId : undefined);
 
   const publishedSF = useMemo<Record<string, unknown>>(() => {
@@ -981,7 +979,7 @@ export function WorkingCopyEditorPage() {
             nodeId={node.id}
           />
 
-          {isOverviewPage && (() => {
+          {showStructureTab && (() => {
             const nodeChildrenArr = nodeChildren ?? [];
             const childIdSet = new Set(nodeChildrenArr.map((c) => c.id));
             const allPreviewNodes = [
