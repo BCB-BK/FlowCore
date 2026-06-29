@@ -1,0 +1,107 @@
+FlowCore: Container- und Registerfähigkeit für Seitentypen professionalisieren
+
+Ausgangslage:
+Der Seitentyp Dokumentationsregister kann aktuell keine Cluster-Gruppen und keine saubere Unterseiten-/Verlinkungslogik darstellen. Dadurch ist er als Register in der Praxis nicht nutzbar. Zusätzlich muss geprüft werden, welche weiteren Seitentypen Cluster, Unterseiten oder Verlinkungen fachlich unterstützen müssen.
+
+Ziel:
+Seitentypen sollen nicht nur über allowedChildTypes gesteuert werden, sondern zusätzlich über explizite Fähigkeiten:
+- supportsClusterGroups
+- supportsChildPages
+- supportsLinkedPages
+- canBeRootNode
+- canBeReferenceHub
+- canBeProcessContainer
+- canBeGovernanceContainer
+- recommendedChildTypes
+- allowedChildTypes
+
+Task 1: Audit der Seitentypen
+Prüfe alle 18 Seitentypen und dokumentiere für jeden Typ:
+- aktuelle allowedChildTypes
+- ob Unterseiten im UI möglich sind
+- ob Cluster-Gruppen möglich sind
+- ob bestehende Seiten verlinkt werden können
+- ob die Doku, Registry, Backend-Validierung und UI übereinstimmen
+
+Task 2: Dokumentationsregister erweitern
+Der Seitentyp documentation_register muss unterstützen:
+- Cluster-Gruppen
+- Unterseiten
+- bestehende Seiten verlinken
+- gruppierte Registeransicht
+- sortierte Unterseitenliste
+- Anzeige nach Status, Seitentyp, Owner und Reviewdatum soweit Daten vorhanden
+
+Task 3: Cluster-Gruppen aktivieren für geeignete Typen
+Cluster-Gruppen sollen unterstützt werden für:
+- core_process_overview
+- area_overview
+- documentation_register
+- dashboard
+
+Nicht für:
+- policy
+- procedure_instruction
+- process_page_text
+- process_page_graphic
+- role_profile
+- work_instruction
+- use_case
+- faq
+- glossary
+- checklist
+- audit_object
+- interface_description
+- training_resource
+
+Task 4: Unterseitenlogik erweitern
+Unterseiten sollen unterstützt werden für:
+- core_process_overview
+- area_overview
+- documentation_register
+- dashboard
+- policy
+- procedure_instruction
+- process_page_text
+- process_page_graphic
+- system_documentation
+- role_profile
+- work_instruction
+- use_case
+- interface_description
+- training_resource
+
+Endpunkt-Typen wie FAQ, Glossar, Checkliste und Kontroll-/Prüfobjekt sollen grundsätzlich verlinkbar sein, aber keine vollwertigen Strukturcontainer werden.
+
+Task 5: Erstellungsdialog verbessern
+Der Dialog „Unterseite anlegen“ soll unterscheiden:
+- Empfohlen
+- Weitere passende Typen
+- Alle zulässigen Typen
+
+Dabei müssen die Fähigkeiten des Parent-Typs berücksichtigt werden. Bei documentation_register müssen Dokumentationsregister, Policy, Wissensartikel, Rollenprofil, Checkliste, Schulung und Schnittstellenbeschreibung sinnvoll angeboten werden.
+
+Task 6: Validierungsfall
+Im UI muss folgender Fall ohne DB-Manipulation und ohne API-Bypass möglich sein:
+
+Management & Governance
+→ Marken-, Portfolio- und Organisationsentwicklung
+→ Markenarchitektur & Markenprofile
+   Typ: Dokumentationsregister
+   Cluster-Gruppen:
+   - Gruppenlogik & Markenarchitektur
+   - Einzelmarkenprofile
+   - Zielgruppen- und Segmentierungslogik
+   - Website-, KI- und StudyGuide-Standards
+   - Go-to-Market- und Kampagnenlogik
+
+Unter Einzelmarkenprofile müssen Seiten vom Typ Policy oder Markenprofil angelegt/verlinkt werden können.
+
+Definition of Done:
+- Dokumentationsregister kann Cluster-Gruppen und Unterseiten im UI verwalten.
+- Bestehende Seiten bleiben erhalten.
+- Keine Datenverluste.
+- allowedChildTypes, recommendedChildTypes, UI und Backend-Validierung sind synchron.
+- Playwright-/Frontend-Nachweis liegt vor.
+- Doku und Tech-Log sind aktualisiert.
+- Abschlussbericht mit Root Cause, geänderten Dateien, Tests, Realnachweis und Status BESTANDEN/NICHT BESTANDEN.
