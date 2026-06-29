@@ -161,9 +161,7 @@ export function NodeDetail() {
   }, [node]);
 
   const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
-  const isDocRegistry = getDisplayProfile(node?.templateType ?? "") === "doc_registry";
-  const isDashboard = node?.templateType === "dashboard";
-  const showsClusterArea = isDocRegistry || isDashboard;
+  const showsClusterArea = pageDef?.supportsClusterGroups === true;
   const showQuickFacts = !isOverviewPage && !showsClusterArea && !!pageDef;
 
   const allowedChildTypes = useMemo(() => {
@@ -932,7 +930,7 @@ export function NodeDetail() {
           {showsClusterArea && (
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-semibold shrink-0">{isDashboard ? "Dashboard-Inhalte" : "Registereinträge"}</h3>
+                <h3 className="text-base font-semibold shrink-0">{pageDef?.labelDe ? `${pageDef.labelDe}-Inhalte` : "Inhalte"}</h3>
                 {canCreate && (
                   <div className="flex items-center gap-2 flex-1 justify-end">
                     {showAddCluster ? (
