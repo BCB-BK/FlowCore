@@ -69,6 +69,8 @@ import {
   AlertTriangle,
   Layers,
   List,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const VARIANT_CATEGORY_ICONS: Record<VariantCategory, React.ReactNode> = {
@@ -116,6 +118,7 @@ export function CreateNodeDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [showAllTypes, setShowAllTypes] = useState(false);
   const [linkQuery, setLinkQuery] = useState("");
   const [debouncedLinkQuery, setDebouncedLinkQuery] = useState("");
   const [linking] = useState(false);
@@ -200,7 +203,7 @@ export function CreateNodeDialog({
     const suitable = new Set(
       parentTemplateType ? getSuitableChildTypes(parentTemplateType) : [],
     );
-    const groups: Record<string, { types: TemplateType[]; tier: "recommended" | "suitable" | "all" }> = {};
+    const groups: Record<string, { types: TemplateType[]; tier: "recommended" | "suitable" | "all" | "category" }> = {};
 
     if (recommended.size > 0) {
       const recTypes = allowedTypes.filter((t) => recommended.has(t));
@@ -223,6 +226,22 @@ export function CreateNodeDialog({
 
     return groups;
   }, [allowedTypes, recommendedTypes, parentTemplateType]);
+
+  const allGroupedTypes = useMemo(() => {
+    const groups: Record<string, { types: TemplateType[]; tier: "recommended" | "suitable" | "all" | "category" }> = {};
+    for (const [key, def] of Object.entries(PAGE_TYPE_REGISTRY)) {
+      const t = key as TemplateType;
+      if (DISABLED_TEMPLATE_TYPES.has(t)) continue;
+      const cat = def.category;
+      if (!groups[cat]) groups[cat] = { types: [], tier: "category" };
+      groups[cat].types.push(t);
+    }
+    return groups;
+  }, []);
+
+  useEffect(() => {
+    setShowAllTypes(false);
+  }, [parentTemplateType]);
 
   const selectedDef = PAGE_TYPE_REGISTRY[templateType as TemplateType];
 
@@ -514,7 +533,15 @@ export function CreateNodeDialog({
             <p className="text-sm text-muted-foreground">
               Wählen Sie den Seitentyp für die neue Seite.
             </p>
-            {Object.entries(groupedTypes).map(([category, { types, tier }]) => (
+            {showAllTypes && (
+              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30 px-3 py-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                <p className="text-xs text-orange-700 dark:text-orange-400">
+                  <strong>Sonderfall:</strong> Alle Seitentypen werden angezeigt – unabhängig von der Parent-Hierarchie. Nur für Ausnahmesituationen verwenden.
+                </p>
+              </div>
+            )}
+            {Object.entries(showAllTypes ? allGroupedTypes : groupedTypes).map(([category, { types, tier }]) => (
               <div key={category}>
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
                   {tier === "recommended" ? (
@@ -526,6 +553,11 @@ export function CreateNodeDialog({
                     <>
                       <Layers className="h-3 w-3 text-blue-500" />
                       <span className="text-blue-700 dark:text-blue-400">Weitere passende Typen</span>
+                    </>
+                  ) : tier === "category" ? (
+                    <>
+                      <List className="h-3 w-3" />
+                      <span>{PAGE_TYPE_CATEGORIES[category as keyof typeof PAGE_TYPE_CATEGORIES]?.labelDe ?? category}</span>
                     </>
                   ) : (
                     <>
@@ -588,6 +620,23 @@ export function CreateNodeDialog({
                 </div>
               </div>
             ))}
+            <button
+              type="button"
+              onClick={() => setShowAllTypes((v) => !v)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-1"
+            >
+              {showAllTypes ? (
+                <>
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  Nur passende Typen anzeigen
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                  Alle Seitentypen anzeigen (Sonderfall)
+                </>
+              )}
+            </button>
           </div>
         )}
 
