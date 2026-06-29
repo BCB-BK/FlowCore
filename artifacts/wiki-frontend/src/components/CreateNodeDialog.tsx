@@ -87,6 +87,7 @@ interface CreateNodeDialogProps {
   parentNodeId: string | null;
   parentTemplateType?: string;
   presetType?: string;
+  initialMode?: "create" | "link";
   onNodeCreated?: (nodeId: string) => void;
   onLinkExistingNode?: (nodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => void;
 }
@@ -97,10 +98,11 @@ export function CreateNodeDialog({
   parentNodeId,
   parentTemplateType,
   presetType,
+  initialMode,
   onNodeCreated,
   onLinkExistingNode,
 }: CreateNodeDialogProps) {
-  const [mode, setMode] = useState<"create" | "link">("create");
+  const [mode, setMode] = useState<"create" | "link">(initialMode ?? "create");
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [templateType, setTemplateType] = useState<
@@ -122,6 +124,13 @@ export function CreateNodeDialog({
   const [linkQuery, setLinkQuery] = useState("");
   const [debouncedLinkQuery, setDebouncedLinkQuery] = useState("");
   const [linking] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMode(initialMode ?? "create");
+      setStep(0);
+    }
+  }, [open, initialMode]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedLinkQuery(linkQuery), 300);

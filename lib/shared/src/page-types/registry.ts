@@ -180,6 +180,12 @@ export interface PageTypeDefinition {
   canBeReferenceHub?: boolean;
   /** Kurzer fachlicher Nutzungshinweis (für Dialog und Tooltip) */
   usageHint?: string;
+  /** Unterstützt Verlinkung bestehender Seiten (Einbinden ohne Neuerstellen) */
+  supportsLinkedPages?: boolean;
+  /** Ist dieser Typ ein Prozess-Container (aggregiert Prozesse/Teilprozesse) */
+  canBeProcessContainer?: boolean;
+  /** Ist dieser Typ ein Governance-Container (aggregiert Richtlinien, Register, Governance-Inhalte) */
+  canBeGovernanceContainer?: boolean;
 }
 
 const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
@@ -443,6 +449,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     supportsChildPages: true,
     canBeRootNode: true,
     canBeReferenceHub: true,
+    supportsLinkedPages: true,
+    canBeProcessContainer: true,
     usageHint: "Übergeordneter Prozesscontainer mit SIPOC, KPIs und Schnittstellen. Kann Unterseiten, Cluster-Gruppen und Dokumentationsregister enthalten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -720,6 +728,9 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     supportsChildPages: true,
     canBeRootNode: true,
     canBeReferenceHub: true,
+    supportsLinkedPages: true,
+    canBeProcessContainer: true,
+    canBeGovernanceContainer: true,
     usageHint: "Organisationsbereich oder Abteilung als Container. Kann Kernprozesse, Dokumentationsregister, Richtlinien und alle Inhaltstypen enthalten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -2092,7 +2103,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "DSH",
     helpText:
       "Erstellen Sie ein Dashboard mit konfigurierbaren Widgets für KPI-Übersichten, Prozesskennzahlen und Statusanzeigen.",
-    allowedChildTypes: [],
+    allowedChildTypes: ["doc_registry", "meeting_protocol", "use_case", "procedure_instruction"],
+    supportsClusterGroups: true,
+    supportsChildPages: true,
+    supportsLinkedPages: true,
+    canBeRootNode: true,
+    canBeGovernanceContainer: true,
+    usageHint: "Modulare Dashboard-Übersicht für KPIs und Prozesskennzahlen. Unterstützt Cluster-Gruppen und Unterseiten (Register, Protokolle, Use Cases).",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       {
@@ -3314,6 +3331,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     supportsChildPages: true,
     canBeRootNode: false,
     canBeReferenceHub: true,
+    supportsLinkedPages: true,
+    canBeGovernanceContainer: true,
     usageHint: "Für Sammlungen, Register, Markenprofile, Entscheidungsdokumentationen, Vorlagen oder strategische Referenzdokumente. Fasst Unterseiten in Clustern zusammen.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -3952,6 +3971,9 @@ export function getContainerCapabilities(type: string): {
   supportsChildPages: boolean;
   canBeRootNode: boolean;
   canBeReferenceHub: boolean;
+  supportsLinkedPages: boolean;
+  canBeProcessContainer: boolean;
+  canBeGovernanceContainer: boolean;
 } {
   const def = getPageType(type);
   return {
@@ -3959,6 +3981,9 @@ export function getContainerCapabilities(type: string): {
     supportsChildPages: (def?.allowedChildTypes.length ?? 0) > 0,
     canBeRootNode: def?.canBeRootNode ?? false,
     canBeReferenceHub: def?.canBeReferenceHub ?? false,
+    supportsLinkedPages: def?.supportsLinkedPages ?? false,
+    canBeProcessContainer: def?.canBeProcessContainer ?? false,
+    canBeGovernanceContainer: def?.canBeGovernanceContainer ?? false,
   };
 }
 

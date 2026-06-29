@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import {
   Plus,
@@ -7,6 +7,9 @@ import {
   ChevronUp,
   FolderOpen,
   MoveRight,
+  Link2,
+  Filter,
+  X,
 } from "lucide-react";
 import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
@@ -37,6 +40,7 @@ interface DocRegistryViewProps {
   allChildren: ChildNode[];
   canCreate: boolean;
   onCreateInCluster: (clusterId: string | null) => void;
+  onLinkInCluster?: (clusterId: string | null) => void;
   clusters?: Cluster[];
   onAssignToCluster?: (childId: string, clusterId: string | null) => void;
 }
@@ -44,11 +48,20 @@ interface DocRegistryViewProps {
 const MAX_VISIBLE = 10;
 const NOT_ASSIGNED_SENTINEL = "__none__";
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Entwurf",
+  in_review: "In Prüfung",
+  approved: "Genehmigt",
+  published: "Veröffentlicht",
+  archived: "Archiviert",
+};
+
 function ClusterSection({
   cluster,
   children,
   canCreate,
   onCreateInCluster,
+  onLinkInCluster,
   allClusters,
   onAssignToCluster,
 }: {
@@ -56,6 +69,7 @@ function ClusterSection({
   children: ChildNode[];
   canCreate: boolean;
   onCreateInCluster: (clusterId: string | null) => void;
+  onLinkInCluster?: (clusterId: string | null) => void;
   allClusters?: Cluster[];
   onAssignToCluster?: (childId: string, clusterId: string | null) => void;
 }) {
@@ -95,6 +109,18 @@ function ClusterSection({
         >
           {children.length} {children.length === 1 ? "Seite" : "Seiten"}
         </Badge>
+        {onLinkInCluster && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs shrink-0 text-muted-foreground hover:text-foreground"
+            title="Bestehende Seite verlinken"
+            onClick={() => onLinkInCluster(cluster?.id ?? null)}
+          >
+            <Link2 className="h-3 w-3 mr-1" />
+            Verlinken
+          </Button>
+        )}
         {canCreate && (
           <Button
             variant="ghost"
@@ -235,21 +261,134 @@ function ClusterSection({
   );
 }
 
+function FilterBar({
+  filterStatus,
+  setFilterStatus,
+  filterType,
+  setFilterType,
+  availableTypes,
+  activeFilterCount,
+  onClear,
+}: {
+  filterStatus: string;
+  setFilterStatus: (v: string) => void;
+  filterType: string;
+  setFilterType: (v: string) => void;
+  availableTypes: string[];
+  activeFilterCount: number;
+  onClear: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+        <Filter className="h-3.5 w-3.5" />
+        <span>Filter:</span>
+      </div>
+
+      <Select value={filterStatus} onValueChange={setFilterStatus}>
+        <SelectTrigger className="h-7 w-[140px] text-xs">
+          <SelectValue placeholder="Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Alle Status</SelectItem>
+          {Object.entries(STATUS_LABELS).map(([val, label]) => (
+            <SelectItem key={val} value={val}>{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {availableTypes.length > 1 && (
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="h-7 w-[160px] text-xs">
+            <SelectValue placeholder="Seitentyp" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle Seitentypen</SelectItem>
+            {availableTypes.map((t) => {
+              const def = getPageType(t);
+              return (
+                <SelectItem key={t} value={t}>
+                  {def?.labelDe ?? def?.label ?? t}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      )}
+
+      {activeFilterCount > 0 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs text-muted-foreground"
+          onClick={onClear}
+        >
+          <X className="h-3 w-3 mr-1" />
+          Filter zurücksetzen
+          <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">
+            {activeFilterCount}
+          </Badge>
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function DocRegistryView({
   clusterGroups,
   allChildren,
   canCreate,
   onCreateInCluster,
+  onLinkInCluster,
   clusters,
   onAssignToCluster,
 }: DocRegistryViewProps) {
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
+
+  const availableTypes = useMemo(
+    () => [...new Set(allChildren.map((c) => c.templateType))].sort(),
+    [allChildren],
+  );
+
+  const activeFilterCount = (filterStatus !== "all" ? 1 : 0) + (filterType !== "all" ? 1 : 0);
+  const hasActiveFilter = activeFilterCount > 0;
+
+  function matchesFilter(child: ChildNode) {
+    if (filterStatus !== "all" && child.status !== filterStatus) return false;
+    if (filterType !== "all" && child.templateType !== filterType) return false;
+    return true;
+  }
+
+  function clearFilters() {
+    setFilterStatus("all");
+    setFilterType("all");
+  }
+
+  const filteredClusterGroups = useMemo(() => {
+    if (!hasActiveFilter) return clusterGroups;
+    return clusterGroups
+      .map(({ cluster, children }) => ({
+        cluster,
+        children: children.filter(matchesFilter),
+      }))
+      .filter(({ children }) => children.length > 0);
+  }, [clusterGroups, filterStatus, filterType, hasActiveFilter]);
+
+  const filteredFlatChildren = useMemo(
+    () => allChildren.filter(matchesFilter),
+    [allChildren, filterStatus, filterType],
+  );
+
+  const showFilterBar = allChildren.length > 0;
+
   if (clusterGroups.length === 0) {
-    const sorted = [...allChildren].sort(
+    const sorted = [...filteredFlatChildren].sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
 
-    if (sorted.length === 0) {
+    if (allChildren.length === 0) {
       return (
         <div className="rounded-lg border bg-card px-4 py-12 text-center">
           <p className="text-sm text-muted-foreground">
@@ -271,30 +410,75 @@ export function DocRegistryView({
     }
 
     return (
-      <ClusterSection
-        cluster={null}
-        children={sorted}
-        canCreate={canCreate}
-        onCreateInCluster={onCreateInCluster}
-        allClusters={clusters}
-        onAssignToCluster={onAssignToCluster}
-      />
+      <div className="space-y-3">
+        {showFilterBar && (
+          <FilterBar
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            filterType={filterType}
+            setFilterType={setFilterType}
+            availableTypes={availableTypes}
+            activeFilterCount={activeFilterCount}
+            onClear={clearFilters}
+          />
+        )}
+        {sorted.length === 0 ? (
+          <div className="rounded-lg border bg-card px-4 py-8 text-center">
+            <p className="text-sm text-muted-foreground">Keine Einträge entsprechen dem Filter</p>
+            <Button variant="ghost" size="sm" className="mt-2 text-xs" onClick={clearFilters}>
+              Filter zurücksetzen
+            </Button>
+          </div>
+        ) : (
+          <ClusterSection
+            cluster={null}
+            children={sorted}
+            canCreate={canCreate}
+            onCreateInCluster={onCreateInCluster}
+            onLinkInCluster={onLinkInCluster}
+            allClusters={clusters}
+            onAssignToCluster={onAssignToCluster}
+          />
+        )}
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {clusterGroups.map(({ cluster, children }) => (
-        <ClusterSection
-          key={cluster?.id ?? "__unassigned__"}
-          cluster={cluster}
-          children={children}
-          canCreate={canCreate}
-          onCreateInCluster={onCreateInCluster}
-          allClusters={clusters}
-          onAssignToCluster={onAssignToCluster}
+      {showFilterBar && (
+        <FilterBar
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          filterType={filterType}
+          setFilterType={setFilterType}
+          availableTypes={availableTypes}
+          activeFilterCount={activeFilterCount}
+          onClear={clearFilters}
         />
-      ))}
+      )}
+
+      {filteredClusterGroups.length === 0 && hasActiveFilter ? (
+        <div className="rounded-lg border bg-card px-4 py-8 text-center">
+          <p className="text-sm text-muted-foreground">Keine Einträge entsprechen dem Filter</p>
+          <Button variant="ghost" size="sm" className="mt-2 text-xs" onClick={clearFilters}>
+            Filter zurücksetzen
+          </Button>
+        </div>
+      ) : (
+        filteredClusterGroups.map(({ cluster, children }) => (
+          <ClusterSection
+            key={cluster?.id ?? "__unassigned__"}
+            cluster={cluster}
+            children={children}
+            canCreate={canCreate}
+            onCreateInCluster={onCreateInCluster}
+            onLinkInCluster={onLinkInCluster}
+            allClusters={clusters}
+            onAssignToCluster={onAssignToCluster}
+          />
+        ))
+      )}
     </div>
   );
 }

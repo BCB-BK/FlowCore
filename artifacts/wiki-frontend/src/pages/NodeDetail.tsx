@@ -145,6 +145,7 @@ export function NodeDetail() {
   const [showCreate, setShowCreate] = useState(false);
   const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
   const [createInClusterId, setCreateInClusterId] = useState<string | null>(null);
+  const [createDialogInitialMode, setCreateDialogInitialMode] = useState<"create" | "link">("create");
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
   const [showMoveNode, setShowMoveNode] = useState(false);
@@ -996,6 +997,13 @@ export function NodeDetail() {
                 onCreateInCluster={(clusterId) => {
                   setCreateInClusterId(clusterId);
                   setCreatePresetType(undefined);
+                  setCreateDialogInitialMode("create");
+                  setShowCreate(true);
+                }}
+                onLinkInCluster={(clusterId) => {
+                  setCreateInClusterId(clusterId);
+                  setCreatePresetType(undefined);
+                  setCreateDialogInitialMode("link");
                   setShowCreate(true);
                 }}
               />
@@ -1545,11 +1553,15 @@ export function NodeDetail() {
         open={showCreate}
         onOpenChange={(open) => {
           setShowCreate(open);
-          if (!open) setCreateInClusterId(null);
+          if (!open) {
+            setCreateInClusterId(null);
+            setCreateDialogInitialMode("create");
+          }
         }}
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
         presetType={createPresetType}
+        initialMode={createDialogInitialMode}
         onNodeCreated={createInClusterId ? handleNodeCreatedInCluster : undefined}
         onLinkExistingNode={createInClusterId ? handleLinkExistingInCluster : handleLinkExistingNode}
       />
