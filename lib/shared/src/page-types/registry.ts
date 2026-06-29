@@ -1076,7 +1076,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "VA",
     helpText:
       "Erstellen Sie eine detaillierte Verfahrensanweisung nach QM-Standard. Definieren Sie Zweck, Geltungsbereich, Auslöser, Ablauf, Verantwortlichkeiten, Schnittstellen, Risiken und mitgeltende Unterlagen.",
-    allowedChildTypes: ["work_instruction", "checklist", "meeting_protocol"],
+    allowedChildTypes: ["work_instruction", "checklist", "meeting_protocol", "doc_registry"],
+    suitableChildTypes: ["doc_registry"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -1456,7 +1457,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "UC",
     helpText:
       "Beschreiben Sie einen konkreten Anwendungsfall mit Akteuren, Vor-/Nachbedingungen, Normalablauf und Alternativabläufen.",
-    allowedChildTypes: ["checklist", "work_instruction", "meeting_protocol"],
+    allowedChildTypes: ["checklist", "work_instruction", "meeting_protocol", "doc_registry"],
+    suitableChildTypes: ["doc_registry"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
