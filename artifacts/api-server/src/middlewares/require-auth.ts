@@ -1,3 +1,4 @@
+// require-auth.ts — Express middleware enforcing authentication and Entra group membership
 import type { Request, Response, NextFunction } from "express";
 import { appConfig } from "../lib/config";
 import { getPrincipalById } from "../services/principal.service";
@@ -96,12 +97,41 @@ export function requireAuth(
     }
 
     validateApiToken(token)
-      .then((result) => {
+      .then(async (result) => {
         if (!result) {
           res.status(401).json({ error: "Invalid or expired token" });
           return;
         }
-        resolveAndSetPrincipal(result.principalId, req, res, next);
+        const principal = await getPrincipalById(result.principalId);
+        if (!principal) {
+          res.status(401).json({ error: "Principal not found" });
+          return;
+        }
+        const externalId = principal.externalId ?? "";
+        if (appConfig.entraRequiredGroupId && externalId) {
+          let isMember: boolean;
+          try {
+            isMember = await checkEntraGroupMembership(externalId);
+          } catch (err) {
+            logger.error({ err, externalId }, "Entra group check failed for API token, allowing request");
+            isMember = true;
+          }
+          if (!isMember) {
+            logger.warn(
+              { externalId, principalId: principal.id },
+              "API token rejected: user no longer in required Entra group",
+            );
+            res.status(401).json({ error: "Access denied: user no longer in required group" });
+            return;
+          }
+        }
+        req.user = {
+          principalId: principal.id,
+          externalId,
+          displayName: principal.displayName,
+          email: principal.email ?? "",
+        };
+        next();
       })
       .catch((err) => {
         logger.error("Bearer token validation failed", err);
