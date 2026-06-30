@@ -196,7 +196,7 @@ router.post(
 
       res.status(201).json({
         ...asset,
-        url: result.url,
+        url: `/api/media/files/${asset.storageKey}`,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -297,7 +297,7 @@ router.post(
 
       res.status(201).json({
         ...asset,
-        url: result.url,
+        url: `/api/media/files/${asset.storageKey}`,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";

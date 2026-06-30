@@ -216,6 +216,58 @@ async function deduplicatePrincipals(): Promise<void> {
   }
 }
 
+async function migrateExternalMediaUrls(): Promise<void> {
+  const assets = await db.execute(
+    sql`SELECT id, storage_key FROM media_assets WHERE is_deleted = false`,
+  ) as unknown as { rows: { id: string; storage_key: string }[] };
+
+  const rows = assets.rows ?? [];
+  if (rows.length === 0) return;
+
+  let totalFixed = 0;
+
+  for (const asset of rows) {
+    const key = asset.storage_key;
+    const internalUrl = `/api/media/files/${key}`;
+
+    const wcResult = await db.execute(sql`
+      UPDATE content_working_copies
+      SET content = regexp_replace(
+        content::text,
+        '"src":"https://[^"]*' || ${key} || '[^"]*"',
+        '"src":"' || ${internalUrl} || '"',
+        'g'
+      )::jsonb
+      WHERE content IS NOT NULL
+        AND content::text LIKE ${'%' + key + '%'}
+        AND content::text NOT LIKE ${'%' + internalUrl + '%'}
+    `) as unknown as { rowCount: number };
+
+    const revResult = await db.execute(sql`
+      UPDATE content_revisions
+      SET content = regexp_replace(
+        content::text,
+        '"src":"https://[^"]*' || ${key} || '[^"]*"',
+        '"src":"' || ${internalUrl} || '"',
+        'g'
+      )::jsonb
+      WHERE content IS NOT NULL
+        AND content::text LIKE ${'%' + key + '%'}
+        AND content::text NOT LIKE ${'%' + internalUrl + '%'}
+    `) as unknown as { rowCount: number };
+
+    const fixed = (wcResult.rowCount ?? 0) + (revResult.rowCount ?? 0);
+    if (fixed > 0) {
+      logger.info({ storageKey: key, fixed }, "Migrated external media URL to internal");
+      totalFixed += fixed;
+    }
+  }
+
+  if (totalFixed > 0) {
+    logger.info({ totalFixed }, "Media URL migration complete");
+  }
+}
+
 export async function runStartupSeed(): Promise<void> {
   logger.info("Running startup data seed...");
 
@@ -247,6 +299,12 @@ export async function runStartupSeed(): Promise<void> {
     await deduplicatePrincipals();
   } catch (err) {
     logger.error({ err }, "Failed to deduplicate principals");
+  }
+
+  try {
+    await migrateExternalMediaUrls();
+  } catch (err) {
+    logger.error({ err }, "Failed to migrate external media URLs");
   }
 
   logger.info("Startup data seed complete");
