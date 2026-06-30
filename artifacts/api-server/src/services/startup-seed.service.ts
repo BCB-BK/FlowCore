@@ -217,55 +217,52 @@ async function deduplicatePrincipals(): Promise<void> {
 }
 
 async function migrateExternalMediaUrls(): Promise<void> {
+  // Only fetch assets whose `url` column still points to an external (https://) URL.
+  // These are assets uploaded before the fix that stored SharePoint WebUrls instead of
+  // the internal /api/media/files/{key} path. The old storage_key-based regex was wrong
+  // because the storage_key UUID never appears inside a SharePoint WebUrl.
   const assets = await db.execute(
-    sql`SELECT id, storage_key FROM media_assets WHERE is_deleted = false`,
-  ) as unknown as { rows: { id: string; storage_key: string }[] };
+    sql`SELECT id, storage_key, url FROM media_assets WHERE is_deleted = false AND url LIKE 'https://%'`,
+  ) as unknown as { rows: { id: string; storage_key: string; url: string }[] };
 
   const rows = assets.rows ?? [];
   if (rows.length === 0) return;
 
+  logger.info({ count: rows.length }, "Starting media URL migration for assets with external URLs");
   let totalFixed = 0;
 
   for (const asset of rows) {
     const key = asset.storage_key;
+    const oldUrl = asset.url;
     const internalUrl = `/api/media/files/${key}`;
 
+    // Update the url column in media_assets itself
+    await db.execute(sql`
+      UPDATE media_assets SET url = ${internalUrl} WHERE id = ${asset.id}
+    `);
+
+    // Update TipTap JSON content: replace "src":"<old SharePoint URL>" with internal URL.
+    // We use a literal string replace (not regex) to avoid issues with special chars in the URL.
     const wcResult = await db.execute(sql`
       UPDATE content_working_copies
-      SET content = regexp_replace(
-        content::text,
-        '"src":"https://[^"]*' || ${key} || '[^"]*"',
-        '"src":"' || ${internalUrl} || '"',
-        'g'
-      )::jsonb
+      SET content = replace(content::text, ${'"src":"' + oldUrl + '"'}, ${'"src":"' + internalUrl + '"'})::jsonb
       WHERE content IS NOT NULL
-        AND content::text LIKE ${'%' + key + '%'}
-        AND content::text NOT LIKE ${'%' + internalUrl + '%'}
+        AND content::text LIKE ${'%' + oldUrl + '%'}
     `) as unknown as { rowCount: number };
 
     const revResult = await db.execute(sql`
       UPDATE content_revisions
-      SET content = regexp_replace(
-        content::text,
-        '"src":"https://[^"]*' || ${key} || '[^"]*"',
-        '"src":"' || ${internalUrl} || '"',
-        'g'
-      )::jsonb
+      SET content = replace(content::text, ${'"src":"' + oldUrl + '"'}, ${'"src":"' + internalUrl + '"'})::jsonb
       WHERE content IS NOT NULL
-        AND content::text LIKE ${'%' + key + '%'}
-        AND content::text NOT LIKE ${'%' + internalUrl + '%'}
+        AND content::text LIKE ${'%' + oldUrl + '%'}
     `) as unknown as { rowCount: number };
 
     const fixed = (wcResult.rowCount ?? 0) + (revResult.rowCount ?? 0);
-    if (fixed > 0) {
-      logger.info({ storageKey: key, fixed }, "Migrated external media URL to internal");
-      totalFixed += fixed;
-    }
+    logger.info({ storageKey: key, oldUrl, internalUrl, docsFixed: fixed }, "Migrated external media URL to internal");
+    totalFixed += fixed;
   }
 
-  if (totalFixed > 0) {
-    logger.info({ totalFixed }, "Media URL migration complete");
-  }
+  logger.info({ totalFixed, assetsFixed: rows.length }, "Media URL migration complete");
 }
 
 export async function runStartupSeed(): Promise<void> {
