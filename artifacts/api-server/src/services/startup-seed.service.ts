@@ -217,52 +217,88 @@ async function deduplicatePrincipals(): Promise<void> {
 }
 
 async function migrateExternalMediaUrls(): Promise<void> {
-  // Only fetch assets whose `url` column still points to an external (https://) URL.
-  // These are assets uploaded before the fix that stored SharePoint WebUrls instead of
-  // the internal /api/media/files/{key} path. The old storage_key-based regex was wrong
-  // because the storage_key UUID never appears inside a SharePoint WebUrl.
+  // The media_assets table has no "url" column. The SharePoint WebUrl was only ever
+  // embedded inside TipTap JSON as "src":"https://...". We match by extracting the
+  // filename from the SharePoint URL and comparing it to original_filename in media_assets.
+
+  // Build a map: lowercase original_filename → storage_key
   const assets = await db.execute(
-    sql`SELECT id, storage_key, url FROM media_assets WHERE is_deleted = false AND url LIKE 'https://%'`,
-  ) as unknown as { rows: { id: string; storage_key: string; url: string }[] };
+    sql`SELECT storage_key, original_filename FROM media_assets WHERE is_deleted = false`,
+  ) as unknown as { rows: { storage_key: string; original_filename: string }[] };
 
-  const rows = assets.rows ?? [];
-  if (rows.length === 0) return;
+  if ((assets.rows ?? []).length === 0) return;
 
-  logger.info({ count: rows.length }, "Starting media URL migration for assets with external URLs");
-  let totalFixed = 0;
-
-  for (const asset of rows) {
-    const key = asset.storage_key;
-    const oldUrl = asset.url;
-    const internalUrl = `/api/media/files/${key}`;
-
-    // Update the url column in media_assets itself
-    await db.execute(sql`
-      UPDATE media_assets SET url = ${internalUrl} WHERE id = ${asset.id}
-    `);
-
-    // Update TipTap JSON content: replace "src":"<old SharePoint URL>" with internal URL.
-    // We use a literal string replace (not regex) to avoid issues with special chars in the URL.
-    const wcResult = await db.execute(sql`
-      UPDATE content_working_copies
-      SET content = replace(content::text, ${'"src":"' + oldUrl + '"'}, ${'"src":"' + internalUrl + '"'})::jsonb
-      WHERE content IS NOT NULL
-        AND content::text LIKE ${'%' + oldUrl + '%'}
-    `) as unknown as { rowCount: number };
-
-    const revResult = await db.execute(sql`
-      UPDATE content_revisions
-      SET content = replace(content::text, ${'"src":"' + oldUrl + '"'}, ${'"src":"' + internalUrl + '"'})::jsonb
-      WHERE content IS NOT NULL
-        AND content::text LIKE ${'%' + oldUrl + '%'}
-    `) as unknown as { rowCount: number };
-
-    const fixed = (wcResult.rowCount ?? 0) + (revResult.rowCount ?? 0);
-    logger.info({ storageKey: key, oldUrl, internalUrl, docsFixed: fixed }, "Migrated external media URL to internal");
-    totalFixed += fixed;
+  const filenameToKey = new Map<string, string>();
+  for (const a of assets.rows) {
+    filenameToKey.set(a.original_filename.toLowerCase(), a.storage_key);
   }
 
-  logger.info({ totalFixed, assetsFixed: rows.length }, "Media URL migration complete");
+  // Walk TipTap JSON recursively, replacing any "src":"https://..." with internal URL.
+  function fixNode(node: unknown): boolean {
+    if (!node || typeof node !== "object") return false;
+    let changed = false;
+    const obj = node as Record<string, unknown>;
+
+    if (typeof obj.src === "string" && obj.src.startsWith("https://")) {
+      const rawPath = obj.src.split("?")[0];
+      const rawFilename = rawPath.split("/").pop() ?? "";
+      const filename = decodeURIComponent(rawFilename).toLowerCase();
+      const key = filenameToKey.get(filename);
+      if (key) {
+        const oldSrc = obj.src;
+        obj.src = `/api/media/files/${key}`;
+        changed = true;
+        logger.info({ oldSrc, newSrc: obj.src, key }, "Replaced SharePoint src in TipTap node");
+      }
+    }
+
+    for (const k of Object.keys(obj)) {
+      if (k === "src") continue;
+      const val = obj[k];
+      if (Array.isArray(val)) {
+        for (const item of val) { if (fixNode(item)) changed = true; }
+      } else if (val && typeof val === "object") {
+        if (fixNode(val)) changed = true;
+      }
+    }
+    return changed;
+  }
+
+  // Process content_working_copies
+  const wcs = await db.execute(
+    sql`SELECT id, content FROM content_working_copies WHERE content IS NOT NULL AND content::text LIKE '%"src":"https://%'`,
+  ) as unknown as { rows: { id: string; content: unknown }[] };
+
+  // Process content_revisions
+  const revs = await db.execute(
+    sql`SELECT id, content FROM content_revisions WHERE content IS NOT NULL AND content::text LIKE '%"src":"https://%'`,
+  ) as unknown as { rows: { id: string; content: unknown }[] };
+
+  const allDocs = [
+    ...(wcs.rows ?? []).map(r => ({ ...r, table: "content_working_copies" as const })),
+    ...(revs.rows ?? []).map(r => ({ ...r, table: "content_revisions" as const })),
+  ];
+
+  if (allDocs.length === 0) return;
+  logger.info({ count: allDocs.length }, "Starting media URL migration — docs with external src found");
+
+  let totalFixed = 0;
+  for (const doc of allDocs) {
+    const content = doc.content;
+    const changed = fixNode(content);
+    if (changed) {
+      const json = JSON.stringify(content);
+      if (doc.table === "content_working_copies") {
+        await db.execute(sql`UPDATE content_working_copies SET content = ${json}::jsonb WHERE id = ${doc.id}`);
+      } else {
+        await db.execute(sql`UPDATE content_revisions SET content = ${json}::jsonb WHERE id = ${doc.id}`);
+      }
+      totalFixed++;
+      logger.info({ id: doc.id, table: doc.table }, "Fixed SharePoint image URLs in doc");
+    }
+  }
+
+  logger.info({ totalFixed, docsScanned: allDocs.length }, "Media URL migration complete");
 }
 
 export async function runStartupSeed(): Promise<void> {
