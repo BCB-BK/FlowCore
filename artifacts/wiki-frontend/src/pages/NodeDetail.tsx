@@ -1106,7 +1106,14 @@ export function NodeDetail() {
               {(
                 clusters.length > 0 ? (
                 <div className="space-y-6">
-                  {clusterGroups.map(({ cluster, children: groupChildren }) => (
+                  {clusterGroups.map(({ cluster, children: groupChildren }) => {
+                    if (!cluster?.id) {
+                      const hasNonEmptyCluster = clusterGroups.some(
+                        (g) => g.cluster?.id && g.children.length > 0,
+                      );
+                      if (!hasNonEmptyCluster) return null;
+                    }
+                    return (
                     <div key={cluster?.id ?? "__unassigned__"} className="rounded-lg border bg-card">
                       <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/40">
                         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
@@ -1205,7 +1212,8 @@ export function NodeDetail() {
                         <p className="px-4 py-3 text-sm text-muted-foreground">Noch keine Seiten in diesem Cluster</p>
                       )}
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
                 ) : (
                 <div className="space-y-6">
