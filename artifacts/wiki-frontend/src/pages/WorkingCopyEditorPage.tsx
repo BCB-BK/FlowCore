@@ -318,6 +318,27 @@ export function WorkingCopyEditorPage() {
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPatchRef = useRef<Record<string, unknown>>({});
 
+  // CRITICAL: nodeId-Wechsel-Cleanup – verhindert Cross-Node-Datenverschmutzung.
+  // WorkingCopyEditorPage wird bei SPA-Navigation (Wouter) NICHT neu gemountet.
+  // Ohne diesen Reset würde ein noch laufender autosave-Timer (AUTOSAVE_DELAY_MS=2s)
+  // die structuredFields (inkl. _clusters) der alten Seite in die Working Copy
+  // der neuen Seite schreiben, sobald wcRef.current auf die neue WC wechselt.
+  useEffect(() => {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    pendingPatchRef.current = {};
+    sfInitializedRef.current = false;
+    sfInitWcIdRef.current = null;
+    autoCreateAttempted.current = false;
+    wcRef.current = null;
+    localStructuredFieldsRef.current = {};
+    setValidationSFSnapshot({});
+  // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId]);
+
   type SavePatch = {
     title?: string;
     content?: Record<string, unknown>;
