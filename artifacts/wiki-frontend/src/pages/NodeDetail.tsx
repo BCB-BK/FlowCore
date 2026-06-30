@@ -572,6 +572,49 @@ export function NodeDetail() {
     [nodeId, activeWC, linkedNodeIdSet, createWorkingCopy, updateWorkingCopy, queryClient, toast],
   );
 
+  const handleDeleteCluster = useCallback(
+    async (clusterId: string) => {
+      if (!nodeId) return;
+      try {
+        let wc = activeWC;
+        if (!wc) {
+          wc = await createWorkingCopy.mutateAsync({ nodeId });
+        }
+        const sfNow = (wc.structuredFields as Record<string, unknown>) ?? {};
+        const currentClusters = parseClusters(sfNow._clusters);
+        const clusterToDelete = currentClusters.find((c) => c.id === clusterId);
+        const updatedClusters = currentClusters.filter((c) => c.id !== clusterId);
+        const currentLinked = Array.isArray(sfNow._linkedNodeIds)
+          ? (sfNow._linkedNodeIds as string[])
+          : [];
+        const removedLinkedIds = clusterToDelete
+          ? clusterToDelete.childNodeIds.filter((id) => linkedNodeIdSet.has(id))
+          : [];
+        const updatedLinked = currentLinked.filter((id) => !removedLinkedIds.includes(id));
+        await updateWorkingCopy.mutateAsync({
+          workingCopyId: wc.id,
+          data: {
+            structuredFields: {
+              ...sfNow,
+              _clusters: updatedClusters,
+              _linkedNodeIds: updatedLinked,
+            },
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Cluster löschen fehlgeschlagen",
+          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+        });
+      }
+    },
+    [nodeId, activeWC, linkedNodeIdSet, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+  );
+
   const handleAddCluster = useCallback(async () => {
     if (!nodeId || !newClusterTitle.trim()) return;
     setIsAddingCluster(true);
@@ -1077,6 +1120,19 @@ export function NodeDetail() {
                         <Badge variant="secondary" className="text-[10px] h-5 px-1.5 shrink-0">
                           {groupChildren.length} {groupChildren.length === 1 ? "Seite" : "Seiten"}
                         </Badge>
+                        {canEdit && cluster?.id && (
+                          <button
+                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1 rounded"
+                            aria-label="Cluster löschen"
+                            title="Cluster löschen"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleDeleteCluster(cluster.id);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                       {groupChildren.length > 0 ? (
                         <div className="divide-y">
