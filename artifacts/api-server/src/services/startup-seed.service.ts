@@ -218,8 +218,9 @@ async function deduplicatePrincipals(): Promise<void> {
 
 async function migrateExternalMediaUrls(): Promise<void> {
   // The media_assets table has no "url" column. The SharePoint WebUrl was only ever
-  // embedded inside TipTap JSON as "src":"https://...". We match by extracting the
-  // filename from the SharePoint URL and comparing it to original_filename in media_assets.
+  // embedded inside TipTap JSON as "src":"https://...".
+  // IMPORTANT: The actual TipTap body lives in `structured_fields._editorContent`,
+  // NOT in `content` (which only holds metadata like {"owner":...,"templateVariant":...}).
 
   // Build a map: lowercase original_filename → storage_key
   const assets = await db.execute(
@@ -264,21 +265,20 @@ async function migrateExternalMediaUrls(): Promise<void> {
     return changed;
   }
 
-  // PostgreSQL's jsonb::text adds spaces after colons/commas, so we can't rely on
-  // exact-match LIKE patterns. Instead we just scan all docs that have any "src"
-  // key and let fixNode() decide whether the URL needs replacing.
+  // Scan structured_fields (contains _editorContent with TipTap image nodes).
+  // PostgreSQL's jsonb::text adds spaces after colons/commas; LIKE '%"src"%' is
+  // still safe because the key name itself is not spaced.
   const wcs = await db.execute(
-    sql`SELECT id, content FROM content_working_copies WHERE content IS NOT NULL AND content::text LIKE '%"src"%'`,
-  ) as unknown as { rows: { id: string; content: unknown }[] };
+    sql`SELECT id, structured_fields FROM content_working_copies WHERE structured_fields IS NOT NULL AND structured_fields::text LIKE '%"src"%'`,
+  ) as unknown as { rows: { id: string; structured_fields: unknown }[] };
 
-  // Process content_revisions
   const revs = await db.execute(
-    sql`SELECT id, content FROM content_revisions WHERE content IS NOT NULL AND content::text LIKE '%"src"%'`,
-  ) as unknown as { rows: { id: string; content: unknown }[] };
+    sql`SELECT id, structured_fields FROM content_revisions WHERE structured_fields IS NOT NULL AND structured_fields::text LIKE '%"src"%'`,
+  ) as unknown as { rows: { id: string; structured_fields: unknown }[] };
 
   const allDocs = [
-    ...(wcs.rows ?? []).map(r => ({ ...r, table: "content_working_copies" as const })),
-    ...(revs.rows ?? []).map(r => ({ ...r, table: "content_revisions" as const })),
+    ...(wcs.rows ?? []).map(r => ({ id: r.id, data: r.structured_fields, table: "content_working_copies" as const })),
+    ...(revs.rows ?? []).map(r => ({ id: r.id, data: r.structured_fields, table: "content_revisions" as const })),
   ];
 
   if (allDocs.length === 0) return;
@@ -286,14 +286,14 @@ async function migrateExternalMediaUrls(): Promise<void> {
 
   let totalFixed = 0;
   for (const doc of allDocs) {
-    const content = doc.content;
-    const changed = fixNode(content);
+    const data = doc.data;
+    const changed = fixNode(data);
     if (changed) {
-      const json = JSON.stringify(content);
+      const json = JSON.stringify(data);
       if (doc.table === "content_working_copies") {
-        await db.execute(sql`UPDATE content_working_copies SET content = ${json}::jsonb WHERE id = ${doc.id}`);
+        await db.execute(sql`UPDATE content_working_copies SET structured_fields = ${json}::jsonb WHERE id = ${doc.id}`);
       } else {
-        await db.execute(sql`UPDATE content_revisions SET content = ${json}::jsonb WHERE id = ${doc.id}`);
+        await db.execute(sql`UPDATE content_revisions SET structured_fields = ${json}::jsonb WHERE id = ${doc.id}`);
       }
       totalFixed++;
       logger.info({ id: doc.id, table: doc.table }, "Fixed SharePoint image URLs in doc");
