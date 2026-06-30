@@ -40,6 +40,9 @@ export function LoginPage() {
     if (authErrorParam === "group_not_authorized") {
       return "Sie gehören nicht zum Team BildungsCampus und haben keinen Zugang. Bitte wenden Sie sich an Ihren Administrator.";
     }
+    if (authErrorParam === "session_invalidated") {
+      return "Ihre Sitzung wurde beendet, weil Ihre Zugriffsberechtigung nicht mehr gültig ist. Bitte melden Sie sich erneut an.";
+    }
     return "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.";
   })();
 

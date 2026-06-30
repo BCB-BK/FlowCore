@@ -5,6 +5,7 @@ export {
   setAuthTokenGetter,
   setDefaultHeaders,
   getDefaultHeaders,
+  setSessionExpiredHandler,
   customFetch,
 } from "./custom-fetch";
 export type { AuthTokenGetter } from "./custom-fetch";

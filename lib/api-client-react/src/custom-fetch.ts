@@ -18,6 +18,16 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 let _defaultHeaders: Record<string, string> = {};
+let _sessionExpiredHandler: (() => void) | null = null;
+
+/**
+ * Register a callback that is invoked when the API responds with a 401
+ * carrying a "Session invalidated" message (e.g. Entra group-check failure).
+ * The callback is responsible for redirecting the user to the login page.
+ */
+export function setSessionExpiredHandler(handler: (() => void) | null): void {
+  _sessionExpiredHandler = handler;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -159,6 +169,22 @@ function getStringField(value: unknown, key: string): string | undefined {
 
 function truncate(text: string, maxLength = 300): string {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
+function isSessionInvalidated(data: unknown): boolean {
+  if (typeof data === "string") {
+    return data.toLowerCase().includes("session invalidated");
+  }
+  if (data && typeof data === "object") {
+    const rec = data as Record<string, unknown>;
+    for (const key of ["message", "error", "detail", "title"]) {
+      const val = rec[key];
+      if (typeof val === "string" && val.toLowerCase().includes("session invalidated")) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function buildErrorMessage(response: Response, data: unknown): string {
@@ -386,6 +412,13 @@ export async function customFetch<T = unknown>(
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
+    if (
+      response.status === 401 &&
+      _sessionExpiredHandler &&
+      isSessionInvalidated(errorData)
+    ) {
+      _sessionExpiredHandler();
+    }
     throw new ApiError(response, errorData, requestInfo);
   }
 
