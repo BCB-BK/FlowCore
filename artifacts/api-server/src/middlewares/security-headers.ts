@@ -29,7 +29,7 @@ export function securityHeaders(
         "default-src 'self'",
         "script-src 'self'",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob: https:",
+        "img-src 'self' data: blob:",
         "font-src 'self'",
         "connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com",
         "frame-ancestors 'self' https://teams.microsoft.com https://*.teams.microsoft.com https://*.office.com",

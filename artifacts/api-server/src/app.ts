@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -67,9 +67,19 @@ app.use(
     },
   }),
 );
+const PROD_ORIGIN = "https://flowcore.bildungscampus-backnang.de";
+
 app.use(
   cors({
-    origin: true,
+    origin: isProduction
+      ? (origin, callback) => {
+          if (!origin || origin === PROD_ORIGIN) {
+            callback(null, true);
+          } else {
+            callback(new Error(`CORS: origin '${origin}' not allowed`));
+          }
+        }
+      : true,
     credentials: true,
   }),
 );
@@ -90,6 +100,25 @@ app.use(
     },
   }),
 );
+
+// Global auth fallback guard — defense-in-depth safety net.
+// Runs before route handlers. Blocks unauthenticated access to all /api/* paths
+// except the explicitly public ones (health check and auth flow).
+// Per-route requireAuth middleware still validates fully; this guard only catches
+// routes that were accidentally added without requireAuth.
+const PUBLIC_PATH_PREFIXES = ["/healthz", "/auth"];
+app.use("/api", (req: Request, res: Response, next: NextFunction) => {
+  const isPublic = PUBLIC_PATH_PREFIXES.some(
+    (p) => req.path === p || req.path.startsWith(p + "/"),
+  );
+  if (isPublic) { next(); return; }
+
+  if (req.headers.authorization?.startsWith("Bearer ")) { next(); return; }
+  if (appConfig.authDevMode) { next(); return; }
+  if (req.session?.user) { next(); return; }
+
+  res.status(401).json({ error: "Authentication required" });
+});
 
 app.use("/api", router);
 
