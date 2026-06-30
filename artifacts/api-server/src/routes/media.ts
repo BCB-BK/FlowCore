@@ -424,7 +424,14 @@ router.get("/files/:key", requireAuth, async (req, res) => {
     }
 
     if (asset.nodeId) {
-      const canRead = await hasPermission(req.user!.principalId, "read_page", asset.nodeId);
+      let canRead = false;
+      try {
+        canRead = await hasPermission(req.user!.principalId, "read_page", asset.nodeId);
+      } catch (permErr) {
+        logger.error({ permErr, principalId: req.user?.principalId, nodeId: asset.nodeId }, "hasPermission failed for media file");
+        res.status(500).json({ error: "Permission check failed" });
+        return;
+      }
       if (!canRead) {
         res.status(403).json({ error: "Keine Berechtigung" });
         return;
@@ -439,8 +446,9 @@ router.get("/files/:key", requireAuth, async (req, res) => {
     res.setHeader("Content-Length", result.sizeBytes);
     res.setHeader("Cache-Control", "private, max-age=3600");
     (result.stream as NodeJS.ReadableStream).pipe(res);
-  } catch {
-    res.status(404).json({ error: "File not found" });
+  } catch (err) {
+    logger.error({ err, key }, "Failed to serve media file");
+    res.status(500).json({ error: "Failed to serve file" });
   }
 });
 
