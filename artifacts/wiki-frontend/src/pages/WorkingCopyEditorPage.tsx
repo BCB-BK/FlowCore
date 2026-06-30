@@ -42,7 +42,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Input } from "@workspace/ui/input";
-import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections, getDisplayProfile } from "@/lib/types";
+import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections } from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
 import { parseClusters, groupChildrenByClusters } from "@/lib/clusters";
 import type { Cluster } from "@/lib/clusters";

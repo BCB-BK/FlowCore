@@ -3,6 +3,7 @@ import { pool } from "@workspace/db";
 import { appConfig } from "../lib/config";
 import { isAuthConfigured } from "../services/auth.service";
 import { requireAuth } from "../middlewares/require-auth";
+import { invalidateGroupMembershipCache } from "../middlewares/require-auth";
 import { requirePermission, requireAnyPermission } from "../middlewares/require-permission";
 import { migrateToWorkingCopyModel } from "../scripts/migrate-working-copies";
 import { runConsistencyCheck } from "../services/consistency.service";
@@ -16,6 +17,7 @@ import {
 import { auditService, type AuditQueryOptions } from "../lib/audit";
 import { hasPermission } from "../services/rbac.service";
 import { getAllSystemSettings, setSystemSetting, isSetupMode } from "../services/system-settings.service";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -386,6 +388,73 @@ router.put("/admin/system-settings/:key", requireAuth, requirePermission("manage
     const actorName = req.user?.displayName || "system";
     await setSystemSetting(key, value, actorName);
     res.json({ success: true, key, value });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+interface SessionRow {
+  sid: string;
+  sess: { user?: { principalId?: string; externalId?: string; displayName?: string; email?: string } };
+  expire: string;
+}
+
+router.get("/admin/sessions", requireAuth, requirePermission("manage_settings"), async (_req, res) => {
+  try {
+    const result = await pool.query<SessionRow>(
+      "SELECT sid, sess, expire FROM user_sessions WHERE expire > NOW() ORDER BY expire DESC LIMIT 200",
+    );
+    const sessions = result.rows.map((row) => ({
+      sid: row.sid,
+      expire: row.expire,
+      user: row.sess?.user
+        ? {
+            principalId: row.sess.user.principalId ?? null,
+            externalId: row.sess.user.externalId ?? null,
+            displayName: row.sess.user.displayName ?? null,
+            email: row.sess.user.email ?? null,
+          }
+        : null,
+    }));
+    res.json({ sessions });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.delete("/admin/sessions/:sid", requireAuth, requirePermission("manage_settings"), async (req, res) => {
+  const sid = req.params.sid as string;
+  if (!sid) {
+    res.status(400).json({ error: "Session-ID fehlt" });
+    return;
+  }
+
+  try {
+    const existing = await pool.query<SessionRow>(
+      "SELECT sess FROM user_sessions WHERE sid = $1",
+      [sid],
+    );
+
+    if (existing.rows.length === 0) {
+      res.status(404).json({ error: "Session nicht gefunden" });
+      return;
+    }
+
+    const sessionUser = existing.rows[0].sess?.user;
+    if (sessionUser?.externalId) {
+      invalidateGroupMembershipCache(sessionUser.externalId);
+    }
+
+    await pool.query("DELETE FROM user_sessions WHERE sid = $1", [sid]);
+
+    logger.info(
+      { sid, terminatedBy: req.user?.principalId, targetUser: sessionUser?.principalId },
+      "Session manually terminated by admin",
+    );
+
+    res.json({ success: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: message });

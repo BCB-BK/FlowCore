@@ -3185,6 +3185,77 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConsistencyReport"
 
+  /admin/sessions:
+    get:
+      operationId: listActiveSessions
+      tags: [admin]
+      summary: List active user sessions
+      description: Returns all currently active (non-expired) user sessions. Requires manage_settings permission.
+      responses:
+        "200":
+          description: List of active sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        sid:
+                          type: string
+                        expire:
+                          type: string
+                          format: date-time
+                        user:
+                          type: object
+                          nullable: true
+                          properties:
+                            principalId:
+                              type: string
+                              nullable: true
+                            externalId:
+                              type: string
+                              nullable: true
+                            displayName:
+                              type: string
+                              nullable: true
+                            email:
+                              type: string
+                              nullable: true
+                required:
+                  - sessions
+
+  /admin/sessions/{sid}:
+    delete:
+      operationId: terminateSession
+      tags: [admin]
+      summary: Terminate a user session
+      description: Immediately destroys a specific session by ID. Requires manage_settings permission.
+      parameters:
+        - name: sid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The session ID to terminate
+      responses:
+        "200":
+          description: Session terminated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required:
+                  - success
+        "404":
+          description: Session not found
+
   /admin/releases:
     get:
       operationId: listReleases
