@@ -8,6 +8,7 @@ import {
 import { sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { seedNotificationRules } from "./workflow.service";
+import { getSystemSetting, setSystemSetting } from "./system-settings.service";
 import workflowSeedData from "../seed-data/workflow-templates.json";
 import aiProfilesSeedData from "../seed-data/ai-field-profiles.json";
 import glossarySeedData from "../data/glossary-seed.json";
@@ -217,6 +218,13 @@ async function deduplicatePrincipals(): Promise<void> {
 }
 
 async function migrateExternalMediaUrls(): Promise<void> {
+  const MIGRATION_KEY = "migration.external_media_urls_completed";
+  const alreadyDone = await getSystemSetting(MIGRATION_KEY);
+  if (alreadyDone === "true") {
+    logger.info("Media URL migration already completed — skipping");
+    return;
+  }
+
   // The media_assets table has no "url" column. The SharePoint WebUrl was only ever
   // embedded inside TipTap JSON as "src":"https://...".
   // IMPORTANT: The actual TipTap body lives in `structured_fields._editorContent`,
@@ -227,7 +235,11 @@ async function migrateExternalMediaUrls(): Promise<void> {
     sql`SELECT storage_key, original_filename FROM media_assets WHERE is_deleted = false`,
   ) as unknown as { rows: { storage_key: string; original_filename: string }[] };
 
-  if ((assets.rows ?? []).length === 0) return;
+  if ((assets.rows ?? []).length === 0) {
+    logger.info("No media assets found — marking media URL migration as complete");
+    await setSystemSetting(MIGRATION_KEY, "true");
+    return;
+  }
 
   const filenameToKey = new Map<string, string>();
   for (const a of assets.rows) {
@@ -281,7 +293,11 @@ async function migrateExternalMediaUrls(): Promise<void> {
     ...(revs.rows ?? []).map(r => ({ id: r.id, data: r.structured_fields, table: "content_revisions" as const })),
   ];
 
-  if (allDocs.length === 0) return;
+  if (allDocs.length === 0) {
+    logger.info("No docs with external src found — marking media URL migration as complete");
+    await setSystemSetting(MIGRATION_KEY, "true");
+    return;
+  }
   logger.info({ count: allDocs.length }, "Starting media URL migration — docs with external src found");
 
   let totalFixed = 0;
@@ -301,6 +317,8 @@ async function migrateExternalMediaUrls(): Promise<void> {
   }
 
   logger.info({ totalFixed, docsScanned: allDocs.length }, "Media URL migration complete");
+  await setSystemSetting(MIGRATION_KEY, "true");
+  logger.info({ key: MIGRATION_KEY }, "Media URL migration flag set — will skip on next startup");
 }
 
 export async function runStartupSeed(): Promise<void> {
