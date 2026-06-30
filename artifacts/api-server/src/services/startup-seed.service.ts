@@ -264,14 +264,16 @@ async function migrateExternalMediaUrls(): Promise<void> {
     return changed;
   }
 
-  // Process content_working_copies
+  // PostgreSQL's jsonb::text adds spaces after colons/commas, so we can't rely on
+  // exact-match LIKE patterns. Instead we just scan all docs that have any "src"
+  // key and let fixNode() decide whether the URL needs replacing.
   const wcs = await db.execute(
-    sql`SELECT id, content FROM content_working_copies WHERE content IS NOT NULL AND content::text LIKE '%"src":"https://%'`,
+    sql`SELECT id, content FROM content_working_copies WHERE content IS NOT NULL AND content::text LIKE '%"src"%'`,
   ) as unknown as { rows: { id: string; content: unknown }[] };
 
   // Process content_revisions
   const revs = await db.execute(
-    sql`SELECT id, content FROM content_revisions WHERE content IS NOT NULL AND content::text LIKE '%"src":"https://%'`,
+    sql`SELECT id, content FROM content_revisions WHERE content IS NOT NULL AND content::text LIKE '%"src"%'`,
   ) as unknown as { rows: { id: string; content: unknown }[] };
 
   const allDocs = [
