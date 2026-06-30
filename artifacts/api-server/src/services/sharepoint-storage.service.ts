@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { Client } from "@microsoft/microsoft-graph-client";
 import type {
   IStorageProvider,
@@ -119,10 +120,11 @@ export class SharePointStorageProvider implements IStorageProvider {
     const itemPath = this.getItemPath(key);
 
     const meta = await client.api(itemPath).select("size,file,name").get();
-    const stream = await client.api(`${itemPath}/content`).getStream();
+    const webStream = await client.api(`${itemPath}/content`).getStream();
+    const nodeStream = Readable.fromWeb(webStream as Parameters<typeof Readable.fromWeb>[0]);
 
     return {
-      stream: stream as unknown as NodeJS.ReadableStream,
+      stream: nodeStream,
       mimeType: meta.file?.mimeType || "application/octet-stream",
       sizeBytes: meta.size || 0,
       filename: meta.name || key,
