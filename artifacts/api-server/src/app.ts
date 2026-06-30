@@ -76,7 +76,8 @@ app.use(
           if (!origin || origin === PROD_ORIGIN) {
             callback(null, true);
           } else {
-            callback(new Error(`CORS: origin '${origin}' not allowed`));
+            const err = Object.assign(new Error(`CORS: origin not allowed`), { status: 403 });
+            callback(err);
           }
         }
       : true,
