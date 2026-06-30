@@ -400,9 +400,8 @@ router.delete(
 );
 
 router.get("/files/:key", requireAuth, async (req, res) => {
+  const key = req.params.key as string;
   try {
-    const key = req.params.key as string;
-
     if (!key || key.includes("..") || key.includes("/") || key.includes("\\")) {
       res.status(400).json({ error: "Invalid file key" });
       return;
