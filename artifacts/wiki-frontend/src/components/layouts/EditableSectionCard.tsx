@@ -99,8 +99,8 @@ export function EditableSectionCard({
   );
 
   const getFieldValue = useCallback(() => {
-    return editing ? draft : value;
-  }, [editing, draft, value]);
+    return draft;
+  }, [draft]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
@@ -188,8 +188,8 @@ export function EditableSectionCard({
           />
         ) : children ? (
           children
-        ) : value ? (
-          <div className="text-sm whitespace-pre-wrap">{value}</div>
+        ) : draft ? (
+          <div className="text-sm whitespace-pre-wrap">{draft}</div>
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
             {emptyText}
