@@ -219,8 +219,11 @@ async function deduplicatePrincipals(): Promise<void> {
 
 async function migrateExternalMediaUrls(): Promise<void> {
   const MIGRATION_KEY = "migration.external_media_urls_completed";
+  // Bump MIGRATION_VERSION whenever the lookup logic changes so the migration
+  // re-runs even if a previous (broken) version already set the flag.
+  const MIGRATION_VERSION = "v2";
   const alreadyDone = await getSystemSetting(MIGRATION_KEY);
-  if (alreadyDone === "true") {
+  if (alreadyDone === MIGRATION_VERSION) {
     logger.info("Media URL migration already completed — skipping");
     return;
   }
@@ -230,20 +233,23 @@ async function migrateExternalMediaUrls(): Promise<void> {
   // IMPORTANT: The actual TipTap body lives in `structured_fields._editorContent`,
   // NOT in `content` (which only holds metadata like {"owner":...,"templateVariant":...}).
 
-  // Build a map: lowercase original_filename → storage_key
+  // Build a set of known storage_keys (the SharePoint URL ends with the storage_key
+  // as its filename, e.g. ".../FlowCore%20Ablage/07607f99-...uuid....png").
+  // original_filename ("Screenshot 2026-06-24.png") is NOT in the URL path.
   const assets = await db.execute(
-    sql`SELECT storage_key, original_filename FROM media_assets WHERE is_deleted = false`,
-  ) as unknown as { rows: { storage_key: string; original_filename: string }[] };
+    sql`SELECT storage_key FROM media_assets WHERE is_deleted = false`,
+  ) as unknown as { rows: { storage_key: string }[] };
 
   if ((assets.rows ?? []).length === 0) {
     logger.info("No media assets found — marking media URL migration as complete");
-    await setSystemSetting(MIGRATION_KEY, "true");
+    await setSystemSetting(MIGRATION_KEY, MIGRATION_VERSION);
     return;
   }
 
-  const filenameToKey = new Map<string, string>();
+  // Map: lowercase storage_key → canonical storage_key (preserves original casing)
+  const storageKeyMap = new Map<string, string>();
   for (const a of assets.rows) {
-    filenameToKey.set(a.original_filename.toLowerCase(), a.storage_key);
+    storageKeyMap.set(a.storage_key.toLowerCase(), a.storage_key);
   }
 
   // Walk TipTap JSON recursively, replacing any "src":"https://..." with internal URL.
@@ -253,10 +259,13 @@ async function migrateExternalMediaUrls(): Promise<void> {
     const obj = node as Record<string, unknown>;
 
     if (typeof obj.src === "string" && obj.src.startsWith("https://")) {
+      // The SharePoint URL ends with the storage_key as its filename:
+      // e.g. ".../FlowCore%20%20Ablage/07607f99-77c2-457b-81e2-f1264733508d.png"
+      // Strip query string, decode percent-encoding, extract filename portion.
       const rawPath = obj.src.split("?")[0];
       const rawFilename = rawPath.split("/").pop() ?? "";
       const filename = decodeURIComponent(rawFilename).toLowerCase();
-      const key = filenameToKey.get(filename);
+      const key = storageKeyMap.get(filename);
       if (key) {
         const oldSrc = obj.src;
         obj.src = `/api/media/files/${key}`;
@@ -295,7 +304,7 @@ async function migrateExternalMediaUrls(): Promise<void> {
 
   if (allDocs.length === 0) {
     logger.info("No docs with external src found — marking media URL migration as complete");
-    await setSystemSetting(MIGRATION_KEY, "true");
+    await setSystemSetting(MIGRATION_KEY, MIGRATION_VERSION);
     return;
   }
   logger.info({ count: allDocs.length }, "Starting media URL migration — docs with external src found");
@@ -317,7 +326,7 @@ async function migrateExternalMediaUrls(): Promise<void> {
   }
 
   logger.info({ totalFixed, docsScanned: allDocs.length }, "Media URL migration complete");
-  await setSystemSetting(MIGRATION_KEY, "true");
+  await setSystemSetting(MIGRATION_KEY, MIGRATION_VERSION);
   logger.info({ key: MIGRATION_KEY }, "Media URL migration flag set — will skip on next startup");
 }
 
