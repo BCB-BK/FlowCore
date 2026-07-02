@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Editor, Range } from "@tiptap/react";
+import { extractWikiNodeId } from "./extensions/wiki-link";
 import {
   Heading1,
   Heading2,
@@ -182,7 +183,17 @@ const SLASH_ITEMS: SlashMenuItem[] = [
       editor.chain().focus().deleteRange(range).run();
       const url = prompt("URL eingeben:");
       if (url) {
-        editor.chain().focus().setEmbedBlock({ src: url }).run();
+        const wikiNodeId = extractWikiNodeId(url);
+        if (wikiNodeId) {
+          editor.commands.setWikiLink({
+            nodeId: wikiNodeId,
+            title: wikiNodeId.substring(0, 8) + "…",
+            displayCode: null,
+            templateType: null,
+          });
+        } else {
+          editor.chain().focus().setEmbedBlock({ src: url }).run();
+        }
       }
     },
   },

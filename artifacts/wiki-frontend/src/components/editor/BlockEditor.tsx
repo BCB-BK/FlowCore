@@ -581,12 +581,12 @@ export function BlockEditor({
 
       {wikiPickerOpen && (
         <WikiNodePickerDialog
-          onSelect={(pickedNodeId, title, _url, templateType) => {
+          onSelect={(pickedNodeId, title, _url, templateType, displayCode) => {
             if (editor) {
               editor.commands.setWikiLink({
                 nodeId: pickedNodeId,
                 title,
-                displayCode: null,
+                displayCode: displayCode ?? null,
                 templateType: templateType ?? null,
               });
             }

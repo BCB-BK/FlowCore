@@ -315,8 +315,20 @@ export function formatValueForDisplay(val: unknown): string {
 
 function extractPlainText(doc: unknown): string {
   if (!doc || typeof doc !== "object") return "";
-  const node = doc as { text?: string; content?: unknown[] };
+  const node = doc as {
+    type?: string;
+    text?: string;
+    content?: unknown[];
+    attrs?: Record<string, unknown>;
+  };
   if (node.text) return node.text;
+  if (node.type === "wikiLink" && node.attrs) {
+    const title = node.attrs["title"] as string | null;
+    const displayCode = node.attrs["displayCode"] as string | null;
+    if (displayCode && title) return `[${displayCode}] ${title}`;
+    if (displayCode) return `[${displayCode}]`;
+    return title || "Wiki-Seite";
+  }
   if (Array.isArray(node.content)) {
     return node.content.map(extractPlainText).filter(Boolean).join(" ");
   }

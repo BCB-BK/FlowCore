@@ -1,5 +1,5 @@
 import { Node, mergeAttributes } from "@tiptap/react";
-import { PasteRule } from "@tiptap/core";
+import { InputRule, PasteRule } from "@tiptap/core";
 
 export const WIKI_NODE_URL_PATTERN =
   /(?:https?:\/\/[a-zA-Z0-9.-]+)?\/node\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
@@ -80,6 +80,30 @@ export const WikiLink = Node.create({
             attrs,
           }),
     };
+  },
+
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /(?:https?:\/\/[a-zA-Z0-9.-]+)?\/node\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s$/,
+        handler: ({ chain, range, match }) => {
+          const nodeId = match[1];
+          if (!nodeId) return null;
+          chain()
+            .insertContentAt({ from: range.from, to: range.to }, {
+              type: this.name,
+              attrs: {
+                nodeId,
+                title: nodeId.substring(0, 8) + "…",
+                displayCode: null,
+                templateType: null,
+              },
+            })
+            .run();
+          return null;
+        },
+      }),
+    ];
   },
 
   addPasteRules() {

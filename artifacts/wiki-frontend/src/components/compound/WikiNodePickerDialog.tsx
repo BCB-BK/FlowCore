@@ -4,7 +4,13 @@ import { Loader2, X, Search, BookOpen, ArrowRight } from "lucide-react";
 import { useSearchContent } from "@workspace/api-client-react";
 
 interface WikiNodePickerDialogProps {
-  onSelect: (nodeId: string, title: string, url: string, templateType?: string) => void;
+  onSelect: (
+    nodeId: string,
+    title: string,
+    url: string,
+    templateType?: string,
+    displayCode?: string | null,
+  ) => void;
   onClose: () => void;
 }
 
@@ -88,7 +94,13 @@ export function WikiNodePickerDialog({ onSelect, onClose }: WikiNodePickerDialog
                   <button
                     className="w-full text-left px-4 py-2.5 hover:bg-accent transition-colors flex items-center gap-3 group"
                     onClick={() => {
-                      onSelect(r.id, r.title, `/node/${r.id}`, r.templateType ?? undefined);
+                      onSelect(
+                        r.id,
+                        r.title,
+                        `/node/${r.id}`,
+                        r.templateType ?? undefined,
+                        r.displayCode ?? null,
+                      );
                       onClose();
                     }}
                   >
