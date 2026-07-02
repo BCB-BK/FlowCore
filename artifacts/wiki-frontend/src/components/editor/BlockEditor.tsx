@@ -124,6 +124,7 @@ export function BlockEditor({
   mediaDialogRef.current = mediaDialog;
 
   const [wikiPickerOpen, setWikiPickerOpen] = useState(false);
+  const resolveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [hasDraft, setHasDraft] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -354,6 +355,99 @@ export function BlockEditor({
         handleWikiPickerEvent,
       );
   }, []);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const apiBase = import.meta.env.BASE_URL + "api";
+
+    const doResolve = async () => {
+      const { doc } = editor.state;
+      const placeholders: Array<{ pos: number; nodeId: string }> = [];
+
+      doc.descendants((node, pos) => {
+        if (
+          node.type.name === "wikiLink" &&
+          node.attrs.nodeId &&
+          typeof node.attrs.title === "string" &&
+          node.attrs.title.endsWith("…") &&
+          node.attrs.title.length <= 9
+        ) {
+          placeholders.push({ pos, nodeId: String(node.attrs.nodeId) });
+        }
+      });
+
+      if (placeholders.length === 0) return;
+
+      const seenIds = new Set<string>();
+      for (const { pos, nodeId } of placeholders) {
+        if (seenIds.has(nodeId)) continue;
+        seenIds.add(nodeId);
+        try {
+          const res = await fetch(`${apiBase}/content/nodes/${nodeId}`);
+          if (!res.ok) continue;
+          const data = (await res.json()) as {
+            title?: string;
+            displayCode?: string | null;
+            templateType?: string | null;
+          };
+          if (!data?.title) continue;
+
+          const cur = editor.state.doc.nodeAt(pos);
+          if (
+            !cur ||
+            cur.type.name !== "wikiLink" ||
+            cur.attrs.nodeId !== nodeId
+          )
+            continue;
+
+          editor.view.dispatch(
+            editor.state.tr.setNodeMarkup(pos, undefined, {
+              nodeId,
+              title: data.title,
+              displayCode: data.displayCode ?? null,
+              templateType: data.templateType ?? null,
+            }),
+          );
+        } catch {
+          // silently skip — keep placeholder until next resolution pass
+        }
+      }
+    };
+
+    const handleTransaction = () => {
+      if (resolveTimerRef.current) return;
+      let hasPlaceholder = false;
+      editor.state.doc.descendants((node) => {
+        if (
+          node.type.name === "wikiLink" &&
+          typeof node.attrs.title === "string" &&
+          node.attrs.title.endsWith("…") &&
+          node.attrs.title.length <= 9
+        ) {
+          hasPlaceholder = true;
+        }
+      });
+      if (hasPlaceholder) {
+        resolveTimerRef.current = setTimeout(() => {
+          resolveTimerRef.current = null;
+          doResolve();
+        }, 1000);
+      }
+    };
+
+    editor.on("transaction", handleTransaction);
+    // Run once on mount in case content is already loaded with placeholder nodes
+    handleTransaction();
+
+    return () => {
+      editor.off("transaction", handleTransaction);
+      if (resolveTimerRef.current) {
+        clearTimeout(resolveTimerRef.current);
+        resolveTimerRef.current = null;
+      }
+    };
+  }, [editor]);
 
   const handleMediaSelect = useCallback(
     (asset: {

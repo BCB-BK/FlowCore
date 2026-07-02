@@ -1295,8 +1295,11 @@ export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
   const [, navigate] = useLocation();
 
   const handleClick = (e: React.MouseEvent) => {
-    if (!editor.isEditable && nodeId) {
-      e.preventDefault();
+    e.preventDefault();
+    if (!nodeId) return;
+    if (editor.isEditable) {
+      window.open(`/node/${nodeId}`, "_blank", "noopener,noreferrer");
+    } else {
       navigate(`/node/${nodeId}`);
     }
   };
@@ -1313,11 +1316,8 @@ export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
         className={[
           "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md",
           "bg-amber-50 text-amber-700 border border-amber-200",
-          "text-[0.8em] font-medium select-none align-middle",
-          !editor.isEditable
-            ? "cursor-pointer hover:bg-amber-100"
-            : "cursor-default",
-          "transition-colors",
+          "text-[0.8em] font-medium select-none align-middle cursor-pointer",
+          "hover:bg-amber-100 transition-colors",
         ].join(" ")}
       >
         <BookOpen className="h-3 w-3 shrink-0" />
@@ -1325,9 +1325,7 @@ export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
           <span className="font-mono text-[10px] opacity-70">{displayCode}</span>
         )}
         <span className="max-w-[200px] truncate">{label}</span>
-        {!editor.isEditable && (
-          <ArrowRight className="h-2.5 w-2.5 shrink-0 opacity-50" />
-        )}
+        <ArrowRight className="h-2.5 w-2.5 shrink-0 opacity-50" />
       </span>
     </NodeViewWrapper>
   );

@@ -325,9 +325,10 @@ function extractPlainText(doc: unknown): string {
   if (node.type === "wikiLink" && node.attrs) {
     const title = node.attrs["title"] as string | null;
     const displayCode = node.attrs["displayCode"] as string | null;
-    if (displayCode && title) return `[${displayCode}] ${title}`;
-    if (displayCode) return `[${displayCode}]`;
-    return title || "Wiki-Seite";
+    if (title && displayCode) return `[${title} (${displayCode})]`;
+    if (title) return `[${title}]`;
+    if (displayCode) return `[(${displayCode})]`;
+    return "[Wiki-Seite]";
   }
   if (Array.isArray(node.content)) {
     return node.content.map(extractPlainText).filter(Boolean).join(" ");
