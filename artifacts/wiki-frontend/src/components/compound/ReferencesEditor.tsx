@@ -27,11 +27,14 @@ import { useSearchContent } from "@workspace/api-client-react";
 
 type ReferenceType = "url" | "sharepoint" | "upload" | "node";
 
+const VALID_TYPES = new Set<ReferenceType>(["url", "sharepoint", "upload", "node"]);
+
 interface Reference {
   type: ReferenceType;
   title: string;
   url: string;
   nodeId?: string;
+  templateType?: string;
 }
 
 interface ReferencesEditorProps {
@@ -50,11 +53,29 @@ interface ReferencesEditorProps {
   guidingQuestions?: string[];
 }
 
+function normalizeRef(item: unknown): Reference {
+  if (typeof item !== "object" || item === null) {
+    return { type: "url", title: "", url: String(item ?? "") };
+  }
+  const r = item as Record<string, unknown>;
+  const rawType = r.type as string;
+  const type: ReferenceType = VALID_TYPES.has(rawType as ReferenceType)
+    ? (rawType as ReferenceType)
+    : "url";
+  return {
+    type,
+    title: typeof r.title === "string" ? r.title : "",
+    url: typeof r.url === "string" ? r.url : "",
+    nodeId: typeof r.nodeId === "string" ? r.nodeId : undefined,
+    templateType: typeof r.templateType === "string" ? r.templateType : undefined,
+  };
+}
+
 function parseReferences(raw: string): Reference[] {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed)) return parsed.map(normalizeRef);
   } catch {}
   if (raw.trim().startsWith("http")) {
     return [{ type: "url", title: "", url: raw.trim() }];
@@ -86,7 +107,7 @@ const TYPE_COLORS: Record<ReferenceType, string> = {
 // ─── Wiki-Seiten-Suchmodal ────────────────────────────────────────────────────
 
 interface WikiNodePickerDialogProps {
-  onSelect: (nodeId: string, title: string, url: string) => void;
+  onSelect: (nodeId: string, title: string, url: string, templateType?: string) => void;
   onClose: () => void;
 }
 
@@ -173,7 +194,7 @@ function WikiNodePickerDialog({ onSelect, onClose }: WikiNodePickerDialogProps) 
                   <button
                     className="w-full text-left px-4 py-2.5 hover:bg-accent transition-colors flex items-center gap-3 group"
                     onClick={() => {
-                      onSelect(r.id, r.title, `/node/${r.id}`);
+                      onSelect(r.id, r.title, `/node/${r.id}`, r.templateType ?? undefined);
                       onClose();
                     }}
                   >
@@ -272,12 +293,13 @@ export function ReferencesEditor({
     setRefs((prev) => [...prev, ...newRefs]);
   };
 
-  const handleNodeSelect = (pickedNodeId: string, title: string, url: string) => {
+  const handleNodeSelect = (pickedNodeId: string, title: string, url: string, templateType?: string) => {
     const newRef: Reference = {
       type: "node",
       title,
       url,
       nodeId: pickedNodeId,
+      templateType,
     };
     setRefs((prev) => [...prev, newRef]);
   };
@@ -392,6 +414,9 @@ export function ReferencesEditor({
                           <TypeIcon className="h-3 w-3" />
                           {TYPE_LABELS[ref.type]}
                         </span>
+                        {ref.type === "node" && ref.templateType && (
+                          <span className="text-[10px] text-muted-foreground">{ref.templateType}</span>
+                        )}
                         <span>Referenz {i + 1}</span>
                       </div>
                       <Button
@@ -498,10 +523,13 @@ export function ReferencesEditor({
                         <p className="text-sm font-medium truncate">
                           {ref.title || ref.url || "—"}
                         </p>
+                        {ref.templateType && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{ref.templateType}</p>
+                        )}
                       </div>
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
-                        {TYPE_LABELS[ref.type]}
+                      <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0 text-amber-700 border-amber-200">
+                        Wiki-Seite
                       </Badge>
                     </Link>
                   );
