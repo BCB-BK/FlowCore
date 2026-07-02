@@ -1297,11 +1297,7 @@ export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!nodeId) return;
-    if (editor.isEditable) {
-      window.open(`/node/${nodeId}`, "_blank", "noopener,noreferrer");
-    } else {
-      navigate(`/node/${nodeId}`);
-    }
+    navigate(`/node/${nodeId}`);
   };
 
   const label = title || (nodeId ? nodeId.substring(0, 8) + "…" : "Wiki-Seite");

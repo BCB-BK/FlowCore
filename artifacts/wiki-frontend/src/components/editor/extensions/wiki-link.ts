@@ -1,8 +1,17 @@
 import { Node, mergeAttributes } from "@tiptap/react";
 import { InputRule, PasteRule } from "@tiptap/core";
 
-export const WIKI_NODE_URL_PATTERN =
-  /(?:https?:\/\/[a-zA-Z0-9.-]+)?\/node\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
+// Matches full internal URLs with or without protocol:
+//   https://flowcore.bildungscampus-backnang.de/node/<uuid>
+//   flowcore.bildungscampus-backnang.de/node/<uuid>
+//   /node/<uuid>
+const UUID_SEG =
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const HOST_SEG = "(?:https?:\\/\\/)?(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}";
+export const WIKI_NODE_URL_PATTERN = new RegExp(
+  `(?:${HOST_SEG})?\\/node\\/(${UUID_SEG})`,
+  "gi",
+);
 
 export function extractWikiNodeId(url: string): string | null {
   const match = url.match(
@@ -85,7 +94,9 @@ export const WikiLink = Node.create({
   addInputRules() {
     return [
       new InputRule({
-        find: /(?:https?:\/\/[a-zA-Z0-9.-]+)?\/node\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s$/,
+        find: new RegExp(
+          `(?:${HOST_SEG})?\\/node\\/(${UUID_SEG})\\s$`,
+        ),
         handler: ({ chain, range, match }) => {
           const nodeId = match[1];
           if (!nodeId) return null;
