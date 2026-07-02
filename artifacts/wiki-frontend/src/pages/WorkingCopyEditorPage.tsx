@@ -67,6 +67,7 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
 import { GenericLayout, meetingProtocolTopConfig, meetingProtocolBottomConfig } from "@/components/layouts/layout-engine";
 import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
+import { BacklinksPanel } from "@/components/content/BacklinksPanel";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { useSetupMode } from "@/hooks/use-setup-mode";
@@ -1216,6 +1217,11 @@ export function WorkingCopyEditorPage() {
                 )}
               </>
             )}
+            {nodeId && (
+              <div className="mt-6">
+                <BacklinksPanel nodeId={nodeId} />
+              </div>
+            )}
           </TabsContent>
 
           {showStructureTab && (
@@ -1313,6 +1319,7 @@ export function WorkingCopyEditorPage() {
               onChange={canEdit ? handleMetadataChange : () => {}}
               readOnly={!canEdit}
             />
+            {nodeId && <BacklinksPanel nodeId={nodeId} />}
           </TabsContent>
         </Tabs>
       )}

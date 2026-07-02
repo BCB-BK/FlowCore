@@ -71,6 +71,7 @@ import { TagManager } from "@/components/tags/TagManager";
 import { RelatedContentSidebar } from "@/components/content/RelatedContentSidebar";
 import { GlossaryTermsPanel } from "@/components/content/GlossaryTermsPanel";
 import { SourceReferencesPanel } from "@/components/content/SourceReferencesPanel";
+import { BacklinksPanel } from "@/components/content/BacklinksPanel";
 import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
@@ -1449,6 +1450,7 @@ export function NodeDetail() {
             <>
               <div className="mt-4"><RelatedContentSidebar nodeId={nodeId} /></div>
               <div className="mt-4"><GlossaryTermsPanel nodeId={nodeId} /></div>
+              <div className="mt-4"><BacklinksPanel nodeId={nodeId} /></div>
             </>
           )}
 
@@ -1473,6 +1475,7 @@ export function NodeDetail() {
               <TagManager nodeId={nodeId} />
               <RelatedContentSidebar nodeId={nodeId} />
               <GlossaryTermsPanel nodeId={nodeId} />
+              <BacklinksPanel nodeId={nodeId} />
             </div>
           )}
         </TabsContent>
