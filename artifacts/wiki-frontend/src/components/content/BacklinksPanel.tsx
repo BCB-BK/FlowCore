@@ -7,18 +7,25 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
 
+/**
+ * Relation types already shown in RelatedContentSidebar (structural relationships).
+ * BacklinksPanel must exclude these to avoid showing the same link twice.
+ */
+const SIDEBAR_OWNED_TYPES = new Set([
+  "related_to",
+  "uses_template",
+  "depends_on",
+  "implements_policy",
+  "upstream_of",
+  "downstream_of",
+  "replaces",
+  "references",
+]);
+
 const RELATION_TO_CATEGORY: Record<string, string> = {
   linked: "Querverweise",
   cross_reference: "Querverweise",
   referenced: "Querverweise",
-  related_to: "Querverweise",
-  uses_template: "Querverweise",
-  depends_on: "Querverweise",
-  implements_policy: "Querverweise",
-  upstream_of: "Querverweise",
-  downstream_of: "Querverweise",
-  replaces: "Querverweise",
-  references: "Querverweise",
   inline_wiki_link: "Inhalt",
   parent_child: "Cluster",
 };
@@ -43,14 +50,17 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
     if (!backlinks || backlinks.length === 0) return null;
     const map = new Map<string, typeof backlinks>();
     for (const link of backlinks) {
+      if (SIDEBAR_OWNED_TYPES.has(link.relationType)) continue;
       const cat = getCategory(link.relationType);
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(link);
     }
-    return CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => ({
+    const groups = CATEGORY_ORDER.filter((c) => map.has(c)).map((c) => ({
       category: c,
       links: map.get(c)!,
     }));
+    if (groups.length === 0) return null;
+    return groups;
   }, [backlinks]);
 
   if (isLoading) return null;
@@ -63,7 +73,7 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
           <Link2 className="h-4 w-4" />
           Wird verlinkt von
           <Badge variant="outline" className="ml-1">
-            {backlinks!.length}
+            {grouped.reduce((sum, g) => sum + g.links.length, 0)}
           </Badge>
         </CardTitle>
       </CardHeader>
