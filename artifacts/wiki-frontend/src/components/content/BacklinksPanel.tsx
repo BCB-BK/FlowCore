@@ -46,11 +46,15 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
     query: { queryKey: getGetBacklinksQueryKey(nodeId), staleTime: 0 },
   });
 
-  const grouped = useMemo(() => {
-    if (!backlinks || backlinks.length === 0) return null;
+  const { grouped, hiddenCount } = useMemo(() => {
+    if (!backlinks || backlinks.length === 0) return { grouped: null, hiddenCount: 0 };
     const map = new Map<string, typeof backlinks>();
+    let hidden = 0;
     for (const link of backlinks) {
-      if (SIDEBAR_OWNED_TYPES.has(link.relationType)) continue;
+      if (SIDEBAR_OWNED_TYPES.has(link.relationType)) {
+        hidden++;
+        continue;
+      }
       const cat = getCategory(link.relationType);
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(link);
@@ -59,12 +63,17 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
       category: c,
       links: map.get(c)!,
     }));
-    if (groups.length === 0) return null;
-    return groups;
+    if (groups.length === 0 && hidden === 0) return { grouped: null, hiddenCount: 0 };
+    if (groups.length === 0) return { grouped: null, hiddenCount: hidden };
+    return { grouped: groups, hiddenCount: hidden };
   }, [backlinks]);
 
   if (isLoading) return null;
-  if (!grouped || grouped.length === 0) return null;
+  if (!grouped && hiddenCount === 0) return null;
+
+  const visibleCount = grouped
+    ? grouped.reduce((sum, g) => sum + g.links.length, 0)
+    : 0;
 
   return (
     <Card>
@@ -73,12 +82,12 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
           <Link2 className="h-4 w-4" />
           Wird verlinkt von
           <Badge variant="outline" className="ml-1">
-            {grouped.reduce((sum, g) => sum + g.links.length, 0)}
+            {visibleCount}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {grouped.map(({ category, links }) => (
+        {grouped && grouped.map(({ category, links }) => (
           <div key={category}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
               {category} ({links.length})
@@ -124,6 +133,14 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
             </div>
           </div>
         ))}
+        {hiddenCount > 0 && (
+          <p className="text-[11px] text-muted-foreground border-t pt-2 mt-1">
+            {hiddenCount === 1
+              ? "1 strukturelle Beziehung wird"
+              : `${hiddenCount} strukturelle Beziehungen werden`}{" "}
+            in „Beziehungen & Navigation" angezeigt.
+          </p>
+        )}
       </CardContent>
     </Card>
   );
