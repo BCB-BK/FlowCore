@@ -25,6 +25,7 @@ import { DiagramBlock } from "./extensions/diagram-block";
 import { GalleryBlock } from "./extensions/gallery-block";
 import { BlockId } from "./extensions/block-id";
 import { DragHandle } from "./extensions/drag-handle";
+import { WikiLink } from "./extensions/wiki-link";
 import {
   CalloutNodeView,
   EmbedBlockNodeView,
@@ -32,7 +33,9 @@ import {
   FileBlockNodeView,
   DiagramBlockNodeView,
   GalleryBlockNodeView,
+  WikiLinkNodeView,
 } from "./NodeViews";
+import { WikiNodePickerDialog } from "@/components/compound/WikiNodePickerDialog";
 import { EditorToolbar } from "./EditorToolbar";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { MediaLibraryDialog } from "./MediaLibraryDialog";
@@ -120,6 +123,8 @@ export function BlockEditor({
   const mediaDialogRef = useRef(mediaDialog);
   mediaDialogRef.current = mediaDialog;
 
+  const [wikiPickerOpen, setWikiPickerOpen] = useState(false);
+
   const [hasDraft, setHasDraft] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const autosaveTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -178,6 +183,11 @@ export function BlockEditor({
       GalleryBlock.extend({
         addNodeView() {
           return ReactNodeViewRenderer(GalleryBlockNodeView);
+        },
+      }),
+      WikiLink.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(WikiLinkNodeView);
         },
       }),
       BlockId,
@@ -333,6 +343,16 @@ export function BlockEditor({
     window.addEventListener("editor:open-media-library", handleMediaEvent);
     return () =>
       window.removeEventListener("editor:open-media-library", handleMediaEvent);
+  }, []);
+
+  useEffect(() => {
+    const handleWikiPickerEvent = () => setWikiPickerOpen(true);
+    window.addEventListener("editor:open-wiki-picker", handleWikiPickerEvent);
+    return () =>
+      window.removeEventListener(
+        "editor:open-wiki-picker",
+        handleWikiPickerEvent,
+      );
   }, []);
 
   const handleMediaSelect = useCallback(
@@ -558,6 +578,23 @@ export function BlockEditor({
         filterType={mediaDialog.type}
         nodeId={nodeId}
       />
+
+      {wikiPickerOpen && (
+        <WikiNodePickerDialog
+          onSelect={(pickedNodeId, title, _url, templateType) => {
+            if (editor) {
+              editor.commands.setWikiLink({
+                nodeId: pickedNodeId,
+                title,
+                displayCode: null,
+                templateType: templateType ?? null,
+              });
+            }
+            setWikiPickerOpen(false);
+          }}
+          onClose={() => setWikiPickerOpen(false)}
+        />
+      )}
     </div>
   );
 }

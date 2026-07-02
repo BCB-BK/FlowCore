@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import {
   AlertCircle,
@@ -25,7 +26,10 @@ import {
   Copyright,
   Link2,
   GalleryHorizontalEnd,
+  BookOpen,
+  ArrowRight,
 } from "lucide-react";
+import { extractWikiNodeId } from "./extensions/wiki-link";
 import {
   getVideoEmbedUrl,
   isAllowedVideoSource,
@@ -518,6 +522,33 @@ export function EmbedBlockNodeView({ node, editor }: NodeViewProps) {
             >
               URL eingeben
             </button>
+          )}
+        </div>
+      </NodeViewWrapper>
+    );
+  }
+
+  const wikiNodeId = src ? extractWikiNodeId(src) : null;
+  if (wikiNodeId) {
+    return (
+      <NodeViewWrapper>
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 p-4 my-2">
+          <BookOpen className="h-5 w-5 text-amber-600 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              Interner Wiki-Link
+            </p>
+            <a
+              href={`/node/${wikiNodeId}`}
+              className="text-xs text-amber-600 dark:text-amber-300 hover:underline truncate block font-mono"
+            >
+              {src}
+            </a>
+          </div>
+          {editor.isEditable && (
+            <p className="text-[10px] text-amber-600 shrink-0 max-w-[130px] text-right leading-tight">
+              Tipp: Slash-Befehl «Wiki-Seite» für Inline-Links
+            </p>
           )}
         </div>
       </NodeViewWrapper>
@@ -1251,5 +1282,53 @@ function DiagramMetaReadOnly({
         </div>
       )}
     </div>
+  );
+}
+
+export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
+  const { nodeId, title, displayCode, templateType } = node.attrs as {
+    nodeId: string;
+    title: string;
+    displayCode?: string | null;
+    templateType?: string | null;
+  };
+  const [, navigate] = useLocation();
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!editor.isEditable && nodeId) {
+      e.preventDefault();
+      navigate(`/node/${nodeId}`);
+    }
+  };
+
+  const label = title || (nodeId ? nodeId.substring(0, 8) + "…" : "Wiki-Seite");
+  const tooltipText = templateType ? `${templateType}: ${label}` : label;
+
+  return (
+    <NodeViewWrapper as="span">
+      <span
+        contentEditable={false}
+        onClick={handleClick}
+        title={tooltipText}
+        className={[
+          "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md",
+          "bg-amber-50 text-amber-700 border border-amber-200",
+          "text-[0.8em] font-medium select-none align-middle",
+          !editor.isEditable
+            ? "cursor-pointer hover:bg-amber-100"
+            : "cursor-default",
+          "transition-colors",
+        ].join(" ")}
+      >
+        <BookOpen className="h-3 w-3 shrink-0" />
+        {displayCode && (
+          <span className="font-mono text-[10px] opacity-70">{displayCode}</span>
+        )}
+        <span className="max-w-[200px] truncate">{label}</span>
+        {!editor.isEditable && (
+          <ArrowRight className="h-2.5 w-2.5 shrink-0 opacity-50" />
+        )}
+      </span>
+    </NodeViewWrapper>
   );
 }

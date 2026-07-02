@@ -17,6 +17,7 @@ import {
   AlertCircle,
   GitBranch,
   GalleryHorizontalEnd,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -197,6 +198,16 @@ const SLASH_ITEMS: SlashMenuItem[] = [
         .focus()
         .setDiagramBlock({ diagramType: "flowchart" })
         .run();
+    },
+  },
+  {
+    title: "Wiki-Seite verlinken",
+    description: "Interne Wiki-Seite als Inline-Link einfügen",
+    icon: BookOpen,
+    category: "Verknüpfungen",
+    command: (editor, range) => {
+      editor.chain().focus().deleteRange(range).run();
+      window.dispatchEvent(new CustomEvent("editor:open-wiki-picker"));
     },
   },
 ];
