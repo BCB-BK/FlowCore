@@ -26,11 +26,11 @@ const RELATION_TO_CATEGORY: Record<string, string> = {
   linked: "Querverweise",
   cross_reference: "Querverweise",
   referenced: "Querverweise",
-  inline_wiki_link: "Inhalt",
+  inline_wiki_link: "Wiki-Link",
   parent_child: "Cluster",
 };
 
-const CATEGORY_ORDER = ["Querverweise", "Inhalt", "Cluster", "Verknüpfung"];
+const CATEGORY_ORDER = ["Querverweise", "Wiki-Link", "Cluster", "Verknüpfung"];
 
 function getCategory(relationType: string): string {
   return RELATION_TO_CATEGORY[relationType] ?? "Verknüpfung";

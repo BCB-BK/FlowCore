@@ -5,13 +5,80 @@ import {
   contentRevisionsTable,
   contentRevisionEventsTable,
   contentNodesTable,
+  contentRelationsTable,
   auditEventsTable,
 } from "@workspace/db/schema";
-import { eq, and, sql, notInArray, desc } from "drizzle-orm";
+import { eq, and, sql, notInArray, desc, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { validateForPublication } from "@workspace/shared/page-types";
 import { isSetupMode } from "./system-settings.service";
 import { isWorkflowActiveForPageType } from "./workflow.service";
+
+function extractWikiLinkTargets(content: unknown): string[] {
+  const nodeIds = new Set<string>();
+  function walk(node: unknown): void {
+    if (!node || typeof node !== "object") return;
+    const n = node as Record<string, unknown>;
+    if (n.type === "wikiLink" && n.attrs && typeof n.attrs === "object") {
+      const attrs = n.attrs as Record<string, unknown>;
+      if (typeof attrs.nodeId === "string" && attrs.nodeId) {
+        nodeIds.add(attrs.nodeId);
+      }
+    }
+    if (Array.isArray(n.content)) {
+      for (const child of n.content) walk(child);
+    }
+  }
+  walk(content);
+  return Array.from(nodeIds);
+}
+
+type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function syncInlineWikiLinks(
+  tx: DbOrTx,
+  sourceNodeId: string,
+  structuredFields: Record<string, unknown> | null | undefined,
+): Promise<void> {
+  const editorContent = structuredFields?._editorContent ?? null;
+  const targetNodeIds = extractWikiLinkTargets(editorContent).filter(
+    (id) => id !== sourceNodeId,
+  );
+
+  const existing = await tx
+    .select({
+      id: contentRelationsTable.id,
+      targetNodeId: contentRelationsTable.targetNodeId,
+    })
+    .from(contentRelationsTable)
+    .where(
+      and(
+        eq(contentRelationsTable.sourceNodeId, sourceNodeId),
+        eq(contentRelationsTable.relationType, "inline_wiki_link"),
+      ),
+    );
+
+  const existingTargets = new Set(existing.map((r) => r.targetNodeId));
+  const newTargets = new Set(targetNodeIds);
+
+  const toInsert = targetNodeIds.filter((id) => !existingTargets.has(id));
+  const toDelete = existing
+    .filter((r) => !newTargets.has(r.targetNodeId))
+    .map((r) => r.id);
+
+  for (const targetNodeId of toInsert) {
+    await tx
+      .insert(contentRelationsTable)
+      .values({ sourceNodeId, targetNodeId, relationType: "inline_wiki_link" })
+      .onConflictDoNothing();
+  }
+
+  if (toDelete.length > 0) {
+    await tx
+      .delete(contentRelationsTable)
+      .where(inArray(contentRelationsTable.id, toDelete));
+  }
+}
 
 export type WorkingCopyStatus =
   | "draft"
@@ -260,6 +327,10 @@ export async function updateWorkingCopy(
         resourceId: id,
         details: { nodeId: wc.nodeId },
       });
+    }
+
+    if (input.structuredFields !== undefined) {
+      await syncInlineWikiLinks(tx, wc.nodeId, input.structuredFields);
     }
 
     return updated;

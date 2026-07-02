@@ -26,6 +26,7 @@ export const relationTypeEnum = pgEnum("relation_type", [
   "downstream_of",
   "replaces",
   "references",
+  "inline_wiki_link",
 ]);
 
 export const templateTypeEnum = pgEnum("template_type", [

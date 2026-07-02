@@ -64,6 +64,13 @@
       "when": 1744070460000,
       "tag": "0009_add_workflow_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1751414400000,
+      "tag": "0010_add_inline_wiki_link_relation_type",
+      "breakpoints": true
     }
   ]
 }
