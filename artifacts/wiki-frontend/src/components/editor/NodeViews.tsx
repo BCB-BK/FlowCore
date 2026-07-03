@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
+import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from "@tiptap/react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -263,10 +263,7 @@ export function CalloutNodeView({ node, editor }: NodeViewProps) {
                 ))}
               </div>
             )}
-            <div
-              className="prose prose-sm dark:prose-invert"
-              data-node-view-content=""
-            />
+            <NodeViewContent className="prose prose-sm dark:prose-invert" />
           </div>
         </div>
       </div>
