@@ -347,14 +347,18 @@ export function BlockEditor({
   }, []);
 
   useEffect(() => {
-    const handleWikiPickerEvent = () => setWikiPickerOpen(true);
+    const handleWikiPickerEvent = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { editor?: unknown } | undefined;
+      if (detail?.editor !== editor) return;
+      setWikiPickerOpen(true);
+    };
     window.addEventListener("editor:open-wiki-picker", handleWikiPickerEvent);
     return () =>
       window.removeEventListener(
         "editor:open-wiki-picker",
         handleWikiPickerEvent,
       );
-  }, []);
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;

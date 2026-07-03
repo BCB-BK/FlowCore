@@ -218,7 +218,9 @@ const SLASH_ITEMS: SlashMenuItem[] = [
     category: "Verknüpfungen",
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).run();
-      window.dispatchEvent(new CustomEvent("editor:open-wiki-picker"));
+      window.dispatchEvent(
+        new CustomEvent("editor:open-wiki-picker", { detail: { editor } }),
+      );
     },
   },
 ];

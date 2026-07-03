@@ -70,7 +70,7 @@ export const procedureConfig: LayoutConfig = {
     { key: "risks", component: "risks_controls_table" },
     { key: "kpis", component: "kpi_table" },
     { key: "compliance", component: "editable", label: "Normbezug & Compliance", description: "Regulatorische Anforderungen, Normreferenzen und gesetzliche Vorgaben", icon: ShieldCheck, iconColor: "text-red-600", emptyText: "Kein Normbezug definiert", requirement: "recommended" },
-    { key: "relations", component: "editable", label: "Verknüpfungen & Querverweise", description: "Verknüpfte Prozesse, übergeordnete Dokumente und abhängige Seiten", icon: Link2, iconColor: "text-cyan-600", emptyText: "Keine Verknüpfungen dokumentiert", requirement: "recommended" },
+    { key: "relations", component: "section_block_editor", label: "Verknüpfungen & Querverweise", description: "Verknüpfte Prozesse, übergeordnete Dokumente und abhängige Seiten", icon: Link2, iconColor: "text-cyan-600", emptyText: "Keine Verknüpfungen dokumentiert", requirement: "recommended" },
     { key: "changelog", component: "editable", label: "Änderungshistorie", description: "Dokumentierte Änderungen mit Datum und Verantwortlichem", icon: History, iconColor: "text-gray-500", emptyText: "Keine Änderungen dokumentiert", requirement: "recommended" },
   ],
 };

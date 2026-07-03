@@ -33,6 +33,36 @@ function extractWikiLinkTargets(content: unknown): string[] {
   return Array.from(nodeIds);
 }
 
+/**
+ * TipTap-Feldinhalte in structuredFields können entweder als rohes JSON-Objekt
+ * (z. B. _editorContent) oder als JSON-String (z. B. section_block_editor-Felder
+ * wie "relations", "action_items") gespeichert sein. Wir scannen alle Werte,
+ * damit Wiki-Links aus jedem Rich-Text-Feld als Backlink erfasst werden.
+ */
+function extractAllWikiLinkTargets(
+  structuredFields: Record<string, unknown> | null | undefined,
+): string[] {
+  if (!structuredFields) return [];
+  const nodeIds = new Set<string>();
+
+  for (const value of Object.values(structuredFields)) {
+    let parsed: unknown = value;
+    if (typeof value === "string") {
+      try {
+        parsed = JSON.parse(value);
+      } catch {
+        continue;
+      }
+    }
+    if (!parsed || typeof parsed !== "object") continue;
+    for (const id of extractWikiLinkTargets(parsed)) {
+      nodeIds.add(id);
+    }
+  }
+
+  return Array.from(nodeIds);
+}
+
 type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 async function syncInlineWikiLinks(
@@ -40,8 +70,7 @@ async function syncInlineWikiLinks(
   sourceNodeId: string,
   structuredFields: Record<string, unknown> | null | undefined,
 ): Promise<void> {
-  const editorContent = structuredFields?._editorContent ?? null;
-  const targetNodeIds = extractWikiLinkTargets(editorContent).filter(
+  const targetNodeIds = extractAllWikiLinkTargets(structuredFields).filter(
     (id) => id !== sourceNodeId,
   );
 

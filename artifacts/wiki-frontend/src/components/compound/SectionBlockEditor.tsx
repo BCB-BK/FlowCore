@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import TaskList from "@tiptap/extension-task-list";
@@ -23,9 +23,14 @@ import {
   X,
   AlignLeft,
   AlignCenter,
+  BookOpen,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { FieldAiButton } from "@/components/ai/FieldAiButton";
+import { WikiLink } from "@/components/editor/extensions/wiki-link";
+import { WikiLinkNodeView } from "@/components/editor/NodeViews";
+import { SlashCommandMenu } from "@/components/editor/SlashCommandMenu";
+import { WikiNodePickerDialog } from "@/components/compound/WikiNodePickerDialog";
 
 function parseSectionContent(raw: string): JSONContent {
   if (!raw) return { type: "doc", content: [{ type: "paragraph" }] };
@@ -120,6 +125,21 @@ export function SectionBlockEditor({
   const [editing, setEditing] = useState(false);
   const isEditable = !readOnly && !!onSave;
 
+  const [slashMenu, setSlashMenu] = useState<{
+    isOpen: boolean;
+    position: { top: number; left: number };
+    range: { from: number; to: number };
+    query: string;
+  }>({
+    isOpen: false,
+    position: { top: 0, left: 0 },
+    range: { from: 0, to: 0 },
+    query: "",
+  });
+  const [wikiPickerOpen, setWikiPickerOpen] = useState(false);
+  const slashMenuRef = useRef(slashMenu);
+  slashMenuRef.current = slashMenu;
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -135,15 +155,54 @@ export function SectionBlockEditor({
       TaskList,
       TaskItem.configure({ nested: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      WikiLink.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(WikiLinkNodeView);
+        },
+      }),
     ],
     content: parseSectionContent(value),
     editable: false,
+    onUpdate: ({ editor: ed }) => {
+      const json = JSON.stringify(ed.getJSON());
+      if (json.includes('"/')) {
+        const { state } = ed;
+        const { from } = state.selection;
+        const textBefore = state.doc.textBetween(Math.max(0, from - 20), from, "");
+        const slashMatch = textBefore.match(/\/([^/]*)$/);
+
+        if (slashMatch) {
+          const coords = ed.view.coordsAtPos(from);
+          setSlashMenu({
+            isOpen: true,
+            position: { top: coords.bottom + 4, left: coords.left },
+            range: { from: from - slashMatch[0].length, to: from },
+            query: slashMatch[1],
+          });
+          return;
+        }
+      }
+      if (slashMenuRef.current.isOpen) {
+        setSlashMenu((prev) => ({ ...prev, isOpen: false }));
+      }
+    },
     editorProps: {
       attributes: {
         class: "prose prose-sm max-w-none focus:outline-none min-h-[100px] px-1",
       },
     },
   });
+
+  useEffect(() => {
+    const handleWikiPickerEvent = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { editor?: unknown } | undefined;
+      if (detail?.editor !== editor) return;
+      setWikiPickerOpen(true);
+    };
+    window.addEventListener("editor:open-wiki-picker", handleWikiPickerEvent);
+    return () =>
+      window.removeEventListener("editor:open-wiki-picker", handleWikiPickerEvent);
+  }, [editor]);
 
   const handleEdit = useCallback(() => {
     if (!editor) return;
@@ -252,6 +311,13 @@ export function SectionBlockEditor({
             <div className="w-px h-5 bg-border mx-0.5 self-center" />
             <ToolbarButton icon={AlignLeft} title="Linksbündig" onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} />
             <ToolbarButton icon={AlignCenter} title="Zentriert" onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} />
+            <div className="w-px h-5 bg-border mx-0.5 self-center" />
+            <ToolbarButton
+              icon={BookOpen}
+              title="Wiki-Seite verlinken"
+              onClick={() => setWikiPickerOpen(true)}
+              active={false}
+            />
           </div>
         )}
         {!editing && displayEmpty ? (
@@ -260,6 +326,36 @@ export function SectionBlockEditor({
           <EditorContent editor={editor} />
         )}
       </CardContent>
+      {editing && editor && (
+        <SlashCommandMenu
+          editor={editor}
+          isOpen={slashMenu.isOpen}
+          position={slashMenu.position}
+          range={slashMenu.range}
+          onClose={() => setSlashMenu((prev) => ({ ...prev, isOpen: false }))}
+          query={slashMenu.query}
+        />
+      )}
+      {wikiPickerOpen && (
+        <WikiNodePickerDialog
+          onSelect={(pickedNodeId, title, _url, templateType, displayCode) => {
+            if (editor) {
+              editor
+                .chain()
+                .focus()
+                .setWikiLink({
+                  nodeId: pickedNodeId,
+                  title,
+                  displayCode: displayCode ?? null,
+                  templateType: templateType ?? null,
+                })
+                .run();
+            }
+            setWikiPickerOpen(false);
+          }}
+          onClose={() => setWikiPickerOpen(false)}
+        />
+      )}
     </Card>
   );
 }
