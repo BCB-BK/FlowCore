@@ -23,7 +23,7 @@ import {
 } from "@workspace/ui/select";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
-import { getPageType } from "@/lib/types";
+import { getPageType, getRecommendedChildTypes } from "@/lib/types";
 import type { Cluster } from "@/lib/clusters";
 
 interface ChildNode {
@@ -40,7 +40,7 @@ interface DocRegistryViewProps {
   clusterGroups: { cluster: Cluster | null; children: ChildNode[] }[];
   allChildren: ChildNode[];
   canCreate: boolean;
-  onCreateInCluster: (clusterId: string | null) => void;
+  onCreateInCluster: (clusterId: string | null, presetType?: string) => void;
   onLinkInCluster?: (clusterId: string | null) => void;
   clusters?: Cluster[];
   onAssignToCluster?: (childId: string, clusterId: string | null) => void;
@@ -48,6 +48,7 @@ interface DocRegistryViewProps {
   linkedNodeIds?: Set<string>;
   onRemoveFromCluster?: (childId: string, clusterId: string) => void;
   onDeleteCluster?: (clusterId: string) => void;
+  parentTemplateType?: string;
 }
 
 const MAX_VISIBLE = 10;
@@ -392,6 +393,7 @@ export function DocRegistryView({
   linkedNodeIds,
   onRemoveFromCluster,
   onDeleteCluster,
+  parentTemplateType,
 }: DocRegistryViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
@@ -432,6 +434,11 @@ export function DocRegistryView({
 
   const showFilterBar = allChildren.length > 0;
 
+  const recommendedPresetTypes = useMemo(
+    () => (parentTemplateType ? getRecommendedChildTypes(parentTemplateType) : []),
+    [parentTemplateType],
+  );
+
   if (clusterGroups.length === 0) {
     const sorted = [...filteredFlatChildren].sort(
       (a, b) =>
@@ -445,15 +452,38 @@ export function DocRegistryView({
             Noch keine Seiten vorhanden
           </p>
           {canCreate && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => onCreateInCluster(null)}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Erste Seite anlegen
-            </Button>
+            <>
+              {recommendedPresetTypes.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                  {recommendedPresetTypes.map((type) => {
+                    const def = getPageType(type);
+                    if (!def) return null;
+                    return (
+                      <Button
+                        key={type}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onCreateInCluster(null, type)}
+                      >
+                        <PageTypeIcon iconName={def.icon} className="h-3.5 w-3.5 mr-1.5" />
+                        {def.labelDe ?? def.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+              <Button
+                variant={recommendedPresetTypes.length > 0 ? "ghost" : "outline"}
+                size="sm"
+                className="mt-3"
+                onClick={() => onCreateInCluster(null)}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
+                {recommendedPresetTypes.length > 0
+                  ? "Anderen Seitentyp anlegen"
+                  : "Erste Seite anlegen"}
+              </Button>
+            </>
           )}
         </div>
       );

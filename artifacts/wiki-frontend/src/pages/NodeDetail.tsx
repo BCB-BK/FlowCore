@@ -1052,9 +1052,10 @@ export function NodeDetail() {
                 linkedNodeIds={isOverviewPage ? linkedNodeIdSet : undefined}
                 onRemoveFromCluster={isOverviewPage && activeWC ? handleRemoveFromCluster : undefined}
                 onDeleteCluster={isOverviewPage ? handleDeleteCluster : undefined}
-                onCreateInCluster={(clusterId) => {
+                parentTemplateType={node.templateType}
+                onCreateInCluster={(clusterId, presetType) => {
                   setCreateInClusterId(clusterId);
-                  setCreatePresetType(undefined);
+                  setCreatePresetType(presetType);
                   setCreateDialogInitialMode("create");
                   setShowCreate(true);
                 }}
