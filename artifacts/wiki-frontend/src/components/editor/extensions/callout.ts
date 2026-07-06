@@ -44,6 +44,25 @@ export const Callout = Node.create<CalloutOptions>({
     ];
   },
 
+  addKeyboardShortcuts() {
+    return {
+      Backspace: () => {
+        const { selection } = this.editor.state;
+        const { $from, empty } = selection;
+
+        if (!empty || $from.parent.type.name !== this.name) {
+          return false;
+        }
+
+        if ($from.parentOffset > 0) {
+          return false;
+        }
+
+        return this.editor.commands.deleteNode(this.name);
+      },
+    };
+  },
+
   addCommands() {
     return {
       setCallout:
