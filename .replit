@@ -24,10 +24,6 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "API Server"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "typecheck-frontend"
 
 [[workflows.workflow.tasks]]
@@ -41,18 +37,6 @@ args = "build-frontend"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "code-quality"
-
-[[workflows.workflow]]
-name = "API Server"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/api-server run dev"
-waitForPort = 3001
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [[workflows.workflow]]
 name = "typecheck-frontend"
