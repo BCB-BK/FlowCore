@@ -98,6 +98,13 @@ die genaue Fallzahl schwankt mit normalem Content-Betrieb, die Root-Cause-
 Zuordnung bleibt unverändert gültig.
 
 ## 7. Live-Test (DEV-Workflow, `artifacts/wiki-frontend: web`)
+- Referenzabgleich zu den in `task-168.md` genannten PROD-Beispielknoten
+  `BER-016.KP-026`, `BER-015.KP-001`, `BER-016.KP-030`, `KP-013`, `KP-017`:
+  Alle fünf sind laut PROD-Bestand `core_process_overview`- bzw.
+  `area_overview`-Knoten und damit exakt die durch die Root Cause betroffene
+  Teilmenge; die DEV-Testknoten unten wurden bewusst als strukturell
+  äquivalente Stellvertreter genutzt (gleiche Seitentyp-/Flag-Kombination),
+  da DEV keine 1:1-Kopie der PROD-Knoten-IDs enthält.
 - **core_process_overview** (Node `e2e9017a-ddea-4bf8-8189-96fd11192609`, "HR",
   KP-002, vergleichbar mit PROD-Referenz `BER-016.KP-026`): Vorher zwei Blöcke
   (Screenshot/Code bestätigt), nachher genau ein Block "Bereiche & Prozesse"
@@ -127,7 +134,20 @@ Zuordnung bleibt unverändert gültig.
 
 ## 8. Tests
 - `typecheck-frontend` (`tsc --noEmit`, wiki-frontend): **grün**, keine Ausgabe.
-- `build-frontend`: **erfolgreich** (`✓ built in 28.23s`, 3130 Module).
+- `build-frontend`: **erfolgreich** (`✓ built in 24.75s`, 3130 Module).
+- `task-completion-audit`: **grün** (Ratio 14.3%, Schwelle 20%). Erste
+  Ausführung schlug fehl (`dead-import-check`): Beim Entfernen des
+  ~280-Zeilen-Inline-Blocks blieb der Type-Import `TemplateType` aus
+  `NodeDetail.tsx:45` ungenutzt zurück (frühere Treffer wie
+  `editTemplateType` sind Teilstrings, kein `\bTemplateType\b`-Wortmatch).
+  Entfernt; `dead-import-check` danach grün, `typecheck-frontend`/
+  `build-frontend` erneut grün bestätigt.
+- `route-contract-check`: bleibt rot (50 Abweichungen: 48 undokumentierte
+  Admin-/RBAC-/Delegations-/Glossar-/Media-/Token-Routen, 2 Client-Drift bei
+  `/admin/sessions`) — vollständig unabhängig von diesem Task; `git diff`
+  bestätigt, dass außer `NodeDetail.tsx`/`DocRegistryView.tsx` keine Datei in
+  `artifacts/api-server`, `lib/api-spec` oder `lib/api-client-react` verändert
+  wurde. Pre-existing, MUST_NOT_TOUCH laut Scope.
 - Vorbestehende, scope-fremde rote Checks (unverändert, nicht Teil dieses Fixes):
   - `API Server` (Legacy-Duplikat-Workflow, "port: nan" Konfigurationsfehler) —
     bereits vor diesem Task fehlerhaft, betrifft nicht `artifacts/api-server:

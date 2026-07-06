@@ -42,7 +42,6 @@ import {
   X,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
-import type { TemplateType } from "@/lib/types";
 import { parseClusters, groupChildrenByClusters, generateClusterId } from "@/lib/clusters";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
