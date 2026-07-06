@@ -40,8 +40,6 @@ import {
   ArrowRightLeft,
   Check,
   X,
-  Link2,
-  Layers,
 } from "lucide-react";
 import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
 import type { TemplateType } from "@/lib/types";
@@ -971,10 +969,23 @@ export function NodeDetail() {
             </div>
           )}
 
+          {isOverviewPage && (
+            <div className="mb-6 space-y-4">
+              <PageLayout
+                templateType={node.templateType}
+                structuredFields={structuredFields}
+              />
+            </div>
+          )}
+
           {showsClusterArea && (
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-semibold shrink-0">{pageDef?.labelDe ? `${pageDef.labelDe}-Inhalte` : "Inhalte"}</h3>
+                <h3 className="text-base font-semibold shrink-0">
+                  {isOverviewPage
+                    ? (node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten")
+                    : (pageDef?.labelDe ? `${pageDef.labelDe}-Inhalte` : "Inhalte")}
+                </h3>
                 {canCreate && (
                   <div className="flex items-center gap-2 flex-1 justify-end">
                     {showAddCluster ? (
@@ -1036,8 +1047,12 @@ export function NodeDetail() {
                 clusterGroups={clusterGroups}
                 allChildren={children ?? []}
                 canCreate={canCreate}
+                canEdit={isOverviewPage ? canEdit : undefined}
                 clusters={clusters}
                 onAssignToCluster={clusters.length > 0 ? handleAssignToCluster : undefined}
+                linkedNodeIds={isOverviewPage ? linkedNodeIdSet : undefined}
+                onRemoveFromCluster={isOverviewPage && activeWC ? handleRemoveFromCluster : undefined}
+                onDeleteCluster={isOverviewPage ? handleDeleteCluster : undefined}
                 onCreateInCluster={(clusterId) => {
                   setCreateInClusterId(clusterId);
                   setCreatePresetType(undefined);
@@ -1050,15 +1065,6 @@ export function NodeDetail() {
                   setCreateDialogInitialMode("link");
                   setShowCreate(true);
                 }}
-              />
-            </div>
-          )}
-
-          {isOverviewPage && (
-            <div className="mb-6 space-y-4">
-              <PageLayout
-                templateType={node.templateType}
-                structuredFields={structuredFields}
               />
             </div>
           )}
@@ -1083,292 +1089,6 @@ export function NodeDetail() {
                 sectionKey={getReferencesKey(node.templateType)}
                 nodeId={nodeId}
               />
-            </div>
-          )}
-
-          {isOverviewPage && (clusters.length > 0 ? (children && children.length > 0) : publishedChildren.length > 0) && (
-            <div className="mb-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold">
-                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : node.templateType === "area_overview" ? "Zugehörige Seiten" : "Untergeordnete Inhalte"}
-                </h3>
-                {canCreate && activeWC && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => { setCreatePresetType(undefined); setShowCreate(true); }}
-                >
-                  <Plus className="mr-1 h-4 w-4" />
-                  Hinzufügen
-                </Button>
-                )}
-              </div>
-
-              {(
-                clusters.length > 0 ? (
-                <div className="space-y-6">
-                  {clusterGroups.map(({ cluster, children: groupChildren }) => {
-                    if (!cluster?.id) {
-                      const hasNonEmptyCluster = clusterGroups.some(
-                        (g) => g.cluster?.id && g.children.length > 0,
-                      );
-                      if (!hasNonEmptyCluster) return null;
-                    }
-                    return (
-                    <div key={cluster?.id ?? "__unassigned__"} className="rounded-lg border bg-card">
-                      <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/40">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                          <Layers className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-semibold leading-tight">
-                            {cluster?.title ?? "Sonstige"}
-                          </h4>
-                        </div>
-                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 shrink-0">
-                          {groupChildren.length} {groupChildren.length === 1 ? "Seite" : "Seiten"}
-                        </Badge>
-                        {canEdit && cluster?.id && (
-                          <button
-                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1 rounded"
-                            aria-label="Cluster löschen"
-                            title="Cluster löschen"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void handleDeleteCluster(cluster.id);
-                            }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
-                      {groupChildren.length > 0 ? (
-                        <div className="divide-y">
-                          {groupChildren.map((child, idx) => {
-                            const childDef = getPageType(child.templateType);
-                            const clusterId = cluster?.id ?? "";
-                            return (
-                              <div
-                                key={child.id}
-                                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
-                                onClick={() => navigate(`/node/${child.id}`)}
-                              >
-                                <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">
-                                  {idx + 1}.
-                                </span>
-                                {childDef ? (
-                                  <div
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
-                                    style={{ backgroundColor: childDef.color }}
-                                  >
-                                    <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
-                                  </div>
-                                ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                                      {child.title}
-                                    </p>
-                                    {linkedNodeIdSet.has(child.id) && (
-                                      <span title="Verlinkte Seite (kein Kind dieser Seite)" className="shrink-0">
-                                        <Link2 className="h-3 w-3 text-muted-foreground" />
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs text-muted-foreground">{child.displayCode}</span>
-                                    {childDef && (
-                                      <span className="text-[10px] text-muted-foreground/70">{childDef.label}</span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="hidden sm:flex items-center gap-3 shrink-0 text-xs text-muted-foreground">
-                                  <span>{new Date(child.updatedAt).toLocaleDateString("de-DE")}</span>
-                                </div>
-                                <StatusBadge
-                                  status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
-                                  compact
-                                />
-                                {activeWC && canEdit && clusterId && (
-                                  <button
-                                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded ml-1"
-                                    aria-label={linkedNodeIdSet.has(child.id) ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      void handleRemoveFromCluster(child.id, clusterId);
-                                    }}
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </button>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className="px-4 py-3 text-sm text-muted-foreground">Noch keine Seiten in diesem Cluster</p>
-                      )}
-                    </div>
-                  );
-                  })}
-                </div>
-                ) : (
-                <div className="space-y-6">
-                  {allowedChildTypes.map((childType) => {
-                    const typeChildren = groupedChildren[childType] ?? [];
-                    const typeDef = getPageType(childType);
-                    if (typeChildren.length === 0) return null;
-                    return (
-                      <div key={childType} className="rounded-lg border bg-card">
-                        <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/40">
-                          <div className="flex items-center gap-3">
-                            {typeDef && (
-                              <div
-                                className="flex h-7 w-7 items-center justify-center rounded-md text-white shrink-0"
-                                style={{ backgroundColor: typeDef.color }}
-                              >
-                                <PageTypeIcon iconName={typeDef.icon} className="h-3.5 w-3.5" />
-                              </div>
-                            )}
-                            <h4 className="text-sm font-semibold">
-                              {PAGE_TYPE_LABELS[childType] ?? childType}
-                            </h4>
-                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
-                              {typeChildren.length}
-                            </Badge>
-                          </div>
-                          {canCreate && activeWC && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => { setCreatePresetType(childType); setShowCreate(true); }}
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Neu
-                          </Button>
-                          )}
-                        </div>
-                        <div className="divide-y">
-                          {typeChildren.map((child, idx) => {
-                            const childDef = getPageType(child.templateType);
-                            return (
-                              <div
-                                key={child.id}
-                                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
-                                onClick={() => navigate(`/node/${child.id}`)}
-                              >
-                                <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">
-                                  {idx + 1}.
-                                </span>
-                                {childDef ? (
-                                  <div
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
-                                    style={{ backgroundColor: childDef.color }}
-                                  >
-                                    <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
-                                  </div>
-                                ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                                    {child.title}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    {child.displayCode}
-                                  </p>
-                                </div>
-                                <div className="hidden sm:flex items-center gap-3 shrink-0 text-xs text-muted-foreground">
-                                  <span>{new Date(child.updatedAt).toLocaleDateString("de-DE")}</span>
-                                </div>
-                                <StatusBadge
-                                  status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
-                                  compact
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {Object.keys(groupedChildren).filter(
-                    (t) => !allowedChildTypes.includes(t as TemplateType)
-                  ).map((childType) => {
-                    const typeChildren = groupedChildren[childType] ?? [];
-                    const typeDef = getPageType(childType);
-                    return (
-                      <div key={childType} className="rounded-lg border bg-card">
-                        <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/40">
-                          {typeDef && (
-                            <div
-                              className="flex h-7 w-7 items-center justify-center rounded-md text-white shrink-0"
-                              style={{ backgroundColor: typeDef.color }}
-                            >
-                              <PageTypeIcon iconName={typeDef.icon} className="h-3.5 w-3.5" />
-                            </div>
-                          )}
-                          <h4 className="text-sm font-semibold">
-                            {PAGE_TYPE_LABELS[childType] ?? childType}
-                          </h4>
-                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
-                            {typeChildren.length}
-                          </Badge>
-                        </div>
-                        <div className="divide-y">
-                          {typeChildren.map((child, idx) => {
-                            const childDef = getPageType(child.templateType);
-                            return (
-                              <div
-                                key={child.id}
-                                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
-                                onClick={() => navigate(`/node/${child.id}`)}
-                              >
-                                <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">
-                                  {idx + 1}.
-                                </span>
-                                {childDef ? (
-                                  <div
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
-                                    style={{ backgroundColor: childDef.color }}
-                                  >
-                                    <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
-                                  </div>
-                                ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm group-hover:text-primary transition-colors">
-                                    {child.title}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    {child.displayCode}
-                                  </p>
-                                </div>
-                                <StatusBadge
-                                  status={child.status as Parameters<typeof StatusBadge>[0]["status"]}
-                                  compact
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                )
-              )}
             </div>
           )}
 

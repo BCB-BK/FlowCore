@@ -10,6 +10,7 @@ import {
   Link2,
   Filter,
   X,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
@@ -43,6 +44,10 @@ interface DocRegistryViewProps {
   onLinkInCluster?: (clusterId: string | null) => void;
   clusters?: Cluster[];
   onAssignToCluster?: (childId: string, clusterId: string | null) => void;
+  canEdit?: boolean;
+  linkedNodeIds?: Set<string>;
+  onRemoveFromCluster?: (childId: string, clusterId: string) => void;
+  onDeleteCluster?: (clusterId: string) => void;
 }
 
 const MAX_VISIBLE = 10;
@@ -60,18 +65,26 @@ function ClusterSection({
   cluster,
   children,
   canCreate,
+  canEdit,
   onCreateInCluster,
   onLinkInCluster,
   allClusters,
   onAssignToCluster,
+  linkedNodeIds,
+  onRemoveFromCluster,
+  onDeleteCluster,
 }: {
   cluster: Cluster | null;
   children: ChildNode[];
   canCreate: boolean;
+  canEdit?: boolean;
   onCreateInCluster: (clusterId: string | null) => void;
   onLinkInCluster?: (clusterId: string | null) => void;
   allClusters?: Cluster[];
   onAssignToCluster?: (childId: string, clusterId: string | null) => void;
+  linkedNodeIds?: Set<string>;
+  onRemoveFromCluster?: (childId: string, clusterId: string) => void;
+  onDeleteCluster?: (clusterId: string) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
   const [, navigate] = useLocation();
@@ -132,6 +145,19 @@ function ClusterSection({
             Neu
           </Button>
         )}
+        {canEdit && cluster?.id && onDeleteCluster && (
+          <button
+            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1 rounded"
+            aria-label="Cluster löschen"
+            title="Cluster löschen"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteCluster(cluster.id);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {visible.length > 0 ? (
@@ -160,9 +186,16 @@ function ClusterSection({
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm group-hover:text-primary transition-colors truncate">
-                      {child.title}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm group-hover:text-primary transition-colors truncate">
+                        {child.title}
+                      </p>
+                      {linkedNodeIds?.has(child.id) && (
+                        <span title="Verlinkte Seite (kein Kind dieser Seite)" className="shrink-0">
+                          <Link2 className="h-3 w-3 text-muted-foreground" />
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs text-muted-foreground">
                         {child.displayCode}
@@ -186,6 +219,19 @@ function ClusterSection({
                     compact
                   />
                 </div>
+                {canEdit && cluster?.id && onRemoveFromCluster && (
+                  <button
+                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded"
+                    aria-label={linkedNodeIds?.has(child.id) ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
+                    title={linkedNodeIds?.has(child.id) ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveFromCluster(child.id, cluster.id);
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
                 {canReassign && allClusters && (
                   <Select
                     value={NOT_ASSIGNED_SENTINEL}
@@ -342,6 +388,10 @@ export function DocRegistryView({
   onLinkInCluster,
   clusters,
   onAssignToCluster,
+  canEdit,
+  linkedNodeIds,
+  onRemoveFromCluster,
+  onDeleteCluster,
 }: DocRegistryViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
@@ -434,10 +484,14 @@ export function DocRegistryView({
             cluster={null}
             children={sorted}
             canCreate={canCreate}
+            canEdit={canEdit}
             onCreateInCluster={onCreateInCluster}
             onLinkInCluster={onLinkInCluster}
             allClusters={clusters}
             onAssignToCluster={onAssignToCluster}
+            linkedNodeIds={linkedNodeIds}
+            onRemoveFromCluster={onRemoveFromCluster}
+            onDeleteCluster={onDeleteCluster}
           />
         )}
       </div>
@@ -472,10 +526,14 @@ export function DocRegistryView({
             cluster={cluster}
             children={children}
             canCreate={canCreate}
+            canEdit={canEdit}
             onCreateInCluster={onCreateInCluster}
             onLinkInCluster={onLinkInCluster}
             allClusters={clusters}
             onAssignToCluster={onAssignToCluster}
+            linkedNodeIds={linkedNodeIds}
+            onRemoveFromCluster={onRemoveFromCluster}
+            onDeleteCluster={onDeleteCluster}
           />
         ))
       )}
