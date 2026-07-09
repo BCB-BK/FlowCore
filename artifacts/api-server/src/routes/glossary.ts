@@ -7,7 +7,7 @@ import { requirePermission } from "../middlewares/require-permission";
 import multer from "multer";
 import * as XLSX from "xlsx";
 import { reimportGlossarySeedTerms } from "../services/startup-seed.service";
-import { enqueueSync } from "../services/graph-sync-queue.service";
+import { recordEvent } from "../services/graph-change-feed.service";
 
 const router: IRouter = Router();
 
@@ -163,7 +163,7 @@ router.post(
         })
         .returning();
 
-      await enqueueSync({ itemType: "glossary", termId: created.id, operation: "upsert" });
+      await recordEvent({ itemType: "glossary", termId: created.id, eventType: "glossary_change" });
 
       res.status(201).json(created);
     } catch (err) {
@@ -226,7 +226,7 @@ router.patch(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await enqueueSync({ itemType: "glossary", termId: updated.id, operation: "upsert" });
+    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
     res.json(updated);
   },
 );
@@ -254,7 +254,7 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await enqueueSync({ itemType: "glossary", termId: updated.id, operation: "upsert" });
+    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
     res.json(updated);
   },
 );
@@ -276,7 +276,7 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await enqueueSync({ itemType: "glossary", termId: updated.id, operation: "upsert" });
+    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
     res.json(updated);
   },
 );
@@ -303,7 +303,7 @@ router.delete(
   async (req, res) => {
     const id = req.params.id as string;
     await db.delete(glossaryTermsTable).where(eq(glossaryTermsTable.id, id));
-    await enqueueSync({ itemType: "glossary", termId: id, operation: "delete" });
+    await recordEvent({ itemType: "glossary", termId: id, eventType: "delete" });
     res.status(204).send();
   },
 );

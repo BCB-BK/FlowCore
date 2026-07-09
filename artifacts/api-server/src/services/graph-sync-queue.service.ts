@@ -7,7 +7,14 @@ import {
 import { and, asc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import type { GraphSyncItemType } from "./graph-sync-state.service";
 
-export type GraphSyncQueueOperation = "upsert" | "delete";
+export type GraphSyncQueueOperation = "upsert" | "acl_update" | "delete" | "skip";
+export type GraphSyncQueueStatus =
+  | "queued"
+  | "processing"
+  | "synced"
+  | "failed"
+  | "skipped"
+  | "deleted";
 
 export interface EnqueueSyncInput {
   itemType: GraphSyncItemType;
@@ -29,7 +36,7 @@ export async function enqueueSync(input: EnqueueSyncInput): Promise<void> {
       and(
         eq(graphSyncQueueTable.itemType, input.itemType),
         eq(graphSyncQueueTable.operation, input.operation),
-        eq(graphSyncQueueTable.status, "pending"),
+        eq(graphSyncQueueTable.status, "queued"),
         input.nodeId
           ? eq(graphSyncQueueTable.nodeId, input.nodeId)
           : sql`${graphSyncQueueTable.nodeId} is null`,
@@ -72,7 +79,7 @@ export async function enqueueSyncForConfidentialityLevel(level: string): Promise
     );
 
   for (const row of rows) {
-    await enqueueSync({ itemType: "page", nodeId: row.nodeId, operation: "upsert" });
+    await enqueueSync({ itemType: "page", nodeId: row.nodeId, operation: "acl_update" });
   }
   return rows.length;
 }
@@ -94,7 +101,7 @@ export async function claimBatch(limit = 25) {
       .from(graphSyncQueueTable)
       .where(
         and(
-          eq(graphSyncQueueTable.status, "pending"),
+          eq(graphSyncQueueTable.status, "queued"),
           lte(graphSyncQueueTable.availableAt, new Date()),
         ),
       )
@@ -116,14 +123,36 @@ export async function claimBatch(limit = 25) {
 export async function completeSuccess(id: number): Promise<void> {
   await db
     .update(graphSyncQueueTable)
-    .set({ status: "success", updatedAt: new Date(), lastError: null })
+    .set({ status: "synced", updatedAt: new Date(), lastError: null })
+    .where(eq(graphSyncQueueTable.id, id));
+}
+
+/**
+ * Marks a job as skipped (e.g. content-hash dedup determined nothing
+ * changed). Terminal, non-error outcome.
+ */
+export async function completeSkipped(id: number): Promise<void> {
+  await db
+    .update(graphSyncQueueTable)
+    .set({ status: "skipped", updatedAt: new Date(), lastError: null })
+    .where(eq(graphSyncQueueTable.id, id));
+}
+
+/**
+ * Marks a job as deleted (the item was deindexed from Graph). Terminal,
+ * non-error outcome, distinct from "synced" (upsert confirmed).
+ */
+export async function completeDeleted(id: number): Promise<void> {
+  await db
+    .update(graphSyncQueueTable)
+    .set({ status: "deleted", updatedAt: new Date(), lastError: null })
     .where(eq(graphSyncQueueTable.id, id));
 }
 
 /**
  * Marks a job failed. Increments the attempt counter; if the job has
  * exhausted maxAttempts it is left in terminal "failed" status, otherwise
- * it goes back to "pending" with a short backoff so the next delta sync
+ * it goes back to "queued" with a short backoff so the next delta sync
  * run retries it (retry-with-limit).
  */
 export async function completeFailure(id: number, error: string): Promise<void> {
@@ -140,7 +169,7 @@ export async function completeFailure(id: number, error: string): Promise<void> 
     .update(graphSyncQueueTable)
     .set({
       attempts,
-      status: exhausted ? "failed" : "pending",
+      status: exhausted ? "failed" : "queued",
       lastError: error,
       availableAt: exhausted
         ? row.availableAt

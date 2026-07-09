@@ -17,7 +17,7 @@ import {
   stripSyncOnlyKeys,
   validateAgentMetadataPatch,
 } from "../lib/agent-metadata";
-import { enqueueSync } from "./graph-sync-queue.service";
+import { recordEvent } from "./graph-change-feed.service";
 
 function extractWikiLinkTargets(content: unknown): string[] {
   const nodeIds = new Set<string>();
@@ -549,7 +549,7 @@ async function autoPublishWorkingCopy(
 
     return result;
   }).then(async (result) => {
-    await enqueueSync({ itemType: "page", nodeId: wc.nodeId, operation: "upsert" });
+    await recordEvent({ itemType: "page", nodeId: wc.nodeId, eventType: "publish" });
     return result;
   });
 }
@@ -834,7 +834,7 @@ export async function publishWorkingCopy(
       },
     };
   }).then(async (result) => {
-    await enqueueSync({ itemType: "page", nodeId: wc.nodeId, operation: "upsert" });
+    await recordEvent({ itemType: "page", nodeId: wc.nodeId, eventType: "revision" });
     return result;
   });
 }

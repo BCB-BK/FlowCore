@@ -124,10 +124,11 @@ export const graphSyncLogTable = pgTable(
 export type GraphSyncLogEntry = typeof graphSyncLogTable.$inferSelect;
 
 /**
- * Cluster 6: durable work queue for delta sync. Triggers (publish, ACL
- * change, tag/relation change, glossary change, archive/delete, ...) enqueue
- * an upsert or delete operation here instead of syncing inline; the delta
- * sync job drains this queue with retry-with-limit semantics.
+ * Cluster 6/7 (GraphIndexQueue): durable work queue for delta sync. Fed by
+ * GraphIndexEventHandler (Cluster 7 change feed) as well as legacy direct
+ * enqueue calls; the delta sync job drains it with retry-with-limit
+ * semantics. Status vocabulary: queued -> processing -> (synced | failed |
+ * skipped | deleted). Operations: upsert | acl_update | delete | skip.
  */
 export const graphSyncQueueTable = pgTable(
   "graph_sync_queue",
@@ -137,7 +138,7 @@ export const graphSyncQueueTable = pgTable(
     nodeId: uuid("node_id"),
     termId: uuid("term_id"),
     operation: text("operation").notNull(),
-    status: text("status").notNull().default("pending"),
+    status: text("status").notNull().default("queued"),
     attempts: integer("attempts").notNull().default(0),
     maxAttempts: integer("max_attempts").notNull().default(3),
     lastError: text("last_error"),
@@ -158,3 +159,43 @@ export const graphSyncQueueTable = pgTable(
 );
 
 export type GraphSyncQueueEntry = typeof graphSyncQueueTable.$inferSelect;
+
+/**
+ * Cluster 7 (Change Feed / Index Queue aus FlowCore-Events):
+ * append-only, persistent log of raw FlowCore domain events (publish, new
+ * revision, ACL/rights change, archive, delete, agent_enabled toggle,
+ * glossary change, ...) that *may* require a Graph index change. This is
+ * intentionally separate from graph_sync_queue: the change feed records the
+ * fact that something happened in FlowCore, before any decision is made
+ * about whether/how to sync it. GraphDeltaDetector consumes unprocessed rows
+ * here, decides the operation (upsert/acl_update/delete/skip), and
+ * GraphIndexEventHandler enqueues the result into graph_sync_queue.
+ *
+ * Deduplication: a unique `dedup_key` (itemType + item ref + eventType,
+ * collapsed while a row is still unprocessed) means repeated identical
+ * FlowCore events collapse onto a single feed row instead of piling up.
+ */
+export const graphChangeFeedTable = pgTable(
+  "graph_change_feed",
+  {
+    id: serial("id").primaryKey(),
+    itemType: text("item_type").notNull(),
+    nodeId: uuid("node_id"),
+    termId: uuid("term_id"),
+    eventType: text("event_type").notNull(),
+    dedupKey: text("dedup_key").notNull(),
+    status: text("status").notNull().default("queued"),
+    detectedOperation: text("detected_operation"),
+    lastError: text("last_error"),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_graph_change_feed_status").on(table.status, table.createdAt),
+    index("idx_graph_change_feed_dedup").on(table.dedupKey),
+  ],
+);
+
+export type GraphChangeFeedEntry = typeof graphChangeFeedTable.$inferSelect;

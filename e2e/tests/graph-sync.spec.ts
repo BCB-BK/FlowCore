@@ -156,7 +156,7 @@ async function waitForQueueDrain(
     });
     expect(res.status()).toBe(200);
     lastResult = await res.json();
-    const pendingRes = await request.get(`${API}/graph-connector/sync/queue?status=pending`, {
+    const pendingRes = await request.get(`${API}/graph-connector/sync/queue?status=queued`, {
       headers: { "X-Dev-Principal-Id": ADMIN_A },
     });
     const { entries } = await pendingRes.json();
@@ -208,6 +208,11 @@ test.describe("Cluster 6 - Graph Sync Engine", () => {
   }) => {
     const term = await createGlossaryTerm(request, `C6-Glossar-Full-${Date.now()}`);
 
+    // Since Cluster 7, glossary creation immediately feeds the change feed and
+    // may already push the term to Graph before full sync runs. Full sync will
+    // then legitimately report it as "skipped" (content_hash_unchanged) rather
+    // than "success". Either way there must be a confirmed successful push
+    // recorded in the sync log for this item.
     const res = await request.post(`${API}/graph-connector/sync/full`, {
       headers: { "X-Dev-Principal-Id": ADMIN_A },
       data: { dryRun: false },
@@ -215,15 +220,18 @@ test.describe("Cluster 6 - Graph Sync Engine", () => {
     expect(res.status()).toBe(200);
     const summary = await res.json();
     expect(summary.glossary.total).toBeGreaterThanOrEqual(1);
-    expect(summary.glossary.success).toBeGreaterThanOrEqual(1);
+    expect(summary.glossary.success + summary.glossary.skipped).toBeGreaterThanOrEqual(1);
 
     const logRes = await request.get(
       `${API}/graph-connector/sync/log?itemId=flowcore_glossary_${term.id}&limit=5`,
       { headers: { "X-Dev-Principal-Id": ADMIN_A } },
     );
     const { entries } = await logRes.json();
-    expect(entries[0].result).toBe("success");
-    expect(entries[0].graphResponse).toBeTruthy();
+    const successEntry = entries.find(
+      (e: { result: string }) => e.result === "success",
+    );
+    expect(successEntry).toBeTruthy();
+    expect(successEntry.graphResponse).toBeTruthy();
   });
 
   test("publishing a new revision enqueues and delta-syncs the page with an updated contentHash", async ({
@@ -252,7 +260,7 @@ test.describe("Cluster 6 - Graph Sync Engine", () => {
     const wc = await wcRes.json();
     await publishWorkingCopy(request, wc.id, `${title} - überarbeitet`);
 
-    const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=pending`, {
+    const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=queued`, {
       headers: { "X-Dev-Principal-Id": ADMIN_A },
     });
     const { entries: queued } = await queueRes.json();
@@ -281,7 +289,7 @@ test.describe("Cluster 6 - Graph Sync Engine", () => {
 
     await createAndAssignTag(request, node.id, `graph-sync-e2e-${Date.now()}`);
 
-    const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=pending`, {
+    const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=queued`, {
       headers: { "X-Dev-Principal-Id": ADMIN_A },
     });
     const { entries: queued } = await queueRes.json();
@@ -310,7 +318,7 @@ test.describe("Cluster 6 - Graph Sync Engine", () => {
     expect(assignRes.status()).toBe(200);
 
     try {
-      const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=pending`, {
+      const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=queued`, {
         headers: { "X-Dev-Principal-Id": ADMIN_A },
       });
       const { entries: queued } = await queueRes.json();
@@ -354,7 +362,7 @@ test.describe("Cluster 6 - Graph Sync Engine", () => {
     });
     expect(deleteRes.status()).toBeLessThan(300);
 
-    const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=pending`, {
+    const queueRes = await request.get(`${API}/graph-connector/sync/queue?status=queued`, {
       headers: { "X-Dev-Principal-Id": ADMIN_A },
     });
     const { entries: queued } = await queueRes.json();

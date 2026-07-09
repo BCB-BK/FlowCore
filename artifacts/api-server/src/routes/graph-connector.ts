@@ -34,6 +34,7 @@ import { runDeltaSync } from "../services/graph-delta-sync.service";
 import { syncPage, syncGlossaryTerm } from "../services/graph-single-item-sync.service";
 import { listQueue } from "../services/graph-sync-queue.service";
 import { listSyncLog } from "../services/graph-sync-log.service";
+import { listChangeFeed } from "../services/graph-change-feed.service";
 
 export const graphConnectorRouter: IRouter = Router();
 
@@ -333,6 +334,21 @@ graphConnectorRouter.post(
       res.json(result);
     } catch (err) {
       handleError(res, err, "Failed to sync glossary term to Graph");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/change-feed",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      const rows = await listChangeFeed(status);
+      res.json({ entries: rows });
+    } catch (err) {
+      handleError(res, err, "Failed to load Graph change feed");
     }
   },
 );

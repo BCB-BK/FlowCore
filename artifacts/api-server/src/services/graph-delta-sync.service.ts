@@ -1,4 +1,10 @@
-import { claimBatch, completeSuccess, completeFailure } from "./graph-sync-queue.service";
+import {
+  claimBatch,
+  completeSuccess,
+  completeFailure,
+  completeSkipped,
+  completeDeleted,
+} from "./graph-sync-queue.service";
 import { syncPage, syncGlossaryTerm } from "./graph-single-item-sync.service";
 import { deindexItem } from "./graph-delete-handler.service";
 import { buildPageExternalItem, buildGlossaryExternalItem } from "./graph-schema-registration.service";
@@ -46,6 +52,11 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
 
   for (const job of jobs) {
     try {
+      if (job.operation === "skip") {
+        await completeSkipped(job.id);
+        continue;
+      }
+
       if (job.operation === "delete") {
         const itemId = job.itemType === "page" && job.nodeId
           ? await resolvePageItemId(job.nodeId)
@@ -57,9 +68,14 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
           reason: "delta_sync_delete",
         });
         summary.deindexed++;
-        await completeSuccess(job.id);
+        await completeDeleted(job.id);
         continue;
       }
+
+      // "upsert" and "acl_update" both push the current item (ACL is always
+      // recomputed as part of the push) - acl_update just means the trigger
+      // was a rights change rather than a content change.
+      let deindexedInline = false;
 
       if (job.itemType === "page" && job.nodeId) {
         try {
@@ -75,6 +91,7 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
               reason: "no_longer_indexable",
             });
             summary.deindexed++;
+            deindexedInline = true;
           } else {
             throw err;
           }
@@ -93,13 +110,18 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
               reason: "no_longer_indexable",
             });
             summary.deindexed++;
+            deindexedInline = true;
           } else {
             throw err;
           }
         }
       }
 
-      await completeSuccess(job.id);
+      if (deindexedInline) {
+        await completeDeleted(job.id);
+      } else {
+        await completeSuccess(job.id);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await completeFailure(job.id, message);

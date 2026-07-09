@@ -21,3 +21,11 @@ scenarios at a given confidentiality level, pick a test principal whose *global 
 disjoint from that level's `allowed_roles` — check `confidentiality_access_config` in the DB
 first. Otherwise the test will spuriously see access that has nothing to do with the
 mechanism under test.
+
+There is a third, even broader mechanism: a `role_assignments` row with `scope: "global"`
+(e.g. a `viewer` role) grants that principal read access to everything, independent of both
+of the above. If an e2e fixture principal meant to represent "unauthorized" ends up with a
+stray global role assignment (from manual debugging, a prior test, or seed drift), ACL-grant
+tests against it will report "skipped" (hash unchanged) instead of "success", because the
+principal already had implicit access before the explicit grant. Check `role_assignments`
+for the fixture principal's ID before assuming a sync/ACL test bug.
