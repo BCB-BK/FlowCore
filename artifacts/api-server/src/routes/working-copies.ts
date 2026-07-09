@@ -40,6 +40,7 @@ import {
   PublishWorkingCopyBody,
   CancelWorkingCopyBody,
 } from "@workspace/api-zod";
+import { containsAgentMetadataKeys } from "../lib/agent-metadata";
 
 const CommentBody = z.object({
   comment: z.string().min(1),
@@ -71,7 +72,11 @@ function mapServiceError(err: unknown): Error {
   ) {
     return new AppError(409, message, { code });
   }
-  if (message.includes("nicht erfüllt")) {
+  if (
+    message.includes("nicht erfüllt") ||
+    message.includes("Ungültiger") ||
+    message.includes("muss ein")
+  ) {
     return new AppError(400, message);
   }
   return err instanceof Error ? err : new Error(message);
@@ -179,6 +184,16 @@ router.patch(
       const guard = requireWcOwnerOrPermission("edit_working_copy");
       await guard(req, res, next);
     }
+  },
+  async (req: Request, res: Response, next: NextFunction) => {
+    const structuredFields = (req.body as { structuredFields?: unknown })
+      ?.structuredFields as Record<string, unknown> | undefined;
+    if (!containsAgentMetadataKeys(structuredFields)) {
+      next();
+      return;
+    }
+    const guard = requireWcPermission("manage_agent_metadata");
+    await guard(req, res, next);
   },
   validateBody(UpdateWorkingCopyBody),
   async (req, res) => {

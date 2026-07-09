@@ -1,5 +1,6 @@
 import { db } from "@workspace/db";
 import {
+  confidentialityAccessConfigTable,
   confidentialityPrincipalAccessTable,
   contentNodesTable,
   contentRevisionsTable,
@@ -256,6 +257,48 @@ export async function checkConfidentialityAccessBatch(
   }
 
   return result;
+}
+
+export interface AclMappingStatus {
+  level: ConfidentialityLevel | null;
+  confidentialityMapsToAcl: boolean;
+  aclPresent: boolean;
+}
+
+/**
+ * Cluster 3 indexability rule helper: determines whether a node's
+ * confidentiality level maps cleanly onto an access-control list, and
+ * whether that ACL actually has entries (i.e. isn't an empty/undefined
+ * access control list masquerading as valid).
+ */
+export async function getAclMappingStatus(
+  nodeId: string,
+): Promise<AclMappingStatus> {
+  const level = await getNodeConfidentialityLevel(nodeId);
+
+  if (!level) {
+    return { level: null, confidentialityMapsToAcl: false, aclPresent: false };
+  }
+
+  if (level === "public") {
+    return { level, confidentialityMapsToAcl: true, aclPresent: true };
+  }
+
+  const [config] = await db
+    .select({ allowedRoles: confidentialityAccessConfigTable.allowedRoles })
+    .from(confidentialityAccessConfigTable)
+    .where(eq(confidentialityAccessConfigTable.level, level));
+
+  const configHasRoles = !!config && config.allowedRoles.length > 0;
+
+  const principalAssignments = await getAssignmentsForLevel(level);
+  const aclPresent = configHasRoles || principalAssignments.length > 0;
+
+  return {
+    level,
+    confidentialityMapsToAcl: true,
+    aclPresent,
+  };
 }
 
 export async function getAssignmentsForLevel(level: string) {

@@ -13,6 +13,10 @@ import { logger } from "../lib/logger";
 import { validateForPublication } from "@workspace/shared/page-types";
 import { isSetupMode } from "./system-settings.service";
 import { isWorkflowActiveForPageType } from "./workflow.service";
+import {
+  stripSyncOnlyKeys,
+  validateAgentMetadataPatch,
+} from "../lib/agent-metadata";
 
 function extractWikiLinkTargets(content: unknown): string[] {
   const nodeIds = new Set<string>();
@@ -294,7 +298,8 @@ export async function updateWorkingCopy(
   if (input.content !== undefined) updateData.content = input.content;
   if (input.structuredFields !== undefined) {
     const existing = (wc.structuredFields as Record<string, unknown>) ?? {};
-    const incoming = input.structuredFields;
+    let incoming = stripSyncOnlyKeys(input.structuredFields);
+    incoming = validateAgentMetadataPatch(incoming);
     if (existing._clusters && !incoming._clusters) {
       incoming._clusters = existing._clusters;
     }

@@ -43,6 +43,13 @@ export const contentNodesTable = pgTable(
     searchVector: tsvector("search_vector"),
     isDeleted: boolean("is_deleted").notNull().default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    copilotIndexStatus: text("copilot_index_status")
+      .notNull()
+      .default("not_indexed"),
+    copilotIndexError: text("copilot_index_error"),
+    copilotLastIndexedAt: timestamp("copilot_last_indexed_at", {
+      withTimezone: true,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

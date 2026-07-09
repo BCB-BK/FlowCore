@@ -1,13 +1,23 @@
 import { Router, type IRouter } from "express";
+import { z } from "zod";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { validateBody } from "../middlewares/validate-body";
 import { projectPublishedPage } from "../services/copilot-content-projection.service";
 import { projectGlossaryTerm } from "../services/glossary-projection.service";
 import {
   exportPublishedPages,
   exportGlossaryTerms,
 } from "../services/published-content-export.service";
+import { setCopilotIndexStatus } from "../services/copilot-index-status.service";
+import { COPILOT_INDEX_STATUSES } from "../lib/agent-metadata";
+import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
+
+const SetIndexStatusBody = z.object({
+  status: z.enum(COPILOT_INDEX_STATUSES),
+  error: z.string().nullable().optional(),
+});
 
 export const copilotRouter: IRouter = Router();
 
@@ -67,6 +77,30 @@ copilotRouter.get(
     } catch (err) {
       logger.error({ err }, "Failed to export copilot glossary");
       res.status(500).json({ error: "Failed to export glossary" });
+    }
+  },
+);
+
+copilotRouter.patch(
+  "/pages/:id/index-status",
+  requireAuth,
+  requirePermission("manage_copilot_index_status"),
+  validateBody(SetIndexStatusBody),
+  async (req, res) => {
+    try {
+      await setCopilotIndexStatus(
+        String(req.params.id),
+        req.body.status,
+        req.body.error ?? null,
+      );
+      res.status(204).end();
+    } catch (err) {
+      if (err instanceof AppError) {
+        res.status(err.status).json({ error: err.message });
+        return;
+      }
+      logger.error({ err }, "Failed to set copilot index status");
+      res.status(500).json({ error: "Failed to set index status" });
     }
   },
 );

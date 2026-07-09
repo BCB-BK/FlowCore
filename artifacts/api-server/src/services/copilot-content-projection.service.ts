@@ -13,6 +13,11 @@ import { eq, and, desc, isNotNull } from "drizzle-orm";
 import { serializeProseMirrorContent } from "../lib/prosemirror-serializer";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
+import { getAclMappingStatus } from "./confidentiality.service";
+import {
+  extractAgentMetadata,
+  evaluateIndexability,
+} from "../lib/agent-metadata";
 
 const SOURCE_BASE_URL = "https://flowcore.bildungscampus-backnang.de";
 
@@ -47,6 +52,11 @@ export interface CopilotPageProjection {
   sourcePriority: number;
   brandScope: string[];
   agentScope: string[];
+  agentEnabled: boolean;
+  decisionStatus: string;
+  copilotSummary: string | null;
+  copilotKeywords: string[];
+  copilotIndexStatus: string;
   validFrom: string | null;
   reviewDue: string | null;
   sourceUrl: string;
@@ -115,6 +125,7 @@ export async function projectPublishedPage(
       ),
     );
   if (!node || !node.publishedRevisionId) return null;
+  if (node.status !== "published") return null;
 
   const [revision] = await db
     .select()
@@ -198,6 +209,19 @@ export async function projectPublishedPage(
       ? sf.summary
       : plaintext.slice(0, 400);
 
+  const agentMetadata = extractAgentMetadata(sf);
+  const aclStatus = await getAclMappingStatus(node.id);
+  const { indexable } = evaluateIndexability({
+    nodeStatus: node.status,
+    isDeleted: node.isDeleted,
+    publishedRevisionId: node.publishedRevisionId,
+    agentEnabled: agentMetadata.agentEnabled,
+    authorityLevel: agentMetadata.authorityLevel,
+    confidentialityMapsToAcl: aclStatus.confidentialityMapsToAcl,
+    aclPresent: aclStatus.aclPresent,
+  });
+  if (!indexable) return null;
+
   const contentHash = stableContentHash({
     content: revision.content ?? null,
     structuredFields: revision.structuredFields ?? null,
@@ -236,6 +260,11 @@ export async function projectPublishedPage(
     sourcePriority,
     brandScope: deriveBrandScope(tags),
     agentScope: agentScope as string[],
+    agentEnabled: agentMetadata.agentEnabled,
+    decisionStatus: agentMetadata.decisionStatus,
+    copilotSummary: agentMetadata.copilotSummary,
+    copilotKeywords: agentMetadata.copilotKeywords,
+    copilotIndexStatus: node.copilotIndexStatus,
     validFrom: revision.validFrom ? revision.validFrom.toISOString() : null,
     reviewDue: revision.nextReviewDate
       ? revision.nextReviewDate.toISOString()

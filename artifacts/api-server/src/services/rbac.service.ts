@@ -57,7 +57,9 @@ export type WikiPermission =
   | "publish_working_copy"
   | "cancel_working_copy"
   | "force_unlock_working_copy"
-  | "export_copilot_content";
+  | "export_copilot_content"
+  | "manage_agent_metadata"
+  | "manage_copilot_index_status";
 
 const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
   system_admin: [
@@ -100,6 +102,8 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "cancel_working_copy",
     "force_unlock_working_copy",
     "export_copilot_content",
+    "manage_agent_metadata",
+    "manage_copilot_index_status",
   ],
   process_manager: [
     "read_page",
@@ -124,6 +128,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "review_working_copy",
     "amend_working_copy_in_review",
     "export_copilot_content",
+    "manage_agent_metadata",
   ],
   editor: [
     "read_page",
@@ -140,6 +145,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "edit_working_copy",
     "submit_working_copy",
     "cancel_working_copy",
+    "manage_agent_metadata",
   ],
   reviewer: [
     "read_page",

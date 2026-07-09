@@ -34,6 +34,11 @@ async function createAndPublishNode(
           },
         ],
       },
+      structuredFields: {
+        agent_enabled: true,
+        authority_level: "binding",
+        confidentiality: "public",
+      },
     },
   });
   expect(patchRes.status()).toBe(200);
