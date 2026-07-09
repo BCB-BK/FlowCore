@@ -16,12 +16,28 @@ import {
   registerPageExternalItem,
   registerGlossaryExternalItem,
 } from "../services/graph-schema-registration.service";
+import { previewAclForNode } from "../services/graph-acl-mapping.service";
+import { getNodeConfidentialityLevel } from "../services/confidentiality.service";
+import {
+  GRAPH_ACL_TIERS,
+  getGroupMapping,
+  listGroupMappings,
+  upsertGroupMapping,
+} from "../services/graph-external-group-mapping.service";
+import { db } from "@workspace/db";
+import { graphAclSyncLogTable } from "@workspace/db/schema";
+import { desc } from "drizzle-orm";
 import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
 
 export const graphConnectorRouter: IRouter = Router();
 
 const DryRunBody = z.object({ dryRun: z.boolean().optional().default(true) });
+
+const GroupMappingBody = z.object({
+  entraGroupId: z.string().min(1),
+  label: z.string().optional(),
+});
 
 function handleError(res: import("express").Response, err: unknown, fallback: string) {
   if (err instanceof AppError) {
@@ -152,6 +168,100 @@ graphConnectorRouter.post(
       res.json(result);
     } catch (err) {
       handleError(res, err, "Failed to register glossary externalItem");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/acl-preview/:nodeId",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const nodeId = String(req.params.nodeId);
+      const level = await getNodeConfidentialityLevel(nodeId);
+      if (!level) {
+        throw new AppError(404, "Knoten nicht gefunden");
+      }
+      const preview = await previewAclForNode(nodeId, level);
+      res.json(preview);
+    } catch (err) {
+      handleError(res, err, "Failed to build ACL preview");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/group-mappings",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (_req, res) => {
+    try {
+      const mappings = await listGroupMappings();
+      res.json({ tiers: GRAPH_ACL_TIERS, mappings });
+    } catch (err) {
+      handleError(res, err, "Failed to load group mappings");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/group-mappings/:tier",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const tier = req.params.tier as (typeof GRAPH_ACL_TIERS)[number];
+      if (!GRAPH_ACL_TIERS.includes(tier)) {
+        throw new AppError(400, `Unbekannte ACL-Stufe "${req.params.tier}"`);
+      }
+      const mapping = await getGroupMapping(tier);
+      res.json(mapping);
+    } catch (err) {
+      handleError(res, err, "Failed to load group mapping");
+    }
+  },
+);
+
+graphConnectorRouter.put(
+  "/group-mappings/:tier",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  validateBody(GroupMappingBody),
+  async (req, res) => {
+    try {
+      const tier = req.params.tier as (typeof GRAPH_ACL_TIERS)[number];
+      if (!GRAPH_ACL_TIERS.includes(tier)) {
+        throw new AppError(400, `Unbekannte ACL-Stufe "${req.params.tier}"`);
+      }
+      const updated = await upsertGroupMapping(
+        tier,
+        req.body.entraGroupId,
+        req.body.label,
+        req.user!.principalId,
+      );
+      res.json(updated);
+    } catch (err) {
+      handleError(res, err, "Failed to update group mapping");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/sync-log",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const limit = Math.min(Number(req.query.limit) || 50, 200);
+      const rows = await db
+        .select()
+        .from(graphAclSyncLogTable)
+        .orderBy(desc(graphAclSyncLogTable.createdAt))
+        .limit(limit);
+      res.json({ entries: rows });
+    } catch (err) {
+      handleError(res, err, "Failed to load Graph ACL sync log");
     }
   },
 );

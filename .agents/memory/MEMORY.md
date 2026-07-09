@@ -3,3 +3,4 @@
 - [Working-copy PATCH error mapping](working-copy-error-mapping.md) — service-thrown validation `Error`s must be pattern-matched in the route's `mapServiceError` or they silently become 500s instead of 400s.
 - [Copilot indexability rule](copilot-indexability-rule.md) — a page is only Copilot/Graph-exportable when published + agent_enabled + authority_level valid + confidentiality maps to a non-empty ACL; changing this list changes what old tests assume is exportable.
 - [Graph externalItem required fields](graph-external-item-required-fields.md) — owner/reviewDue are optional Graph schema properties, not indexability-blocking required fields.
+- [Confidentiality allowed_roles vs per-principal grants](confidentiality-access-model.md) — role-based allowed_roles can silently grant access independent of explicit principal assignment; pick test principals carefully.

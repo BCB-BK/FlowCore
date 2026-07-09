@@ -3,7 +3,7 @@ import { getAppAccessToken } from "./auth.service";
 import { requireGraphConnectionId } from "./graph-connector-config.service";
 import { projectPublishedPage } from "./copilot-content-projection.service";
 import { projectGlossaryTerm } from "./glossary-projection.service";
-import { buildAclForConfidentialityLevel } from "./graph-acl.service";
+import { buildAclForItem } from "./graph-acl-mapping.service";
 import {
   mapPageToExternalItem,
   mapGlossaryToExternalItem,
@@ -59,6 +59,17 @@ async function pushExternalItem(
  * or if required fields are missing — never returns a partial/fabricated
  * payload.
  */
+function mapAclErrorToAppError(err: unknown, context: string): never {
+  if (err instanceof AppError) throw err;
+  const reason =
+    err && typeof err === "object" && "reason" in err
+      ? String((err as { reason: unknown }).reason)
+      : "unknown_error";
+  const message =
+    err instanceof Error ? err.message : `ACL für ${context} nicht ermittelbar`;
+  throw new AppError(422, message, { details: { reason }, exposeDetails: true });
+}
+
 export async function registerPageExternalItem(
   nodeId: string,
   dryRun = true,
@@ -72,7 +83,20 @@ export async function registerPageExternalItem(
   }
 
   const level = (projection.confidentiality ?? "public") as ConfidentialityLevel;
-  const acl = await buildAclForConfidentialityLevel(level);
+  const itemId = `flowcore_page_${projection.immutableId}`;
+
+  let acl;
+  try {
+    acl = await buildAclForItem({
+      itemId,
+      itemType: "page",
+      nodeId: projection.nodeId,
+      level,
+    });
+  } catch (err) {
+    mapAclErrorToAppError(err, `Seite ${nodeId}`);
+  }
+
   const item = mapPageToExternalItem(projection, acl);
 
   return pushExternalItem(item, dryRun);
@@ -81,7 +105,8 @@ export async function registerPageExternalItem(
 /**
  * Builds (and optionally pushes) the externalItem for a glossary term.
  * Glossary terms have no confidentiality field of their own, so they are
- * treated as "public" ACL (everyone) by default.
+ * always resolved via the "internal_standard" tier (a defined internal
+ * default group — never "everyone", and fail-closed if unconfigured).
  */
 export async function registerGlossaryExternalItem(
   termId: string,
@@ -92,7 +117,20 @@ export async function registerGlossaryExternalItem(
     throw new AppError(404, "Glossarbegriff nicht gefunden oder nicht exportierbar");
   }
 
-  const acl = await buildAclForConfidentialityLevel("public");
+  const itemId = `flowcore_glossary_${projection.termId}`;
+
+  let acl;
+  try {
+    acl = await buildAclForItem({
+      itemId,
+      itemType: "glossary",
+      nodeId: null,
+      level: "internal" as ConfidentialityLevel,
+    });
+  } catch (err) {
+    mapAclErrorToAppError(err, `Glossarbegriff ${termId}`);
+  }
+
   const item = mapGlossaryToExternalItem(projection, acl);
 
   return pushExternalItem(item, dryRun);
