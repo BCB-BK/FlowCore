@@ -1,0 +1,82 @@
+Cluster 1 – Ist-Analyse: FlowCore Content-, Auth-, Graph- und Rechtepfade
+Ziel
+
+Vor der Umsetzung muss Replit den realen FlowCore-Codebestand analysieren und dokumentieren, welche Datenquellen, API-Routen, Auth-Mechanismen, Graph-/SharePoint-Integrationen und Rechteprüfungen bereits existieren.
+
+Ausgangsbefund
+
+FlowCore hat bereits SharePoint-/Graph-API-Anbindungen, Benutzer-/Rollenlogik, Freigabeprozesse, Arbeitskopien, Versionen und veröffentlichte Seiten. Unklar ist, ob diese Logiken bereits für Copilot-/Graph-Zugriff sauber nutzbar sind.
+
+Scope
+
+Replit prüft:
+
+bestehende Microsoft Graph / SharePoint Konfiguration
+Authentifizierung / Entra-ID / User-Mapping
+FlowCore-RBAC
+Rollen, Gruppen, Berechtigungen
+Seitenstatus: Arbeitskopie, Entwurf, Review, freigegeben, archiviert
+Versionen / Revisionen
+relevante API-Routen
+Suchlogik
+bestehende SharePoint-Datei-/Wissensquellen-Anbindung
+Datenmodell für Tags, Relationen, Owner, Vertraulichkeit
+Admin-Einstellungen
+Nicht-Scope
+
+Keine Implementierung in Cluster 1.
+Keine Quickfixes.
+Keine DB-Patches.
+Keine neuen APIs.
+
+Datei-Impact-Liste
+
+Replit muss die echte Datei-Impact-Liste selbst ermitteln.
+
+Erwartete Bereiche:
+
+server/routes*
+server/auth*
+server/graph*
+server/sharepoint*
+server/search*
+server/db*
+shared/schema*
+client/src/pages/settings*
+client/src/components*
+migrations/*
+docs/*
+Implementierungsanforderung
+
+Erstelle einen technischen Ist-Bericht:
+
+docs/copilot-readiness/01-current-state-audit.md
+
+Der Bericht muss enthalten:
+
+relevante Tabellen
+relevante API-Routen
+Auth-Flows
+RBAC-Flows
+Status-/Freigabe-Logik
+Published-Content-Erkennung
+Graph-/SharePoint-Konfiguration
+Lückenliste
+technische Risiken
+empfohlene Implementierungsreihenfolge
+Tests
+
+Keine Produktivtests erforderlich, aber statische Codeanalyse und API-/DB-Pfadprüfung.
+
+Live-Completion
+
+Nicht erforderlich, da Analysecluster.
+
+Evidenz
+Auditbericht
+Datei-/Codepfadliste
+Datenkettenübersicht
+offene technische Blocker
+Definition of Done
+
+BESTANDEN nur, wenn der reale Ist-Zustand nachvollziehbar dokumentiert ist und daraus die Folgecluster technisch belastbar umgesetzt werden können.
