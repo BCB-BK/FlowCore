@@ -87,3 +87,15 @@ export async function upsertGroupMapping(
     updatedAt: inserted.updatedAt,
   };
 }
+
+/**
+ * Removes a configured Entra group mapping for a tier, returning the ACL
+ * for that tier to its fail-closed "unconfigured" state (never falls back
+ * to "everyone" - callers of buildGroupTierAcl will throw until a new
+ * mapping is configured).
+ */
+export async function deleteGroupMapping(tier: GraphAclTier): Promise<void> {
+  await db
+    .delete(graphGroupMappingsTable)
+    .where(eq(graphGroupMappingsTable.tier, tier));
+}

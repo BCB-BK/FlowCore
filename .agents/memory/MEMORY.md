@@ -8,3 +8,4 @@
 - [Four-eyes review/publish in e2e helpers](four-eyes-e2e-helper.md) — approve/publish must use a different principal than submit, or requests 403 with sodRule four_eyes_review/four_eyes_publish.
 - [Confidentiality access grants](confidentiality-access-grants.md) — only node owner/reviewer/approver or explicit grant bypasses confidentiality; the plain author/creator of a page is NOT automatically granted access.
 - [Glossary terms lack own governance fields](glossary-governance-fallback.md) — version/revision/authority/owner/reviewDue must be derived from a linked content node when present, else left null; never fabricate placeholder values.
+- [Forcing "unmapped ACL" in e2e tests](graph-acl-fail-closed-testing.md) — node owner + all allowed_roles holders resolve via RBAC regardless of test setup; must unmap via direct SQL to genuinely test no_entra_mapping/no_authorized_principals.

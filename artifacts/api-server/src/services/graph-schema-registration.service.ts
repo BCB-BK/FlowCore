@@ -12,7 +12,7 @@ import {
 import type { ConfidentialityLevel } from "./confidentiality.service";
 import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
-import { isGraphSyncMockMode } from "./system-settings.service";
+import { isGraphSyncMockMode, getGraphFaultInjection } from "./system-settings.service";
 import { createHash } from "node:crypto";
 
 function combineWithAclHash(contentHash: string, acl: unknown): string {
@@ -34,9 +34,37 @@ async function getGraphClient(): Promise<Client> {
 export async function pushExternalItem(
   item: GraphExternalItem,
   dryRun: boolean,
-): Promise<{ dryRun: boolean; item: GraphExternalItem; status?: string; graphResponse?: unknown }> {
+): Promise<{
+  dryRun: boolean;
+  item: GraphExternalItem;
+  status?: string;
+  graphResponse?: unknown;
+  graphResponseCode?: number;
+}> {
   if (dryRun) {
     return { dryRun: true, item };
+  }
+
+  const fault = await getGraphFaultInjection();
+  if (fault === "auth_unconfigured") {
+    logger.error(
+      { itemId: item.id },
+      "Graph sync blocked: fault injection simulating missing Graph credentials (dev/test only)",
+    );
+    throw new AppError(
+      502,
+      "Kein gültiges Microsoft Graph Access Token verfügbar (Entra-Konfiguration/Secret fehlt)",
+    );
+  }
+  if (fault === "api_error") {
+    logger.error(
+      { itemId: item.id },
+      "Graph sync failed: fault injection simulating Graph API error (dev/test only)",
+    );
+    throw new AppError(502, "Simulierter Microsoft Graph API Fehler (Fault Injection)", {
+      details: { graphResponseCode: 500 },
+      exposeDetails: true,
+    });
   }
 
   if (await isGraphSyncMockMode()) {
@@ -46,6 +74,7 @@ export async function pushExternalItem(
       item,
       status: "pushed",
       graphResponse: { acknowledged: true, mock: true },
+      graphResponseCode: 200,
     };
   }
 
@@ -68,7 +97,13 @@ export async function pushExternalItem(
     });
   }
 
-  return { dryRun: false, item, status: "pushed", graphResponse: graphResponse ?? { acknowledged: true } };
+  return {
+    dryRun: false,
+    item,
+    status: "pushed",
+    graphResponse: graphResponse ?? { acknowledged: true },
+    graphResponseCode: 200,
+  };
 }
 
 /**
@@ -80,9 +115,28 @@ export async function pushExternalItem(
 export async function deleteExternalItem(
   itemId: string,
   dryRun: boolean,
-): Promise<{ dryRun: boolean; itemId: string; status?: string; graphResponse?: unknown }> {
+): Promise<{
+  dryRun: boolean;
+  itemId: string;
+  status?: string;
+  graphResponse?: unknown;
+  graphResponseCode?: number;
+}> {
   if (dryRun) {
     return { dryRun: true, itemId, status: "would_delete" };
+  }
+
+  const fault = await getGraphFaultInjection();
+  if (fault === "auth_unconfigured") {
+    logger.error({ itemId }, "Graph deindex blocked: fault injection simulating missing Graph credentials (dev/test only)");
+    throw new AppError(502, "Kein gültiges Microsoft Graph Access Token verfügbar (Entra-Konfiguration/Secret fehlt)");
+  }
+  if (fault === "api_error") {
+    logger.error({ itemId }, "Graph deindex failed: fault injection simulating Graph API error (dev/test only)");
+    throw new AppError(502, "Simulierter Microsoft Graph API Fehler (Fault Injection)", {
+      details: { graphResponseCode: 500 },
+      exposeDetails: true,
+    });
   }
 
   if (await isGraphSyncMockMode()) {
@@ -92,6 +146,7 @@ export async function deleteExternalItem(
       itemId,
       status: "deleted",
       graphResponse: { acknowledged: true, mock: true },
+      graphResponseCode: 200,
     };
   }
 
@@ -108,7 +163,13 @@ export async function deleteExternalItem(
         ? (err as { statusCode?: number }).statusCode
         : undefined;
     if (status === 404) {
-      return { dryRun: false, itemId, status: "already_absent", graphResponse: { statusCode: 404 } };
+      return {
+        dryRun: false,
+        itemId,
+        status: "already_absent",
+        graphResponse: { statusCode: 404 },
+        graphResponseCode: 404,
+      };
     }
     logger.error({ err, connectionId, itemId }, "Failed to delete Graph externalItem");
     throw new AppError(502, "Löschen des externalItem in Microsoft Graph fehlgeschlagen", {
@@ -117,7 +178,13 @@ export async function deleteExternalItem(
     });
   }
 
-  return { dryRun: false, itemId, status: "deleted", graphResponse: { acknowledged: true } };
+  return {
+    dryRun: false,
+    itemId,
+    status: "deleted",
+    graphResponse: { acknowledged: true },
+    graphResponseCode: 200,
+  };
 }
 
 /**
@@ -125,9 +192,21 @@ export async function deleteExternalItem(
  * Throws (via mapAclErrorToAppError / AppError(404)) if the page is not
  * indexable - never returns a partial/fabricated payload.
  */
+export interface BuiltExternalItem {
+  item: GraphExternalItem;
+  contentHash: string;
+  version: string | null;
+  revision: number | null;
+  aclHash: string;
+}
+
+function hashAcl(acl: unknown): string {
+  return createHash("sha256").update(JSON.stringify(acl ?? [])).digest("hex");
+}
+
 export async function buildPageExternalItem(
   nodeId: string,
-): Promise<{ item: GraphExternalItem; contentHash: string }> {
+): Promise<BuiltExternalItem> {
   const projection = await projectPublishedPage(nodeId);
   if (!projection) {
     throw new AppError(
@@ -152,7 +231,13 @@ export async function buildPageExternalItem(
   }
 
   const item = mapPageToExternalItem(projection, acl);
-  return { item, contentHash: combineWithAclHash(projection.contentHash, acl) };
+  return {
+    item,
+    contentHash: combineWithAclHash(projection.contentHash, acl),
+    version: projection.version ?? null,
+    revision: projection.revision ?? null,
+    aclHash: hashAcl(acl),
+  };
 }
 
 /**
@@ -161,7 +246,7 @@ export async function buildPageExternalItem(
  */
 export async function buildGlossaryExternalItem(
   termId: string,
-): Promise<{ item: GraphExternalItem; contentHash: string }> {
+): Promise<BuiltExternalItem> {
   const projection = await projectGlossaryTerm(termId);
   if (!projection) {
     throw new AppError(404, "Glossarbegriff nicht gefunden oder nicht exportierbar");
@@ -182,7 +267,13 @@ export async function buildGlossaryExternalItem(
   }
 
   const item = mapGlossaryToExternalItem(projection, acl);
-  return { item, contentHash: combineWithAclHash(projection.contentHash, acl) };
+  return {
+    item,
+    contentHash: combineWithAclHash(projection.contentHash, acl),
+    version: projection.version ?? null,
+    revision: projection.revision ?? null,
+    aclHash: hashAcl(acl),
+  };
 }
 
 /**

@@ -59,6 +59,12 @@ function loadConfig(): AppConfig {
     );
   }
 
+  if (config.nodeEnv === "production" && config.authDevMode) {
+    throw new Error(
+      "AUTH_DEV_MODE must not be enabled in production (dev-auth-bypass is forbidden in production)",
+    );
+  }
+
   return config;
 }
 

@@ -1,5 +1,6 @@
 import { db, systemSettingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { appConfig } from "../lib/config";
 
 export async function getSystemSetting(key: string): Promise<string | null> {
   const [row] = await db
@@ -46,6 +47,24 @@ export async function isSetupMode(): Promise<boolean> {
 }
 
 export async function isGraphSyncMockMode(): Promise<boolean> {
+  // Fail-closed: a mock success can never mask a real Graph failure in
+  // production, regardless of what is stored in system_settings.
+  if (appConfig.nodeEnv === "production") return false;
   const val = await getSystemSetting("graph_sync_mock_mode");
   return val === "true";
+}
+
+export type GraphFaultInjection = "none" | "auth_unconfigured" | "api_error";
+
+/**
+ * Dev/test-only fault injection to exercise fail-closed Graph sync paths
+ * (missing credentials, Graph API errors) end-to-end without touching real
+ * secrets. Always disabled in production — never usable to hide a real
+ * failure or bypass auth in a live environment.
+ */
+export async function getGraphFaultInjection(): Promise<GraphFaultInjection> {
+  if (appConfig.nodeEnv === "production") return "none";
+  const val = await getSystemSetting("graph_sync_fault_injection");
+  if (val === "auth_unconfigured" || val === "api_error") return val;
+  return "none";
 }

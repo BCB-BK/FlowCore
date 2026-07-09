@@ -104,6 +104,7 @@ export const graphSyncLogTable = pgTable(
     itemId: text("item_id").notNull(),
     itemType: text("item_type").notNull(),
     nodeId: uuid("node_id"),
+    termId: uuid("term_id"),
     operation: text("operation").notNull(),
     result: text("result").notNull(),
     reason: text("reason"),
@@ -111,6 +112,23 @@ export const graphSyncLogTable = pgTable(
     graphResponse: jsonb("graph_response"),
     dryRun: boolean("dry_run").notNull().default(false),
     attempt: integer("attempt").notNull().default(1),
+    // Audit fields required for Cluster 11 (Security Hardening):
+    // who/what triggered the export/sync (principal displayName/id, or
+    // "system" for background jobs).
+    actor: text("actor"),
+    // version/revision label of the exported content at sync time.
+    version: text("version"),
+    revision: integer("revision"),
+    // sha256 hash of the resolved ACL used for this export (never the raw
+    // ACL/group membership itself) - lets auditors detect ACL drift/tamper
+    // without exposing group membership in the log.
+    aclHash: text("acl_hash"),
+    // which Graph external connection this sync targeted.
+    graphConnectionId: text("graph_connection_id"),
+    // raw HTTP status code returned by Microsoft Graph (or the simulated
+    // code for fault-injection/mock runs), independent of the full
+    // graph_response payload.
+    graphResponseCode: integer("graph_response_code"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

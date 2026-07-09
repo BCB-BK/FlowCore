@@ -30,6 +30,7 @@ import {
   getGroupMapping,
   listGroupMappings,
   upsertGroupMapping,
+  deleteGroupMapping,
 } from "../services/graph-external-group-mapping.service";
 import { db } from "@workspace/db";
 import { graphAclSyncLogTable } from "@workspace/db/schema";
@@ -106,6 +107,24 @@ graphConnectorRouter.get(
       res.json(result);
     } catch (err) {
       handleError(res, err, "Failed to run Copilot Studio readiness check");
+    }
+  },
+);
+
+graphConnectorRouter.delete(
+  "/group-mappings/:tier",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const tier = req.params.tier as (typeof GRAPH_ACL_TIERS)[number];
+      if (!GRAPH_ACL_TIERS.includes(tier)) {
+        throw new AppError(400, `Unbekannte ACL-Stufe "${req.params.tier}"`);
+      }
+      await deleteGroupMapping(tier);
+      res.status(204).send();
+    } catch (err) {
+      handleError(res, err, "Failed to delete group mapping");
     }
   },
 );
@@ -384,6 +403,7 @@ graphConnectorRouter.post(
       const result = await syncPage(String(req.params.id), {
         dryRun: req.body.dryRun,
         force: true,
+        actor: req.user?.displayName || req.user?.principalId || "system",
       });
       res.json(result);
     } catch (err) {
@@ -402,6 +422,7 @@ graphConnectorRouter.post(
       const result = await syncGlossaryTerm(String(req.params.id), {
         dryRun: req.body.dryRun,
         force: true,
+        actor: req.user?.displayName || req.user?.principalId || "system",
       });
       res.json(result);
     } catch (err) {

@@ -6,11 +6,15 @@ import {
 import { getSyncState, upsertSyncState } from "./graph-sync-state.service";
 import { recordSyncLog, type GraphSyncOperation } from "./graph-sync-log.service";
 import { setCopilotIndexStatus } from "./copilot-index-status.service";
+import { getGraphConnectorConfig } from "./graph-connector-config.service";
 import { AppError } from "../lib/app-error";
 
 export interface SyncOptions {
   dryRun?: boolean;
   force?: boolean;
+  /** Who/what triggered this sync - principal id/displayName, or "system"
+   * for background jobs (default). Never omitted from the audit log. */
+  actor?: string;
 }
 
 export interface SyncItemResult {
@@ -33,18 +37,20 @@ export async function syncPage(
   options: SyncOptions = {},
 ): Promise<SyncItemResult> {
   const dryRun = options.dryRun ?? false;
+  const actor = options.actor ?? "system";
   const operation: GraphSyncOperation = dryRun ? "dry_run" : "single_page";
 
   let built;
   try {
     built = await buildPageExternalItem(nodeId);
   } catch (err) {
-    await handleBuildFailure(err, "page", nodeId, nodeId, operation);
+    await handleBuildFailure(err, "page", nodeId, nodeId, operation, actor);
     throw err;
   }
 
-  const { item, contentHash } = built;
+  const { item, contentHash, version, revision, aclHash } = built;
   const itemId = item.id;
+  const graphConnectionId = getGraphConnectorConfig().connectionId || null;
 
   if (!dryRun && !options.force) {
     const state = await getSyncState(itemId);
@@ -58,6 +64,11 @@ export async function syncPage(
         reason: "content_hash_unchanged",
         contentHash,
         dryRun,
+        actor,
+        version,
+        revision,
+        aclHash,
+        graphConnectionId,
       });
       return { itemId, status: "skipped", dryRun, reason: "content_hash_unchanged" };
     }
@@ -76,6 +87,11 @@ export async function syncPage(
         reason: "dry_run",
         contentHash,
         dryRun: true,
+        actor,
+        version,
+        revision,
+        aclHash,
+        graphConnectionId,
       });
       return { itemId, status: "dry_run", dryRun: true, item };
     }
@@ -96,6 +112,12 @@ export async function syncPage(
       contentHash,
       graphResponse: pushed.graphResponse,
       dryRun: false,
+      actor,
+      version,
+      revision,
+      aclHash,
+      graphConnectionId,
+      graphResponseCode: pushed.graphResponseCode ?? null,
     });
     await setCopilotIndexStatus(nodeId, "indexed", null);
 
@@ -119,10 +141,25 @@ export async function syncPage(
       reason: message,
       contentHash,
       dryRun,
+      actor,
+      version,
+      revision,
+      aclHash,
+      graphConnectionId,
+      graphResponseCode: extractGraphResponseCode(err),
     });
     await setCopilotIndexStatus(nodeId, "error", message);
     throw err;
   }
+}
+
+function extractGraphResponseCode(err: unknown): number | null {
+  if (err instanceof AppError) {
+    const details = err.details as { graphResponseCode?: number } | undefined;
+    if (details?.graphResponseCode) return details.graphResponseCode;
+    if (err.status >= 500) return err.status;
+  }
+  return null;
 }
 
 /**
@@ -134,18 +171,20 @@ export async function syncGlossaryTerm(
   options: SyncOptions = {},
 ): Promise<SyncItemResult> {
   const dryRun = options.dryRun ?? false;
+  const actor = options.actor ?? "system";
   const operation: GraphSyncOperation = dryRun ? "dry_run" : "single_glossary";
 
   let built;
   try {
     built = await buildGlossaryExternalItem(termId);
   } catch (err) {
-    await handleBuildFailure(err, "glossary", termId, null, operation);
+    await handleBuildFailure(err, "glossary", termId, null, operation, actor, termId);
     throw err;
   }
 
-  const { item, contentHash } = built;
+  const { item, contentHash, version, revision, aclHash } = built;
   const itemId = item.id;
+  const graphConnectionId = getGraphConnectorConfig().connectionId || null;
 
   if (!dryRun && !options.force) {
     const state = await getSyncState(itemId);
@@ -154,11 +193,17 @@ export async function syncGlossaryTerm(
         itemId,
         itemType: "glossary",
         nodeId: null,
+        termId,
         operation,
         result: "skipped",
         reason: "content_hash_unchanged",
         contentHash,
         dryRun,
+        actor,
+        version,
+        revision,
+        aclHash,
+        graphConnectionId,
       });
       return { itemId, status: "skipped", dryRun, reason: "content_hash_unchanged" };
     }
@@ -172,11 +217,17 @@ export async function syncGlossaryTerm(
         itemId,
         itemType: "glossary",
         nodeId: null,
+        termId,
         operation,
         result: "skipped",
         reason: "dry_run",
         contentHash,
         dryRun: true,
+        actor,
+        version,
+        revision,
+        aclHash,
+        graphConnectionId,
       });
       return { itemId, status: "dry_run", dryRun: true, item };
     }
@@ -192,11 +243,18 @@ export async function syncGlossaryTerm(
       itemId,
       itemType: "glossary",
       nodeId: null,
+      termId,
       operation,
       result: "success",
       contentHash,
       graphResponse: pushed.graphResponse,
       dryRun: false,
+      actor,
+      version,
+      revision,
+      aclHash,
+      graphConnectionId,
+      graphResponseCode: pushed.graphResponseCode ?? null,
     });
 
     return { itemId, status: "success", dryRun: false, item };
@@ -214,11 +272,18 @@ export async function syncGlossaryTerm(
       itemId,
       itemType: "glossary",
       nodeId: null,
+      termId,
       operation,
       result: "failed",
       reason: message,
       contentHash,
       dryRun,
+      actor,
+      version,
+      revision,
+      aclHash,
+      graphConnectionId,
+      graphResponseCode: extractGraphResponseCode(err),
     });
     throw err;
   }
@@ -236,6 +301,8 @@ async function handleBuildFailure(
   logicalId: string,
   nodeId: string | null,
   operation: GraphSyncOperation,
+  actor = "system",
+  termId: string | null = null,
 ): Promise<void> {
   const message = err instanceof Error ? err.message : String(err);
   const notFound = err instanceof AppError && err.status === 404;
@@ -244,8 +311,10 @@ async function handleBuildFailure(
     itemId: itemType === "page" ? `flowcore_page_pending_${logicalId}` : `flowcore_glossary_pending_${logicalId}`,
     itemType,
     nodeId,
+    termId,
     operation,
     result: notFound ? "skipped" : "failed",
     reason: message,
+    actor,
   });
 }

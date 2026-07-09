@@ -94,6 +94,7 @@ export async function runFullSync(dryRun = false): Promise<FullSyncSummary> {
             itemId: state.itemId,
             nodeId: state.nodeId,
             reason: "full_sync_reconciliation",
+            actor: "system",
           });
           summary.deindexed++;
         } catch (err) {

@@ -16,6 +16,7 @@ export interface RecordSyncLogInput {
   itemId: string;
   itemType: GraphSyncItemType;
   nodeId?: string | null;
+  termId?: string | null;
   operation: GraphSyncOperation;
   result: GraphSyncResult;
   reason?: string | null;
@@ -23,6 +24,14 @@ export interface RecordSyncLogInput {
   graphResponse?: unknown;
   dryRun?: boolean;
   attempt?: number;
+  /** Who/what triggered this export/sync - a principal id/displayName, or
+   * "system" for background jobs (full sync, delta sync, reconciliation). */
+  actor?: string | null;
+  version?: string | null;
+  revision?: number | null;
+  aclHash?: string | null;
+  graphConnectionId?: string | null;
+  graphResponseCode?: number | null;
 }
 
 export async function recordSyncLog(input: RecordSyncLogInput): Promise<void> {
@@ -30,6 +39,7 @@ export async function recordSyncLog(input: RecordSyncLogInput): Promise<void> {
     itemId: input.itemId,
     itemType: input.itemType,
     nodeId: input.nodeId ?? null,
+    termId: input.termId ?? null,
     operation: input.operation,
     result: input.result,
     reason: input.reason ?? null,
@@ -37,6 +47,12 @@ export async function recordSyncLog(input: RecordSyncLogInput): Promise<void> {
     graphResponse: input.graphResponse ?? null,
     dryRun: input.dryRun ?? false,
     attempt: input.attempt ?? 1,
+    actor: input.actor ?? "system",
+    version: input.version ?? null,
+    revision: input.revision ?? null,
+    aclHash: input.aclHash ?? null,
+    graphConnectionId: input.graphConnectionId ?? null,
+    graphResponseCode: input.graphResponseCode ?? null,
   });
 }
 

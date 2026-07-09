@@ -65,7 +65,9 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
           itemType: job.itemType as "page" | "glossary",
           itemId,
           nodeId: job.nodeId,
+          termId: job.termId,
           reason: "delta_sync_delete",
+          actor: "system",
         });
         summary.deindexed++;
         await completeDeleted(job.id);
@@ -89,6 +91,7 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
               itemId,
               nodeId: job.nodeId,
               reason: "no_longer_indexable",
+              actor: "system",
             });
             summary.deindexed++;
             deindexedInline = true;
@@ -107,7 +110,9 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
               itemType: "glossary",
               itemId,
               nodeId: null,
+              termId: job.termId,
               reason: "no_longer_indexable",
+              actor: "system",
             });
             summary.deindexed++;
             deindexedInline = true;
