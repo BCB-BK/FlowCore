@@ -44,3 +44,8 @@ export async function isSetupMode(): Promise<boolean> {
   const val = await getSystemSetting("setup_mode");
   return val === "true";
 }
+
+export async function isGraphSyncMockMode(): Promise<boolean> {
+  const val = await getSystemSetting("graph_sync_mock_mode");
+  return val === "true";
+}

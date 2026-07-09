@@ -31,6 +31,7 @@ import { validateBody } from "../middlewares/validate-body";
 import { hasPermissionBatch } from "../services/rbac.service";
 import { checkConfidentialityAccess, checkConfidentialityAccessBatch } from "../services/confidentiality.service";
 import { AppError } from "../lib/app-error";
+import { enqueueSync } from "../services/graph-sync-queue.service";
 import {
   PAGE_TYPE_REGISTRY,
   getPageType as getPageTypeDef,
@@ -326,6 +327,8 @@ router.delete(
         resourceId: id,
       });
     });
+
+    await enqueueSync({ itemType: "page", nodeId: id, operation: "delete" });
 
     res.status(204).send();
   },

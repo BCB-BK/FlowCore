@@ -29,6 +29,11 @@ import { graphAclSyncLogTable } from "@workspace/db/schema";
 import { desc } from "drizzle-orm";
 import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
+import { runFullSync } from "../services/graph-full-sync.service";
+import { runDeltaSync } from "../services/graph-delta-sync.service";
+import { syncPage, syncGlossaryTerm } from "../services/graph-single-item-sync.service";
+import { listQueue } from "../services/graph-sync-queue.service";
+import { listSyncLog } from "../services/graph-sync-log.service";
 
 export const graphConnectorRouter: IRouter = Router();
 
@@ -262,6 +267,108 @@ graphConnectorRouter.get(
       res.json({ entries: rows });
     } catch (err) {
       handleError(res, err, "Failed to load Graph ACL sync log");
+    }
+  },
+);
+
+graphConnectorRouter.post(
+  "/sync/full",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  validateBody(DryRunBody),
+  async (req, res) => {
+    try {
+      const result = await runFullSync(req.body.dryRun);
+      res.json(result);
+    } catch (err) {
+      handleError(res, err, "Failed to run full Graph sync");
+    }
+  },
+);
+
+graphConnectorRouter.post(
+  "/sync/delta",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const limit = Math.min(Number(req.query.limit) || 25, 200);
+      const result = await runDeltaSync(limit);
+      res.json(result);
+    } catch (err) {
+      handleError(res, err, "Failed to run delta Graph sync");
+    }
+  },
+);
+
+graphConnectorRouter.post(
+  "/sync/pages/:id",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  validateBody(DryRunBody),
+  async (req, res) => {
+    try {
+      const result = await syncPage(String(req.params.id), {
+        dryRun: req.body.dryRun,
+        force: true,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(res, err, "Failed to sync page to Graph");
+    }
+  },
+);
+
+graphConnectorRouter.post(
+  "/sync/glossary/:id",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  validateBody(DryRunBody),
+  async (req, res) => {
+    try {
+      const result = await syncGlossaryTerm(String(req.params.id), {
+        dryRun: req.body.dryRun,
+        force: true,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(res, err, "Failed to sync glossary term to Graph");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/sync/queue",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      const rows = await listQueue(status);
+      res.json({ entries: rows });
+    } catch (err) {
+      handleError(res, err, "Failed to load Graph sync queue");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/sync/log",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const rows = await listSyncLog({
+        itemId: typeof req.query.itemId === "string" ? req.query.itemId : undefined,
+        result:
+          typeof req.query.result === "string"
+            ? (req.query.result as "success" | "failed" | "skipped" | "deleted")
+            : undefined,
+        limit: Number(req.query.limit) || 50,
+      });
+      res.json({ entries: rows });
+    } catch (err) {
+      handleError(res, err, "Failed to load Graph sync log");
     }
   },
 );

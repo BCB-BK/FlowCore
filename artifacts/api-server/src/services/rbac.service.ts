@@ -8,6 +8,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, and, or, sql, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { enqueueSync } from "./graph-sync-queue.service";
 
 export type WikiRole =
   | "system_admin"
@@ -832,13 +833,23 @@ export async function grantPagePermission(input: {
     },
     "Page permission granted",
   );
+  await enqueueSync({ itemType: "page", nodeId: input.nodeId, operation: "upsert" });
   return perm.id;
 }
 
-export async function revokePagePermission(permissionId: string, txOrDb: Pick<typeof db, "delete"> = db) {
+export async function revokePagePermission(permissionId: string, txOrDb: Pick<typeof db, "select" | "delete"> = db) {
+  const [existing] = await txOrDb
+    .select({ nodeId: pagePermissionsTable.nodeId })
+    .from(pagePermissionsTable)
+    .where(eq(pagePermissionsTable.id, permissionId));
+
   await txOrDb
     .delete(pagePermissionsTable)
     .where(eq(pagePermissionsTable.id, permissionId));
+
+  if (existing) {
+    await enqueueSync({ itemType: "page", nodeId: existing.nodeId, operation: "upsert" });
+  }
 }
 
 export async function getPagePermissions(nodeId: string) {

@@ -8,6 +8,7 @@ import {
 import { eq, ilike, sql, and } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { enqueueSync } from "../services/graph-sync-queue.service";
 
 const router: IRouter = Router();
 
@@ -196,6 +197,8 @@ router.post(
         return result;
       });
 
+      await enqueueSync({ itemType: "page", nodeId, operation: "upsert" });
+
       res.status(201).json(assignment);
     } catch (err) {
       if (err instanceof Error && err.message.includes("unique")) {
@@ -234,6 +237,8 @@ router.delete(
         details: { tagId },
       });
     });
+
+    await enqueueSync({ itemType: "page", nodeId, operation: "upsert" });
 
     res.status(204).send();
   },

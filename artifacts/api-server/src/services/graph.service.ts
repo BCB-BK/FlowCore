@@ -3,6 +3,7 @@ import { contentRelationsTable, contentNodesTable, auditEventsTable } from "@wor
 import { eq, and, or, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { type InsertAuditEvent } from "../lib/audit";
+import { enqueueSync } from "./graph-sync-queue.service";
 
 const DIRECTED_RELATION_TYPES = new Set([
   "depends_on",
@@ -71,6 +72,9 @@ export async function createRelation(
     return relation.id;
   });
 
+  await enqueueSync({ itemType: "page", nodeId: input.sourceNodeId, operation: "upsert" });
+  await enqueueSync({ itemType: "page", nodeId: input.targetNodeId, operation: "upsert" });
+
   logger.info(
     {
       relationId,
@@ -115,6 +119,14 @@ export async function removeRelation(
   relationId: string,
   auditEvent?: InsertAuditEvent,
 ): Promise<void> {
+  const [existing] = await db
+    .select({
+      sourceNodeId: contentRelationsTable.sourceNodeId,
+      targetNodeId: contentRelationsTable.targetNodeId,
+    })
+    .from(contentRelationsTable)
+    .where(eq(contentRelationsTable.id, relationId));
+
   await db.transaction(async (tx) => {
     await tx
       .delete(contentRelationsTable)
@@ -124,6 +136,11 @@ export async function removeRelation(
       await tx.insert(auditEventsTable).values(auditEvent);
     }
   });
+
+  if (existing) {
+    await enqueueSync({ itemType: "page", nodeId: existing.sourceNodeId, operation: "upsert" });
+    await enqueueSync({ itemType: "page", nodeId: existing.targetNodeId, operation: "upsert" });
+  }
 }
 
 export async function getNodeRelations(nodeId: string) {

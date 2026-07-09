@@ -7,6 +7,7 @@ import { requirePermission } from "../middlewares/require-permission";
 import multer from "multer";
 import * as XLSX from "xlsx";
 import { reimportGlossarySeedTerms } from "../services/startup-seed.service";
+import { enqueueSync } from "../services/graph-sync-queue.service";
 
 const router: IRouter = Router();
 
@@ -162,6 +163,8 @@ router.post(
         })
         .returning();
 
+      await enqueueSync({ itemType: "glossary", termId: created.id, operation: "upsert" });
+
       res.status(201).json(created);
     } catch (err) {
       if (err instanceof Error && err.message.includes("unique")) {
@@ -223,6 +226,7 @@ router.patch(
       res.status(404).json({ error: "Term not found" });
       return;
     }
+    await enqueueSync({ itemType: "glossary", termId: updated.id, operation: "upsert" });
     res.json(updated);
   },
 );
@@ -250,6 +254,7 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
+    await enqueueSync({ itemType: "glossary", termId: updated.id, operation: "upsert" });
     res.json(updated);
   },
 );
@@ -271,6 +276,7 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
+    await enqueueSync({ itemType: "glossary", termId: updated.id, operation: "upsert" });
     res.json(updated);
   },
 );
@@ -295,9 +301,9 @@ router.delete(
   requireAuth,
   requirePermission("edit_content"),
   async (req, res) => {
-    await db
-      .delete(glossaryTermsTable)
-      .where(eq(glossaryTermsTable.id, req.params.id as string));
+    const id = req.params.id as string;
+    await db.delete(glossaryTermsTable).where(eq(glossaryTermsTable.id, id));
+    await enqueueSync({ itemType: "glossary", termId: id, operation: "delete" });
     res.status(204).send();
   },
 );

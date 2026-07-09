@@ -7,6 +7,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { enqueueSyncForConfidentialityLevel } from "./graph-sync-queue.service";
 
 export type ConfidentialityLevel =
   | "public"
@@ -323,6 +324,7 @@ export async function assignPrincipalToLevel(
     .insert(confidentialityPrincipalAccessTable)
     .values({ level, principalId, assignedBy })
     .onConflictDoNothing();
+  await enqueueSyncForConfidentialityLevel(level);
 }
 
 export async function removePrincipalFromLevel(
@@ -337,4 +339,5 @@ export async function removePrincipalFromLevel(
         eq(confidentialityPrincipalAccessTable.principalId, principalId),
       ),
     );
+  await enqueueSyncForConfidentialityLevel(level);
 }
