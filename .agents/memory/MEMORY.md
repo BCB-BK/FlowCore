@@ -9,3 +9,4 @@
 - [Confidentiality access grants](confidentiality-access-grants.md) — only node owner/reviewer/approver or explicit grant bypasses confidentiality; the plain author/creator of a page is NOT automatically granted access.
 - [Glossary terms lack own governance fields](glossary-governance-fallback.md) — version/revision/authority/owner/reviewDue must be derived from a linked content node when present, else left null; never fabricate placeholder values.
 - [Forcing "unmapped ACL" in e2e tests](graph-acl-fail-closed-testing.md) — node owner + all allowed_roles holders resolve via RBAC regardless of test setup; must unmap via direct SQL to genuinely test no_entra_mapping/no_authorized_principals.
+- [No real Graph tenant in this environment](graph-connector-env-limits.md) — GRAPH_EXTERNAL_CONNECTION_ID is unset here; use the dev-only graph_sync_mock_mode system_setting to verify the full sync/ACL pipeline, then reset it to false.
