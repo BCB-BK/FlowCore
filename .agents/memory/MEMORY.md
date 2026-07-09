@@ -1,1 +1,2 @@
 - [Create-node dialog preset flow](create-node-dialog-preset.md) — presetType skips type-grid but still shows a variant-selection step for types with variants; don't expect it to jump straight to the title form.
+- [E2E dev-principal fixtures](e2e-dev-principal-fixtures.md) — don't reuse old hardcoded dev-seed UUIDs in new e2e specs; verify principal IDs exist in DB first.

@@ -1,0 +1,103 @@
+Cluster 4 – Microsoft Graph External Connection und Schema für Copilot Studio
+Ziel
+
+FlowCore erzeugt eine Microsoft Graph External Connection, deren Inhalte in Microsoft Search indexiert und in Copilot Studio als Enterprise data using connectors nutzbar werden.
+
+Zu bauen
+GraphConnectorConfigService
+GraphExternalConnectionService
+GraphSchemaService
+GraphSchemaRegistrationService
+GraphExternalItemMapper
+ExternalItem-Struktur
+
+Jedes FlowCore-Item wird als Microsoft Graph externalItem abgebildet.
+
+Microsoft verlangt bei externalItems insbesondere:
+
+ACL
+Properties
+Content
+
+Die ACL ist verpflichtend und steuert den Zugriff in Microsoft-Erfahrungen.
+
+Schema Properties
+
+Mindestens:
+
+title
+sourceUrl
+nodeId
+immutableId
+displayCode
+itemType
+pageType
+status
+version
+revision
+owner
+contentOwner
+reviewer
+validFrom
+reviewDue
+brandScope
+agentScope
+authorityLevel
+sourcePriority
+confidentiality
+decisionStatus
+tags
+relations
+lastModifiedAt
+publishedAt
+contentHash
+
+Für Glossar zusätzlich:
+
+term
+definition
+synonyms
+relatedTerms
+ExternalItem ID
+
+Stabil und eindeutig:
+
+flowcore_page_<sanitized_immutableId>
+flowcore_glossary_<sanitized_termId>
+Content-Feld
+
+Das volltextindexierte Content-Feld enthält:
+
+Titel
+Kurzbeschreibung
+Hauptinhalt
+strukturierte Felder
+Relationen
+Glossarbegriffe
+Quelle: FlowCore-URL
+Version / Revision
+Status
+Authority-Level
+Owner
+Review-Hinweis
+Anforderungen
+External Connection ID konfigurierbar.
+Schema registrieren oder prüfen.
+Dry Run für Schema.
+Dry Run für externalItem.
+Fehler nicht verschlucken.
+Keine Secrets im Code.
+Bestehende Graph-Anbindung wiederverwenden, wenn sauber möglich.
+FlowCore-URL muss im Item und im Content enthalten sein.
+Tests
+Schema JSON erzeugen.
+Schema Dry Run.
+externalItem Payload für Markenprofil erzeugen.
+externalItem Payload für Glossarbegriff erzeugen.
+Pflichtfelder fehlen → Fehler.
+Content enthält FlowCore sourceUrl.
+Content enthält keine Arbeitskopie.
+Properties enthalten Authority, Version, Owner, ReviewDue.
+Definition of Done
+
+BESTANDEN nur, wenn FlowCore valide Graph-Schema- und externalItem-Payloads für Seiten und Glossar erzeugt.

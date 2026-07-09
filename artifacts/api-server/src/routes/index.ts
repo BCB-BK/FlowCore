@@ -22,6 +22,7 @@ import apiTokensRouter from "./api-tokens";
 import { deletionRequestsRouter } from "./deletion-requests";
 import { confidentialityRouter } from "./confidentiality";
 import { docsRouter } from "./docs";
+import { copilotRouter } from "./copilot";
 
 const router: IRouter = Router();
 
@@ -48,5 +49,6 @@ router.use(apiTokensRouter);
 router.use("/content", deletionRequestsRouter);
 router.use("/confidentiality-config", confidentialityRouter);
 router.use(docsRouter);
+router.use("/copilot", copilotRouter);
 
 export default router;

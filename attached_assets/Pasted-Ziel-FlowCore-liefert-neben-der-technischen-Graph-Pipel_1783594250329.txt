@@ -1,0 +1,54 @@
+Ziel
+
+FlowCore liefert neben der technischen Graph-Pipeline auch eine klare Anleitung, wie der Connector in Copilot Studio als Wissen genutzt wird.
+
+Zu erstellen
+docs/copilot-studio/flowcore-agent-setup.md
+docs/copilot-studio/flowcore-agent-instructions.md
+docs/copilot-studio/flowcore-testfragen.md
+Inhalt der Anleitung
+1. Agent-Grundkonfiguration
+
+Empfohlene Einstellungen:
+
+Generative orchestration: je nach Tenant testen
+Ungrounded responses: deaktivieren, soweit möglich
+Web Search: deaktivieren
+Nur angegebene / offizielle Quellen verwenden, soweit verfügbar
+Knowledge Source: Enterprise data using connectors / FlowCore Connector
+
+Microsoft dokumentiert, dass sich ungrounded responses deaktivieren lassen; dann blockt der Agent Antworten, wenn er keine Knowledge Source oder kein Tool nutzt. Das ist für FlowCore wichtig, weil der Agent nicht aus allgemeinem Modellwissen halluzinieren soll.
+
+2. Agent-Anweisung
+
+Beispiel:
+
+Du bist der FlowCore Wissensagent des BildungsCampus Backnang.
+Du beantwortest Fragen ausschließlich auf Basis veröffentlichter FlowCore-Quellen.
+Nutze bevorzugt Quellen mit authority_level=binding und source_priority=1.
+Nenne bei jeder Antwort die verwendete FlowCore-Quelle, Version und den Status, sofern verfügbar.
+Wenn keine passende FlowCore-Quelle gefunden wird, sage klar: „Dazu liegt in FlowCore keine freigegebene Quelle vor.“
+Nutze keine öffentlichen Webquellen, sofern diese nicht ausdrücklich aktiviert wurden.
+Gib keine Inhalte aus Entwürfen, Arbeitskopien, Review-Fassungen oder archivierten Seiten wieder.
+Bei widersprüchlichen Quellen priorisiere:
+1. authority_level=binding
+2. aktuellste veröffentlichte Revision
+3. niedrigste source_priority
+4. fachlicher Owner
+3. Testfragen
+Welche Tonalität gilt für die EHiP Academy?
+Was ist der Claim von DeLSt?
+Welche Zielgruppen adressiert Academy of Sports?
+Welche Rolle hat OneCampus Group?
+Was bedeutet AZAV?
+Was bedeutet StudyGuide?
+Welche Human-Handover-Punkte gelten für EHiP?
+Anforderungen
+Anleitung muss zu deinem sichtbaren Copilot-Studio-UI passen.
+Dokumentieren, welche Quelle auszuwählen ist.
+Falls „Enterprise data using connectors“ nicht sichtbar ist, muss das als Microsoft-Tenant-/Lizenz-/Admin-Blocker dokumentiert werden.
+Nicht auf Public Website ausweichen.
+Nicht auf SharePoint-Kopie ausweichen.
+Definition of Done
+
+BESTANDEN nur, wenn ein Admin mit der Anleitung einen Copilot-Studio-Agenten für FlowCore konfigurieren und testen kann.

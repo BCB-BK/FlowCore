@@ -1,0 +1,93 @@
+Cluster 2 – Published-only Content Projection für Seiten und Glossar
+Ziel
+
+FlowCore erzeugt eine stabile, Copilot-/Graph-taugliche Darstellung aller freigegebenen Inhalte. Diese Projektion ist die zentrale Datenbasis für Graph Connector, Copilot Studio und spätere Spezialagenten.
+
+Zu bauen
+CopilotContentProjectionService
+PublishedContentExportService
+GlossaryProjectionService
+Seiten-Projektion
+
+Jede exportfähige Seite soll als Objekt bereitstehen:
+
+{
+  "itemType": "flowcore_page",
+  "nodeId": "...",
+  "immutableId": "...",
+  "displayCode": "...",
+  "title": "...",
+  "pageType": "...",
+  "status": "published",
+  "version": "...",
+  "revision": "...",
+  "summary": "...",
+  "contentText": "...",
+  "contentMarkdown": "...",
+  "structuredFields": {},
+  "tags": [],
+  "relations": [],
+  "glossaryTerms": [],
+  "owner": "...",
+  "reviewer": "...",
+  "contentOwner": "...",
+  "confidentiality": "...",
+  "authorityLevel": "...",
+  "sourcePriority": 1,
+  "brandScope": [],
+  "agentScope": [],
+  "validFrom": "...",
+  "reviewDue": "...",
+  "sourceUrl": "https://flowcore.bildungscampus-backnang.de/nodes/...",
+  "lastModifiedAt": "...",
+  "publishedAt": "...",
+  "contentHash": "..."
+}
+Glossar-Projektion
+
+Jeder Glossarbegriff soll als eigenes Knowledge Item exportierbar sein:
+
+{
+  "itemType": "glossary_term",
+  "termId": "...",
+  "term": "AZAV",
+  "definition": "...",
+  "synonyms": [],
+  "relatedTerms": [],
+  "tags": [],
+  "sourceUrl": "https://flowcore.bildungscampus-backnang.de/glossary/...",
+  "status": "published",
+  "contentHash": "..."
+}
+Anforderungen
+Ausschließlich published_revision_id verwenden.
+Keine Arbeitskopien, Entwürfe, Review-Fassungen, archivierte oder gelöschte Inhalte exportieren.
+ProseMirror/Richtext sauber in Plaintext und Markdown umwandeln.
+Tabellen, Listen, Überschriften, RACI, SIPOC, KPIs, Risiken/Kontrollen und strukturierte Felder lesbar serialisieren.
+Medien nicht binär exportieren, sondern als Referenz mit Titel, Beschreibung, Alt-Text und URL.
+SharePoint-Dateien nur als Link/Referenz übernehmen.
+Glossarbegriffe als eigene Items exportieren und zusätzlich bei Seiten referenzieren, wenn sie dort verwendet werden.
+Stabilen contentHash erzeugen.
+Batch Export mit Pagination.
+Tests
+Published-Seite wird exportiert.
+Arbeitskopie wird nicht exportiert.
+Draft wird nicht exportiert.
+Review-Fassung wird nicht exportiert.
+Archivierte/gelöschte Seite wird nicht exportiert.
+Glossarbegriff wird exportiert.
+ContentHash bleibt bei unverändertem veröffentlichtem Inhalt gleich.
+ContentHash ändert sich bei neuer veröffentlichter Revision.
+Live-Test
+
+Mit echten Seiten:
+
+OneCampus Group – Markenprofil
+Academy of Sports – Markenprofil
+DeLSt – Markenprofil
+EHiP Academy – Markenprofil
+EHiP Hochschule – Markenprofil
+mindestens 5 Glossarbegriffe
+Definition of Done
+
+BESTANDEN nur, wenn der Export strikt published-only ist und Seiten + Glossar vollständig KI-lesbar projiziert werden.
