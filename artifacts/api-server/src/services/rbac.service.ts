@@ -59,7 +59,8 @@ export type WikiPermission =
   | "force_unlock_working_copy"
   | "export_copilot_content"
   | "manage_agent_metadata"
-  | "manage_copilot_index_status";
+  | "manage_copilot_index_status"
+  | "manage_graph_connector";
 
 const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
   system_admin: [
@@ -104,6 +105,7 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "export_copilot_content",
     "manage_agent_metadata",
     "manage_copilot_index_status",
+    "manage_graph_connector",
   ],
   process_manager: [
     "read_page",

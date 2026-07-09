@@ -2,3 +2,4 @@
 - [E2E dev-principal fixtures](e2e-dev-principal-fixtures.md) — don't reuse old hardcoded dev-seed UUIDs in new e2e specs; verify principal IDs exist in DB first.
 - [Working-copy PATCH error mapping](working-copy-error-mapping.md) — service-thrown validation `Error`s must be pattern-matched in the route's `mapServiceError` or they silently become 500s instead of 400s.
 - [Copilot indexability rule](copilot-indexability-rule.md) — a page is only Copilot/Graph-exportable when published + agent_enabled + authority_level valid + confidentiality maps to a non-empty ACL; changing this list changes what old tests assume is exportable.
+- [Graph externalItem required fields](graph-external-item-required-fields.md) — owner/reviewDue are optional Graph schema properties, not indexability-blocking required fields.
