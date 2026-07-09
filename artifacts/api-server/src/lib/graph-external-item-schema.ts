@@ -85,4 +85,6 @@ export const REQUIRED_GLOSSARY_PROPERTY_NAMES = [
   "status",
   "term",
   "definition",
+  "displayCode",
+  "lastModifiedAt",
 ] as const;

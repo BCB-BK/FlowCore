@@ -69,6 +69,43 @@ function formatRelations(
  * derived strictly from the published-revision projection, so a working
  * copy (unpublished draft) can never leak into the indexed content.
  */
+/**
+ * Renders the mandatory citation block appended to every externalItem's
+ * content text (Cluster 10). Format is fixed so downstream consumers
+ * (Copilot Studio answers, Microsoft Search snippets) can rely on it:
+ *
+ *   Quelle: <sourceUrl>
+ *   FlowCore-ID: <stable id>
+ *   Version: <version>
+ *   Revision: <revision>
+ *   Status: <status>
+ *   Authority: <binding/guidance/...>
+ *   Owner: <owner>
+ *   Review fällig: <reviewDue>
+ */
+function buildQuellenblock(fields: {
+  sourceUrl: string;
+  flowcoreId: string;
+  version: string | null;
+  revision: number | null;
+  status: string;
+  authorityLevel: string | null;
+  owner: string | null;
+  reviewDue: string | null;
+}): string {
+  return [
+    "Quellenblock:",
+    `Quelle: ${fields.sourceUrl}`,
+    `FlowCore-ID: ${fields.flowcoreId}`,
+    `Version: ${fields.version ?? "nicht vergeben"}`,
+    `Revision: ${fields.revision ?? "nicht vergeben"}`,
+    `Status: ${fields.status}`,
+    `Authority: ${fields.authorityLevel ?? "nicht klassifiziert"}`,
+    `Owner: ${fields.owner ?? "nicht zugewiesen"}`,
+    `Review fällig: ${fields.reviewDue ?? "nicht geplant"}`,
+  ].join("\n");
+}
+
 function buildPageContent(projection: CopilotPageProjection): string {
   const parts = [
     `Titel: ${projection.title}`,
@@ -83,14 +120,16 @@ function buildPageContent(projection: CopilotPageProjection): string {
     projection.glossaryTerms.length > 0
       ? `Glossarbegriffe: ${projection.glossaryTerms.join(", ")}`
       : "",
-    `Quelle: ${projection.sourceUrl}`,
-    `Version: ${projection.version ?? "-"} / Revision: ${projection.revision}`,
-    `Status: ${projection.status}`,
-    projection.authorityLevel ? `Authority-Level: ${projection.authorityLevel}` : "",
-    projection.owner ? `Owner: ${projection.owner}` : "",
-    projection.reviewDue
-      ? `Review-Hinweis: Fällig am ${projection.reviewDue}`
-      : "",
+    buildQuellenblock({
+      sourceUrl: projection.sourceUrl,
+      flowcoreId: projection.immutableId,
+      version: projection.version,
+      revision: projection.revision,
+      status: projection.status,
+      authorityLevel: projection.authorityLevel,
+      owner: projection.owner,
+      reviewDue: projection.reviewDue,
+    }),
   ];
   return parts.filter(Boolean).join("\n");
 }
@@ -161,8 +200,16 @@ function buildGlossaryContent(projection: GlossaryTermProjection): string {
     projection.relatedTerms.length > 0
       ? `Verwandte Begriffe: ${projection.relatedTerms.join(", ")}`
       : "",
-    `Quelle: ${projection.sourceUrl}`,
-    `Status: ${projection.status}`,
+    buildQuellenblock({
+      sourceUrl: projection.sourceUrl,
+      flowcoreId: projection.displayCode,
+      version: projection.version,
+      revision: projection.revision,
+      status: projection.status,
+      authorityLevel: projection.authorityLevel,
+      owner: projection.owner,
+      reviewDue: projection.reviewDue,
+    }),
   ];
   return parts.filter(Boolean).join("\n");
 }
@@ -189,6 +236,13 @@ export function mapGlossaryToExternalItem(
     relatedTerms: projection.relatedTerms,
     tags: projection.tags,
     contentHash: projection.contentHash,
+    displayCode: projection.displayCode,
+    version: projection.version,
+    revision: projection.revision,
+    authorityLevel: projection.authorityLevel,
+    owner: projection.owner,
+    reviewDue: projection.reviewDue,
+    lastModifiedAt: projection.lastModifiedAt,
   };
 
   assertRequiredProperties(

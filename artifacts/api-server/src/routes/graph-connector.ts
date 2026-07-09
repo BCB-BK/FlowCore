@@ -14,6 +14,7 @@ import {
   testExternalConnection,
 } from "../services/graph-external-connection.service";
 import { runReadinessCheck } from "../services/graph-readiness.service";
+import { getSearchResultTemplatePrep } from "../services/graph-search-result-template.service";
 import {
   listPageIndexStatus,
   listGlossaryIndexStatus,
@@ -83,6 +84,15 @@ graphConnectorRouter.post(
     } catch (err) {
       handleError(res, err, "Failed to test Graph connection");
     }
+  },
+);
+
+graphConnectorRouter.get(
+  "/search-result-template",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  (_req, res) => {
+    res.json(getSearchResultTemplatePrep());
   },
 );
 
