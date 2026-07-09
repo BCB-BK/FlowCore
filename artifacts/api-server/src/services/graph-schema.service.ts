@@ -8,6 +8,13 @@ import {
 } from "../lib/graph-external-item-schema";
 import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
+import { setSystemSetting, getSystemSetting } from "./system-settings.service";
+
+export const GRAPH_SCHEMA_REGISTERED_AT_KEY = "graph_schema_registered_at";
+
+export async function getSchemaRegisteredAt(): Promise<string | null> {
+  return getSystemSetting(GRAPH_SCHEMA_REGISTERED_AT_KEY);
+}
 
 export interface GraphConnectionSchema {
   baseType: "microsoft.graph.externalItem";
@@ -117,6 +124,8 @@ export async function registerConnectionSchema(
       exposeDetails: true,
     });
   }
+
+  await setSystemSetting(GRAPH_SCHEMA_REGISTERED_AT_KEY, new Date().toISOString());
 
   return { dryRun: false, schema, status: "registered" };
 }

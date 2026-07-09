@@ -51,6 +51,7 @@ import { AuditTrailTab } from "@/components/settings/AuditTrailTab";
 import { WorkflowsTab } from "@/components/settings/WorkflowsTab";
 import { GlossaryImportTab } from "@/components/settings/GlossaryImportTab";
 import { SessionsTab } from "@/components/settings/SessionsTab";
+import { GraphConnectorTab } from "@/components/settings/GraphConnectorTab";
 import { useAuth } from "@/hooks/use-auth";
 import type { LucideIcon } from "lucide-react";
 
@@ -65,6 +66,7 @@ const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
   { value: "general", label: "Allgemein", icon: Server, requiredPermissions: ["manage_settings"] },
   { value: "users", label: "Benutzer & Rollen", icon: Users, requiredPermissions: ["manage_permissions"] },
   { value: "connections", label: "Verbindungen", icon: Link2, requiredPermissions: ["manage_settings"] },
+  { value: "graph-connector", label: "Copilot Studio / Graph", icon: Cpu, requiredPermissions: ["manage_graph_connector"] },
   { value: "ai", label: "FlowCore-Assistent", icon: Bot, requiredPermissions: ["manage_settings"] },
   { value: "templates", label: "Seitentemplates", icon: FileText, requiredPermissions: ["manage_templates"] },
   { value: "connectors", label: "Konnektoren", icon: Database, requiredPermissions: ["manage_connectors"] },
@@ -176,6 +178,10 @@ export function SettingsPage() {
 
         <TabsContent value="connections" className="mt-6">
           <ConnectionsTab />
+        </TabsContent>
+
+        <TabsContent value="graph-connector" className="mt-6">
+          <GraphConnectorTab />
         </TabsContent>
 
         <TabsContent value="ai" className="mt-6">

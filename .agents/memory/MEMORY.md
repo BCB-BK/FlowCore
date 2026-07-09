@@ -5,3 +5,4 @@
 - [Graph externalItem required fields](graph-external-item-required-fields.md) — owner/reviewDue are optional Graph schema properties, not indexability-blocking required fields.
 - [Confidentiality allowed_roles vs per-principal grants](confidentiality-access-model.md) — role-based allowed_roles can silently grant access independent of explicit principal assignment; pick test principals carefully.
 - [Graph sync item identity & dedup](graph-sync-item-identity.md) — externalItem IDs must use immutableId (not row uuid) everywhere a queue job re-derives them, and content-hash dedup must fold in ACL, not just content.
+- [Four-eyes review/publish in e2e helpers](four-eyes-e2e-helper.md) — approve/publish must use a different principal than submit, or requests 403 with sodRule four_eyes_review/four_eyes_publish.

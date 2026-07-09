@@ -11,7 +11,13 @@ import {
 import {
   buildExternalConnectionPayload,
   ensureExternalConnection,
+  testExternalConnection,
 } from "../services/graph-external-connection.service";
+import { runReadinessCheck } from "../services/graph-readiness.service";
+import {
+  listPageIndexStatus,
+  listGlossaryIndexStatus,
+} from "../services/graph-index-status.service";
 import {
   registerPageExternalItem,
   registerGlossaryExternalItem,
@@ -63,6 +69,62 @@ graphConnectorRouter.get(
   requirePermission("manage_graph_connector"),
   (_req, res) => {
     res.json(buildExternalConnectionPayload());
+  },
+);
+
+graphConnectorRouter.post(
+  "/test-connection",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (_req, res) => {
+    try {
+      const result = await testExternalConnection();
+      res.json(result);
+    } catch (err) {
+      handleError(res, err, "Failed to test Graph connection");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/readiness-check",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (_req, res) => {
+    try {
+      const result = await runReadinessCheck();
+      res.json(result);
+    } catch (err) {
+      handleError(res, err, "Failed to run Copilot Studio readiness check");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/index-status/pages",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (_req, res) => {
+    try {
+      const entries = await listPageIndexStatus();
+      res.json({ entries });
+    } catch (err) {
+      handleError(res, err, "Failed to load page index status");
+    }
+  },
+);
+
+graphConnectorRouter.get(
+  "/index-status/glossary",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (_req, res) => {
+    try {
+      const entries = await listGlossaryIndexStatus();
+      res.json({ entries });
+    } catch (err) {
+      handleError(res, err, "Failed to load glossary index status");
+    }
   },
 );
 
@@ -385,6 +447,65 @@ graphConnectorRouter.get(
       res.json({ entries: rows });
     } catch (err) {
       handleError(res, err, "Failed to load Graph sync log");
+    }
+  },
+);
+
+function toCsvValue(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const str = typeof value === "object" ? JSON.stringify(value) : String(value);
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+graphConnectorRouter.get(
+  "/sync/log/export",
+  requireAuth,
+  requirePermission("manage_graph_connector"),
+  async (req, res) => {
+    try {
+      const rows = await listSyncLog({
+        itemId: typeof req.query.itemId === "string" ? req.query.itemId : undefined,
+        result:
+          typeof req.query.result === "string"
+            ? (req.query.result as "success" | "failed" | "skipped" | "deleted")
+            : undefined,
+        limit: Math.min(Number(req.query.limit) || 1000, 5000),
+      });
+
+      const columns = [
+        "id",
+        "itemId",
+        "itemType",
+        "nodeId",
+        "operation",
+        "result",
+        "reason",
+        "contentHash",
+        "dryRun",
+        "attempt",
+        "createdAt",
+      ] as const;
+
+      const lines = [columns.join(",")];
+      for (const row of rows) {
+        lines.push(
+          columns
+            .map((col) => toCsvValue((row as Record<string, unknown>)[col]))
+            .join(","),
+        );
+      }
+
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="graph-sync-log-${new Date().toISOString().slice(0, 10)}.csv"`,
+      );
+      res.send(lines.join("\n"));
+    } catch (err) {
+      handleError(res, err, "Failed to export Graph sync log");
     }
   },
 );

@@ -85,3 +85,81 @@ export async function ensureExternalConnection(
 
   return { dryRun: false, connection, created: true };
 }
+
+export interface TestConnectionResult {
+  success: boolean;
+  connection: ExternalConnectionPayload;
+  tokenAcquired: boolean;
+  connectionExists: boolean | null;
+  message: string;
+}
+
+/**
+ * Read-only connectivity test ("Test Connection ohne Content Sync"): checks
+ * that an app access token can be acquired and that the configured
+ * External Connection exists in Microsoft Graph. Never creates, updates, or
+ * syncs any content — safe to run at any time.
+ */
+export async function testExternalConnection(): Promise<TestConnectionResult> {
+  const connection = buildExternalConnectionPayload();
+  const { connectionId } = getGraphConnectorConfig();
+
+  if (!connectionId) {
+    return {
+      success: false,
+      connection,
+      tokenAcquired: false,
+      connectionExists: null,
+      message:
+        "GRAPH_EXTERNAL_CONNECTION_ID ist nicht konfiguriert. Bitte Connection ID hinterlegen.",
+    };
+  }
+
+  const token = await getAppAccessToken();
+  if (!token) {
+    return {
+      success: false,
+      connection,
+      tokenAcquired: false,
+      connectionExists: null,
+      message:
+        "Konnte kein Microsoft Graph Access Token beziehen. Entra-Konfiguration (Tenant/Client/Secret) prüfen.",
+    };
+  }
+
+  const client = Client.init({ authProvider: (done) => done(null, token) });
+
+  try {
+    await client.api(`/external/connections/${connectionId}`).get();
+    return {
+      success: true,
+      connection,
+      tokenAcquired: true,
+      connectionExists: true,
+      message: "Verbindung erfolgreich getestet — External Connection ist erreichbar.",
+    };
+  } catch (err) {
+    const status = (err as { statusCode?: number })?.statusCode;
+    if (status === 404) {
+      return {
+        success: false,
+        connection,
+        tokenAcquired: true,
+        connectionExists: false,
+        message:
+          "Token erfolgreich bezogen, aber die External Connection existiert noch nicht in Microsoft Graph (siehe 'Schema registrieren').",
+      };
+    }
+    logger.error({ err, connectionId }, "Graph connection test failed");
+    return {
+      success: false,
+      connection,
+      tokenAcquired: true,
+      connectionExists: null,
+      message:
+        status === 401 || status === 403
+          ? "Zugriff verweigert — Tenant-/Lizenzproblem oder fehlende App-Berechtigung (ExternalConnection.ReadWrite.OwnedBy) möglich."
+          : `Verbindungstest fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
