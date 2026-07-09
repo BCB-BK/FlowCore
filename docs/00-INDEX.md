@@ -31,6 +31,12 @@
 - [14 – Go-Live-Checkliste](./14-GO-LIVE-CHECKLIST.md) — Alle Voraussetzungen für Produktionsbetrieb inkl. Entra-Berechtigungen
 - [15 – Source of Truth](./15-SOURCE-OF-TRUTH.md)
 
+## Copilot Studio Integration
+
+- [Agent-Setup](./copilot-studio/flowcore-agent-setup.md) — Schritt-für-Schritt-Anleitung zur Konfiguration eines Copilot-Studio-Agenten mit dem FlowCore Graph Connector als Wissensquelle, inkl. Tenant-/Lizenz-Blocker-Dokumentation
+- [Agent-Anweisung](./copilot-studio/flowcore-agent-instructions.md) — Kopiervorlage für die Instructions des Agenten inkl. Priorisierungslogik (authority_level, source_priority, decision_status, confidentiality)
+- [Testfragen](./copilot-studio/flowcore-testfragen.md) — Testfragen zur Abnahme (Positiv- und Negativfälle gegen Halluzination)
+
 ## Benutzerhandbücher
 
 - [20 – Editor-Leitfaden](./20-EDITOR-GUIDE.md) — Seiten erstellen, Block-Editor, BPMN, Medien, KI-Assistent, Revisionen
