@@ -25,3 +25,4 @@ export * from "./workflow-templates";
 export * from "./deletion-requests";
 export * from "./confidentiality";
 export * from "./graph-connector";
+export * from "./copilot-connector-keys";

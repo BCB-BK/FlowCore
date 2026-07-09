@@ -23,6 +23,7 @@ import { deletionRequestsRouter } from "./deletion-requests";
 import { confidentialityRouter } from "./confidentiality";
 import { docsRouter } from "./docs";
 import { copilotRouter } from "./copilot";
+import { copilotConnectorRouter } from "./copilot-connector";
 import { graphConnectorRouter } from "./graph-connector";
 
 const router: IRouter = Router();
@@ -51,6 +52,7 @@ router.use("/content", deletionRequestsRouter);
 router.use("/confidentiality-config", confidentialityRouter);
 router.use(docsRouter);
 router.use("/copilot", copilotRouter);
+router.use("/copilot", copilotConnectorRouter);
 router.use("/graph-connector", graphConnectorRouter);
 
 export default router;
