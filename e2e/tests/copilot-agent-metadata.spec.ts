@@ -222,7 +222,7 @@ test.describe("Cluster 3 - Agent-Metadatenfelder", () => {
     expect(projection.copilotIndexStatus).toBe("not_indexed");
   });
 
-  test("published page with agent_enabled=false is not exportable", async ({
+  test("published page with agent_enabled=false is still exportable (agent_enabled is not a gating field)", async ({
     request,
   }) => {
     const title = "E2E Agent Metadata Published Not Enabled";
@@ -245,7 +245,9 @@ test.describe("Cluster 3 - Agent-Metadatenfelder", () => {
     const res = await request.get(`${API}/copilot/pages/${node.id}`, {
       headers: { "X-Dev-Principal-Id": ADMIN_A },
     });
-    expect(res.status()).toBe(404);
+    expect(res.status()).toBe(200);
+    const projection = await res.json();
+    expect(projection.agentEnabled).toBe(false);
   });
 
   test("index-status endpoint requires manage_copilot_index_status permission", async ({

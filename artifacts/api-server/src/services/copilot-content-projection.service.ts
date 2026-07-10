@@ -13,7 +13,10 @@ import { eq, and, desc, isNotNull } from "drizzle-orm";
 import { serializeProseMirrorContent } from "../lib/prosemirror-serializer";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
-import { getAclMappingStatus } from "./confidentiality.service";
+import {
+  getAclMappingStatus,
+  DEFAULT_CONFIDENTIALITY_LEVEL,
+} from "./confidentiality.service";
 import {
   extractAgentMetadata,
   evaluateIndexability,
@@ -196,7 +199,9 @@ export async function projectPublishedPage(
 
   const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
   const confidentiality =
-    typeof sf.confidentiality === "string" ? sf.confidentiality : null;
+    typeof sf.confidentiality === "string"
+      ? sf.confidentiality
+      : DEFAULT_CONFIDENTIALITY_LEVEL;
   const authorityLevel =
     typeof sf.authority_level === "string" ? sf.authority_level : null;
   const sourcePriority =
@@ -215,7 +220,6 @@ export async function projectPublishedPage(
     nodeStatus: node.status,
     isDeleted: node.isDeleted,
     publishedRevisionId: node.publishedRevisionId,
-    agentEnabled: agentMetadata.agentEnabled,
     authorityLevel: agentMetadata.authorityLevel,
     confidentialityMapsToAcl: aclStatus.confidentialityMapsToAcl,
     aclPresent: aclStatus.aclPresent,

@@ -257,7 +257,6 @@ export interface IndexabilityInput {
   nodeStatus: string;
   isDeleted: boolean;
   publishedRevisionId: string | null;
-  agentEnabled: boolean;
   authorityLevel: AuthorityLevel;
   confidentialityMapsToAcl: boolean;
   aclPresent: boolean;
@@ -270,9 +269,10 @@ export interface IndexabilityResult {
 
 /**
  * Central Copilot/Graph indexability rule (Cluster 3):
- * A page is only indexable if it is published, has agent_enabled=true,
- * its authority_level is neither draft nor archived, and its
- * confidentiality level maps to a valid ACL that actually has entries.
+ * A page is only indexable if it is published, its authority_level is
+ * neither draft nor archived, and its confidentiality level maps to a
+ * valid ACL that actually has entries. agent_enabled is no longer a
+ * gating criterion (removed per user request).
  */
 export function evaluateIndexability(
   input: IndexabilityInput,
@@ -282,7 +282,6 @@ export function evaluateIndexability(
   if (input.isDeleted) reasons.push("node_deleted");
   if (input.nodeStatus !== "published") reasons.push("node_not_published");
   if (!input.publishedRevisionId) reasons.push("no_published_revision");
-  if (!input.agentEnabled) reasons.push("agent_disabled");
   if (input.authorityLevel === "draft") reasons.push("authority_level_draft");
   if (input.authorityLevel === "archived")
     reasons.push("authority_level_archived");

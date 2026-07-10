@@ -29,6 +29,11 @@ export const LEVEL_LABELS: Record<ConfidentialityLevel, string> = {
   strictly_confidential: "Streng vertraulich",
 };
 
+// Default confidentiality level for any page (old or new) that has no
+// explicit `confidentiality` value set on its revision's structured
+// fields. Applies uniformly instead of treating "unset" as public/blocked.
+export const DEFAULT_CONFIDENTIALITY_LEVEL: ConfidentialityLevel = "internal";
+
 export async function getNodeConfidentialityLevel(
   nodeId: string,
 ): Promise<ConfidentialityLevel | null> {
@@ -50,12 +55,12 @@ export async function getNodeConfidentialityLevel(
     .from(contentRevisionsTable)
     .where(eq(contentRevisionsTable.id, revisionId));
 
-  if (!revision?.structuredFields) return null;
+  if (!revision?.structuredFields) return DEFAULT_CONFIDENTIALITY_LEVEL;
 
   const fields = revision.structuredFields as Record<string, unknown>;
   const level = fields.confidentiality as string | undefined;
 
-  if (!level) return null;
+  if (!level) return DEFAULT_CONFIDENTIALITY_LEVEL;
 
   if (CONFIDENTIALITY_LEVELS.includes(level as ConfidentialityLevel)) {
     return level as ConfidentialityLevel;
@@ -228,9 +233,9 @@ export async function checkConfidentialityAccessBatch(
     const revId = node.publishedRevisionId || node.currentRevisionId;
     const rev = revId ? revisionMap.get(revId) : null;
     const fields = (rev?.structuredFields || {}) as Record<string, unknown>;
-    const level = fields.confidentiality as string | undefined;
+    const level = (fields.confidentiality as string | undefined) || DEFAULT_CONFIDENTIALITY_LEVEL;
 
-    if (!level || level === "public") {
+    if (level === "public") {
       result.set(node.id, true);
       continue;
     }
