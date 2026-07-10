@@ -18,18 +18,37 @@ import {
   type CopilotConnectorPrincipal,
 } from "./copilot-connector-key.service";
 
+/**
+ * Task 4 - "Quellenblock-freundliche Metadaten normalisieren": the fields a
+ * Copilot answer should cite by default are the human-facing ones
+ * (displayCode, title, sourceUrl, version, ownerName). Internal/technical
+ * identifiers that are easy to accidentally surface as "the source"
+ * (raw UUID, publish status, the internal source-priority ranking number)
+ * are namespaced under `technical` so they stay available for follow-up
+ * calls (`GetFlowCoreNode` needs `technical.nodeId`) and conflict
+ * resolution, without being part of the default citation shape.
+ */
 export interface ConnectorSearchResult {
   itemType: "flowcore_page" | "glossary_term";
-  nodeId: string;
   displayCode: string;
   title: string;
   summary: string;
   url: string;
   version: string | null;
+  ownerName: string | null;
   authorityLevel: string | null;
   brandScope: string[];
   agentScope: string[];
   score: number;
+  /**
+   * Only for follow-up lookups (`GetFlowCoreNode`) and conflict-resolution
+   * / debug output — never part of the default source citation. See
+   * flowcore-custom-connector.md "Quellenblock-Metadaten".
+   */
+  technical: {
+    nodeId: string;
+    sourcePriority: number;
+  };
 }
 
 /**
@@ -276,16 +295,20 @@ export async function searchForConnector(
 
         const result: ConnectorSearchResult = {
           itemType: "flowcore_page",
-          nodeId: projection.nodeId,
           displayCode: projection.displayCode,
           title: projection.title,
           summary: projection.summary,
           url: projection.sourceUrl,
           version: projection.version,
+          ownerName: projection.ownerName,
           authorityLevel: projection.authorityLevel,
           brandScope: projection.brandScope,
           agentScope: projection.agentScope,
           score,
+          technical: {
+            nodeId: projection.nodeId,
+            sourcePriority: projection.sourcePriority,
+          },
         };
         return result;
       }),
@@ -343,16 +366,20 @@ export async function searchForConnector(
 
         const result: ConnectorSearchResult = {
           itemType: "glossary_term",
-          nodeId: projection.termId,
           displayCode: projection.displayCode,
           title: projection.term,
           summary: projection.shortDescription,
           url: projection.sourceUrl,
           version: projection.version,
+          ownerName: projection.ownerName,
           authorityLevel: projection.authorityLevel,
           brandScope: projection.brandScope,
           agentScope: projection.agentScope,
           score,
+          technical: {
+            nodeId: projection.termId,
+            sourcePriority: projection.sourcePriority,
+          },
         };
         return result;
       }),
@@ -366,15 +393,104 @@ export async function searchForConnector(
   return candidates.slice(0, limit);
 }
 
+/**
+ * Copilot-facing shape of a single page (`GET /nodes/:id`). Mirrors the
+ * "Quellenblock" fields already used in the Graph content (Task 2/3's
+ * Quellenhinweis: FlowCore-Quelle/Version/Owner/Authority), so a citation
+ * built from this response always leads with displayCode/title/sourceUrl/
+ * version/ownerName rather than internal identifiers. `status` is omitted
+ * entirely (only published pages are ever reachable through this endpoint,
+ * so it would always read "published" and add nothing). `revision` and
+ * `nodeId`/`sourcePriority` remain available, but namespaced under
+ * `technical` for debug/conflict-resolution use, not as the answer default.
+ */
+export interface ConnectorNodeResult {
+  itemType: "flowcore_page";
+  displayCode: string;
+  title: string;
+  sourceUrl: string;
+  version: string | null;
+  ownerName: string | null;
+  pageType: string;
+  shortDescription: string;
+  content: string;
+  contentMarkdown: string;
+  structuredFields: Record<string, unknown>;
+  tags: string[];
+  relations: CopilotPageProjection["relations"];
+  glossaryTerms: string[];
+  authorityLevel: string | null;
+  brandScope: string[];
+  agentScope: string[];
+  parentPath: string | null;
+  hasChildren: boolean;
+  childPageCount: number;
+  childPages: CopilotPageProjection["childPages"];
+  validFrom: string | null;
+  reviewDue: string | null;
+  lastModifiedAt: string | null;
+  publishedAt: string | null;
+  technical: {
+    nodeId: string;
+    immutableId: string;
+    revision: number;
+    sourcePriority: number;
+    confidentiality: string | null;
+    decisionStatus: string;
+    contentHash: string;
+  };
+}
+
+function toConnectorNodeResult(
+  projection: CopilotPageProjection,
+): ConnectorNodeResult {
+  return {
+    itemType: projection.itemType,
+    displayCode: projection.displayCode,
+    title: projection.title,
+    sourceUrl: projection.sourceUrl,
+    version: projection.version,
+    ownerName: projection.ownerName,
+    pageType: projection.pageType,
+    shortDescription: projection.shortDescription,
+    content: projection.contentText,
+    contentMarkdown: projection.contentMarkdown,
+    structuredFields: projection.structuredFields,
+    tags: projection.tags,
+    relations: projection.relations,
+    glossaryTerms: projection.glossaryTerms,
+    authorityLevel: projection.authorityLevel,
+    brandScope: projection.brandScope,
+    agentScope: projection.agentScope,
+    parentPath: projection.parentPath,
+    hasChildren: projection.hasChildren,
+    childPageCount: projection.childPageCount,
+    childPages: projection.childPages,
+    validFrom: projection.validFrom,
+    reviewDue: projection.reviewDue,
+    lastModifiedAt: projection.lastModifiedAt,
+    publishedAt: projection.publishedAt,
+    technical: {
+      nodeId: projection.nodeId,
+      immutableId: projection.immutableId,
+      revision: projection.revision,
+      sourcePriority: projection.sourcePriority,
+      confidentiality: projection.confidentiality,
+      decisionStatus: projection.decisionStatus,
+      contentHash: projection.contentHash,
+    },
+  };
+}
+
 export async function getNodeForConnector(
   nodeId: string,
   key: CopilotConnectorPrincipal,
-): Promise<CopilotPageProjection | "forbidden" | null> {
+): Promise<ConnectorNodeResult | "forbidden" | null> {
   const projection = await projectPublishedPage(nodeId);
   if (!projection) return null;
 
   const allowed = await isNodeAllowedForKey(projection, key);
   if (!allowed) return "forbidden";
 
-  return projection;
+  return toConnectorNodeResult(projection);
 }

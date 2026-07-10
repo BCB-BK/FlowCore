@@ -109,21 +109,30 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
         },
         SearchResultItem: {
           type: "object",
+          description: "Quellenblock-Metadaten für eine Antwort: displayCode/title/url/version/ownerName führend zitieren, nicht technical.nodeId oder technical.sourcePriority.",
           properties: {
-            nodeId: { type: "string" },
             displayCode: { type: "string" },
             title: { type: "string" },
             summary: { type: "string" },
             url: { type: "string" },
             version: { type: "string", nullable: true },
+            ownerName: { type: "string", nullable: true },
             authorityLevel: { type: "string", nullable: true },
             brandScope: { type: "array", items: { type: "string" } },
             agentScope: { type: "array", items: { type: "string" } },
+            technical: {
+              type: "object",
+              description: "Nur für Folgeaufrufe (GetFlowCoreNode) oder Konfliktauflösung/Debug — kein Standard-Zitierfeld.",
+              properties: {
+                nodeId: { type: "string" },
+                sourcePriority: { type: "integer" },
+              },
+            },
           },
         },
         NodeResponse: {
           type: "object",
-          description: "Vollständige Copilot-Projektion der veröffentlichten Seite (siehe FlowCore CopilotPageProjection).",
+          description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort.",
         },
       },
     },
@@ -201,16 +210,25 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                     type: "array",
                     items: {
                       type: "object",
+                      description: "Quellenblock-Metadaten: displayCode/title/url/version/ownerName führend zitieren, nicht technical.nodeId oder technical.sourcePriority.",
                       properties: {
-                        nodeId: { type: "string" },
                         displayCode: { type: "string" },
                         title: { type: "string" },
                         summary: { type: "string" },
                         url: { type: "string" },
                         version: { type: "string" },
+                        ownerName: { type: "string" },
                         authorityLevel: { type: "string" },
                         brandScope: { type: "array", items: { type: "string" } },
                         agentScope: { type: "array", items: { type: "string" } },
+                        technical: {
+                          type: "object",
+                          description: "Nur für Folgeaufrufe (GetFlowCoreNode) oder Konfliktauflösung/Debug.",
+                          properties: {
+                            nodeId: { type: "string" },
+                            sourcePriority: { type: "integer" },
+                          },
+                        },
                       },
                     },
                   },
@@ -239,7 +257,7 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
               description: "Seite",
               schema: {
                 type: "object",
-                description: "Vollständige Copilot-Projektion der veröffentlichten Seite.",
+                description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort.",
               },
             },
             "403": { description: "API-Key ist für diese Seite nicht berechtigt" },

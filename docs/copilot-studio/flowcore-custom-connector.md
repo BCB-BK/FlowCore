@@ -79,7 +79,8 @@ sowie eine maximale Vertraulichkeitsstufe beschränkt (Entscheidung vom
 4. Den Connector in Copilot Studio als Tool/Action zum jeweiligen
    Spezialagenten hinzufügen.
 5. Testaufruf: `SearchFlowCore` mit einer Beispiel-Query, dann
-   `GetFlowCoreNode` mit einer zurückgegebenen `nodeId`.
+   `GetFlowCoreNode` mit der `technical.nodeId` eines Treffers (siehe
+   „Quellenblock-Metadaten" unten).
 
 Schritt 2–5 erfordern Zugriff auf den Microsoft-Tenant / das Power Apps
 Portal und können nicht aus der FlowCore-Entwicklungsumgebung heraus
@@ -155,3 +156,47 @@ Key-Berechtigung sein).
 `e2e/tests/copilot-search-disambiguation.spec.ts` deckt die vier
 Kernszenarien ab: generische Mehrfachtreffer, definitorische Anfrage,
 markenspezifische Eingrenzung, und Scope-Validierung.
+
+## Quellenblock-Metadaten (`POST /search` und `GET /nodes/:id`)
+
+Stand: 10.07.2026 (Task 4). Ziel: Copilot soll Quellenangaben standardmäßig
+aus menschenlesbaren Feldern bilden — nicht aus internen IDs oder
+technischem Zustand.
+
+### Standard-Zitierfelder
+
+Jeder Treffer aus `POST /search` und jede Antwort von `GET /nodes/:id`
+führt mit denselben Quellenblock-Feldern, die auch im Graph-Content
+("Quellenhinweis", Task 2/3) verwendet werden:
+
+- `displayCode` — sprechender FlowCore-Code (z.B. `PROC-BEWERBUNG-01`)
+- `title` — Seiten-/Begriffstitel
+- `url` (Suche) bzw. `sourceUrl` (Node) — kanonischer Link
+- `version` — Versionsstand
+- `ownerName` — Name des inhaltlich Verantwortlichen
+
+`nodeId` (UUID), `status` (immer `"published"`, da nur veröffentlichte
+Seiten über den Connector erreichbar sind) und `sourcePriority` sind
+**nicht** Teil dieser Standardfelder und tauchen dort nicht mehr auf.
+
+### `technical`-Block
+
+Dieselben Werte bleiben für Folgeaufrufe und Konfliktauflösung/Debug
+verfügbar, aber unter einem verschachtelten `technical`-Objekt:
+
+- In Suchergebnissen: `technical.nodeId`, `technical.sourcePriority`.
+- In `GET /nodes/:id`: `technical.nodeId`, `technical.revision`,
+  `technical.sourcePriority`, sowie `immutableId`, `confidentiality`,
+  `decisionStatus`, `contentHash`.
+
+`GetFlowCoreNode` wird weiterhin mit `technical.nodeId` aus einem
+Suchtreffer aufgerufen (siehe Einrichtungsschritt 5 oben) — dieser Wert
+ist nur nicht mehr das Feld, aus dem eine Zitation gebaut werden soll.
+
+### Getestet in
+
+`e2e/tests/copilot-search-source-metadata.spec.ts` prüft, dass Such- und
+Node-Antworten `displayCode`/`title`/`url`(`sourceUrl`)/`version`/
+`ownerName` als Standardfelder enthalten und `nodeId`/`status`/
+`sourcePriority` **nicht** auf oberster Ebene auftauchen — diese Werte
+sind nur noch unter `technical` erreichbar.
