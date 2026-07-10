@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@workspace/ui/input";
 import { Button } from "@workspace/ui/button";
 import { Card, CardContent } from "@workspace/ui/card";
@@ -19,7 +19,7 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import {
   useListGlossaryTerms,
   useCreateGlossaryTerm,
@@ -30,6 +30,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SimpleEditor } from "@/components/editor/SimpleEditor";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+function clientSlugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[äÄ]/g, "ae")
+    .replace(/[öÖ]/g, "oe")
+    .replace(/[üÜ]/g, "ue")
+    .replace(/[ß]/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 interface TermFormData {
   term: string;
@@ -50,12 +62,32 @@ export function GlossaryPage() {
     abbreviation: "",
   });
   const [, navigate] = useLocation();
+  const [, slugParams] = useRoute("/glossary/:slug");
   const queryClient = useQueryClient();
+  const highlightRef = useRef<HTMLDivElement | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   const { data: terms } = useListGlossaryTerms({
     q: query || undefined,
     letter: !query && activeLetter ? activeLetter : undefined,
   });
+
+  useEffect(() => {
+    const slug = slugParams?.slug;
+    if (!slug || !Array.isArray(terms) || terms.length === 0) return undefined;
+    const match = terms.find((t) => clientSlugify(t.term) === slug);
+    if (!match) return undefined;
+    setHighlightedId(match.id);
+    setQuery("");
+    setActiveLetter("");
+    const timer = setTimeout(() => {
+      highlightRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [slugParams?.slug, terms]);
 
   const createMutation = useCreateGlossaryTerm({
     mutation: {
@@ -205,7 +237,11 @@ export function GlossaryPage() {
               </h2>
               <div className="space-y-2">
                 {letterTerms?.map((t) => (
-                  <Card key={t.id} className="group">
+                  <Card
+                    key={t.id}
+                    ref={t.id === highlightedId ? highlightRef : undefined}
+                    className={`group ${t.id === highlightedId ? "ring-2 ring-primary" : ""}`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">

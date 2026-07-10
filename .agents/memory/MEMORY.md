@@ -20,3 +20,4 @@
 - [Copilot content field template](copilot-content-field-template.md) — fixed German section order for Graph externalItem `content` free text; governance metadata stays in properties, never repeated inline.
 - [Copilot connector citation vs. technical fields](copilot-connector-source-metadata.md) — connector responses must lead with displayCode/title/url/version/ownerName, nest nodeId/status/sourcePriority under `technical`.
 - [Copilot child-page export & guidance](copilot-child-pages.md) — hasChildren/childPageCount/childPages(≤12)|topChildPages+searchHint, plus a pageType-driven German relevance sentence.
+- [Copilot citation sourceUrl must match live frontend routes](copilot-citation-url-routes.md) — always diff generated citation URL path segments against actual route table entries; a plural/singular mismatch silently 404s every citation link.

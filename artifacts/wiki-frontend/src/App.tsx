@@ -83,6 +83,7 @@ function Router() {
         <Route path="/nodes/:id/review" component={WorkingCopyReviewPage} />
         <Route path="/search" component={SearchPage} />
         <Route path="/glossary" component={GlossaryPage} />
+        <Route path="/glossary/:slug" component={GlossaryPage} />
         <Route path="/broken-links">
           <Redirect to="/dashboard" />
         </Route>

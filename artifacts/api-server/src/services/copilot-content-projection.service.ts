@@ -249,7 +249,7 @@ export async function getPublishedChildPages(
       displayCode: r.displayCode,
       pageType: r.templateType,
       shortDescription,
-      sourceUrl: `${SOURCE_BASE_URL}/nodes/${r.id}`,
+      sourceUrl: `${SOURCE_BASE_URL}/node/${r.id}`,
     };
   });
 }
@@ -506,7 +506,7 @@ export async function projectPublishedPage(
     reviewDue: revision.nextReviewDate
       ? revision.nextReviewDate.toISOString()
       : null,
-    sourceUrl: `${SOURCE_BASE_URL}/nodes/${node.id}`,
+    sourceUrl: `${SOURCE_BASE_URL}/node/${node.id}`,
     lastModifiedAt: node.updatedAt ? node.updatedAt.toISOString() : null,
     publishedAt: publishEvent
       ? publishEvent.createdAt.toISOString()
