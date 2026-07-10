@@ -329,11 +329,15 @@ export function GraphConnectorTab() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Database className="h-5 w-5" />
               Microsoft Graph Connection
+              <Badge variant="secondary">Vorschau · nicht abgeschlossen</Badge>
             </CardTitle>
             {connection && <Badge variant="outline">{connection.id}</Badge>}
           </div>
           <CardDescription>
-            Copilot Studio / Microsoft Search Enterprise-Data-Connector für FlowCore-Inhalte
+            Copilot Studio / Microsoft Search Enterprise-Data-Connector für FlowCore-Inhalte.
+            Optionale, separate Funktion für die passive Hintergrund-Indexierung — erfordert eine
+            externe Verbindungs-ID aus dem Microsoft-365-Tenant, die noch nicht hinterlegt ist. Dies
+            betrifft nicht den API-Key-Custom-Connector (siehe Tab „Copilot Connector-Keys").
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">

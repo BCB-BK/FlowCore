@@ -12,3 +12,4 @@
 - [No real Graph tenant in this environment](graph-connector-env-limits.md) — GRAPH_EXTERNAL_CONNECTION_ID is unset here; use the dev-only graph_sync_mock_mode system_setting to verify the full sync/ACL pipeline, then reset it to false.
 - [New @workspace/db schema export not seen by tsc](db-schema-export-not-found.md) — composite project reference redirects to stale dist/*.d.ts; rebuild lib/db (tsc -b) after adding a schema export, don't just edit source.
 - [Power Apps Custom Connector import format](power-apps-custom-connector-format.md) — import wizard requires OpenAPI 2.0/Swagger, not 3.x; serve both if a 3.0 doc already exists elsewhere.
+- [CORS vs API-key routes](cors-api-key-routes.md) — strict single-origin CORS for CSRF protection also blocks legitimate API-key-authenticated external routes; scope CORS per path prefix.

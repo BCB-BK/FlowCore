@@ -68,7 +68,7 @@ const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
   { value: "general", label: "Allgemein", icon: Server, requiredPermissions: ["manage_settings"] },
   { value: "users", label: "Benutzer & Rollen", icon: Users, requiredPermissions: ["manage_permissions"] },
   { value: "connections", label: "Verbindungen", icon: Link2, requiredPermissions: ["manage_settings"] },
-  { value: "graph-connector", label: "Copilot Studio / Graph", icon: Cpu, requiredPermissions: ["manage_graph_connector"] },
+  { value: "graph-connector", label: "Copilot Studio / Graph (Vorschau)", icon: Cpu, requiredPermissions: ["manage_graph_connector"] },
   { value: "copilot-connector-keys", label: "Copilot Connector-Keys", icon: KeyRound, requiredPermissions: ["manage_copilot_connector_keys"] },
   { value: "ai", label: "FlowCore-Assistent", icon: Bot, requiredPermissions: ["manage_settings"] },
   { value: "templates", label: "Seitentemplates", icon: FileText, requiredPermissions: ["manage_templates"] },

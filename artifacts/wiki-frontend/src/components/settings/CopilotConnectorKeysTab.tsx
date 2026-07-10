@@ -104,6 +104,13 @@ function ScopeCheckboxGrid({
   );
 }
 
+interface ConnectorSearchResult {
+  nodeId: string;
+  displayCode: string;
+  title: string;
+  summary: string;
+}
+
 export function CopilotConnectorKeysTab() {
   const [keys, setKeys] = useState<ConnectorKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,6 +124,12 @@ export function CopilotConnectorKeysTab() {
   const [newKey, setNewKey] = useState<{ id: string; apiKey: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
+
+  const [testApiKey, setTestApiKey] = useState("");
+  const [testQuery, setTestQuery] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<ConnectorSearchResult[] | null>(null);
 
   const loadKeys = () => {
     setLoading(true);
@@ -180,6 +193,31 @@ export function CopilotConnectorKeysTab() {
     await navigator.clipboard.writeText(newKey.apiKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleTest = async () => {
+    if (!testApiKey.trim() || !testQuery.trim()) return;
+    setTesting(true);
+    setTestError(null);
+    setTestResults(null);
+    try {
+      const result = await customFetch<{ results: ConnectorSearchResult[] }>(
+        "/api/copilot/search",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-FlowCore-Api-Key": testApiKey.trim(),
+          },
+          body: JSON.stringify({ query: testQuery.trim() }),
+        },
+      );
+      setTestResults(result.results);
+    } catch (err) {
+      setTestError(err instanceof Error ? err.message : "Test fehlgeschlagen");
+    } finally {
+      setTesting(false);
+    }
   };
 
   return (
@@ -267,6 +305,73 @@ export function CopilotConnectorKeysTab() {
               <p className="text-xs text-muted-foreground">
                 Header-Name für Copilot Studio / Power Apps: <code>X-FlowCore-Api-Key</code>
               </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">Verbindung testen</CardTitle>
+          <CardDescription>
+            Testet den Custom Connector direkt hier — unabhängig von Power Apps/Copilot Studio und
+            unabhängig vom Tab „Copilot Studio / Graph". Füge einen erstellten API-Key ein (das
+            Secret wird nur einmalig angezeigt, ggf. vorher sicher notiert) und stelle eine Test-Suchanfrage.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="test-api-key">API-Key</Label>
+            <Input
+              id="test-api-key"
+              value={testApiKey}
+              onChange={(e) => setTestApiKey(e.target.value)}
+              placeholder="fc_conn_…"
+              autoComplete="off"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="test-query">Suchanfrage</Label>
+            <Input
+              id="test-query"
+              value={testQuery}
+              onChange={(e) => setTestQuery(e.target.value)}
+              placeholder="z.B. Urlaubsantrag"
+            />
+          </div>
+          <Button
+            onClick={handleTest}
+            disabled={testing || !testApiKey.trim() || !testQuery.trim()}
+          >
+            {testing ? "Teste…" : "Test ausführen"}
+          </Button>
+
+          {testError && <p className="text-sm text-destructive">{testError}</p>}
+
+          {testResults && (
+            <div className="rounded-md border p-4 space-y-2">
+              {testResults.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Verbindung erfolgreich — aber keine passenden Treffer für diese Anfrage
+                  (ggf. Scopes des Keys prüfen).
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-500">
+                    Verbindung erfolgreich — {testResults.length} Treffer
+                  </p>
+                  <ul className="space-y-2">
+                    {testResults.map((r) => (
+                      <li key={r.nodeId} className="text-sm border-b pb-2 last:border-b-0">
+                        <div className="font-medium">
+                          {r.title} <span className="text-muted-foreground">({r.displayCode})</span>
+                        </div>
+                        <div className="text-muted-foreground text-xs">{r.summary}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           )}
         </CardContent>
