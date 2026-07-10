@@ -1,0 +1,18 @@
+Ich habe den Fehler gefunden – er liegt nicht in Copilot Studio, sondern in der Authentifizierung des Custom Connectors selbst.
+Was ich festgestellt habe:
+
+Im Testen-Tab des Custom Connectors (FlowCore → SearchFlowCore-Aktion) schlägt der Testaufruf mit Fehler 401 fehl. Die Antwort vom Backend lautet konkret:
+
+json   { "error": "Authentication required" }
+Das heißt: Der Aufruf kommt bei flowcore.bildungscampus-backnang.de/api/copilot/search an, wird aber vom Backend als nicht authentifiziert abgelehnt.
+
+In der Sicherheit-Konfiguration des Connectors ist als Auth-Typ "API-Schlüssel" hinterlegt, der im Header X-FlowCore-Api-Key mitgeschickt werden soll.
+In Power Apps → Verbindungen zeigt die FlowCore-Verbindung Status "Verbunden" (grün) – das ist bei API-Key-Verbindungen aber nur eine formale Bestätigung, dass ein Wert eingetragen wurde. Es wird nicht geprüft, ob der Schlüssel tatsächlich gültig ist.
+Im Test-Chat von Copilot Studio selbst sieht man genau dieses Symptom bestätigt: Der Agent antwortet sinngemäß, dass die Anfrage wiederholt werden solle, "wenn die Verbindung bereit ist", und verweist auf den Verbindungs-Manager zur Überprüfung der Anmeldeinformationen – das ist Copilot Studios eigene Reaktion auf den 401-Fehler.
+
+Fazit: Der in der FlowCore-Verbindung gespeicherte API-Schlüssel wird vom Backend nicht akzeptiert (falsch, abgelaufen, oder gehört nicht zum richtigen Scope). Deshalb liefert die Suche keine Ergebnisse, obwohl Connector, Verbindung und Freigabe in Copilot Studio korrekt eingerichtet sind – der Fehler passiert eine Ebene tiefer, direkt bei der Anfrage an das FlowCore-Backend.
+Empfehlung zur Behebung:
+
+Prüfen, ob der aktuell im Backend (bei FlowCore/bildungscampus-backnang.de) gültige API-Key mit dem in der Power-Apps-Verbindung hinterlegten Wert übereinstimmt.
+Eine neue Verbindung mit dem korrekten/aktuellen API-Key anlegen (die alte, fehlerhafte Verbindung kann dann ersetzt werden).
+Anschließend den Testaufruf im Connector (Testen-Tab) erneut ausführen – erst wenn dort ein 200 mit Treffern kommt, wird auch Copilot Studio Ergebnisse liefern.
