@@ -41,12 +41,25 @@ export function errorHandler(
     return;
   }
 
-  logger.error(
-    { err, method: req.method, path: req.path },
-    "Unhandled error",
-  );
+  const rawStatus = (err as { status?: unknown }).status;
+  const status =
+    typeof rawStatus === "number" && rawStatus >= 400 && rawStatus < 600
+      ? rawStatus
+      : 500;
 
-  res.status(500).json({
-    error: isProduction ? "Interner Serverfehler" : err.message,
+  if (status >= 500) {
+    logger.error(
+      { err, method: req.method, path: req.path },
+      "Unhandled error",
+    );
+  } else {
+    logger.warn(
+      { err, method: req.method, path: req.path, status },
+      "Handled error (non-AppError)",
+    );
+  }
+
+  res.status(status).json({
+    error: isProduction && status >= 500 ? "Interner Serverfehler" : err.message,
   });
 }

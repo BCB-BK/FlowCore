@@ -69,21 +69,42 @@ app.use(
 );
 const PROD_ORIGIN = "https://flowcore.bildungscampus-backnang.de";
 
-app.use(
-  cors({
-    origin: isProduction
-      ? (origin, callback) => {
-          if (!origin || origin === PROD_ORIGIN) {
-            callback(null, true);
-          } else {
-            const err = Object.assign(new Error(`CORS: origin not allowed`), { status: 403 });
-            callback(err);
-          }
+// The Copilot Studio / Power Platform custom connector endpoints are
+// authenticated via a per-agent API key (no cookies), and are called
+// server-to-server by Power Platform (and, when testing/importing the
+// connector, from the browser-based Power Apps/Power Automate portal on a
+// microsoft.com-controlled origin). They never carry the FlowCore session
+// cookie, so the strict same-origin CORS policy below (which exists to
+// protect cookie-authenticated routes from CSRF) does not apply and would
+// otherwise incorrectly block legitimate connector traffic.
+const openCors = cors({ origin: true, credentials: false });
+const strictCors = cors({
+  origin: isProduction
+    ? (origin, callback) => {
+        if (!origin || origin === PROD_ORIGIN) {
+          callback(null, true);
+        } else {
+          const err = Object.assign(new Error(`CORS: origin not allowed`), { status: 403 });
+          callback(err);
         }
-      : true,
-    credentials: true,
-  }),
-);
+      }
+    : true,
+  credentials: true,
+});
+const COPILOT_CONNECTOR_OPEN_PATHS = [
+  "/api/copilot/openapi.json",
+  "/api/copilot/swagger.json",
+  "/api/copilot/search",
+  "/api/copilot/nodes/",
+];
+
+app.use((req, res, next) => {
+  if (COPILOT_CONNECTOR_OPEN_PATHS.some((p) => req.path.startsWith(p))) {
+    openCors(req, res, next);
+    return;
+  }
+  strictCors(req, res, next);
+});
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(apiRateLimit);
