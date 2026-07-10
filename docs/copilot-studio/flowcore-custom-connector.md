@@ -17,9 +17,16 @@ nutzen.
 
 | Methode | Pfad | Auth | Zweck |
 |---|---|---|---|
-| GET | `/api/copilot/openapi.json` | keine (öffentliches Schema-Dokument) | OpenAPI-Beschreibung für den Custom-Connector-Import in Power Apps |
+| GET | `/api/copilot/swagger.json` | keine (öffentliches Schema-Dokument) | **Diese Datei für den Import in den Power Apps Custom-Connector-Wizard verwenden** (OpenAPI 2.0/Swagger) |
+| GET | `/api/copilot/openapi.json` | keine (öffentliches Schema-Dokument) | Menschenlesbare OpenAPI-3.0-Referenz derselben API — NICHT für den Power-Apps-Import geeignet |
 | POST | `/api/copilot/search` | `X-FlowCore-Api-Key` | Volltextsuche über veröffentlichte, Copilot-indexierbare Seiten, optional gefiltert nach `brandScope`/`agentScope` |
 | GET | `/api/copilot/nodes/:id` | `X-FlowCore-Api-Key` | Liefert die vollständige Projektion einer einzelnen veröffentlichten Seite |
+
+> **Wichtig:** Power Apps / Power Automate Custom Connectors akzeptieren beim
+> Import ausschließlich **OpenAPI 2.0 (Swagger)**, kein OpenAPI 3.x (Stand:
+> Microsoft Learn, "Create a custom connector from an OpenAPI definition").
+> Deshalb gibt es zwei Dokumente — für den tatsächlichen Connector-Import
+> immer `swagger.json` verwenden.
 
 Admin-Verwaltung der API-Keys (normale FlowCore-Session/RBAC-Auth, Berechtigung
 `manage_copilot_connector_keys`):
@@ -61,8 +68,12 @@ sowie eine maximale Vertraulichkeitsstufe beschränkt (Entscheidung vom
    anlegen (`POST /api/copilot/admin/keys`) mit passendem `agentScopes`/
    `brandScopes`/`maxConfidentialityLevel`. Das Secret wird nur einmal
    angezeigt — sicher hinterlegen.
-2. Im Power Apps Portal einen Custom Connector aus
-   `GET /api/copilot/openapi.json` importieren.
+2. Im Power Apps Portal (make.powerapps.com) über den linken Navigationsbereich
+   **Data → Custom Connectors** (Microsoft benennt/verschiebt diesen Menüpunkt
+   gelegentlich um; alternativ über "More"/„Mehr" am unteren Rand der
+   Seitenleiste suchen) → **+ New custom connector** → **Import an OpenAPI
+   file** (bzw. „Aus URL importieren"), und dabei
+   `GET /api/copilot/swagger.json` (nicht `openapi.json`!) verwenden.
 3. Als Authentifizierung "API Key" mit Header `X-FlowCore-Api-Key` und dem
    erzeugten Secret konfigurieren.
 4. Den Connector in Copilot Studio als Tool/Action zum jeweiligen

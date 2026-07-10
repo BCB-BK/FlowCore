@@ -11,3 +11,4 @@
 - [Forcing "unmapped ACL" in e2e tests](graph-acl-fail-closed-testing.md) — node owner + all allowed_roles holders resolve via RBAC regardless of test setup; must unmap via direct SQL to genuinely test no_entra_mapping/no_authorized_principals.
 - [No real Graph tenant in this environment](graph-connector-env-limits.md) — GRAPH_EXTERNAL_CONNECTION_ID is unset here; use the dev-only graph_sync_mock_mode system_setting to verify the full sync/ACL pipeline, then reset it to false.
 - [New @workspace/db schema export not seen by tsc](db-schema-export-not-found.md) — composite project reference redirects to stale dist/*.d.ts; rebuild lib/db (tsc -b) after adding a schema export, don't just edit source.
+- [Power Apps Custom Connector import format](power-apps-custom-connector-format.md) — import wizard requires OpenAPI 2.0/Swagger, not 3.x; serve both if a 3.0 doc already exists elsewhere.

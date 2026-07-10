@@ -4,7 +4,7 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { requireConnectorKey } from "../middlewares/require-connector-key";
 import { validateBody } from "../middlewares/validate-body";
-import { buildConnectorOpenApiSpec } from "../lib/copilot-connector-openapi";
+import { buildConnectorOpenApiSpec, buildConnectorSwagger2Spec } from "../lib/copilot-connector-openapi";
 import {
   searchForConnector,
   getNodeForConnector,
@@ -35,6 +35,17 @@ function baseUrlFromRequest(req: Request): string {
  */
 copilotConnectorRouter.get("/openapi.json", (req, res) => {
   const spec = buildConnectorOpenApiSpec(baseUrlFromRequest(req));
+  res.json(spec);
+});
+
+/**
+ * Public: no auth. Power Apps / Power Automate Custom Connectors only
+ * accept OpenAPI 2.0 (Swagger) on import, not OpenAPI 3.x — this is the
+ * document to import into the Custom Connector wizard. See
+ * copilot-connector-openapi.ts for the source and Microsoft Learn reference.
+ */
+copilotConnectorRouter.get("/swagger.json", (req, res) => {
+  const spec = buildConnectorSwagger2Spec(baseUrlFromRequest(req));
   res.json(spec);
 });
 
