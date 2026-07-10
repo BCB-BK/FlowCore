@@ -10,6 +10,7 @@ import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
 import { Input } from "@workspace/ui/input";
 import { Label } from "@workspace/ui/label";
+import { Switch } from "@workspace/ui/switch";
 import {
   Table,
   TableBody,
@@ -149,6 +150,8 @@ export function GraphConnectorTab() {
   const [logLoading, setLogLoading] = useState(false);
 
   const [groupMappings, setGroupMappings] = useState<GroupMapping[]>([]);
+  const [glossarySyncEnabled, setGlossarySyncEnabled] = useState(true);
+  const [glossarySyncLoading, setGlossarySyncLoading] = useState(false);
   const [singleItemId, setSingleItemId] = useState("");
   const [singleItemType, setSingleItemType] = useState<"page" | "glossary">("page");
   const [aclPreview, setAclPreview] = useState<unknown>(null);
@@ -190,11 +193,18 @@ export function GraphConnectorTab() {
       .catch(() => {});
   };
 
+  const loadGlossarySyncSetting = () => {
+    customFetch<{ settings: Record<string, string> }>("/api/admin/system-settings")
+      .then((res) => setGlossarySyncEnabled(res.settings.glossary_sync_enabled !== "false"))
+      .catch(() => {});
+  };
+
   useEffect(() => {
     loadConnection();
     loadIndexStatus();
     loadSyncLog();
     loadGroupMappings();
+    loadGlossarySyncSetting();
   }, []);
 
   const handleTestConnection = async () => {
@@ -466,6 +476,33 @@ export function GraphConnectorTab() {
             <Button size="sm" variant="outline" onClick={() => handleSync("delta", false)} disabled={!!syncBusy}>
               Delta-Sync ausführen
             </Button>
+          </div>
+
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div>
+              <p className="text-sm font-medium">Glossar</p>
+              <p className="text-xs text-muted-foreground">
+                Glossarbegriffe werden bei Voll- und Delta-Synchronisation sowie in der Copilot-Suche
+                und im Copilot-Export ber{"ü"}cksichtigt
+              </p>
+            </div>
+            <Switch
+              checked={glossarySyncEnabled}
+              disabled={glossarySyncLoading}
+              onCheckedChange={async (checked) => {
+                setGlossarySyncLoading(true);
+                try {
+                  await customFetch("/api/admin/system-settings/glossary_sync_enabled", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ value: checked ? "true" : "false" }),
+                  });
+                  setGlossarySyncEnabled(checked);
+                } catch {
+                }
+                setGlossarySyncLoading(false);
+              }}
+            />
           </div>
 
           <div className="rounded-md border p-3 space-y-2">

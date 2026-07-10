@@ -54,6 +54,17 @@ export async function isGraphSyncMockMode(): Promise<boolean> {
   return val === "true";
 }
 
+/**
+ * Whether glossary terms are included in Graph/Copilot sync and the ad-hoc
+ * connector search. Defaults to enabled (true) when unset, since the
+ * glossary is a core content source (Task 6) - explicit opt-out only, never
+ * opt-in-by-surprise.
+ */
+export async function isGlossarySyncEnabled(): Promise<boolean> {
+  const val = await getSystemSetting("glossary_sync_enabled");
+  return val !== "false";
+}
+
 export type GraphFaultInjection = "none" | "auth_unconfigured" | "api_error";
 
 /**

@@ -17,6 +17,7 @@ import {
   isConfidentialityAllowed,
   type CopilotConnectorPrincipal,
 } from "./copilot-connector-key.service";
+import { isGlossarySyncEnabled } from "./system-settings.service";
 
 /**
  * Task 4 - "Quellenblock-freundliche Metadaten normalisieren": the fields a
@@ -322,9 +323,14 @@ export async function searchForConnector(
   // not need to be linked to a page). Without including them here,
   // definitional questions ("Was bedeutet AZAV?") could only ever surface
   // process pages that happen to mention the abbreviation in passing.
-  const glossaryRows = await db
-    .select({ id: glossaryTermsTable.id })
-    .from(glossaryTermsTable);
+  // Admins can disable this entirely via the "Glossar" setting (Task 6
+  // follow-up) - respected here so a disabled glossary is never
+  // surfaced through search even if items remain synced from an earlier
+  // full sync.
+  const glossarySyncEnabled = await isGlossarySyncEnabled();
+  const glossaryRows = glossarySyncEnabled
+    ? await db.select({ id: glossaryTermsTable.id }).from(glossaryTermsTable)
+    : [];
 
   for (let i = 0; i < glossaryRows.length; i += BATCH_SIZE) {
     const batch = glossaryRows.slice(i, i + BATCH_SIZE);

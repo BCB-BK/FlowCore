@@ -7,6 +7,7 @@ import { getSyncState, upsertSyncState } from "./graph-sync-state.service";
 import { recordSyncLog, type GraphSyncOperation } from "./graph-sync-log.service";
 import { setCopilotIndexStatus } from "./copilot-index-status.service";
 import { getGraphConnectorConfig } from "./graph-connector-config.service";
+import { isGlossarySyncEnabled } from "./system-settings.service";
 import { AppError } from "../lib/app-error";
 
 export interface SyncOptions {
@@ -173,6 +174,22 @@ export async function syncGlossaryTerm(
   const dryRun = options.dryRun ?? false;
   const actor = options.actor ?? "system";
   const operation: GraphSyncOperation = dryRun ? "dry_run" : "single_glossary";
+
+  if (!(await isGlossarySyncEnabled())) {
+    const itemId = `flowcore_glossary_${termId}`;
+    await recordSyncLog({
+      itemId,
+      itemType: "glossary",
+      nodeId: null,
+      termId,
+      operation,
+      result: "skipped",
+      reason: "glossary_sync_disabled",
+      dryRun,
+      actor,
+    });
+    return { itemId, status: "skipped", dryRun, reason: "glossary_sync_disabled" };
+  }
 
   let built;
   try {

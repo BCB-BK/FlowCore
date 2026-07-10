@@ -10,6 +10,7 @@ import {
   exportGlossaryTerms,
 } from "../services/published-content-export.service";
 import { setCopilotIndexStatus } from "../services/copilot-index-status.service";
+import { isGlossarySyncEnabled } from "../services/system-settings.service";
 import { COPILOT_INDEX_STATUSES } from "../lib/agent-metadata";
 import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
@@ -71,6 +72,10 @@ copilotRouter.get(
   requirePermission("export_copilot_content"),
   async (req, res) => {
     try {
+      if (!(await isGlossarySyncEnabled())) {
+        res.json({ items: [], total: 0, limit: 0, offset: 0, hasMore: false });
+        return;
+      }
       const { limit, offset } = parsePagination(req);
       const result = await exportGlossaryTerms(limit, offset);
       res.json(result);
