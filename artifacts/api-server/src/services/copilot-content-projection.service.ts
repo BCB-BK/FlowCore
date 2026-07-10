@@ -72,6 +72,8 @@ export interface CopilotPageProjection {
   hasChildren: boolean;
   childPageCount: number;
   childPageTitles: string[];
+  childPages: ChildPageSummary[];
+  scopeContext: string | null;
 }
 
 async function resolvePrincipalName(id: string | null | undefined): Promise<string | null> {
@@ -171,6 +173,51 @@ export async function getPublishedChildTitles(nodeId: string): Promise<string[]>
   return rows.map((r) => r.title);
 }
 
+export interface ChildPageSummary {
+  title: string;
+  shortDescription: string;
+}
+
+/**
+ * Returns direct child pages that are published + non-deleted, each with a
+ * short description (kurzbeschreibung structured field, falling back to
+ * summary, falling back to "" — nachvollziehbar leer, never omitted). Used
+ * to render a useful "Unterseiten / Detailseiten" content section without
+ * having to fully deserialize each child's ProseMirror body.
+ */
+export async function getPublishedChildPages(
+  nodeId: string,
+): Promise<ChildPageSummary[]> {
+  const rows = await db
+    .select({
+      title: contentNodesTable.title,
+      structuredFields: contentRevisionsTable.structuredFields,
+    })
+    .from(contentNodesTable)
+    .innerJoin(
+      contentRevisionsTable,
+      eq(contentNodesTable.publishedRevisionId, contentRevisionsTable.id),
+    )
+    .where(
+      and(
+        eq(contentNodesTable.parentNodeId, nodeId),
+        eq(contentNodesTable.isDeleted, false),
+        eq(contentNodesTable.status, "published"),
+        eq(contentRevisionsTable.status, "published"),
+      ),
+    );
+  return rows.map((r) => {
+    const sf = (r.structuredFields ?? {}) as Record<string, unknown>;
+    const shortDescription =
+      typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
+        ? sf.kurzbeschreibung
+        : typeof sf.summary === "string"
+          ? sf.summary
+          : "";
+    return { title: r.title, shortDescription };
+  });
+}
+
 /**
  * Builds the Copilot/Graph-ready projection for a single node's published
  * revision. Returns null if the node has no published_revision_id, is
@@ -253,15 +300,16 @@ export async function projectPublishedPage(
 
   const glossaryTerms = await findGlossaryTermsInText(plaintext);
 
-  const [owner, reviewer, contentOwner, ancestorTitles, childPageTitles] =
+  const [owner, reviewer, contentOwner, ancestorTitles, childPages] =
     await Promise.all([
       resolvePrincipalName(ownership?.ownerId ?? null),
       resolvePrincipalName(ownership?.reviewerId ?? null),
       resolvePrincipalName(revision.authorId ?? null),
       getAncestorTitles(node.id),
-      getPublishedChildTitles(node.id),
+      getPublishedChildPages(node.id),
     ]);
   const parentPath = ancestorTitles.length > 0 ? ancestorTitles.join(" > ") : null;
+  const childPageTitles = childPages.map((c) => c.title);
   const hasChildren = childPageTitles.length > 0;
   const childPageCount = childPageTitles.length;
 
@@ -285,6 +333,8 @@ export async function projectPublishedPage(
     typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
       ? sf.kurzbeschreibung
       : summary;
+  const scopeContext =
+    typeof sf.scope === "string" && sf.scope.trim().length > 0 ? sf.scope : null;
 
   const agentMetadata = extractAgentMetadata(sf);
   const aclStatus = await getAclMappingStatus(node.id);
@@ -358,5 +408,7 @@ export async function projectPublishedPage(
     hasChildren,
     childPageCount,
     childPageTitles,
+    childPages,
+    scopeContext,
   };
 }

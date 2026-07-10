@@ -16,3 +16,4 @@
 - [CORS vs API-key routes](cors-api-key-routes.md) — strict single-origin CORS for CSRF protection also blocks legitimate API-key-authenticated external routes; scope CORS per path prefix.
 - [Copilot connector search must tokenize queries](copilot-connector-search-tokenize.md) — matching the whole free-text query as one literal substring returns near-empty results; score per-word instead, since natural-language queries rarely appear as a contiguous phrase in content.
 - [Graph externalItem strict-required vs nullable properties](graph-externalitem-strict-required-fields.md) — assertRequiredProperties treats null/"" as "missing"; only fields guaranteed non-null by construction may be in a REQUIRED_*_PROPERTY_NAMES list, or valid pages/terms will 400 on export.
+- [Copilot content field template](copilot-content-field-template.md) — fixed German section order for Graph externalItem `content` free text; governance metadata stays in properties, never repeated inline.

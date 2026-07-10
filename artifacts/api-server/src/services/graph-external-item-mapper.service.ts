@@ -61,81 +61,224 @@ function formatRelations(
     .join("; ");
 }
 
+/** UUID v4-ish pattern used to strip raw technical IDs from visible content. */
+const UUID_PATTERN =
+  /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+
+/** Removes bare UUIDs from free text; they must stay in technical properties only. */
+function stripUuids(text: string): string {
+  return text.replace(UUID_PATTERN, "").replace(/[ \t]{2,}/g, " ").trim();
+}
+
 /**
- * Builds the full-text `content` field for a page externalItem. Per spec,
- * this must contain: title, short description, main content, structured
- * fields, relations, glossary terms, the FlowCore source URL, version /
- * revision, status, authority level, owner, and the review hint. It is
- * derived strictly from the published-revision projection, so a working
- * copy (unpublished draft) can never leak into the indexed content.
+ * Strips HTML markup and collapses whitespace so rich-text fields (glossary
+ * definitions, kurzbeschreibung) read as plain prose in the Copilot content
+ * block instead of leaking raw tags as "unnötiger technischer Ballast".
  */
+function stripHtml(text: string): string {
+  return text
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/** Combined cleanup applied to any free text before it enters the content block. */
+function sanitizeForContent(text: string): string {
+  return stripUuids(stripHtml(text));
+}
+
 /**
- * Renders the mandatory citation block appended to every externalItem's
- * content text (Cluster 10). Format is fixed so downstream consumers
- * (Copilot Studio answers, Microsoft Search snippets) can rely on it:
- *
- *   Quelle: <sourceUrl>
- *   FlowCore-ID: <stable id>
- *   Version: <version>
- *   Revision: <revision>
- *   Status: <status>
- *   Authority: <binding/guidance/...>
- *   Owner: <owner>
- *   Review fällig: <reviewDue>
+ * Keys inside `structuredFields` that are governance/technical metadata
+ * already surfaced as dedicated Graph properties (authorityLevel, tags,
+ * agentScope, ...). These must not be repeated inside the free-text
+ * "Strukturierte Felder" content block, which is reserved for fachliche
+ * process content (RACI, SIPOC, KPIs, Risiken, Kontrollen, Zuständigkeiten).
  */
-function buildQuellenblock(fields: {
+const STRUCTURED_FIELD_CONTENT_EXCLUDE = new Set([
+  "confidentiality",
+  "authority_level",
+  "source_priority",
+  "agent_scope",
+  "brand_scope",
+  "agent_enabled",
+  "decision_status",
+  "copilot_summary",
+  "copilot_keywords",
+  "kurzbeschreibung",
+  "summary",
+  "scope",
+  "sourceUrl",
+  "sourceType",
+  "sourceUrlSlug",
+  "originalTitle",
+  "originalCreatedAt",
+  "originalModifiedAt",
+  "description",
+  "media",
+  "_editorContent",
+]);
+
+/** Friendly German labels for the fachliche structured-field keys Copilot answers should surface. */
+const STRUCTURED_FIELD_LABELS: Record<string, string> = {
+  raci: "RACI",
+  responsibilities: "Zuständigkeiten",
+  role_definition: "Rollen",
+  sipoc: "SIPOC",
+  sipoc_light: "SIPOC (vereinfacht)",
+  kpis: "KPIs / Kennzahlen",
+  success_metrics: "Erfolgskriterien",
+  risks: "Risiken",
+  root_cause: "Ursache",
+  corrective_action: "Korrekturmaßnahmen",
+  preventive_action: "Präventivmaßnahmen",
+  effectiveness_check: "Wirksamkeitskontrolle",
+  compliance: "Kontrollen / Compliance",
+  quality_criteria: "Qualitätskriterien",
+  process_steps: "Prozessschritte",
+  main_flow: "Hauptablauf",
+};
+
+function humanizeFieldKey(key: string): string {
+  const label = STRUCTURED_FIELD_LABELS[key];
+  if (label) return label;
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatStructuredFieldValue(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) =>
+        typeof entry === "string" ? entry : JSON.stringify(entry),
+      )
+      .join("; ");
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Renders the fachliche structured-field content (RACI, SIPOC, KPIs,
+ * Risiken, Kontrollen, Zuständigkeiten, ...) as a readable list, skipping
+ * governance/technical keys that are already dedicated properties. Returns
+ * "" when nothing fachlich relevant is present, so the caller can omit the
+ * whole section instead of printing an empty header.
+ */
+function renderStructuredFieldsBlock(
+  structuredFields: Record<string, unknown>,
+): string {
+  const entries = Object.entries(structuredFields ?? {}).filter(
+    ([key, value]) =>
+      !STRUCTURED_FIELD_CONTENT_EXCLUDE.has(key) &&
+      value !== null &&
+      value !== undefined &&
+      value !== "" &&
+      !(Array.isArray(value) && value.length === 0),
+  );
+  if (entries.length === 0) return "";
+  return entries
+    .map(([key, value]) => `${humanizeFieldKey(key)}: ${formatStructuredFieldValue(value)}`)
+    .join("\n");
+}
+
+/**
+ * Renders the "Unterseiten / Detailseiten" section: each relevant child
+ * page with its title and short description, so Copilot can disambiguate
+ * between a parent overview and its detail pages when answering.
+ */
+function renderChildPagesBlock(
+  childPages: CopilotPageProjection["childPages"],
+): string {
+  if (childPages.length === 0) return "";
+  return childPages
+    .map((c) =>
+      c.shortDescription ? `- ${c.title}: ${c.shortDescription}` : `- ${c.title}`,
+    )
+    .join("\n");
+}
+
+/**
+ * Renders the mandatory "Quellenhinweis" block appended to every
+ * externalItem's content text. Format is fixed so downstream consumers
+ * (Copilot Studio answers, Microsoft Search snippets) can rely on it. Status
+ * `published` is intentionally NOT repeated here — it lives only in the
+ * technical `status` property, not in the prominent content block.
+ */
+function buildQuellenhinweis(fields: {
   sourceUrl: string;
-  flowcoreId: string;
   version: string | null;
-  revision: number | null;
-  status: string;
+  ownerName: string | null;
   authorityLevel: string | null;
-  owner: string | null;
-  reviewDue: string | null;
 }): string {
   return [
-    "Quellenblock:",
-    `Quelle: ${fields.sourceUrl}`,
-    `FlowCore-ID: ${fields.flowcoreId}`,
+    "Quellenhinweis:",
+    `FlowCore-Quelle: ${fields.sourceUrl}`,
     `Version: ${fields.version ?? "nicht vergeben"}`,
-    `Revision: ${fields.revision ?? "nicht vergeben"}`,
-    `Status: ${fields.status}`,
+    `Owner: ${fields.ownerName ?? "nicht zugewiesen"}`,
     `Authority: ${fields.authorityLevel ?? "nicht klassifiziert"}`,
-    `Owner: ${fields.owner ?? "nicht zugewiesen"}`,
-    `Review fällig: ${fields.reviewDue ?? "nicht geplant"}`,
   ].join("\n");
 }
 
+/**
+ * Builds the full-text `content` field for a page externalItem as a
+ * semantically structured knowledge unit for Copilot, not raw dump text:
+ *
+ *   Titel / FlowCore-Code / Kurzbeschreibung / Seitentyp / Geltungsbereich
+ *   Inhalt: <bereinigter Hauptinhalt, ohne UUIDs>
+ *   Strukturierte Felder: <RACI, SIPOC, KPIs, Risiken, Kontrollen, ...>
+ *   Unterseiten / Detailseiten: <Titel + Kurzbeschreibung je Kind>
+ *   Glossarbegriffe: <referenzierte Begriffe>
+ *   Quellenhinweis: <Quelle, Version, Owner, Authority>
+ *
+ * Working copies/drafts can never leak in, since this is derived strictly
+ * from the published-revision projection. No UUIDs and no prominent
+ * "Status: published" clutter — those stay in technical properties only.
+ */
 function buildPageContent(projection: CopilotPageProjection): string {
+  const structuredFieldsBlock = renderStructuredFieldsBlock(
+    projection.structuredFields,
+  );
+  const childPagesBlock = renderChildPagesBlock(projection.childPages);
+
   const parts = [
     `Titel: ${projection.title}`,
-    projection.summary ? `Kurzbeschreibung: ${projection.summary}` : "",
-    `Hauptinhalt:\n${projection.contentText}`,
-    Object.keys(projection.structuredFields ?? {}).length > 0
-      ? `Strukturierte Felder: ${JSON.stringify(projection.structuredFields)}`
+    `FlowCore-Code: ${projection.displayCode}`,
+    `Kurzbeschreibung: ${
+      projection.shortDescription
+        ? sanitizeForContent(projection.shortDescription)
+        : "nicht vorhanden"
+    }`,
+    `Seitentyp: ${projection.pageType}`,
+    projection.scopeContext
+      ? `Geltungsbereich / Kontext: ${sanitizeForContent(projection.scopeContext)}`
       : "",
+    `\nInhalt:\n${sanitizeForContent(projection.contentText)}`,
+    structuredFieldsBlock ? `\nStrukturierte Felder:\n${structuredFieldsBlock}` : "",
+    `\nUnterseiten / Detailseiten:\n${childPagesBlock || "keine"}`,
+    `\nGlossarbegriffe:\n${
+      projection.glossaryTerms.length > 0
+        ? projection.glossaryTerms.join(", ")
+        : "keine"
+    }`,
     projection.relations.length > 0
-      ? `Relationen: ${formatRelations(projection.relations)}`
+      ? `\nRelationen: ${formatRelations(projection.relations)}`
       : "",
-    projection.glossaryTerms.length > 0
-      ? `Glossarbegriffe: ${projection.glossaryTerms.join(", ")}`
+    projection.parentPath
+      ? `\nÜbergeordnet: ${projection.parentPath}`
       : "",
-    projection.parentPath ? `Übergeordnet: ${projection.parentPath}` : "",
-    projection.hasChildren
-      ? `Unterseiten: ${projection.childPageTitles.join(", ")}`
-      : "",
-    buildQuellenblock({
+    `\n${buildQuellenhinweis({
       sourceUrl: projection.sourceUrl,
-      flowcoreId: projection.immutableId,
       version: projection.version,
-      revision: projection.revision,
-      status: projection.status,
+      ownerName: projection.ownerName,
       authorityLevel: projection.authorityLevel,
-      owner: projection.owner,
-      reviewDue: projection.reviewDue,
-    }),
+    })}`,
   ];
-  return parts.filter(Boolean).join("\n");
+  return parts.filter((p) => p !== "").join("\n");
 }
 
 /**
@@ -200,28 +343,39 @@ export function mapPageToExternalItem(
   };
 }
 
+/**
+ * Builds the full-text `content` field for a glossary term externalItem,
+ * mirroring the page content structure (title/code/short description/type,
+ * cleaned content, related-terms, source hint) so Copilot handles both item
+ * types with a consistent, disambiguation-friendly shape.
+ */
 function buildGlossaryContent(projection: GlossaryTermProjection): string {
   const parts = [
-    `Begriff: ${projection.term}`,
-    `Definition: ${projection.definition}`,
-    projection.synonyms.length > 0
-      ? `Synonyme: ${projection.synonyms.join(", ")}`
-      : "",
-    projection.relatedTerms.length > 0
-      ? `Verwandte Begriffe: ${projection.relatedTerms.join(", ")}`
-      : "",
-    buildQuellenblock({
+    `Titel: ${projection.term}`,
+    `FlowCore-Code: ${projection.displayCode}`,
+    `Kurzbeschreibung: ${
+      projection.shortDescription
+        ? sanitizeForContent(projection.shortDescription)
+        : "nicht vorhanden"
+    }`,
+    `Seitentyp: ${projection.pageType}`,
+    `\nInhalt:\n${sanitizeForContent(projection.definition)}`,
+    `\nSynonyme:\n${
+      projection.synonyms.length > 0 ? projection.synonyms.join(", ") : "keine"
+    }`,
+    `\nGlossarbegriffe:\n${
+      projection.relatedTerms.length > 0
+        ? projection.relatedTerms.join(", ")
+        : "keine"
+    }`,
+    `\n${buildQuellenhinweis({
       sourceUrl: projection.sourceUrl,
-      flowcoreId: projection.displayCode,
       version: projection.version,
-      revision: projection.revision,
-      status: projection.status,
+      ownerName: projection.ownerName,
       authorityLevel: projection.authorityLevel,
-      owner: projection.owner,
-      reviewDue: projection.reviewDue,
-    }),
+    })}`,
   ];
-  return parts.filter(Boolean).join("\n");
+  return parts.filter((p) => p !== "").join("\n");
 }
 
 /**
