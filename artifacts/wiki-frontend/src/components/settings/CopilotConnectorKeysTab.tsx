@@ -111,6 +111,31 @@ interface ConnectorSearchResult {
   summary: string;
 }
 
+interface SessionKey {
+  id: string;
+  name: string;
+  apiKey: string;
+}
+
+const SESSION_KEYS_STORAGE_KEY = "flowcore.copilot-connector.session-keys";
+
+function loadSessionKeys(): SessionKey[] {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEYS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as SessionKey[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSessionKeys(keys: SessionKey[]) {
+  try {
+    sessionStorage.setItem(SESSION_KEYS_STORAGE_KEY, JSON.stringify(keys));
+  } catch {
+    // ignore storage errors (e.g. private browsing)
+  }
+}
+
 export function CopilotConnectorKeysTab() {
   const [keys, setKeys] = useState<ConnectorKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,6 +155,8 @@ export function CopilotConnectorKeysTab() {
   const [testing, setTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<ConnectorSearchResult[] | null>(null);
+  const [sessionKeys, setSessionKeys] = useState<SessionKey[]>(() => loadSessionKeys());
+  const [selectedSessionKeyId, setSelectedSessionKeyId] = useState<string>("__manual__");
 
   const loadKeys = () => {
     setLoading(true);
@@ -164,6 +191,14 @@ export function CopilotConnectorKeysTab() {
         }),
       });
       setNewKey(result);
+      const updatedSessionKeys = [
+        ...sessionKeys,
+        { id: result.id, name: name.trim(), apiKey: result.apiKey },
+      ];
+      setSessionKeys(updatedSessionKeys);
+      saveSessionKeys(updatedSessionKeys);
+      setSelectedSessionKeyId(result.id);
+      setTestApiKey(result.apiKey);
       setName("");
       setAgentScopes([]);
       setBrandScopes([]);
@@ -180,12 +215,25 @@ export function CopilotConnectorKeysTab() {
     setRevoking(id);
     try {
       await customFetch(`/api/copilot/admin/keys/${id}`, { method: "DELETE" });
+      const updatedSessionKeys = sessionKeys.filter((k) => k.id !== id);
+      setSessionKeys(updatedSessionKeys);
+      saveSessionKeys(updatedSessionKeys);
+      if (selectedSessionKeyId === id) {
+        setSelectedSessionKeyId("__manual__");
+      }
       loadKeys();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Key konnte nicht widerrufen werden");
     } finally {
       setRevoking(null);
     }
+  };
+
+  const handleSelectSessionKey = (value: string) => {
+    setSelectedSessionKeyId(value);
+    if (value === "__manual__") return;
+    const match = sessionKeys.find((k) => k.id === value);
+    if (match) setTestApiKey(match.apiKey);
   };
 
   const handleCopy = async () => {
@@ -321,11 +369,37 @@ export function CopilotConnectorKeysTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
+            <Label>Key-Quelle</Label>
+            <Select value={selectedSessionKeyId} onValueChange={handleSelectSessionKey}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__manual__">Manuell einfügen</SelectItem>
+                {sessionKeys.map((k) => (
+                  <SelectItem key={k.id} value={k.id}>
+                    {k.name} (in dieser Sitzung erstellt)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {sessionKeys.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                Noch kein Key in dieser Sitzung erstellt — oben einen Key anlegen, dann erscheint er
+                hier automatisch zur Auswahl. Ältere Keys müssen manuell eingefügt werden, da das
+                Secret aus Sicherheitsgründen nach der Erstellung nicht mehr abrufbar ist.
+              </p>
+            )}
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="test-api-key">API-Key</Label>
             <Input
               id="test-api-key"
               value={testApiKey}
-              onChange={(e) => setTestApiKey(e.target.value)}
+              onChange={(e) => {
+                setTestApiKey(e.target.value);
+                setSelectedSessionKeyId("__manual__");
+              }}
               placeholder="fc_conn_…"
               autoComplete="off"
             />

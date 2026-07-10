@@ -100,46 +100,64 @@ export async function searchForConnector(
       ),
     );
 
-  const results: ConnectorSearchResult[] = [];
-  for (const row of rows) {
-    const projection = await projectPublishedPage(row.id);
-    if (!projection) continue;
+  // Projecting + checking each node involves several sequential DB round
+  // trips (revision, tags, relations, glossary scan, confidentiality
+  // lookup). With potentially hundreds of published nodes, awaiting these
+  // one at a time in a loop turns into tens of seconds of wall-clock time
+  // (observed ~45s in production) — enough to risk a Power Platform/Copilot
+  // Studio connector timeout. Running them concurrently in bounded batches
+  // keeps the same per-node cost but lets the DB pool pipeline the work.
+  const BATCH_SIZE = 10;
+  const candidates: ConnectorSearchResult[] = [];
 
-    if (input.brandScope?.length) {
-      const overlaps = projection.brandScope.some((b) =>
-        input.brandScope!.includes(b),
-      );
-      if (!overlaps) continue;
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map(async (row) => {
+        const projection = await projectPublishedPage(row.id);
+        if (!projection) return null;
+
+        if (input.brandScope?.length) {
+          const overlaps = projection.brandScope.some((b) =>
+            input.brandScope!.includes(b),
+          );
+          if (!overlaps) return null;
+        }
+        if (input.agentScope?.length) {
+          const overlaps = projection.agentScope.some((s) =>
+            input.agentScope!.includes(s),
+          );
+          if (!overlaps) return null;
+        }
+
+        const allowed = await isNodeAllowedForKey(projection, key);
+        if (!allowed) return null;
+
+        const score = textMatches(projection, input.query);
+        if (score <= 0) return null;
+
+        const result: ConnectorSearchResult = {
+          nodeId: projection.nodeId,
+          displayCode: projection.displayCode,
+          title: projection.title,
+          summary: projection.summary,
+          url: projection.sourceUrl,
+          version: projection.version,
+          authorityLevel: projection.authorityLevel,
+          brandScope: projection.brandScope,
+          agentScope: projection.agentScope,
+          score,
+        };
+        return result;
+      }),
+    );
+    for (const r of batchResults) {
+      if (r) candidates.push(r);
     }
-    if (input.agentScope?.length) {
-      const overlaps = projection.agentScope.some((s) =>
-        input.agentScope!.includes(s),
-      );
-      if (!overlaps) continue;
-    }
-
-    const allowed = await isNodeAllowedForKey(projection, key);
-    if (!allowed) continue;
-
-    const score = textMatches(projection, input.query);
-    if (score <= 0) continue;
-
-    results.push({
-      nodeId: projection.nodeId,
-      displayCode: projection.displayCode,
-      title: projection.title,
-      summary: projection.summary,
-      url: projection.sourceUrl,
-      version: projection.version,
-      authorityLevel: projection.authorityLevel,
-      brandScope: projection.brandScope,
-      agentScope: projection.agentScope,
-      score,
-    });
   }
 
-  results.sort((a, b) => b.score - a.score);
-  return results.slice(0, limit);
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates.slice(0, limit);
 }
 
 export async function getNodeForConnector(
