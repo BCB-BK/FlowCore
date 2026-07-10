@@ -19,3 +19,4 @@
 - [Graph externalItem strict-required vs nullable properties](graph-externalitem-strict-required-fields.md) — assertRequiredProperties treats null/"" as "missing"; only fields guaranteed non-null by construction may be in a REQUIRED_*_PROPERTY_NAMES list, or valid pages/terms will 400 on export.
 - [Copilot content field template](copilot-content-field-template.md) — fixed German section order for Graph externalItem `content` free text; governance metadata stays in properties, never repeated inline.
 - [Copilot connector citation vs. technical fields](copilot-connector-source-metadata.md) — connector responses must lead with displayCode/title/url/version/ownerName, nest nodeId/status/sourcePriority under `technical`.
+- [Copilot child-page export & guidance](copilot-child-pages.md) — hasChildren/childPageCount/childPages(≤12)|topChildPages+searchHint, plus a pageType-driven German relevance sentence.

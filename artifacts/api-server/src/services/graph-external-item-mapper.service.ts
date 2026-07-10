@@ -188,18 +188,29 @@ function renderStructuredFieldsBlock(
 
 /**
  * Renders the "Unterseiten / Detailseiten" section: each relevant child
- * page with its title and short description, so Copilot can disambiguate
- * between a parent overview and its detail pages when answering.
+ * page with its displayCode, title and short description, so Copilot can
+ * disambiguate between a parent overview and its detail pages when
+ * answering, and can point to a specific child by its FlowCore-Code
+ * (Task 5). When the full list was too large to inline (`childPages` is
+ * `null`), a representative sample (`topChildPages`) plus the search hint
+ * is rendered instead — never silently empty.
  */
-function renderChildPagesBlock(
-  childPages: CopilotPageProjection["childPages"],
-): string {
-  if (childPages.length === 0) return "";
-  return childPages
-    .map((c) =>
-      c.shortDescription ? `- ${c.title}: ${c.shortDescription}` : `- ${c.title}`,
-    )
-    .join("\n");
+function renderChildPagesBlock(projection: {
+  childPages: CopilotPageProjection["childPages"];
+  topChildPages: CopilotPageProjection["topChildPages"];
+  childPagesSearchHint: string | null;
+}): string {
+  const list = projection.childPages ?? projection.topChildPages ?? [];
+  if (list.length === 0) return "keine";
+  const lines = list.map((c) =>
+    c.shortDescription
+      ? `- ${c.displayCode} ${c.title}: ${c.shortDescription}`
+      : `- ${c.displayCode} ${c.title}`,
+  );
+  if (projection.childPages === null && projection.childPagesSearchHint) {
+    lines.push(`(${projection.childPagesSearchHint})`);
+  }
+  return lines.join("\n");
 }
 
 /**
@@ -255,7 +266,7 @@ function buildQuellenhinweis(fields: {
  *   Titel / FlowCore-Code / Kurzbeschreibung / Seitentyp / Geltungsbereich
  *   Inhalt: <bereinigter Hauptinhalt, ohne UUIDs>
  *   Strukturierte Felder: <RACI, SIPOC, KPIs, Risiken, Kontrollen, ...>
- *   Unterseiten / Detailseiten: <Titel + Kurzbeschreibung je Kind>
+ *   Unterseiten / Detailseiten: <Hinweis zur fachlichen Relevanz + FlowCore-Code + Titel + Kurzbeschreibung je Kind>
  *   Glossarbegriffe: <referenzierte Begriffe>
  *   Quellenhinweis: <Quelle, Version, Owner, Authority>
  *
@@ -267,7 +278,11 @@ function buildPageContent(projection: CopilotPageProjection): string {
   const structuredFieldsBlock = renderStructuredFieldsBlock(
     projection.structuredFields,
   );
-  const childPagesBlock = renderChildPagesBlock(projection.childPages);
+  const childPagesBlock = renderChildPagesBlock({
+    childPages: projection.childPages,
+    topChildPages: projection.topChildPages,
+    childPagesSearchHint: projection.childPagesSearchHint,
+  });
 
   const parts = [
     `Titel: ${projection.title}`,
@@ -283,7 +298,9 @@ function buildPageContent(projection: CopilotPageProjection): string {
       : "",
     `\nInhalt:\n${sanitizeForContent(projection.contentText)}`,
     structuredFieldsBlock ? `\nStrukturierte Felder:\n${structuredFieldsBlock}` : "",
-    `\nUnterseiten / Detailseiten:\n${childPagesBlock || "keine"}`,
+    `\nUnterseiten / Detailseiten:${
+      projection.childPagesGuidance ? `\n${projection.childPagesGuidance}` : ""
+    }\n${childPagesBlock}`,
     `\nGlossarbegriffe:\n${
       projection.glossaryTerms.length > 0
         ? projection.glossaryTerms.join(", ")

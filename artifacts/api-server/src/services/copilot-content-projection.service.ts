@@ -72,7 +72,21 @@ export interface CopilotPageProjection {
   hasChildren: boolean;
   childPageCount: number;
   childPageTitles: string[];
-  childPages: ChildPageSummary[];
+  /**
+   * Full list of direct child pages, or `null` once the count exceeds
+   * `CHILD_PAGES_INLINE_LIMIT` — at that point use `topChildPages` +
+   * `childPagesSearchHint` instead (see `deriveChildPagesExport`).
+   */
+  childPages: ChildPageSummary[] | null;
+  topChildPages: ChildPageSummary[] | null;
+  childPagesSearchHint: string | null;
+  /**
+   * Ready-to-use German sentence explaining what the child pages are for on
+   * this page type (process overview vs. doc registry vs. generic), so
+   * Copilot doesn't have to infer it from the raw `pageType` code. `null`
+   * when the page has no children.
+   */
+  childPagesGuidance: string | null;
   scopeContext: string | null;
 }
 
@@ -175,8 +189,21 @@ export async function getPublishedChildTitles(nodeId: string): Promise<string[]>
 
 export interface ChildPageSummary {
   title: string;
+  displayCode: string;
+  pageType: string;
   shortDescription: string;
+  sourceUrl: string;
 }
+
+/**
+ * Above this count, exporting the full child list becomes unwieldy for a
+ * Copilot answer (and for the Graph content block's size limits). Beyond
+ * the threshold, callers should use `topChildPages` (a small representative
+ * sample) plus `childPagesSearchHint` instead of the full `childPages`
+ * array — see `deriveChildPagesExport`.
+ */
+export const CHILD_PAGES_INLINE_LIMIT = 12;
+const TOP_CHILD_PAGES_SAMPLE_SIZE = 5;
 
 /**
  * Returns direct child pages that are published + non-deleted, each with a
@@ -190,7 +217,10 @@ export async function getPublishedChildPages(
 ): Promise<ChildPageSummary[]> {
   const rows = await db
     .select({
+      id: contentNodesTable.id,
       title: contentNodesTable.title,
+      displayCode: contentNodesTable.displayCode,
+      templateType: contentNodesTable.templateType,
       structuredFields: contentRevisionsTable.structuredFields,
     })
     .from(contentNodesTable)
@@ -214,8 +244,89 @@ export async function getPublishedChildPages(
         : typeof sf.summary === "string"
           ? sf.summary
           : "";
-    return { title: r.title, shortDescription };
+    return {
+      title: r.title,
+      displayCode: r.displayCode,
+      pageType: r.templateType,
+      shortDescription,
+      sourceUrl: `${SOURCE_BASE_URL}/nodes/${r.id}`,
+    };
   });
+}
+
+export interface ChildPagesExport {
+  hasChildren: boolean;
+  childPageCount: number;
+  childPages: ChildPageSummary[] | null;
+  topChildPages: ChildPageSummary[] | null;
+  childPagesSearchHint: string | null;
+}
+
+/**
+ * Decides how a page's child pages should be exported: the full list when
+ * it is small enough to be useful inline (`childPages`), or — once it
+ * exceeds `CHILD_PAGES_INLINE_LIMIT` — a small representative sample
+ * (`topChildPages`) plus a `childPagesSearchHint` telling Copilot to use
+ * `SearchFlowCore` scoped to this page instead of assuming the sample is
+ * exhaustive.
+ */
+
+/**
+ * Page types where child pages are the actual substance, not incidental
+ * sub-items — used to phrase `deriveChildPagesGuidance` correctly. Process
+ * overviews (`core_process_overview`, `area_overview`) delegate the concrete
+ * work to their detail pages; documentation registers (`doc_registry`) list
+ * the actual documents as children rather than merely related material.
+ */
+const PROCESS_OVERVIEW_PAGE_TYPES = new Set([
+  "core_process_overview",
+  "area_overview",
+]);
+const DOC_REGISTRY_PAGE_TYPES = new Set(["doc_registry"]);
+
+/**
+ * Produces the German guidance sentence Copilot should be able to use
+ * verbatim when a question is asked on an overview/register page: it must
+ * be able to say something equivalent to "Die Detailseiten behandeln die
+ * konkrete Ausarbeitung." (Task 5 DoD). Returns `null` when the page has no
+ * children — there is nothing to point to.
+ */
+export function deriveChildPagesGuidance(
+  pageType: string,
+  hasChildren: boolean,
+): string | null {
+  if (!hasChildren) return null;
+  if (PROCESS_OVERVIEW_PAGE_TYPES.has(pageType)) {
+    return "Diese Seite ist eine Prozessübersicht. Die Detailseiten behandeln die konkrete Ausarbeitung der einzelnen Prozessschritte — bei Detailfragen sind sie meist relevanter als die Übersicht selbst.";
+  }
+  if (DOC_REGISTRY_PAGE_TYPES.has(pageType)) {
+    return "Diese Seite ist ein Dokumentationsregister. Die Unterseiten sind die eigentlichen Dokumente, nicht nur Verweise darauf.";
+  }
+  return "Diese Seite hat Unterseiten. Die Detailseiten behandeln die konkrete Ausarbeitung.";
+}
+
+export function deriveChildPagesExport(
+  parentDisplayCode: string,
+  childPages: ChildPageSummary[],
+): ChildPagesExport {
+  const childPageCount = childPages.length;
+  const hasChildren = childPageCount > 0;
+  if (childPageCount <= CHILD_PAGES_INLINE_LIMIT) {
+    return {
+      hasChildren,
+      childPageCount,
+      childPages: hasChildren ? childPages : [],
+      topChildPages: null,
+      childPagesSearchHint: null,
+    };
+  }
+  return {
+    hasChildren,
+    childPageCount,
+    childPages: null,
+    topChildPages: childPages.slice(0, TOP_CHILD_PAGES_SAMPLE_SIZE),
+    childPagesSearchHint: `Diese Seite hat ${childPageCount} Unterseiten — mehr als hier aufgeführt werden können. Für weitere Detailseiten SearchFlowCore mit der Frage und dem FlowCore-Code "${parentDisplayCode}" bzw. dem Seitentitel als Kontext aufrufen.`,
+  };
 }
 
 /**
@@ -310,8 +421,8 @@ export async function projectPublishedPage(
     ]);
   const parentPath = ancestorTitles.length > 0 ? ancestorTitles.join(" > ") : null;
   const childPageTitles = childPages.map((c) => c.title);
-  const hasChildren = childPageTitles.length > 0;
-  const childPageCount = childPageTitles.length;
+  const childPagesExport = deriveChildPagesExport(node.displayCode, childPages);
+  const { hasChildren, childPageCount } = childPagesExport;
 
   const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
   const confidentiality =
@@ -408,7 +519,10 @@ export async function projectPublishedPage(
     hasChildren,
     childPageCount,
     childPageTitles,
-    childPages,
+    childPages: childPagesExport.childPages,
+    topChildPages: childPagesExport.topChildPages,
+    childPagesSearchHint: childPagesExport.childPagesSearchHint,
+    childPagesGuidance: deriveChildPagesGuidance(node.templateType, hasChildren),
     scopeContext,
   };
 }

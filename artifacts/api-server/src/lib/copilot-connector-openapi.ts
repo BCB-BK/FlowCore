@@ -132,7 +132,51 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
         },
         NodeResponse: {
           type: "object",
-          description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort.",
+          description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort. Enthält außerdem hasChildren/childPageCount/childPages (oder bei sehr vielen Kindern topChildPages + childPagesSearchHint) sowie childPagesGuidance — ein einsatzbereiter Hinweissatz zur fachlichen Relevanz der Unterseiten (z.B. Prozessübersicht vs. Dokumentationsregister).",
+          properties: {
+            hasChildren: { type: "boolean" },
+            childPageCount: { type: "integer" },
+            childPages: {
+              type: "array",
+              nullable: true,
+              description: "Vollständige Liste, sofern nicht zu groß (siehe childPagesSearchHint).",
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  displayCode: { type: "string" },
+                  pageType: { type: "string" },
+                  shortDescription: { type: "string" },
+                  sourceUrl: { type: "string" },
+                },
+              },
+            },
+            topChildPages: {
+              type: "array",
+              nullable: true,
+              description: "Repräsentative Auswahl, wenn childPages null ist, weil die vollständige Liste zu groß war.",
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  displayCode: { type: "string" },
+                  pageType: { type: "string" },
+                  shortDescription: { type: "string" },
+                  sourceUrl: { type: "string" },
+                },
+              },
+            },
+            childPagesSearchHint: {
+              type: "string",
+              nullable: true,
+              description: "Nur gesetzt, wenn childPages null ist: Hinweis, per SearchFlowCore weitere Unterseiten zu finden.",
+            },
+            childPagesGuidance: {
+              type: "string",
+              nullable: true,
+              description: "Einsatzbereiter deutscher Hinweissatz zur fachlichen Relevanz der Unterseiten, z.B. \"Die Detailseiten behandeln die konkrete Ausarbeitung.\" Null, wenn die Seite keine Unterseiten hat.",
+            },
+          },
         },
       },
     },
@@ -257,7 +301,47 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
               description: "Seite",
               schema: {
                 type: "object",
-                description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort.",
+                description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort. Enthält außerdem hasChildren/childPageCount/childPages (oder bei sehr vielen Kindern topChildPages + childPagesSearchHint) sowie childPagesGuidance — ein einsatzbereiter Hinweissatz zur fachlichen Relevanz der Unterseiten (z.B. Prozessübersicht vs. Dokumentationsregister).",
+                properties: {
+                  hasChildren: { type: "boolean" },
+                  childPageCount: { type: "integer" },
+                  childPages: {
+                    type: "array",
+                    description: "Vollständige Liste, sofern nicht zu groß (siehe childPagesSearchHint).",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        displayCode: { type: "string" },
+                        pageType: { type: "string" },
+                        shortDescription: { type: "string" },
+                        sourceUrl: { type: "string" },
+                      },
+                    },
+                  },
+                  topChildPages: {
+                    type: "array",
+                    description: "Repräsentative Auswahl, wenn childPages null ist, weil die vollständige Liste zu groß war.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        displayCode: { type: "string" },
+                        pageType: { type: "string" },
+                        shortDescription: { type: "string" },
+                        sourceUrl: { type: "string" },
+                      },
+                    },
+                  },
+                  childPagesSearchHint: {
+                    type: "string",
+                    description: "Nur gesetzt, wenn childPages null ist: Hinweis, per SearchFlowCore weitere Unterseiten zu finden.",
+                  },
+                  childPagesGuidance: {
+                    type: "string",
+                    description: "Einsatzbereiter deutscher Hinweissatz zur fachlichen Relevanz der Unterseiten, z.B. \"Die Detailseiten behandeln die konkrete Ausarbeitung.\" Null, wenn die Seite keine Unterseiten hat.",
+                  },
+                },
               },
             },
             "403": { description: "API-Key ist für diese Seite nicht berechtigt" },

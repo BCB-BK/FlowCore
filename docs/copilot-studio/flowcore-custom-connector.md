@@ -200,3 +200,50 @@ Node-Antworten `displayCode`/`title`/`url`(`sourceUrl`)/`version`/
 `ownerName` als Standardfelder enthalten und `nodeId`/`status`/
 `sourcePriority` **nicht** auf oberster Ebene auftauchen — diese Werte
 sind nur noch unter `technical` erreichbar.
+
+## Unterseiten / Detailseiten (`GET /nodes/:id`)
+
+Stand: 10.07.2026 (Task 5). Ziel: Copilot soll erkennen können, ob eine
+Übersichtsseite Unterseiten hat, welche davon relevant sind, und *warum*
+sie relevant sind — ohne dafür jedes Mal eine Zusatzsuche zu brauchen.
+
+### Export-Felder
+
+Jede Antwort von `GET /nodes/:id` enthält:
+
+- `hasChildren` — `true`/`false`
+- `childPageCount` — Gesamtzahl der veröffentlichten Unterseiten
+- `childPages` — vollständige Liste (`title`, `displayCode`, `pageType`,
+  `shortDescription`, `sourceUrl`) je Unterseite, sofern nicht zu groß
+  (aktuell bis 12 Einträge)
+- `topChildPages` / `childPagesSearchHint` — wenn die Liste zu groß ist,
+  wird `childPages` zu `null`; stattdessen liefert `topChildPages` eine
+  Auswahl von 5 Einträgen und `childPagesSearchHint` einen fertigen
+  deutschen Hinweistext, mit `SearchFlowCore` (gefiltert auf den
+  `displayCode`/Titel der Übersichtsseite) weiterzusuchen
+
+### Fachliche Relevanz (`childPagesGuidance`)
+
+Ob Unterseiten für eine Antwort **wichtiger** sind als die Übersichtsseite
+selbst, hängt vom Seitentyp ab — das ist reines Fachwissen, das Copilot
+sonst nicht hätte. `childPagesGuidance` liefert dafür einen einsatzbereiten
+deutschen Satz, passend zum `pageType` der Übersichtsseite:
+
+- **Prozessübersicht** (`core_process_overview`, `area_overview`): die
+  Detailseiten behandeln die konkrete Ausarbeitung der einzelnen
+  Prozessschritte und sind bei Detailfragen meist relevanter als die
+  Übersicht.
+- **Dokumentationsregister** (`doc_registry`): die Unterseiten sind die
+  eigentlichen Dokumente, nicht nur Verweise darauf.
+- Alle anderen Seiten mit Unterseiten erhalten einen generischen Hinweis
+  ("Die Detailseiten behandeln die konkrete Ausarbeitung.").
+- `null`, wenn die Seite keine Unterseiten hat (`hasChildren: false`).
+
+### Getestet in
+
+`e2e/tests/copilot-search-child-pages.spec.ts` prüft, dass eine
+Übersichtsseite mit Unterseiten `childPages` (oder bei Überschreiten des
+Limits `topChildPages`/`childPagesSearchHint`) mit allen fünf Feldern pro
+Eintrag liefert, dass `childPagesGuidance` gesetzt ist und
+"Detailseiten"/"Ausarbeitung" enthält, und dass eine Seite ohne Unterseiten
+`childPageCount: 0` sowie `childPagesGuidance: null` zurückgibt.

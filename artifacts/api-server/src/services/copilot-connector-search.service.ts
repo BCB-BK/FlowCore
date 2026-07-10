@@ -426,6 +426,9 @@ export interface ConnectorNodeResult {
   hasChildren: boolean;
   childPageCount: number;
   childPages: CopilotPageProjection["childPages"];
+  topChildPages: CopilotPageProjection["topChildPages"];
+  childPagesSearchHint: string | null;
+  childPagesGuidance: string | null;
   validFrom: string | null;
   reviewDue: string | null;
   lastModifiedAt: string | null;
@@ -466,6 +469,9 @@ function toConnectorNodeResult(
     hasChildren: projection.hasChildren,
     childPageCount: projection.childPageCount,
     childPages: projection.childPages,
+    topChildPages: projection.topChildPages,
+    childPagesSearchHint: projection.childPagesSearchHint,
+    childPagesGuidance: projection.childPagesGuidance,
     validFrom: projection.validFrom,
     reviewDue: projection.reviewDue,
     lastModifiedAt: projection.lastModifiedAt,
