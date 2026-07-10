@@ -48,6 +48,7 @@ export interface CopilotPageProjection {
   }[];
   glossaryTerms: string[];
   owner: string | null;
+  ownerName: string | null;
   reviewer: string | null;
   contentOwner: string | null;
   confidentiality: string | null;
@@ -66,6 +67,11 @@ export interface CopilotPageProjection {
   lastModifiedAt: string | null;
   publishedAt: string | null;
   contentHash: string;
+  shortDescription: string;
+  parentPath: string | null;
+  hasChildren: boolean;
+  childPageCount: number;
+  childPageTitles: string[];
 }
 
 async function resolvePrincipalName(id: string | null | undefined): Promise<string | null> {
@@ -74,7 +80,7 @@ async function resolvePrincipalName(id: string | null | undefined): Promise<stri
   return principal?.displayName ?? null;
 }
 
-function deriveBrandScope(tags: string[]): string[] {
+export function deriveBrandScope(tags: string[]): string[] {
   const scope: string[] = [];
   for (const tag of tags) {
     const match = /^brand:(.+)$/i.exec(tag);
@@ -107,6 +113,62 @@ async function findGlossaryTermsInText(
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Walks parentNodeId up to the root, returning ancestor titles in
+ * root-to-leaf order (excluding the node itself). Used to build a
+ * human-readable breadcrumb for Copilot/Graph so an answer can say "this
+ * page lives under X > Y" without needing a separate hierarchy lookup.
+ */
+export async function getAncestorTitles(nodeId: string): Promise<string[]> {
+  const titles: string[] = [];
+  let currentId: string | null = nodeId;
+
+  const [startNode] = await db
+    .select({ parentNodeId: contentNodesTable.parentNodeId })
+    .from(contentNodesTable)
+    .where(eq(contentNodesTable.id, currentId));
+  currentId = startNode?.parentNodeId ?? null;
+
+  while (currentId) {
+    const [parent] = await db
+      .select({
+        title: contentNodesTable.title,
+        parentNodeId: contentNodesTable.parentNodeId,
+      })
+      .from(contentNodesTable)
+      .where(
+        and(
+          eq(contentNodesTable.id, currentId),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      );
+    if (!parent) break;
+    titles.unshift(parent.title);
+    currentId = parent.parentNodeId;
+  }
+
+  return titles;
+}
+
+/**
+ * Returns the titles of direct child pages that are themselves published
+ * and non-deleted (a child that is still a draft must not leak into the
+ * exported content or metadata of its parent).
+ */
+export async function getPublishedChildTitles(nodeId: string): Promise<string[]> {
+  const rows = await db
+    .select({ title: contentNodesTable.title })
+    .from(contentNodesTable)
+    .where(
+      and(
+        eq(contentNodesTable.parentNodeId, nodeId),
+        eq(contentNodesTable.isDeleted, false),
+        eq(contentNodesTable.status, "published"),
+      ),
+    );
+  return rows.map((r) => r.title);
 }
 
 /**
@@ -191,11 +253,17 @@ export async function projectPublishedPage(
 
   const glossaryTerms = await findGlossaryTermsInText(plaintext);
 
-  const [owner, reviewer, contentOwner] = await Promise.all([
-    resolvePrincipalName(ownership?.ownerId ?? null),
-    resolvePrincipalName(ownership?.reviewerId ?? null),
-    resolvePrincipalName(revision.authorId ?? null),
-  ]);
+  const [owner, reviewer, contentOwner, ancestorTitles, childPageTitles] =
+    await Promise.all([
+      resolvePrincipalName(ownership?.ownerId ?? null),
+      resolvePrincipalName(ownership?.reviewerId ?? null),
+      resolvePrincipalName(revision.authorId ?? null),
+      getAncestorTitles(node.id),
+      getPublishedChildTitles(node.id),
+    ]);
+  const parentPath = ancestorTitles.length > 0 ? ancestorTitles.join(" > ") : null;
+  const hasChildren = childPageTitles.length > 0;
+  const childPageCount = childPageTitles.length;
 
   const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
   const confidentiality =
@@ -213,6 +281,10 @@ export async function projectPublishedPage(
     typeof sf.summary === "string" && sf.summary.trim().length > 0
       ? sf.summary
       : plaintext.slice(0, 400);
+  const shortDescription =
+    typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
+      ? sf.kurzbeschreibung
+      : summary;
 
   const agentMetadata = extractAgentMetadata(sf);
   const aclStatus = await getAclMappingStatus(node.id);
@@ -256,6 +328,7 @@ export async function projectPublishedPage(
     })),
     glossaryTerms,
     owner,
+    ownerName: owner,
     reviewer,
     contentOwner,
     confidentiality,
@@ -280,5 +353,10 @@ export async function projectPublishedPage(
         ? revision.createdAt.toISOString()
         : null,
     contentHash,
+    shortDescription,
+    parentPath,
+    hasChildren,
+    childPageCount,
+    childPageTitles,
   };
 }

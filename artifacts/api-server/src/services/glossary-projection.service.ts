@@ -10,6 +10,10 @@ import {
 import { eq, and } from "drizzle-orm";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
+import {
+  getAncestorTitles,
+  deriveBrandScope,
+} from "./copilot-content-projection.service";
 
 const SOURCE_BASE_URL = "https://flowcore.bildungscampus-backnang.de";
 
@@ -29,8 +33,18 @@ export interface GlossaryTermProjection {
   revision: number | null;
   authorityLevel: string | null;
   owner: string | null;
+  ownerName: string | null;
   reviewDue: string | null;
   lastModifiedAt: string;
+  shortDescription: string;
+  pageType: string;
+  sourcePriority: number;
+  brandScope: string[];
+  agentScope: string[];
+  parentPath: string | null;
+  hasChildren: boolean;
+  childPageCount: number;
+  childPageTitles: string[];
 }
 
 function synthesizeDisplayCode(slug: string): string {
@@ -58,6 +72,10 @@ export async function projectGlossaryTerm(
   let authorityLevel: string | null = null;
   let owner: string | null = null;
   let reviewDue: string | null = null;
+  let sourcePriority = 1;
+  let agentScope: string[] = [];
+  let pageType = "glossary_term";
+  let parentPath: string | null = null;
 
   if (term.nodeId) {
     const [node] = await db
@@ -86,8 +104,19 @@ export async function projectGlossaryTerm(
         const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
         authorityLevel =
           typeof sf.authority_level === "string" ? sf.authority_level : null;
+        sourcePriority =
+          typeof sf.source_priority === "number" ? sf.source_priority : 1;
+        agentScope = Array.isArray(sf.agent_scope)
+          ? (sf.agent_scope as unknown[]).filter(
+              (v): v is string => typeof v === "string",
+            )
+          : [];
       }
     }
+    pageType = node.templateType;
+
+    const ancestorTitles = await getAncestorTitles(node.id);
+    parentPath = ancestorTitles.length > 0 ? ancestorTitles.join(" > ") : null;
 
     const [ownership] = await db
       .select()
@@ -119,6 +148,8 @@ export async function projectGlossaryTerm(
     abbreviation: term.abbreviation ?? null,
   });
 
+  const shortDescription = term.definition.slice(0, 400);
+
   return {
     itemType: "glossary_term",
     termId: term.id,
@@ -135,7 +166,17 @@ export async function projectGlossaryTerm(
     revision: revisionNo,
     authorityLevel,
     owner,
+    ownerName: owner,
     reviewDue,
+    shortDescription,
+    pageType,
+    sourcePriority,
+    brandScope: deriveBrandScope(tags),
+    agentScope,
+    parentPath,
+    hasChildren: false,
+    childPageCount: 0,
+    childPageTitles: [],
     lastModifiedAt: term.updatedAt.toISOString(),
   };
 }

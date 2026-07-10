@@ -34,9 +34,11 @@ export const COMMON_SCHEMA_PROPERTIES: GraphSchemaProperty[] = [
   { name: "itemType", type: "String", isRetrievable: true, isQueryable: true, isRefinable: true },
   { name: "pageType", type: "String", isRetrievable: true, isQueryable: true, isRefinable: true },
   { name: "status", type: "String", isRetrievable: true, isQueryable: true, isRefinable: true },
+  { name: "shortDescription", type: "String", isSearchable: true, isRetrievable: true, labels: ["description"] },
   { name: "version", type: "String", isRetrievable: true },
   { name: "revision", type: "Int64", isRetrievable: true },
   { name: "owner", type: "String", isRetrievable: true, isQueryable: true },
+  { name: "ownerName", type: "String", isRetrievable: true, isQueryable: true },
   { name: "contentOwner", type: "String", isRetrievable: true },
   { name: "reviewer", type: "String", isRetrievable: true },
   { name: "validFrom", type: "DateTime", isRetrievable: true },
@@ -52,6 +54,10 @@ export const COMMON_SCHEMA_PROPERTIES: GraphSchemaProperty[] = [
   { name: "lastModifiedAt", type: "DateTime", isRetrievable: true, isRefinable: true, labels: ["lastModifiedDateTime"] },
   { name: "publishedAt", type: "DateTime", isRetrievable: true, labels: ["createdDateTime"] },
   { name: "contentHash", type: "String", isRetrievable: true },
+  { name: "parentPath", type: "String", isRetrievable: true },
+  { name: "hasChildren", type: "Boolean", isRetrievable: true, isQueryable: true, isRefinable: true },
+  { name: "childPageCount", type: "Int64", isRetrievable: true, isRefinable: true },
+  { name: "childPageTitles", type: "StringCollection", isRetrievable: true },
 ];
 
 /** Additional properties required for glossary term externalItems. */
@@ -62,6 +68,18 @@ export const GLOSSARY_SCHEMA_PROPERTIES: GraphSchemaProperty[] = [
   { name: "relatedTerms", type: "StringCollection", isRetrievable: true, isQueryable: true },
 ];
 
+/**
+ * Fields that must always be a real, non-empty value — never null/"" — for
+ * a page to be considered a usable Graph citation source. `version` and
+ * `authorityLevel` were deliberately dropped from this list on 2026-07-10:
+ * both are legitimately unset for a large share of published pages (see
+ * the authority_level indexability decision), so requiring them here would
+ * throw a 400 on export for otherwise-valid pages. `shortDescription` is
+ * excluded for the same reason: pages without a `kurzbeschreibung`
+ * structured field or `summary` fall back to an empty string. All of these
+ * stay present as properties with a null/empty value ("nachvollziehbar
+ * leer") instead of being strictly required.
+ */
 export const REQUIRED_PAGE_PROPERTY_NAMES = [
   "title",
   "sourceUrl",
@@ -71,10 +89,8 @@ export const REQUIRED_PAGE_PROPERTY_NAMES = [
   "itemType",
   "pageType",
   "status",
-  "version",
-  "revision",
-  "authorityLevel",
   "sourcePriority",
+  "lastModifiedAt",
 ] as const;
 
 export const REQUIRED_GLOSSARY_PROPERTY_NAMES = [
@@ -85,6 +101,7 @@ export const REQUIRED_GLOSSARY_PROPERTY_NAMES = [
   "status",
   "term",
   "definition",
+  "shortDescription",
   "displayCode",
   "lastModifiedAt",
 ] as const;

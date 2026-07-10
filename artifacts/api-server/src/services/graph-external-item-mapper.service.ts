@@ -120,6 +120,10 @@ function buildPageContent(projection: CopilotPageProjection): string {
     projection.glossaryTerms.length > 0
       ? `Glossarbegriffe: ${projection.glossaryTerms.join(", ")}`
       : "",
+    projection.parentPath ? `Übergeordnet: ${projection.parentPath}` : "",
+    projection.hasChildren
+      ? `Unterseiten: ${projection.childPageTitles.join(", ")}`
+      : "",
     buildQuellenblock({
       sourceUrl: projection.sourceUrl,
       flowcoreId: projection.immutableId,
@@ -154,9 +158,11 @@ export function mapPageToExternalItem(
     itemType: projection.itemType,
     pageType: projection.pageType,
     status: projection.status,
+    shortDescription: projection.shortDescription,
     version: projection.version,
     revision: projection.revision,
     owner: projection.owner,
+    ownerName: projection.ownerName,
     contentOwner: projection.contentOwner,
     reviewer: projection.reviewer,
     validFrom: projection.validFrom,
@@ -174,6 +180,10 @@ export function mapPageToExternalItem(
     lastModifiedAt: projection.lastModifiedAt,
     publishedAt: projection.publishedAt,
     contentHash: projection.contentHash,
+    parentPath: projection.parentPath,
+    hasChildren: projection.hasChildren,
+    childPageCount: projection.childPageCount,
+    childPageTitles: projection.childPageTitles,
   };
 
   assertRequiredProperties(
@@ -229,7 +239,9 @@ export function mapGlossaryToExternalItem(
     sourceUrl: projection.sourceUrl,
     nodeId: projection.termId,
     itemType: projection.itemType,
+    pageType: projection.pageType,
     status: projection.status,
+    shortDescription: projection.shortDescription,
     term: projection.term,
     definition: projection.definition,
     synonyms: projection.synonyms,
@@ -240,8 +252,16 @@ export function mapGlossaryToExternalItem(
     version: projection.version,
     revision: projection.revision,
     authorityLevel: projection.authorityLevel,
+    sourcePriority: projection.sourcePriority,
     owner: projection.owner,
+    ownerName: projection.ownerName,
     reviewDue: projection.reviewDue,
+    brandScope: projection.brandScope,
+    agentScope: projection.agentScope,
+    parentPath: projection.parentPath,
+    hasChildren: projection.hasChildren,
+    childPageCount: projection.childPageCount,
+    childPageTitles: projection.childPageTitles,
     lastModifiedAt: projection.lastModifiedAt,
   };
 
