@@ -257,7 +257,6 @@ export interface IndexabilityInput {
   nodeStatus: string;
   isDeleted: boolean;
   publishedRevisionId: string | null;
-  authorityLevel: AuthorityLevel;
   confidentialityMapsToAcl: boolean;
   aclPresent: boolean;
 }
@@ -269,10 +268,19 @@ export interface IndexabilityResult {
 
 /**
  * Central Copilot/Graph indexability rule (Cluster 3):
- * A page is only indexable if it is published, its authority_level is
- * neither draft nor archived, and its confidentiality level maps to a
- * valid ACL that actually has entries. agent_enabled is no longer a
- * gating criterion (removed per user request).
+ * A page is only indexable if it is published (per the real node_status,
+ * the single source of truth for draft/published/archived) and its
+ * confidentiality level maps to a valid ACL that actually has entries.
+ *
+ * `authority_level` is intentionally NOT part of this rule. It duplicated
+ * node_status (published/draft/archived) but was never exposed in the
+ * content-editing UI, so it could never be set by editors — every page
+ * without an explicit value silently collapsed to "draft" and was excluded
+ * from the index, even though the page itself was genuinely published.
+ * node_status already correctly reflects draft/published/archived, so it is
+ * the sole source of truth here (removed per user decision, 2026-07-10).
+ * agent_enabled is also not a gating criterion (removed per earlier user
+ * request).
  */
 export function evaluateIndexability(
   input: IndexabilityInput,
@@ -282,9 +290,6 @@ export function evaluateIndexability(
   if (input.isDeleted) reasons.push("node_deleted");
   if (input.nodeStatus !== "published") reasons.push("node_not_published");
   if (!input.publishedRevisionId) reasons.push("no_published_revision");
-  if (input.authorityLevel === "draft") reasons.push("authority_level_draft");
-  if (input.authorityLevel === "archived")
-    reasons.push("authority_level_archived");
   if (!input.confidentialityMapsToAcl)
     reasons.push("confidentiality_not_mappable_to_acl");
   if (!input.aclPresent) reasons.push("no_acl");

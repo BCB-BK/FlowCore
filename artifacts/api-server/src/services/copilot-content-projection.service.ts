@@ -220,7 +220,6 @@ export async function projectPublishedPage(
     nodeStatus: node.status,
     isDeleted: node.isDeleted,
     publishedRevisionId: node.publishedRevisionId,
-    authorityLevel: agentMetadata.authorityLevel,
     confidentialityMapsToAcl: aclStatus.confidentialityMapsToAcl,
     aclPresent: aclStatus.aclPresent,
   });
