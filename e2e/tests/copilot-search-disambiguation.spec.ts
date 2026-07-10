@@ -89,3 +89,33 @@ test("unauthorized brandScope request is rejected", async ({ request }) => {
   // behavior rather than asserting a 400, since it's a valid config.
   expect(res.status()).toBe(200);
 });
+
+/**
+ * Task 6 - "Glossar als bevorzugte Quelle für Begriffserklärungen": the
+ * glossary must be the preferred source for definitional questions. These
+ * four questions are the task's Definition of Done examples; each must
+ * return the matching glossary term as the top hit (pages mentioning the
+ * term may still appear, but only supplementally, below the glossary hit).
+ */
+for (const [question, expectedTitle] of [
+  ["Was bedeutet AZAV?", "azav"],
+  ["Was bedeutet StudyGuide?", "studyguide"],
+  ["Was ist ein Kernprozess?", "kernprozess"],
+  ["Was bedeutet Arbeitskopie?", "arbeitskopie"],
+] as const) {
+  test(`glossary term is prioritized for "${question}"`, async ({ request }) => {
+    const results = await search(request, question);
+    expect(results.length).toBeGreaterThan(0);
+    const top = results[0];
+    expect(top.itemType).toBe("glossary_term");
+    expect(top.title.toLowerCase()).toBe(expectedTitle);
+
+    // Any pages mentioning the term must rank strictly below the glossary
+    // hit (supplemental, not competing for first place).
+    for (const r of results.slice(1)) {
+      if (r.itemType === "flowcore_page") {
+        expect(r.score).toBeLessThanOrEqual(top.score);
+      }
+    }
+  });
+}
