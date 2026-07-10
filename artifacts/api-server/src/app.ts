@@ -129,11 +129,26 @@ app.use(
 // Per-route requireAuth middleware still validates fully; this guard only catches
 // routes that were accidentally added without requireAuth.
 const PUBLIC_PATH_PREFIXES = ["/healthz", "/auth"];
+// The Copilot Studio / Power Platform custom connector (Cluster 13) does not
+// use the session cookie or a Bearer token — it authenticates via a per-agent
+// API key sent as X-FlowCore-Api-Key. Without this bypass, this fallback
+// guard rejects every connector request with a generic "Authentication
+// required" 401 before requireConnectorKey ever runs, regardless of whether
+// the key itself is valid (this masked a real prod incident: connector
+// calls always 401'd here, even with a correct key). The per-route
+// requireConnectorKey middleware still fully validates the key's presence
+// and validity — this bypass only lets the request reach that check.
+const COPILOT_CONNECTOR_API_KEY_PATH_PREFIXES = ["/copilot/search", "/copilot/nodes/"];
 app.use("/api", (req: Request, res: Response, next: NextFunction) => {
   const isPublic = PUBLIC_PATH_PREFIXES.some(
     (p) => req.path === p || req.path.startsWith(p + "/"),
   );
   if (isPublic) { next(); return; }
+
+  const isConnectorKeyRoute = COPILOT_CONNECTOR_API_KEY_PATH_PREFIXES.some(
+    (p) => req.path.startsWith(p),
+  );
+  if (isConnectorKeyRoute) { next(); return; }
 
   if (req.headers.authorization?.startsWith("Bearer ")) { next(); return; }
   if (appConfig.authDevMode) { next(); return; }
