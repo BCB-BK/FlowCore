@@ -47,15 +47,37 @@ async function isNodeAllowedForKey(
   return isConfidentialityAllowed(level, key.maxConfidentialityLevel);
 }
 
+/**
+ * Copilot Studio sends free-text queries ("Vision BildungsCampus", "Was
+ * weißt du über Produkte?") rather than exact phrases. Matching the whole
+ * query as one literal substring meant almost nothing ever matched, even
+ * when every individual word was present in the page (e.g. the page
+ * "Vision des BildungsCampus" doesn't contain the contiguous phrase "vision
+ * bildungscampus"). Instead, score each significant word independently and
+ * sum the best-field match per word, so a page containing all of the query's
+ * words (in any order, anywhere) ranks above one containing only some.
+ */
 function textMatches(projection: CopilotPageProjection, query: string): number {
-  const q = query.trim().toLowerCase();
-  if (!q) return 1;
+  const words = query
+    .trim()
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length > 1);
+
+  if (words.length === 0) return 1;
+
+  const title = projection.title.toLowerCase();
+  const summary = projection.summary.toLowerCase();
+  const contentText = projection.contentText.toLowerCase();
+  const keywords = projection.copilotKeywords.map((k) => k.toLowerCase());
+
   let score = 0;
-  if (projection.title.toLowerCase().includes(q)) score += 3;
-  if (projection.summary.toLowerCase().includes(q)) score += 2;
-  if (projection.contentText.toLowerCase().includes(q)) score += 1;
-  if (projection.copilotKeywords.some((k) => k.toLowerCase().includes(q)))
-    score += 2;
+  for (const word of words) {
+    if (title.includes(word)) score += 3;
+    if (summary.includes(word)) score += 2;
+    if (contentText.includes(word)) score += 1;
+    if (keywords.some((k) => k.includes(word))) score += 2;
+  }
   return score;
 }
 
