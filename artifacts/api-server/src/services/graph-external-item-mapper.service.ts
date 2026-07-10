@@ -203,6 +203,30 @@ function renderChildPagesBlock(
 }
 
 /**
+ * Renders the "Trefferkontext" line surfaced in every content block so
+ * Copilot can weigh/disambiguate between multiple hits using the same
+ * signals that are also exposed as dedicated Graph properties (Task 3):
+ * brandScope, agentScope, sourcePriority, and whether the item has child
+ * pages. Kept compact and always present — an empty scope reads as
+ * "übergreifend" rather than being silently omitted.
+ */
+function renderTrefferkontext(fields: {
+  brandScope: string[];
+  agentScope: string[];
+  sourcePriority: number;
+  hasChildren: boolean;
+  childPageCount: number;
+}): string {
+  return [
+    "Trefferkontext:",
+    `Marken-Scope: ${fields.brandScope.length > 0 ? fields.brandScope.join(", ") : "übergreifend"}`,
+    `Agenten-Scope: ${fields.agentScope.length > 0 ? fields.agentScope.join(", ") : "übergreifend"}`,
+    `Quellenpriorität: ${fields.sourcePriority}`,
+    `Unterseiten vorhanden: ${fields.hasChildren ? `ja (${fields.childPageCount})` : "nein"}`,
+  ].join("\n");
+}
+
+/**
  * Renders the mandatory "Quellenhinweis" block appended to every
  * externalItem's content text. Format is fixed so downstream consumers
  * (Copilot Studio answers, Microsoft Search snippets) can rely on it. Status
@@ -271,6 +295,13 @@ function buildPageContent(projection: CopilotPageProjection): string {
     projection.parentPath
       ? `\nÜbergeordnet: ${projection.parentPath}`
       : "",
+    `\n${renderTrefferkontext({
+      brandScope: projection.brandScope,
+      agentScope: projection.agentScope,
+      sourcePriority: projection.sourcePriority,
+      hasChildren: projection.hasChildren,
+      childPageCount: projection.childPageCount,
+    })}`,
     `\n${buildQuellenhinweis({
       sourceUrl: projection.sourceUrl,
       version: projection.version,
@@ -368,6 +399,13 @@ function buildGlossaryContent(projection: GlossaryTermProjection): string {
         ? projection.relatedTerms.join(", ")
         : "keine"
     }`,
+    `\n${renderTrefferkontext({
+      brandScope: projection.brandScope,
+      agentScope: projection.agentScope,
+      sourcePriority: projection.sourcePriority,
+      hasChildren: projection.hasChildren,
+      childPageCount: projection.childPageCount,
+    })}`,
     `\n${buildQuellenhinweis({
       sourceUrl: projection.sourceUrl,
       version: projection.version,

@@ -20,6 +20,7 @@ const SOURCE_BASE_URL = "https://flowcore.bildungscampus-backnang.de";
 export interface GlossaryTermProjection {
   itemType: "glossary_term";
   termId: string;
+  nodeId: string | null;
   term: string;
   definition: string;
   synonyms: string[];
@@ -153,6 +154,7 @@ export async function projectGlossaryTerm(
   return {
     itemType: "glossary_term",
     termId: term.id,
+    nodeId: term.nodeId ?? null,
     term: term.term,
     definition: term.definition,
     synonyms: term.synonyms ?? [],

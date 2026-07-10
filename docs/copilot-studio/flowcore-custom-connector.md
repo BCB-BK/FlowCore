@@ -85,3 +85,73 @@ Schritt 2–5 erfordern Zugriff auf den Microsoft-Tenant / das Power Apps
 Portal und können nicht aus der FlowCore-Entwicklungsumgebung heraus
 durchgeführt oder verifiziert werden — dieselbe externe Grenze wie bei
 Cluster 12.
+
+## Trefferlogik für Mehrfachtreffer (`POST /search`)
+
+Stand: 10.07.2026. Ziel: generische Fragen sollen mehrere plausible Treffer
+liefern, spezifische Fragen sollen korrekt eingegrenzt werden, Definitionsfragen
+sollen den Glossarbegriff bevorzugen, und Ablage-/Template-Fragen sollen den
+FlowCore-Strukturleitfaden bevorzugen (Task 3).
+
+### Was durchsucht wird
+
+`searchForConnector` durchsucht zwei Quellen und mischt die Ergebnisse in
+einer gemeinsamen, nach Score sortierten Trefferliste:
+
+1. Alle veröffentlichten, Copilot-indexierbaren Seiten (`contentNodesTable` →
+   `projectPublishedPage`) — Titel, Kurzbeschreibung, Volltext, Keywords.
+2. Alle Glossarbegriffe (`glossaryTermsTable` → `projectGlossaryTerm`) —
+   Begriff, Kurzbeschreibung, Definition, Synonyme/verwandte Begriffe.
+
+Jeder Treffer trägt ein `itemType`-Feld (`flowcore_page` oder
+`glossary_term`), damit ein Spezialagent unterscheiden kann, womit er es zu
+tun hat.
+
+### Wortbasiertes Scoring (nicht Phrasen-Matching)
+
+Die Nutzerfrage wird in einzelne Wörter zerlegt statt als zusammenhängende
+Phrase gesucht (eine Seite "Vision des BildungsCampus" enthält nicht die
+Phrase "vision bildungscampus", aber beide Wörter). Für jedes Wort wird der
+beste Treffer pro Feld aufsummiert (Titel > Keywords/Synonyme > Kurzbeschreibung
+> Volltext), mit einem zusätzlichen Bonus für exakte Titel-Übereinstimmung
+(z.B. die Frage "Was bedeutet AZAV?" soll den Begriff "AZAV" selbst treffen,
+nicht nur Begriffe, die "AZAV" beiläufig referenzieren).
+
+Häufige deutsche Fragewörter ("was", "wie", "ist", "bedeutet", "ich", "ein", …)
+werden vor dem Scoring entfernt (Stoppwort-Filter) — sonst würden kurze Fragen
+durch die immer gleichen Füllwörter dominiert statt durch das eigentliche
+Schlüsselwort.
+
+### Intent-Erkennung und Boosts
+
+Zusätzlich zum reinen Textscore erkennt `detectQueryIntent` zwei
+Frage-Absichten anhand der Originalfrage (vor Stoppwort-Filterung):
+
+- **Definitorisch** ("was ist/bedeutet/heißt …", "was versteht man unter …")
+  → Glossarbegriffe erhalten einen festen Bonus, damit sie Prozessseiten
+  überholen, die den Begriff nur erwähnen.
+- **Ablage/Template** ("wo lege ich … ab", "welches template/welche vorlage …",
+  "ablage(struktur)", "strukturleitfaden") → Seiten mit dem Tag
+  `structure-guide` erhalten denselben Bonus.
+
+Der `structure-guide`-Tag ist eine **Konvention, kein automatisch erkannter
+Seitentyp** — er muss redaktionell auf die eine kanonische
+FlowCore-Strukturleitfaden-Seite gesetzt werden, sobald diese Seite existiert.
+Ohne eine so getaggte Seite fallen Ablage-/Template-Fragen auf das normale
+Text-Scoring zurück (funktioniert, ist aber nicht bevorzugt).
+
+### Marken-/Agenten-Scope-Eingrenzung
+
+Eine markenspezifische Frage (z.B. "Wie konzipiert die EHiP Academy ein
+Produkt?") grenzt sich bereits über das normale Wort-Scoring ein, weil der
+Markenname als zusätzliches, hoch gewichtetes Wort in Titel/Content der
+jeweiligen Markenprofil-Seite vorkommt — eine explizite `brandScope`-Filterung
+im Request ist dafür nicht zwingend nötig, aber weiterhin möglich (siehe
+Sicherheitsmodell oben: angeforderte Scopes müssen eine Teilmenge der
+Key-Berechtigung sein).
+
+### Getestet in
+
+`e2e/tests/copilot-search-disambiguation.spec.ts` deckt die vier
+Kernszenarien ab: generische Mehrfachtreffer, definitorische Anfrage,
+markenspezifische Eingrenzung, und Scope-Validierung.
