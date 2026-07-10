@@ -34,6 +34,7 @@ import {
   GitBranch,
   BookOpen,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -52,6 +53,7 @@ import { WorkflowsTab } from "@/components/settings/WorkflowsTab";
 import { GlossaryImportTab } from "@/components/settings/GlossaryImportTab";
 import { SessionsTab } from "@/components/settings/SessionsTab";
 import { GraphConnectorTab } from "@/components/settings/GraphConnectorTab";
+import { CopilotConnectorKeysTab } from "@/components/settings/CopilotConnectorKeysTab";
 import { useAuth } from "@/hooks/use-auth";
 import type { LucideIcon } from "lucide-react";
 
@@ -67,6 +69,7 @@ const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
   { value: "users", label: "Benutzer & Rollen", icon: Users, requiredPermissions: ["manage_permissions"] },
   { value: "connections", label: "Verbindungen", icon: Link2, requiredPermissions: ["manage_settings"] },
   { value: "graph-connector", label: "Copilot Studio / Graph", icon: Cpu, requiredPermissions: ["manage_graph_connector"] },
+  { value: "copilot-connector-keys", label: "Copilot Connector-Keys", icon: KeyRound, requiredPermissions: ["manage_copilot_connector_keys"] },
   { value: "ai", label: "FlowCore-Assistent", icon: Bot, requiredPermissions: ["manage_settings"] },
   { value: "templates", label: "Seitentemplates", icon: FileText, requiredPermissions: ["manage_templates"] },
   { value: "connectors", label: "Konnektoren", icon: Database, requiredPermissions: ["manage_connectors"] },
@@ -182,6 +185,10 @@ export function SettingsPage() {
 
         <TabsContent value="graph-connector" className="mt-6">
           <GraphConnectorTab />
+        </TabsContent>
+
+        <TabsContent value="copilot-connector-keys" className="mt-6">
+          <CopilotConnectorKeysTab />
         </TabsContent>
 
         <TabsContent value="ai" className="mt-6">
