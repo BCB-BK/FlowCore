@@ -2,6 +2,7 @@ import { db } from "@workspace/db";
 import {
   principalsTable,
   roleAssignmentsTable,
+  confidentialityPrincipalAccessTable,
   type InsertPrincipal,
 } from "@workspace/db/schema";
 import { eq, and, ilike, or, inArray } from "drizzle-orm";
@@ -47,11 +48,24 @@ export async function upsertPrincipal(input: {
 
     const duplicates = matches.filter((m) => m.id !== existing.id);
     for (const dup of duplicates) {
+      // Merge confidentiality access grants from the duplicate to the canonical
+      // before deactivating — prevents loss of access when principals are merged.
+      const dupGrants = await db
+        .select({ level: confidentialityPrincipalAccessTable.level })
+        .from(confidentialityPrincipalAccessTable)
+        .where(eq(confidentialityPrincipalAccessTable.principalId, dup.id));
+      for (const grant of dupGrants) {
+        await db
+          .insert(confidentialityPrincipalAccessTable)
+          .values({ level: grant.level, principalId: existing.id })
+          .onConflictDoNothing();
+      }
+
       await txOrDb
         .update(principalsTable)
         .set({ status: "inactive", updatedAt: new Date() })
         .where(eq(principalsTable.id, dup.id));
-      logger.info({ duplicateId: dup.id, canonicalId: existing.id }, "Deactivated duplicate principal");
+      logger.info({ duplicateId: dup.id, canonicalId: existing.id, mergedGrants: dupGrants.length }, "Deactivated duplicate principal");
     }
 
     return existing.id;

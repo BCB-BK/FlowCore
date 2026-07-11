@@ -90,18 +90,23 @@ async function hasPrincipalAccessToLevel(
 ): Promise<boolean> {
   if (level === "public") return true;
 
+  // Fetch all levels explicitly granted to this principal
   const rows = await db
-    .select({ id: confidentialityPrincipalAccessTable.id })
+    .select({ level: confidentialityPrincipalAccessTable.level })
     .from(confidentialityPrincipalAccessTable)
-    .where(
-      and(
-        eq(confidentialityPrincipalAccessTable.level, level),
-        eq(confidentialityPrincipalAccessTable.principalId, principalId),
-      ),
-    )
-    .limit(1);
+    .where(eq(confidentialityPrincipalAccessTable.principalId, principalId));
 
-  return rows.length > 0;
+  if (rows.length === 0) return false;
+
+  // Clearance model: having a higher-sensitivity grant implies access to all
+  // lower-sensitivity levels. E.g. "confidential" access → can read "internal".
+  const grantedIndices = rows.map((r) =>
+    CONFIDENTIALITY_LEVELS.indexOf(r.level as ConfidentialityLevel),
+  );
+  const maxGrantedIndex = Math.max(...grantedIndices);
+  const requestedIndex = CONFIDENTIALITY_LEVELS.indexOf(level);
+
+  return requestedIndex <= maxGrantedIndex;
 }
 
 export async function checkConfidentialityAccess(
@@ -185,7 +190,17 @@ export async function checkConfidentialityAccessBatch(
     .from(confidentialityPrincipalAccessTable)
     .where(eq(confidentialityPrincipalAccessTable.principalId, principalId));
 
-  const allowedLevels = new Set(principalLevels.map((r) => r.level));
+  // Clearance model: expand granted levels to include all lower-sensitivity levels.
+  // E.g. "confidential" grant → can also read "public" and "internal" pages.
+  const rawAllowed = new Set(principalLevels.map((r) => r.level));
+  const maxGrantedIndex = rawAllowed.size > 0
+    ? Math.max(...[...rawAllowed].map((l) => CONFIDENTIALITY_LEVELS.indexOf(l as ConfidentialityLevel)))
+    : -1;
+  const allowedLevels = new Set<string>(
+    maxGrantedIndex >= 0
+      ? CONFIDENTIALITY_LEVELS.slice(0, maxGrantedIndex + 1)
+      : [],
+  );
   allowedLevels.add("public");
 
   const nodes = await db
