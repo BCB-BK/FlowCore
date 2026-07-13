@@ -88,7 +88,10 @@ async function hasPrincipalAccessToLevel(
   principalId: string,
   level: ConfidentialityLevel,
 ): Promise<boolean> {
-  if (level === "public") return true;
+  // "public" and "internal" are accessible to every authenticated principal.
+  // "internal" = visible to all company employees by default; no explicit grant needed.
+  // Only "confidential" and "strictly_confidential" require an explicit grant.
+  if (level === "public" || level === "internal") return true;
 
   // Fetch all levels explicitly granted to this principal
   const rows = await db
@@ -190,8 +193,9 @@ export async function checkConfidentialityAccessBatch(
     .from(confidentialityPrincipalAccessTable)
     .where(eq(confidentialityPrincipalAccessTable.principalId, principalId));
 
-  // Clearance model: expand granted levels to include all lower-sensitivity levels.
-  // E.g. "confidential" grant → can also read "public" and "internal" pages.
+  // "public" and "internal" are accessible to every authenticated principal —
+  // no explicit grant needed. Only "confidential"/"strictly_confidential" require one.
+  // Clearance model: a higher-level grant also covers all lower levels.
   const rawAllowed = new Set(principalLevels.map((r) => r.level));
   const maxGrantedIndex = rawAllowed.size > 0
     ? Math.max(...[...rawAllowed].map((l) => CONFIDENTIALITY_LEVELS.indexOf(l as ConfidentialityLevel)))
@@ -201,7 +205,9 @@ export async function checkConfidentialityAccessBatch(
       ? CONFIDENTIALITY_LEVELS.slice(0, maxGrantedIndex + 1)
       : [],
   );
+  // All authenticated principals can always see public + internal content.
   allowedLevels.add("public");
+  allowedLevels.add("internal");
 
   const nodes = await db
     .select({
