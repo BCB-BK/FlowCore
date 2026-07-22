@@ -95,10 +95,24 @@ function SidebarProvider({
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
+    const isEditableTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      return (
+        target.isContentEditable ||
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" ||
+        target.closest('[contenteditable="true"]') !== null
+      );
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
+        (event.metaKey || event.ctrlKey) &&
+        // Strg/Cmd+B ist im Editor für "Fett" reserviert — dort nie die
+        // Seitenleiste umschalten (Doppelbelegung, siehe Tester-Feedback).
+        !isEditableTarget(event.target)
       ) {
         event.preventDefault();
         toggleSidebar();

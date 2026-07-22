@@ -57,6 +57,18 @@
   margin: 0.15em 0;
 }
 
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
 .ProseMirror ol {
   list-style-type: decimal;
 }

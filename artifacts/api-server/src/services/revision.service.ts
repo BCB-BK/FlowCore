@@ -4,8 +4,9 @@ import {
   contentRevisionEventsTable,
   contentNodesTable,
   auditEventsTable,
+  principalsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 export interface CreateRevisionInput {
@@ -246,5 +247,35 @@ export async function getVersionTree(nodeId: string) {
     .where(eq(contentRevisionsTable.nodeId, nodeId))
     .orderBy(desc(contentRevisionsTable.revisionNo));
 
-  return revisions;
+  // Beteiligte Personen (Autor, Prüfer, Genehmiger) als Klarnamen auflösen,
+  // damit die Historie nicht nur UUIDs anzeigt.
+  const principalIds = new Set<string>();
+  for (const rev of revisions) {
+    if (rev.authorId) principalIds.add(rev.authorId);
+    if (rev.reviewerId) principalIds.add(rev.reviewerId);
+    if (rev.approverId) principalIds.add(rev.approverId);
+  }
+
+  let nameMap = new Map<string, string>();
+  if (principalIds.size > 0) {
+    const principals = await db
+      .select({
+        id: principalsTable.id,
+        displayName: principalsTable.displayName,
+      })
+      .from(principalsTable)
+      .where(inArray(principalsTable.id, Array.from(principalIds)));
+    nameMap = new Map(
+      principals
+        .filter((p) => p.displayName)
+        .map((p) => [p.id, p.displayName as string]),
+    );
+  }
+
+  return revisions.map((rev) => ({
+    ...rev,
+    authorDisplayName: rev.authorId ? (nameMap.get(rev.authorId) ?? null) : null,
+    reviewerDisplayName: rev.reviewerId ? (nameMap.get(rev.reviewerId) ?? null) : null,
+    approverDisplayName: rev.approverId ? (nameMap.get(rev.approverId) ?? null) : null,
+  }));
 }

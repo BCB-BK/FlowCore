@@ -133,17 +133,23 @@ router.post(
 router.get("/principals/:id", requireAuth, async (req, res) => {
   const id = req.params.id as string;
   const isSelf = req.user!.principalId === id;
-  if (!isSelf) {
-    const perms = await getEffectivePermissions(req.user!.principalId);
-    if (!perms.has("manage_permissions")) {
-      res.status(403).json({ error: "Forbidden" });
-      return;
-    }
-  }
   const principal = await getPrincipalById(id);
   if (!principal) {
     res.status(404).json({ error: "Principal not found" });
     return;
+  }
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      // Angemeldete Benutzer ohne Admin-Rechte erhalten ein eingeschränktes
+      // Profil (kein 403) — z.B. um Autoren von Arbeitskopien anzuzeigen.
+      res.json({
+        id: principal.id,
+        displayName: principal.displayName,
+        principalType: principal.principalType,
+      });
+      return;
+    }
   }
   const roles = await getRolesForPrincipal(id);
   res.json({ ...principal, roles });

@@ -90,9 +90,11 @@ function ClusterSection({
   const [showAll, setShowAll] = useState(false);
   const [, navigate] = useLocation();
 
-  const sorted = [...children].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
+  // Reihenfolge NICHT umsortieren: Cluster-Kinder kommen bereits in der im
+  // Struktur-Editor festgelegten Reihenfolge (childNodeIds), nicht zugeordnete
+  // Kinder nach Display-Code. Die frühere Sortierung nach Änderungsdatum hat
+  // die konfigurierte Struktur-Reihenfolge überschrieben (Tester-Feedback).
+  const sorted = children;
 
   const visible = showAll ? sorted : sorted.slice(0, MAX_VISIBLE);
   const hasMore = sorted.length > MAX_VISIBLE;
@@ -440,9 +442,13 @@ export function DocRegistryView({
   );
 
   if (clusterGroups.length === 0) {
-    const sorted = [...filteredFlatChildren].sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    // Ohne Cluster: stabil nach Display-Code sortieren (entspricht der
+    // Prozess-Struktur), statt nach Änderungsdatum.
+    const sorted = [...filteredFlatChildren].sort((a, b) =>
+      (a.displayCode ?? "").localeCompare(b.displayCode ?? "", undefined, {
+        numeric: true,
+        sensitivity: "base",
+      }),
     );
 
     if (allChildren.length === 0) {

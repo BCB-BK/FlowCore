@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
 import { Skeleton } from "@workspace/ui/skeleton";
-import { ScrollArea } from "@workspace/ui/scroll-area";
 import {
   History,
   GitBranch,
@@ -37,6 +36,9 @@ interface Revision {
   authorId?: string | null;
   reviewerId?: string | null;
   approverId?: string | null;
+  authorDisplayName?: string | null;
+  reviewerDisplayName?: string | null;
+  approverDisplayName?: string | null;
   basedOnRevisionId?: string | null;
   validFrom?: string | null;
   createdAt: string;
@@ -48,6 +50,7 @@ interface ActiveWorkingCopy {
   status: string;
   title: string;
   authorId?: string | null;
+  authorDisplayName?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   changeSummary?: string | null;
@@ -163,10 +166,10 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
                 <span className="text-sm font-medium truncate">{activeWorkingCopy.title}</span>
               )}
             </div>
-            {activeWorkingCopy.authorId && (
+            {(activeWorkingCopy.authorDisplayName || activeWorkingCopy.authorId) && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <User className="h-2.5 w-2.5" />
-                Autor: {activeWorkingCopy.authorId.substring(0, 8)}…
+                Autor: {activeWorkingCopy.authorDisplayName ?? `${activeWorkingCopy.authorId!.substring(0, 8)}…`}
               </p>
             )}
             {activeWorkingCopy.updatedAt && (
@@ -225,7 +228,9 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
               Noch keine veröffentlichten Versionen vorhanden.
             </div>
           ) : (
-            <ScrollArea className="max-h-[500px]">
+            // Nativer Scroll-Container: Radix ScrollArea scrollt mit max-h nicht
+            // zuverlässig, wodurch längere Historien abgeschnitten wurden.
+            <div className="max-h-[600px] overflow-y-auto">
               <div className="divide-y">
                 {revisionList.map((rev, index) => {
                   const Icon = statusIcons[rev.status] || FilePen;
@@ -290,21 +295,21 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
 
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground mt-1.5">
                           {rev.authorId && (
-                            <span className="flex items-center gap-0.5">
+                            <span className="flex items-center gap-0.5" title="Autor">
                               <User className="h-2.5 w-2.5" />
-                              {rev.authorId.substring(0, 8)}…
+                              {rev.authorDisplayName ?? `${rev.authorId.substring(0, 8)}…`}
                             </span>
                           )}
                           {rev.reviewerId && (
-                            <span className="flex items-center gap-0.5">
+                            <span className="flex items-center gap-0.5" title="Prüfer">
                               <FileSearch className="h-2.5 w-2.5" />
-                              {rev.reviewerId.substring(0, 8)}…
+                              {rev.reviewerDisplayName ?? `${rev.reviewerId.substring(0, 8)}…`}
                             </span>
                           )}
                           {rev.approverId && (
-                            <span className="flex items-center gap-0.5">
+                            <span className="flex items-center gap-0.5" title="Genehmiger">
                               <Shield className="h-2.5 w-2.5" />
-                              {rev.approverId.substring(0, 8)}…
+                              {rev.approverDisplayName ?? `${rev.approverId.substring(0, 8)}…`}
                             </span>
                           )}
                         </div>
@@ -358,7 +363,7 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
                   );
                 })}
               </div>
-            </ScrollArea>
+            </div>
           )}
         </CardContent>
       </Card>

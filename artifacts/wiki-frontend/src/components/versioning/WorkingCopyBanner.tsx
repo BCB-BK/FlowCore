@@ -72,6 +72,8 @@ interface WorkingCopyBannerProps {
   workingCopy: WorkingCopy;
   currentUserId?: string;
   authorName?: string;
+  /** Darf der aktuelle Benutzer fremde Arbeitskopien weiterbearbeiten (edit_working_copy)? */
+  canEditOthers?: boolean;
   onNavigateToEditor?: () => void;
   isCreating?: boolean;
   lastReturnComment?: string | null;
@@ -81,6 +83,7 @@ export function WorkingCopyBanner({
   workingCopy,
   currentUserId,
   authorName,
+  canEditOthers,
   onNavigateToEditor,
   isCreating,
   lastReturnComment,
@@ -133,7 +136,7 @@ export function WorkingCopyBanner({
           </div>
         </div>
 
-        {canEdit && onNavigateToEditor && isOwnWc && (
+        {canEdit && onNavigateToEditor && (isOwnWc || canEditOthers) && (
           <Button
             size="sm"
             onClick={onNavigateToEditor}
@@ -145,10 +148,10 @@ export function WorkingCopyBanner({
             ) : (
               <ArrowRight className="h-3.5 w-3.5" />
             )}
-            Weiter bearbeiten
+            {isOwnWc ? "Weiter bearbeiten" : "Gemeinsam weiterbearbeiten"}
           </Button>
         )}
-        {canEdit && !isOwnWc && (
+        {canEdit && !isOwnWc && !canEditOthers && (
           <Badge variant="secondary" className="text-xs flex-shrink-0">
             Gesperrt
           </Badge>

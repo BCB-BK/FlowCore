@@ -28,6 +28,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { SimpleEditor } from "@/components/editor/SimpleEditor";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -255,7 +256,7 @@ export function GlossaryPage() {
                           </div>
                           <div
                             className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5"
-                            dangerouslySetInnerHTML={{ __html: t.definition }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(t.definition) }}
                           />
                           {t.synonyms && t.synonyms.length > 0 && (
                             <p className="text-xs text-muted-foreground mt-1">

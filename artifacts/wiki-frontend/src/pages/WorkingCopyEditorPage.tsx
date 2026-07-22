@@ -914,6 +914,7 @@ export function WorkingCopyEditorPage() {
           workingCopy={activeWC}
           currentUserId={currentUser?.principalId}
           authorName={activeWC?.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
+          canEditOthers={hasEditPermission}
         />
       )}
 

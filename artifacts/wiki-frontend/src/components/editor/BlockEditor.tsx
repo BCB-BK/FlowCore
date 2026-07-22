@@ -26,6 +26,7 @@ import { GalleryBlock } from "./extensions/gallery-block";
 import { BlockId } from "./extensions/block-id";
 import { DragHandle } from "./extensions/drag-handle";
 import { WikiLink } from "./extensions/wiki-link";
+import { Indent } from "./extensions/indent";
 import {
   CalloutNodeView,
   EmbedBlockNodeView,
@@ -193,6 +194,7 @@ export function BlockEditor({
       }),
       BlockId,
       DragHandle,
+      Indent,
     ],
     content: content || { type: "doc", content: [{ type: "paragraph" }] },
     editable,

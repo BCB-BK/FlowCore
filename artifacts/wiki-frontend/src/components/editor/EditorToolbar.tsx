@@ -10,6 +10,8 @@ import {
   Heading3,
   List,
   ListOrdered,
+  IndentIncrease,
+  IndentDecrease,
   CheckSquare,
   Quote,
   Minus,
@@ -76,7 +78,14 @@ function ToolbarButton({
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
   return (
-    <div role="toolbar" aria-label="Textformatierung" className="flex items-center gap-0.5 flex-wrap border-b p-1 bg-muted/30">
+    // sticky: Toolbar bleibt beim Scrollen langer Seiten am oberen Rand des
+    // Scroll-Containers sichtbar (Tester-Feedback). Opaker Hintergrund über
+    // bg-background + Gradient-Tint, damit beim Überlagern nichts durchscheint.
+    <div
+      role="toolbar"
+      aria-label="Textformatierung"
+      className="sticky top-0 z-20 flex items-center gap-0.5 flex-wrap border-b p-1 rounded-t-lg bg-background bg-gradient-to-b from-muted/30 to-muted/30"
+    >
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
@@ -214,6 +223,18 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         title="Checkliste"
       >
         <CheckSquare className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().indent().run()}
+        title="Einrücken (Tab)"
+      >
+        <IndentIncrease className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().outdent().run()}
+        title="Ausrücken (Shift+Tab)"
+      >
+        <IndentDecrease className="h-4 w-4" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
