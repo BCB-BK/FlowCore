@@ -50,3 +50,8 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Umgebungsvariablen mit Secrets — niemals einchecken (.env.example ist die Vorlage)
+.env
+.env.*
+!.env.example

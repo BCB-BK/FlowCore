@@ -28,7 +28,7 @@ import {
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
-import { hasPermissionBatch } from "../services/rbac.service";
+import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
 import { checkConfidentialityAccess, checkConfidentialityAccessBatch } from "../services/confidentiality.service";
 import { AppError } from "../lib/app-error";
 import { recordEvent } from "../services/graph-change-feed.service";
@@ -289,6 +289,24 @@ router.post(
   async (req, res) => {
     try {
       const id = req.params.id as string;
+
+      // edit_structure auch am Zielknoten prüfen — sonst ließe sich eine
+      // Seite unter einen fremden Teilbaum hängen.
+      const newParentId = req.body.newParentNodeId as string | null | undefined;
+      if (newParentId) {
+        const canEditTarget = await hasPermission(
+          req.user!.principalId,
+          "edit_structure",
+          newParentId,
+        );
+        if (!canEditTarget) {
+          res.status(403).json({
+            error: "Keine Berechtigung, Seiten unter dem Zielknoten einzuordnen",
+          });
+          return;
+        }
+      }
+
       await moveNode(
         id,
         req.body.newParentNodeId ?? null,

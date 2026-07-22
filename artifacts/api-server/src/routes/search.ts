@@ -301,7 +301,9 @@ router.get(
 
     res.json({
       results: filteredResults,
-      total: filteredResults.length,
+      // Gesamttrefferzahl über alle Seiten (vorher: nur Länge der aktuellen,
+      // gefilterten Ergebnisseite — brach die Paginierung).
+      total: totalCount,
       limit,
       offset,
       queryId,

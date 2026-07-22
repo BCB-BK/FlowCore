@@ -224,7 +224,7 @@ workflowsAdminRouter.delete("/admin/notification-rules/:id", ...auth, async (req
 workflowsAdminRouter.get("/admin/flowcore-account", ...auth, async (_req, res) => {
   try {
     const upn = await getSystemSetting("flowcore_account_upn");
-    res.json({ upn: upn ?? "flowcore@bildungscampus-backnang.de" });
+    res.json({ upn: upn ?? null });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: message });

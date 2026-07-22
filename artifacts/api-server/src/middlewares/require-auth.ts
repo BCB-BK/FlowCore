@@ -44,9 +44,23 @@ async function checkEntraGroupMembership(externalId: string): Promise<boolean> {
     return cached.isMember;
   }
 
-  const isMember = await checkGroupMembership("", externalId, groupId);
-  groupMembershipCache.set(externalId, { isMember, checkedAt: Date.now() });
-  return isMember;
+  try {
+    const isMember = await checkGroupMembership("", externalId, groupId);
+    groupMembershipCache.set(externalId, { isMember, checkedAt: Date.now() });
+    return isMember;
+  } catch (err) {
+    // Fail-closed mit Übergangs-Cache: Bei Graph-Ausfall gilt der letzte
+    // bekannte Zustand weiter (auch wenn abgelaufen); ohne bekannten Zustand
+    // wird der Request abgelehnt statt durchgelassen.
+    if (cached) {
+      logger.warn(
+        { err, externalId },
+        "Entra group check failed, falling back to last known membership state",
+      );
+      return cached.isMember;
+    }
+    throw err;
+  }
 }
 
 function destroySessionAndReject(req: Request, res: Response): void {
@@ -113,8 +127,9 @@ export function requireAuth(
           try {
             isMember = await checkEntraGroupMembership(externalId);
           } catch (err) {
-            logger.error({ err, externalId }, "Entra group check failed for API token, allowing request");
-            isMember = true;
+            logger.error({ err, externalId }, "Entra group check failed for API token, denying request (fail-closed)");
+            res.status(503).json({ error: "Gruppenprüfung derzeit nicht möglich, bitte erneut versuchen" });
+            return;
           }
           if (!isMember) {
             logger.warn(
@@ -173,9 +188,11 @@ export function requireAuth(
           next();
         })
         .catch((err) => {
-          logger.error({ err, externalId }, "Entra group check failed, allowing request");
-          req.user = sessionUser;
-          next();
+          // Fail-closed: Session bleibt bestehen (kein destroy — der Fehler
+          // liegt bei Graph, nicht beim Benutzer), aber der Request wird
+          // abgelehnt, statt die Gruppenprüfung zu umgehen.
+          logger.error({ err, externalId }, "Entra group check failed, denying request (fail-closed)");
+          res.status(503).json({ error: "Gruppenprüfung derzeit nicht möglich, bitte erneut versuchen" });
         });
       return;
     }

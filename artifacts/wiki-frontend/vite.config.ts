@@ -65,7 +65,9 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: `http://localhost:${process.env.API_PORT || "8080"}`,
+        // Der API-Server liest PORT (nicht API_PORT); API_PORT bleibt als
+        // Fallback für bestehende lokale Setups erhalten.
+        target: `http://localhost:${process.env.PORT || process.env.API_PORT || "8080"}`,
         changeOrigin: true,
       },
     },

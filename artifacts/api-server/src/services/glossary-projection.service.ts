@@ -15,7 +15,9 @@ import {
   deriveBrandScope,
 } from "./copilot-content-projection.service";
 
-const SOURCE_BASE_URL = "https://flowcore.bildungscampus-backnang.de";
+const SOURCE_BASE_URL =
+  process.env["APP_PUBLIC_URL"]?.replace(/\/$/, "") ||
+  "https://flowcore.bildungscampus-backnang.de";
 
 export interface GlossaryTermProjection {
   itemType: "glossary_term";

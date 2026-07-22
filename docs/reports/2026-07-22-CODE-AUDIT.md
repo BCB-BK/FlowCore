@@ -6,6 +6,11 @@
 
 Die mit ✅ markierten Punkte wurden im Branch `claude/flowcore-audit-feedback-xanbfa` bereits behoben.
 
+> **Status-Update (2. Umsetzungsdurchgang, 22.07.2026):** Zusätzlich zu K1–K5 wurden behoben:
+> **H1** (vollständig: Asset-Listen nur noch mit `edit_content`; Downloads von Assets ohne Seitenbezug nur, wenn eine verwendende Seite lesbar ist oder Bearbeitungsrechte vorliegen), **H2** (Gruppenprüfung und Rate-Limiter fail-closed — Gruppenprüfung fällt bei Graph-Ausfall auf den letzten bekannten Zustand zurück, sonst 503; Rate-Limiter zählt bei DB-Ausfall in-memory weiter), **H3** (Domain via `APP_PUBLIC_URL`, bisheriger Wert als Fallback), **H4** (`.gitignore`), **H5/M9** (`.env.example`: `PORT` statt `API_PORT`, `VITE_TEAMS_APP_ID`, `GRAPH_EXTERNAL_CONNECTION_*`; Vite-Proxy liest `PORT`), **H6** (Autosave: Unmount-Cleanup + Flush ausstehender Änderungen), **M2** (Status-Guard in Publish-/Approve-Transaktion), **M3** (Vertraulichkeitsfilter im RAG-Retriever + eigenes Rate-Limit 20/min für KI-Endpunkte), **M4** (Usages-Endpunkt: `edit_content`, Validierung, Existenzprüfung), **M5** (Löschanfragen: Liste/Detail nur für Prüfer bzw. eigene Anfragen, `read_page`-Prüfung beim Anlegen, knoten-skopierte Review-Berechtigung), **M6** (OAuth-State an Session gebunden + `session.regenerate` nach Login), **M8** (`upsertPrincipal`-Grant-Merge in Transaktion), **M10 teilweise** (Kunden-UPN-Fallback entfernt), **M12 teilweise** (Slash-Menü-Stale-Closure, Slash-Erkennung ohne Volldokument-Serialisierung), **N1** (`moveNode` prüft Zielknoten), **N3** (`total` = echte Trefferzahl).
+>
+> **Bewusst offen** (Produktentscheidung oder größerer Umbau, siehe Abschnitt 7): M1, M7, M11, M13, M14, M15, N2, N4, N5, N6 sowie die Reste von M10 (Seed-Daten, Skripte) und M12 (Cursor-Reset-Risiko im Controlled-Content-Effekt).
+
 ---
 
 ## 1. Kritische Funde
@@ -200,13 +205,18 @@ Rate-Limits (30/15 min auth, 200/min API), Session-`maxAge` 8 h, Gruppen-Check-T
 13. **K3** Entra-IDs/Redirect-URI aus `.replit` entfernt — **vor dem nächsten Deploy als Replit-Secrets setzen!**
 14. **K4** `AUTH_DEV_MODE` fail-closed (nur noch bei explizitem `NODE_ENV=development` zulässig).
 
-## 7. Empfohlene Priorisierung der offenen Punkte
+## 7. Verbleibende offene Punkte (Stand nach 2. Durchgang)
 
-1. **H2** Fail-open bei Gruppenprüfung/Rate-Limit
-2. **H1 (Rest)** Medien-Listen-Endpunkte + Assets ohne `nodeId` absichern
-3. **M2** Statusprüfung in Publish-/Approve-Transaktion
-4. **M6** OAuth-State an Session binden + `session.regenerate`
-5. **M3** KI-Endpunkte: Permission-Gate, Rate-Limit, Vertraulichkeit im RAG-Retriever
-6. **H4/H5/M9** `.gitignore`, Env-Dokumentation, Port-Vereinheitlichung
-7. **H6** Autosave-Cleanup im Working-Copy-Editor
-8. Restliche M-/N-Punkte im Rahmen normaler Wartung
+1. **M1** Vertraulichkeits-Defaults (`internal` ohne Grant für alle lesbar; fehlende Klassifikation ⇒ `internal`) — **Produktentscheidung**: bewusst bestätigen oder enger fassen und dokumentieren.
+2. **M7** Copilot-Connector-Suche: Full-Scan + N+1 pro Anfrage — braucht ein Redesign (Projektion vorab materialisieren oder indexieren), kein Quick-Fix.
+3. **M13** Fünf parallele SharePoint-Browser-Komponenten konsolidieren (Refactoring, mittlerer Umfang).
+4. **M14** Index-Keys in umsortierbaren Editor-Listen durch stabile IDs ersetzen (7 Komponenten).
+5. **M11** KI-Modellnamen zentralisieren/konfigurierbar machen (inkl. `lib/integrations-openai-ai-server`).
+6. **M15** Rate-Limits, Session-Dauer, Upload-/Body-Limits per Env konfigurierbar machen.
+7. **N2** Roh-Fehlermeldungen in 500-Antworten (`admin.ts`, `media.ts`) durch generische Meldungen ersetzen.
+8. **N4** Soft-Delete-Kaskade für Kindknoten definieren (fachliche Klärung: mitlöschen vs. umhängen).
+9. **N5** Key-Allowlist für `PUT /admin/system-settings/:key` (vorher Inventur aller verwendeten Keys nötig).
+10. **N6** Multipart-Parser durch Streaming-Lösung (z.B. busboy) ersetzen; Upload-Kontingente.
+11. **M10 (Rest)** Seed-`created_by`, SharePoint-Host und Owner-UUID in Skripten neutralisieren.
+12. **M12 (Rest)** Controlled-Content-Effekt im BlockEditor (Cursor-Reset-Risiko) entschärfen.
+13. Doku-Nachzug: `docs/05-CONFIG-ENV.md` an die neuen Env-Variablen angleichen; UI-Hinweis für Strg+B-Verhalten im Benutzerhandbuch.

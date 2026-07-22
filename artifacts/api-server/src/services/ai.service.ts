@@ -14,6 +14,7 @@ import {
   getHighestRole,
   getSearchVisibilityForRole,
 } from "./rbac.service";
+import { checkConfidentialityAccessBatch } from "./confidentiality.service";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
 
 let _openaiClient: OpenAI | null = null;
@@ -400,7 +401,15 @@ async function searchWikiContent(
   const permChecks = await Promise.all(
     results.map((r) => hasPermission(principalId, "read_page", r.id)),
   );
-  const filtered = results.filter((_, i) => permChecks[i]).slice(0, limit);
+  // Zusätzlich Vertraulichkeit prüfen — sonst könnten Inhalte vertraulicher
+  // Seiten in KI-Antworten von Nutzern ohne Freigabe landen.
+  const confidentialityMap = await checkConfidentialityAccessBatch(
+    principalId,
+    results.map((r) => r.id),
+  );
+  const filtered = results
+    .filter((r, i) => permChecks[i] && confidentialityMap.get(r.id) !== false)
+    .slice(0, limit);
 
   return filtered.map((r) => {
     let snippet = "";
@@ -464,7 +473,13 @@ async function searchConnectorSources(
   const permChecks = await Promise.all(
     rows.map((r) => hasPermission(principalId, "read_page", r.node_id)),
   );
-  const filtered = rows.filter((_, i) => permChecks[i]).slice(0, limit);
+  const confidentialityMap = await checkConfidentialityAccessBatch(
+    principalId,
+    rows.map((r) => r.node_id),
+  );
+  const filtered = rows
+    .filter((r, i) => permChecks[i] && confidentialityMap.get(r.node_id) !== false)
+    .slice(0, limit);
 
   return filtered.map((r) => ({
     nodeId: r.node_id,

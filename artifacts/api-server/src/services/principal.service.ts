@@ -50,12 +50,14 @@ export async function upsertPrincipal(input: {
     for (const dup of duplicates) {
       // Merge confidentiality access grants from the duplicate to the canonical
       // before deactivating — prevents loss of access when principals are merged.
-      const dupGrants = await db
+      // txOrDb statt db: Läuft der Aufruf in einer äußeren Transaktion, muss
+      // der Grant-Merge bei einem Rollback mit zurückgerollt werden.
+      const dupGrants = await txOrDb
         .select({ level: confidentialityPrincipalAccessTable.level })
         .from(confidentialityPrincipalAccessTable)
         .where(eq(confidentialityPrincipalAccessTable.principalId, dup.id));
       for (const grant of dupGrants) {
-        await db
+        await txOrDb
           .insert(confidentialityPrincipalAccessTable)
           .values({ level: grant.level, principalId: existing.id })
           .onConflictDoNothing();

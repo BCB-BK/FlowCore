@@ -408,7 +408,7 @@ function GeneralTab() {
 function ConnectionsTab() {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [flowcoreUpn, setFlowcoreUpn] = useState("flowcore@bildungscampus-backnang.de");
+  const [flowcoreUpn, setFlowcoreUpn] = useState("");
   const [flowcoreUpnEdit, setFlowcoreUpnEdit] = useState("");
   const [flowcoreSaving, setFlowcoreSaving] = useState(false);
   const [flowcoreTesting, setFlowcoreTesting] = useState(false);
@@ -417,12 +417,12 @@ function ConnectionsTab() {
   useEffect(() => {
     Promise.all([
       customFetch<SystemInfo>("/api/admin/system-info"),
-      customFetch<{ upn: string }>("/api/admin/flowcore-account"),
+      customFetch<{ upn: string | null }>("/api/admin/flowcore-account"),
     ])
       .then(([sys, fc]) => {
         setInfo(sys);
-        setFlowcoreUpn(fc.upn);
-        setFlowcoreUpnEdit(fc.upn);
+        setFlowcoreUpn(fc.upn ?? "");
+        setFlowcoreUpnEdit(fc.upn ?? "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -658,7 +658,7 @@ function ConnectionsTab() {
                 setFlowcoreUpnEdit(e.target.value);
                 setFlowcoreTestResult(null);
               }}
-              placeholder="flowcore@bildungscampus-backnang.de"
+              placeholder="dienstkonto@ihre-domain.de"
               className="max-w-sm"
             />
           </div>

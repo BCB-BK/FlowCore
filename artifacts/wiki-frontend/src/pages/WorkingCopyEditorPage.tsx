@@ -348,22 +348,56 @@ export function WorkingCopyEditorPage() {
     changeType?: "editorial" | "minor" | "major" | "regulatory" | "structural";
   };
 
+  const isMountedRef = useRef(true);
+  const updateWcRef = useRef(updateWorkingCopy);
+  updateWcRef.current = updateWorkingCopy;
+
+  // Unmount-Cleanup: Timer stoppen (kein State-Update auf unmounteter
+  // Komponente) und ausstehende Änderungen noch abschicken, damit beim
+  // Verlassen der Seite innerhalb der Autosave-Frist nichts verloren geht.
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+      const pending = pendingPatchRef.current;
+      pendingPatchRef.current = {};
+      const wc = wcRef.current;
+      const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+      if (
+        Object.keys(pending).length > 0 &&
+        wc &&
+        editableStatuses.includes(wc.status) &&
+        sfInitializedRef.current
+      ) {
+        updateWcRef.current
+          .mutateAsync({ workingCopyId: wc.id, data: pending })
+          .catch(() => {});
+      }
+    };
+  }, []);
+
   const doSave = useCallback(
     async (patch: SavePatch) => {
       const wc = wcRef.current;
       const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
       if (!wc || !editableStatuses.includes(wc.status)) return;
       if (!sfInitializedRef.current) return;
-      setIsSaving(true);
+      if (isMountedRef.current) setIsSaving(true);
       try {
         await updateWorkingCopy.mutateAsync({
           workingCopyId: wc.id,
           data: patch,
         });
-        setLastSavedAt(new Date());
-        setDirty(false);
+        if (isMountedRef.current) {
+          setLastSavedAt(new Date());
+          setDirty(false);
+        }
       } finally {
-        setIsSaving(false);
+        if (isMountedRef.current) setIsSaving(false);
       }
     },
     [updateWorkingCopy, setDirty],

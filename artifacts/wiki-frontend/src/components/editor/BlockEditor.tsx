@@ -203,33 +203,30 @@ export function BlockEditor({
       if (onContentChange) {
         onContentChange(ed.getJSON());
       }
-      const json = JSON.stringify(ed.getJSON());
 
-      if (json.includes('"/')) {
-        const { state } = ed;
-        const { from } = state.selection;
-        const textBefore = state.doc.textBetween(
-          Math.max(0, from - 20),
-          from,
-          "",
-        );
-        const slashMatch = textBefore.match(/\/([^/]*)$/);
+      // Slash-Erkennung direkt über den Text vor dem Cursor — die frühere
+      // Volldokument-Serialisierung (JSON.stringify bei jedem Tastendruck)
+      // verursachte Tipp-Latenz auf langen Seiten.
+      const { state } = ed;
+      const { from } = state.selection;
+      const textBefore = state.doc.textBetween(Math.max(0, from - 20), from, "");
+      // Nur Slash am Zeilen-/Wortanfang öffnet das Menü — nicht "und/oder".
+      const slashMatch = textBefore.match(/(?:^|\s)(\/([^/\s]*))$/);
 
-        if (slashMatch) {
-          const coords = ed.view.coordsAtPos(from);
-          setSlashMenu({
-            isOpen: true,
-            position: { top: coords.bottom + 4, left: coords.left },
-            range: { from: from - slashMatch[0].length, to: from },
-            query: slashMatch[1],
-          });
-          return;
-        }
+      if (slashMatch) {
+        const coords = ed.view.coordsAtPos(from);
+        setSlashMenu({
+          isOpen: true,
+          position: { top: coords.bottom + 4, left: coords.left },
+          range: { from: from - slashMatch[1].length, to: from },
+          query: slashMatch[2],
+        });
+        return;
       }
 
-      if (slashMenu.isOpen) {
-        setSlashMenu((prev) => ({ ...prev, isOpen: false }));
-      }
+      // Funktionales Update statt Closure-Lesen: `slashMenu.isOpen` wäre in
+      // diesem einmal gebundenen Callback immer der veraltete Initialwert.
+      setSlashMenu((prev) => (prev.isOpen ? { ...prev, isOpen: false } : prev));
     },
     editorProps: {
       attributes: {

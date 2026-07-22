@@ -9,11 +9,16 @@ import {
 import { eq, and, desc, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { hasPermission } from "../services/rbac.service";
 
 const router: IRouter = Router();
 
 router.get("/deletion-requests", requireAuth, async (req, res) => {
   const statusFilter = req.query.status as string | undefined;
+
+  // Nur Prüfer (archive_page) sehen alle Anfragen; alle anderen sehen
+  // ausschließlich ihre eigenen (vorher: vollständige Liste für jeden).
+  const canReviewAll = await hasPermission(req.user!.principalId, "archive_page");
 
   let query = db
     .select({
@@ -38,14 +43,21 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
     .orderBy(desc(deletionRequestsTable.createdAt))
     .$dynamic();
 
+  const conditions = [];
   if (statusFilter) {
     const validStatuses = ["pending", "approved", "rejected", "executed"] as const;
     type DeletionStatus = (typeof validStatuses)[number];
     if (validStatuses.includes(statusFilter as DeletionStatus)) {
-      query = query.where(
+      conditions.push(
         eq(deletionRequestsTable.status, statusFilter as DeletionStatus),
       );
     }
+  }
+  if (!canReviewAll) {
+    conditions.push(eq(deletionRequestsTable.requestedBy, req.user!.principalId));
+  }
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
   }
 
   const rows = await query;
@@ -89,6 +101,14 @@ router.post("/deletion-requests", requireAuth, async (req, res) => {
     .where(eq(contentNodesTable.id, nodeId));
 
   if (!node) {
+    res.status(404).json({ error: "Seite nicht gefunden" });
+    return;
+  }
+
+  // Löschanfragen nur für lesbare Seiten; 404 statt 403, damit die Existenz
+  // nicht lesbarer Seiten nicht enumerierbar ist.
+  const canRead = await hasPermission(requestedBy, "read_page", nodeId);
+  if (!canRead) {
     res.status(404).json({ error: "Seite nicht gefunden" });
     return;
   }
@@ -180,13 +200,26 @@ router.get("/deletion-requests/:requestId", requireAuth, async (req, res) => {
     return;
   }
 
+  // Detailansicht nur für Prüfer oder den Antragsteller selbst.
+  const isRequester = request.requestedBy === req.user!.principalId;
+  if (!isRequester) {
+    const canReview = await hasPermission(
+      req.user!.principalId,
+      "archive_page",
+      request.nodeId,
+    );
+    if (!canReview) {
+      res.status(404).json({ error: "Löschanfrage nicht gefunden" });
+      return;
+    }
+  }
+
   res.json(request);
 });
 
 router.post(
   "/deletion-requests/:requestId/review",
   requireAuth,
-  requirePermission("archive_page"),
   async (req, res) => {
     const requestId = String(req.params.requestId);
     const { decision, comment } = req.body as {
@@ -207,6 +240,14 @@ router.post(
 
     if (!request) {
       res.status(404).json({ error: "Löschanfrage nicht gefunden" });
+      return;
+    }
+
+    // archive_page knoten-skopiert prüfen (konsistent zu DELETE /nodes/:id) —
+    // die frühere rein globale Prüfung ignorierte Seiten-Scopes.
+    const canReview = await hasPermission(reviewerId, "archive_page", request.nodeId);
+    if (!canReview) {
+      res.status(403).json({ error: "Keine Berechtigung zur Prüfung dieser Löschanfrage" });
       return;
     }
 
@@ -348,7 +389,11 @@ router.post(
   },
 );
 
-router.get("/nodes/:nodeId/deletion-request", requireAuth, async (req, res) => {
+router.get(
+  "/nodes/:nodeId/deletion-request",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.nodeId as string),
+  async (req, res) => {
   const nodeId = String(req.params.nodeId);
 
   const [request] = await db

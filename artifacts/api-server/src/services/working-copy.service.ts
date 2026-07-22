@@ -618,6 +618,8 @@ export async function approveWorkingCopy(
   }
 
   const updated = await db.transaction(async (tx) => {
+    // Atomarer Status-Guard: verhindert, dass zwei parallele Approve-Requests
+    // beide durchlaufen (die Vorprüfung oben liest außerhalb der Transaktion).
     const [result] = await tx
       .update(contentWorkingCopiesTable)
       .set({
@@ -625,8 +627,19 @@ export async function approveWorkingCopy(
         approverId: actorId,
         updatedAt: new Date(),
       })
-      .where(eq(contentWorkingCopiesTable.id, id))
+      .where(
+        and(
+          eq(contentWorkingCopiesTable.id, id),
+          inArray(contentWorkingCopiesTable.status, ["submitted", "in_review"]),
+        ),
+      )
       .returning();
+
+    if (!result) {
+      throw new Error(
+        "Arbeitskopie kann im aktuellen Status nicht genehmigt werden (bereits genehmigt oder geändert).",
+      );
+    }
 
     await tx.insert(workingCopyEventsTable).values({
       workingCopyId: id,
@@ -695,6 +708,20 @@ export async function publishWorkingCopy(
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
     );
+
+    // Status nach Erhalt des Locks erneut prüfen: Die Vorprüfung oben liest
+    // außerhalb der Transaktion — ohne diesen Guard würde ein zweiter,
+    // paralleler Publish-Request eine weitere Revision erzeugen.
+    const [currentWc] = await tx
+      .select({ status: contentWorkingCopiesTable.status })
+      .from(contentWorkingCopiesTable)
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .for("update");
+    if (!currentWc || currentWc.status !== "approved_for_publish") {
+      throw new Error(
+        `Arbeitskopie kann im Status '${currentWc?.status ?? "unbekannt"}' nicht veröffentlicht werden. Nur freigegebene Arbeitskopien können veröffentlicht werden.`,
+      );
+    }
 
     const maxResult = await tx
       .select({

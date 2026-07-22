@@ -67,7 +67,11 @@ app.use(
     },
   }),
 );
-const PROD_ORIGIN = "https://flowcore.bildungscampus-backnang.de";
+// Konfigurierbar über APP_PUBLIC_URL; der Fallback hält bestehende
+// Deployments ohne gesetzte Variable funktionsfähig.
+const PROD_ORIGIN =
+  process.env["APP_PUBLIC_URL"]?.replace(/\/$/, "") ||
+  "https://flowcore.bildungscampus-backnang.de";
 
 // The Copilot Studio / Power Platform custom connector endpoints are
 // authenticated via a per-agent API key (no cookies), and are called

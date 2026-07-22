@@ -22,7 +22,9 @@ import {
   evaluateIndexability,
 } from "../lib/agent-metadata";
 
-const SOURCE_BASE_URL = "https://flowcore.bildungscampus-backnang.de";
+const SOURCE_BASE_URL =
+  process.env["APP_PUBLIC_URL"]?.replace(/\/$/, "") ||
+  "https://flowcore.bildungscampus-backnang.de";
 
 export interface CopilotPageProjection {
   itemType: "flowcore_page";

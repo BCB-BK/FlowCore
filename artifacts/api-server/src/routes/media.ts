@@ -308,7 +308,10 @@ router.post(
   },
 );
 
-router.get("/assets", requireAuth, async (req, res) => {
+// Medienbibliothek: nur für Benutzer mit Bearbeitungsrechten (die Dialoge
+// existieren ausschließlich im Editor-Kontext). Ohne Gate konnte jeder
+// Authentifizierte Metadaten und URLs aller Assets auflisten.
+router.get("/assets", requireAuth, requirePermission("edit_content"), async (req, res) => {
   const q = req.query.q as string | undefined;
   const classification = req.query.classification as string | undefined;
   const limit = Math.min(
@@ -358,7 +361,7 @@ router.get("/assets", requireAuth, async (req, res) => {
   res.json(assetsWithUrls);
 });
 
-router.get("/assets/:id", requireAuth, async (req, res) => {
+router.get("/assets/:id", requireAuth, requirePermission("edit_content"), async (req, res) => {
   const id = req.params.id as string;
   const [asset] = await db
     .select()
@@ -445,6 +448,42 @@ router.get("/files/:key", requireAuth, async (req, res) => {
         res.status(403).json({ error: "Keine Berechtigung" });
         return;
       }
+    } else {
+      // Asset ohne Seitenbezug: Zugriff, wenn der Benutzer eine der Seiten
+      // lesen darf, auf denen das Asset verwendet wird — sonst nur mit
+      // Bearbeitungsrechten (Medienbibliothek).
+      let canRead = false;
+      try {
+        const usages = await db
+          .selectDistinct({ nodeId: mediaAssetUsagesTable.nodeId })
+          .from(mediaAssetUsagesTable)
+          .where(eq(mediaAssetUsagesTable.assetId, asset.id))
+          .limit(20);
+        for (const usage of usages) {
+          if (!usage.nodeId) continue;
+          if (await hasPermission(req.user!.principalId, "read_page", usage.nodeId)) {
+            const confidentiality = await checkConfidentialityAccess(
+              req.user!.principalId,
+              usage.nodeId,
+            );
+            if (confidentiality.allowed) {
+              canRead = true;
+              break;
+            }
+          }
+        }
+        if (!canRead) {
+          canRead = await hasPermission(req.user!.principalId, "edit_content");
+        }
+      } catch (permErr) {
+        logger.error({ permErr, principalId: req.user?.principalId, assetId: asset.id }, "Permission check failed for node-less media file");
+        res.status(500).json({ error: "Permission check failed" });
+        return;
+      }
+      if (!canRead) {
+        res.status(403).json({ error: "Keine Berechtigung" });
+        return;
+      }
     }
 
     const provider = asset.storageProviderId
@@ -461,17 +500,53 @@ router.get("/files/:key", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/assets/:id/usages", requireAuth, async (req, res) => {
-  const assetId = req.params.id as string;
-  const { nodeId, revisionId, usageContext } = req.body;
+router.post(
+  "/assets/:id/usages",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    const assetId = req.params.id as string;
+    const { nodeId, revisionId, usageContext } = req.body as {
+      nodeId?: unknown;
+      revisionId?: unknown;
+      usageContext?: unknown;
+    };
 
-  const [usage] = await db
-    .insert(mediaAssetUsagesTable)
-    .values({ assetId, nodeId, revisionId, usageContext })
-    .returning();
+    const isOptionalString = (v: unknown) => v == null || typeof v === "string";
+    if (
+      typeof nodeId !== "string" ||
+      nodeId.length === 0 ||
+      !isOptionalString(revisionId) ||
+      !isOptionalString(usageContext)
+    ) {
+      res.status(400).json({ error: "Ungültige Nutzungsdaten" });
+      return;
+    }
 
-  res.status(201).json(usage);
-});
+    const [asset] = await db
+      .select({ id: mediaAssetsTable.id })
+      .from(mediaAssetsTable)
+      .where(
+        and(eq(mediaAssetsTable.id, assetId), eq(mediaAssetsTable.isDeleted, false)),
+      );
+    if (!asset) {
+      res.status(404).json({ error: "Asset not found" });
+      return;
+    }
+
+    const [usage] = await db
+      .insert(mediaAssetUsagesTable)
+      .values({
+        assetId,
+        nodeId,
+        revisionId: (revisionId as string | undefined) ?? null,
+        usageContext: (usageContext as string | undefined) ?? null,
+      })
+      .returning();
+
+    res.status(201).json(usage);
+  },
+);
 
 router.get("/assets/:id/usages", requireAuth, async (req, res) => {
   const assetId = req.params.id as string;

@@ -30,6 +30,28 @@ function startCleanup() {
 
 startCleanup();
 
+// In-Memory-Fallback, falls die DB-basierte Zählung ausfällt: Limits bleiben
+// durchgesetzt (fail-closed bezüglich des Limits), ohne dass ein DB-Ausfall
+// jeden Request blockiert.
+const memoryHits = new Map<string, { hits: number; resetAt: number }>();
+
+function countInMemory(key: string, windowMs: number): { hits: number; resetAtMs: number } {
+  const now = Date.now();
+  const entry = memoryHits.get(key);
+  if (!entry || entry.resetAt < now) {
+    const fresh = { hits: 1, resetAt: now + windowMs };
+    memoryHits.set(key, fresh);
+    if (memoryHits.size > 10_000) {
+      for (const [k, v] of memoryHits) {
+        if (v.resetAt < now) memoryHits.delete(k);
+      }
+    }
+    return { hits: 1, resetAtMs: fresh.resetAt };
+  }
+  entry.hits += 1;
+  return { hits: entry.hits, resetAtMs: entry.resetAt };
+}
+
 export function rateLimit(options: RateLimitOptions) {
   const { windowMs, maxRequests, keyPrefix = "rl" } = options;
 
@@ -76,7 +98,17 @@ export function rateLimit(options: RateLimitOptions) {
 
       next();
     } catch (err) {
-      logger.error({ err }, "Rate limit check failed, allowing request");
+      logger.error({ err }, "Rate limit DB check failed, falling back to in-memory counting");
+      const { hits, resetAtMs } = countInMemory(key, windowMs);
+      if (hits > maxRequests) {
+        const retryAfter = Math.ceil((resetAtMs - Date.now()) / 1000);
+        res.setHeader("Retry-After", String(retryAfter));
+        res.status(429).json({
+          error: "Too many requests. Please try again later.",
+          retryAfter,
+        });
+        return;
+      }
       next();
     }
   };
