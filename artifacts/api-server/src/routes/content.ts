@@ -338,6 +338,37 @@ router.delete(
   requirePermission("archive_page", (req) => req.params.id),
   async (req, res) => {
     const id = req.params.id as string;
+
+    const [node] = await db
+      .select({ id: contentNodesTable.id, isDeleted: contentNodesTable.isDeleted })
+      .from(contentNodesTable)
+      .where(eq(contentNodesTable.id, id));
+    if (!node || node.isDeleted) {
+      res.status(404).json({ error: "Seite nicht gefunden" });
+      return;
+    }
+
+    // Entscheidung N4 (Audit 22.07.2026): Seiten mit aktiven Unterseiten
+    // dürfen nicht gelöscht werden — sonst entstehen verwaiste Seiten ohne
+    // Ankerpunkt im Prozessbaum. Unterseiten müssen zuerst verschoben werden.
+    const [childCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(contentNodesTable)
+      .where(
+        and(
+          eq(contentNodesTable.parentNodeId, id),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      );
+    if ((childCount?.count ?? 0) > 0) {
+      res.status(409).json({
+        error: `Diese Seite hat ${childCount.count} aktive Unterseite(n). Bitte verschieben Sie die Unterseiten zuerst an eine andere Stelle, bevor Sie die Seite löschen.`,
+        code: "NODE_HAS_CHILDREN",
+        childCount: childCount.count,
+      });
+      return;
+    }
+
     await db.transaction(async (tx) => {
       await tx
         .update(contentNodesTable)

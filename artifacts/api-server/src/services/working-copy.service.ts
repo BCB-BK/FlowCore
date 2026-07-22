@@ -229,6 +229,13 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
       }
     }
 
+    // Entscheidung M1 (Audit 22.07.2026): Vertraulichkeitsstufe explizit auf
+    // "internal" vorbelegen, statt sie unklassifiziert zu lassen. Bereits
+    // gesetzte Stufen (aus der Basisrevision) bleiben unangetastet.
+    if (!structuredFields?.confidentiality) {
+      structuredFields = { ...(structuredFields ?? {}), confidentiality: "internal" };
+    }
+
     const [wc] = await tx
       .insert(contentWorkingCopiesTable)
       .values({

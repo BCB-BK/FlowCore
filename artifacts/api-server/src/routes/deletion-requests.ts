@@ -6,12 +6,30 @@ import {
   auditEventsTable,
   principalsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
 
 const router: IRouter = Router();
+
+/**
+ * Entscheidung N4 (Audit 22.07.2026): Seiten mit aktiven Unterseiten dürfen
+ * nicht gelöscht werden — Unterseiten müssen zuerst an eine andere Stelle
+ * verschoben werden, damit keine verwaisten Seiten entstehen.
+ */
+async function countActiveChildren(nodeId: string): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(contentNodesTable)
+    .where(
+      and(
+        eq(contentNodesTable.parentNodeId, nodeId),
+        eq(contentNodesTable.isDeleted, false),
+      ),
+    );
+  return row?.count ?? 0;
+}
 
 router.get("/deletion-requests", requireAuth, async (req, res) => {
   const statusFilter = req.query.status as string | undefined;
@@ -110,6 +128,16 @@ router.post("/deletion-requests", requireAuth, async (req, res) => {
   const canRead = await hasPermission(requestedBy, "read_page", nodeId);
   if (!canRead) {
     res.status(404).json({ error: "Seite nicht gefunden" });
+    return;
+  }
+
+  const childCount = await countActiveChildren(nodeId);
+  if (childCount > 0) {
+    res.status(409).json({
+      error: `Diese Seite hat ${childCount} aktive Unterseite(n). Bitte verschieben Sie die Unterseiten zuerst an eine andere Stelle, bevor Sie eine Löschanfrage stellen.`,
+      code: "NODE_HAS_CHILDREN",
+      childCount,
+    });
     return;
   }
 
@@ -254,6 +282,20 @@ router.post(
     if (request.status !== "pending") {
       res.status(400).json({ error: "Löschanfrage ist nicht mehr offen" });
       return;
+    }
+
+    // Auch zum Ausführungszeitpunkt prüfen — zwischen Anfrage und Genehmigung
+    // können neue Unterseiten entstanden sein.
+    if (decision === "approved") {
+      const childCount = await countActiveChildren(request.nodeId);
+      if (childCount > 0) {
+        res.status(409).json({
+          error: `Diese Seite hat inzwischen ${childCount} aktive Unterseite(n). Bitte verschieben Sie die Unterseiten zuerst, bevor die Löschung genehmigt wird.`,
+          code: "NODE_HAS_CHILDREN",
+          childCount,
+        });
+        return;
+      }
     }
 
     const newStatus = decision === "approved" ? "approved" : "rejected";

@@ -207,14 +207,14 @@ Rate-Limits (30/15 min auth, 200/min API), Session-`maxAge` 8 h, Gruppen-Check-T
 
 ## 7. Verbleibende offene Punkte (Stand nach 2. Durchgang)
 
-1. **M1** Vertraulichkeits-Defaults (`internal` ohne Grant für alle lesbar; fehlende Klassifikation ⇒ `internal`) — **Produktentscheidung**: bewusst bestätigen oder enger fassen und dokumentieren.
+1. ~~**M1** Vertraulichkeits-Defaults~~ — **✅ Entschieden (22.07.2026, T. Wenninger):** Unklassifiziert = `internal` = lesbar für alle angemeldeten Benutzer bleibt das gewollte Verhalten. Vertrauliche Inhalte sind bei Erstellung explizit zu klassifizieren. Zusätzlich umgesetzt: Neue Arbeitskopien werden bei Erstellung explizit mit `confidentiality: "internal"` vorbelegt (statt unklassifiziert), sofern die Basisrevision keine Stufe mitbringt.
 2. **M7** Copilot-Connector-Suche: Full-Scan + N+1 pro Anfrage — braucht ein Redesign (Projektion vorab materialisieren oder indexieren), kein Quick-Fix.
 3. **M13** Fünf parallele SharePoint-Browser-Komponenten konsolidieren (Refactoring, mittlerer Umfang).
 4. **M14** Index-Keys in umsortierbaren Editor-Listen durch stabile IDs ersetzen (7 Komponenten).
 5. **M11** KI-Modellnamen zentralisieren/konfigurierbar machen (inkl. `lib/integrations-openai-ai-server`).
 6. **M15** Rate-Limits, Session-Dauer, Upload-/Body-Limits per Env konfigurierbar machen.
 7. **N2** Roh-Fehlermeldungen in 500-Antworten (`admin.ts`, `media.ts`) durch generische Meldungen ersetzen.
-8. **N4** Soft-Delete-Kaskade für Kindknoten definieren (fachliche Klärung: mitlöschen vs. umhängen).
+8. ~~**N4** Soft-Delete-Kaskade~~ — **✅ Entschieden und umgesetzt (22.07.2026):** Löschung wird blockiert, solange aktive Unterseiten existieren (409 mit Hinweis, Unterseiten zuerst zu verschieben). Greift beim direkten Löschen, beim Anlegen einer Löschanfrage und erneut bei deren Genehmigung.
 9. **N5** Key-Allowlist für `PUT /admin/system-settings/:key` (vorher Inventur aller verwendeten Keys nötig).
 10. **N6** Multipart-Parser durch Streaming-Lösung (z.B. busboy) ersetzen; Upload-Kontingente.
 11. **M10 (Rest)** Seed-`created_by`, SharePoint-Host und Owner-UUID in Skripten neutralisieren.
