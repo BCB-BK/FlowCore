@@ -1,7 +1,14 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
-const SHAREPOINT_HOSTNAME = "bildungscampusbacknang.sharepoint.com";
+// Mandantenspezifisch — muss per Umgebungsvariable gesetzt werden.
+const SHAREPOINT_HOSTNAME = process.env.SHAREPOINT_HOSTNAME ?? "";
+if (!SHAREPOINT_HOSTNAME) {
+  console.error(
+    "SHAREPOINT_HOSTNAME ist nicht gesetzt (z.B. contoso.sharepoint.com). Abbruch.",
+  );
+  process.exit(1);
+}
 const OUTPUT_DIR = path.resolve(
   import.meta.dirname ?? process.cwd(),
   "../../sharepoint-export",

@@ -25,8 +25,37 @@ Alle Konfigurationswerte werden beim Start via Zod-Schema validiert (`artifacts/
 |---|---|---|
 | `LOG_LEVEL` | Logging-Stufe (`trace`/`debug`/`info`/`warn`/`error`) | `info` |
 | `TEAMS_APP_ID` | Microsoft Teams App-ID für Deep Links | — |
+| `VITE_TEAMS_APP_ID` | Teams App-ID für das Frontend (zur Build-Zeit eingebettet) | — |
 | `OPENAI_API_KEY` | OpenAI API-Schlüssel für KI-Assistent | — |
-| `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Entra-Prüfung) | `false` |
+| `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Entra-Prüfung); nur mit `NODE_ENV=development` zulässig — in allen anderen Umgebungen bricht der Server beim Start ab | `false` |
+| `APP_PUBLIC_URL` | Öffentliche Basis-URL der App (CORS-Origin, Quell-URLs für Copilot/Graph, Teams-Deep-Links) | Produktions-Fallback |
+| `ENTRA_REQUIRED_GROUP_ID` | Login auf Mitglieder dieser Entra-Gruppe beschränken | — (alle Tenant-Benutzer) |
+| `GRAPH_EXTERNAL_CONNECTION_ID` | ID der Graph-External-Connection (Copilot-Index) | `flowcorewiki` |
+| `GRAPH_EXTERNAL_CONNECTION_NAME` | Anzeigename der Graph-Connection | `FlowCore Wiki` |
+| `GRAPH_EXTERNAL_CONNECTION_DESCRIPTION` | Beschreibung der Graph-Connection | — |
+
+### Betriebsparameter (Limits & Timeouts)
+
+Alle Werte haben sichere Defaults und sind nur bei Bedarf zu übersteuern:
+
+| Variable | Beschreibung | Standard |
+|---|---|---|
+| `RATE_LIMIT_AUTH_MAX` / `RATE_LIMIT_AUTH_WINDOW_MIN` | Rate-Limit für Auth-Endpunkte | 30 Anfragen / 15 min |
+| `RATE_LIMIT_API_MAX` / `RATE_LIMIT_API_WINDOW_SEC` | Rate-Limit für API-Endpunkte | 200 Anfragen / 60 s |
+| `SESSION_MAX_AGE_HOURS` | Session-Lebensdauer | `8` |
+| `GROUP_CHECK_TTL_MIN` | Cache-Dauer der Entra-Gruppenprüfung | `15` |
+| `JSON_BODY_LIMIT` | Maximale JSON-Body-Größe | `2mb` |
+| `MAX_UPLOAD_MB` | Maximale Upload-Dateigröße (Medien) | `50` |
+| `COPILOT_PROJECTION_CACHE_TTL_SEC` | Cache-Dauer der Copilot-Suchprojektionen | `300` |
+
+### KI-Modelle
+
+| Variable | Beschreibung | Standard |
+|---|---|---|
+| `AI_DEFAULT_MODEL` | Text-Modell des FlowCore-Assistenten (Default, in den KI-Einstellungen übersteuerbar) | `gpt-5.2` |
+| `AI_IMAGE_MODEL` | Bildgenerierung | `gpt-image-1` |
+| `AI_AUDIO_MODEL` | Audiogenerierung | `gpt-audio` |
+| `AI_TRANSCRIBE_MODEL` | Transkription | `gpt-4o-mini-transcribe` |
 
 ### Credential-Nutzung durch SharePoint-Speicheranbieter
 

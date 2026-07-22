@@ -6,6 +6,7 @@ import { Input } from "@workspace/ui/input";
 import { Textarea } from "@workspace/ui/textarea";
 import { BookOpen, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
+import { useRowKeys } from "./useRowKeys";
 
 interface GlossaryTerm {
   term: string;
@@ -34,6 +35,7 @@ function parseTerms(raw: string): GlossaryTerm[] {
 export function TermRepeater({ value, onSave, sectionKey, help, helpText, guidingQuestions }: TermRepeaterProps) {
   const [editing, setEditing] = useState(false);
   const [terms, setTerms] = useState<GlossaryTerm[]>(() => parseTerms(value));
+  const rowKeys = useRowKeys(terms.length);
 
   const handleSave = () => {
     const filtered = terms.filter(t => t.term.trim() || t.definition.trim());
@@ -48,10 +50,12 @@ export function TermRepeater({ value, onSave, sectionKey, help, helpText, guidin
 
   const addTerm = () => {
     setTerms([...terms, { term: "", definition: "", synonyms: "" }]);
+    rowKeys.add();
   };
 
   const removeTerm = (index: number) => {
     setTerms(terms.filter((_, i) => i !== index));
+    rowKeys.remove(index);
   };
 
   const updateTerm = (index: number, field: keyof GlossaryTerm, val: string) => {
@@ -103,7 +107,7 @@ export function TermRepeater({ value, onSave, sectionKey, help, helpText, guidin
         {editing ? (
           <div className="space-y-3">
             {terms.map((entry, i) => (
-              <div key={i} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+              <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Eintrag {i + 1}</span>
                   <Button variant="ghost" size="sm" className="h-6 px-1.5 text-destructive" onClick={() => removeTerm(i)}>

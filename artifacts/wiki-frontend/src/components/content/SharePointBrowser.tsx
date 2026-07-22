@@ -11,15 +11,17 @@ import {
 } from "@workspace/ui/dialog";
 import {
   Folder,
-  FileText,
   ArrowLeft,
   Search,
   Check,
   RefreshCw,
   Globe,
   HardDrive,
-  File,
 } from "lucide-react";
+import {
+  getSharePointFileIcon,
+  formatFileSize,
+} from "@/lib/sharepoint-ui";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListSharePointSites,
@@ -33,24 +35,6 @@ import {
 interface BreadcrumbItem {
   id: string;
   name: string;
-}
-
-function formatSize(bytes: number): string {
-  if (bytes === 0) return "-";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-}
-
-function getFileIcon(mimeType: string, isFolder: boolean) {
-  if (isFolder) return Folder;
-  if (mimeType.startsWith("image/")) return File;
-  if (mimeType.includes("pdf")) return FileText;
-  if (mimeType.includes("word") || mimeType.includes("document"))
-    return FileText;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return FileText;
-  return File;
 }
 
 export function SharePointBrowser({
@@ -355,7 +339,7 @@ export function SharePointBrowser({
               )}
               {items?.map((item) => {
                 const isSelected = selectedItems.some((s) => s.id === item.id);
-                const ItemIcon = getFileIcon(
+                const ItemIcon = getSharePointFileIcon(
                   item.mimeType ?? "",
                   item.isFolder ?? false,
                 );
@@ -406,7 +390,7 @@ export function SharePointBrowser({
                         {item.name}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{formatSize(item.size ?? 0)}</span>
+                        <span>{formatFileSize(item.size ?? 0)}</span>
                         {item.lastModifiedAt && (
                           <span>
                             {new Date(item.lastModifiedAt).toLocaleDateString(

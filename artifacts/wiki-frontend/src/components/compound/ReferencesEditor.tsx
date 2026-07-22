@@ -23,6 +23,7 @@ import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import { SharePointFilePicker } from "./SharePointFilePicker";
 import { WikiNodePickerDialog } from "./WikiNodePickerDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useRowKeys } from "./useRowKeys";
 
 type ReferenceType = "url" | "sharepoint" | "upload" | "node";
 
@@ -116,6 +117,7 @@ export function ReferencesEditor({
 }: ReferencesEditorProps) {
   const [editing, setEditing] = useState(false);
   const [refs, setRefs] = useState<Reference[]>(() => parseReferences(value));
+  const rowKeys = useRowKeys(refs.length);
   const [showSharePointPicker, setShowSharePointPicker] = useState(false);
   const [showNodePicker, setShowNodePicker] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -136,10 +138,12 @@ export function ReferencesEditor({
 
   const addRef = (type: ReferenceType = "url") => {
     setRefs([...refs, { type, title: "", url: "" }]);
+    rowKeys.add();
   };
 
   const removeRef = (index: number) => {
     setRefs(refs.filter((_, i) => i !== index));
+    rowKeys.remove(index);
   };
 
   const updateRef = (index: number, field: keyof Reference, val: string) => {
@@ -153,6 +157,7 @@ export function ReferencesEditor({
       url: f.webUrl,
     }));
     setRefs((prev) => [...prev, ...newRefs]);
+    rowKeys.add(newRefs.length);
   };
 
   const handleNodeSelect = (pickedNodeId: string, title: string, url: string, templateType?: string) => {
@@ -164,6 +169,7 @@ export function ReferencesEditor({
       templateType,
     };
     setRefs((prev) => [...prev, newRef]);
+    rowKeys.add();
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,6 +199,7 @@ export function ReferencesEditor({
         ...prev,
         { type: "upload", title: file.name, url: asset.url },
       ]);
+      rowKeys.add();
       toast({ title: "Datei hochgeladen", description: file.name });
     } catch (err) {
       toast({
@@ -266,7 +273,7 @@ export function ReferencesEditor({
                 const colorClass = TYPE_COLORS[ref.type] ?? "text-blue-600 bg-blue-50";
                 const isReadOnlyUrl = ref.type === "sharepoint" || ref.type === "upload" || ref.type === "node";
                 return (
-                  <div key={i} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+                  <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <GripVertical className="h-3 w-3" />

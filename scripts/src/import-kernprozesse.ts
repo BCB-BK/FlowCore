@@ -35,7 +35,15 @@ const RELEVANT_TABS = [
   "Undefinierte Prozesse",
 ];
 
-const SYSTEM_OWNER_ID = "bdb316ff-13be-4a10-a5f9-a821f81938b5";
+// Umgebungsspezifische Principal-ID (Owner für importierte Seiten) — muss
+// per Umgebungsvariable auf die Ziel-Datenbank abgestimmt gesetzt werden.
+const SYSTEM_OWNER_ID = process.env.IMPORT_SYSTEM_OWNER_ID ?? "";
+if (!SYSTEM_OWNER_ID) {
+  console.error(
+    "IMPORT_SYSTEM_OWNER_ID ist nicht gesetzt (Principal-UUID des System-Owners in der Ziel-DB). Abbruch.",
+  );
+  process.exit(1);
+}
 
 interface ParsedRow {
   level: number;

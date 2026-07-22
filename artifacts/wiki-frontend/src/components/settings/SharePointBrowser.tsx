@@ -9,10 +9,6 @@ import {
   Globe,
   Library,
   Folder,
-  FileText,
-  FileSpreadsheet,
-  FileImage,
-  File,
   ChevronRight,
   ArrowLeft,
   ExternalLink,
@@ -21,6 +17,10 @@ import {
   Clock,
   User,
 } from "lucide-react";
+import {
+  getSharePointFileIcon,
+  formatFileSize,
+} from "@/lib/sharepoint-ui";
 import {
   useListSharePointSites,
   getListSharePointSitesQueryKey,
@@ -39,28 +39,6 @@ interface BreadcrumbEntry {
   label: string;
   type: "root" | "site" | "drive" | "folder";
   id?: string;
-}
-
-function getFileIcon(mimeType: string, isFolder: boolean) {
-  if (isFolder) return Folder;
-  if (mimeType.includes("pdf")) return FileText;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("excel"))
-    return FileSpreadsheet;
-  if (mimeType.startsWith("image/")) return FileImage;
-  if (
-    mimeType.includes("word") ||
-    mimeType.includes("document") ||
-    mimeType.includes("text")
-  )
-    return FileText;
-  return File;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "—";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function formatDate(dateStr: string): string {
@@ -487,7 +465,7 @@ function ItemRow({
   item: SharePointItem;
   onClick?: () => void;
 }) {
-  const Icon = getFileIcon(item.mimeType, item.isFolder);
+  const Icon = getSharePointFileIcon(item.mimeType, item.isFolder);
   const iconColor = item.isFolder
     ? "text-amber-500"
     : item.mimeType.includes("pdf")

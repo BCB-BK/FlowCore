@@ -4,6 +4,7 @@ import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
 import { List, Plus, Trash2, Pencil, Check, X, ChevronUp, ChevronDown } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useRowKeys } from "./useRowKeys";
 
 function parseAgenda(raw: string): string[] {
   if (!raw) return [];
@@ -40,6 +41,7 @@ export function AgendaEditor({
 }: AgendaEditorProps) {
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState<string[]>(() => parseAgenda(value));
+  const rowKeys = useRowKeys(items.length);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const displayItems = parseAgenda(value);
@@ -58,6 +60,7 @@ export function AgendaEditor({
   const addItem = () => {
     const next = [...items, ""];
     setItems(next);
+    rowKeys.add();
     setTimeout(() => {
       inputRefs.current[next.length - 1]?.focus();
     }, 30);
@@ -65,6 +68,7 @@ export function AgendaEditor({
 
   const removeItem = (i: number) => {
     setItems(items.filter((_, idx) => idx !== i));
+    rowKeys.remove(i);
   };
 
   const updateItem = (i: number, val: string) => {
@@ -77,6 +81,7 @@ export function AgendaEditor({
     if (j < 0 || j >= next.length) return;
     [next[i], next[j]] = [next[j], next[i]];
     setItems(next);
+    rowKeys.move(i, j);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, i: number) => {
@@ -84,6 +89,7 @@ export function AgendaEditor({
       e.preventDefault();
       const next = [...items.slice(0, i + 1), "", ...items.slice(i + 1)];
       setItems(next);
+      rowKeys.insertAt(i + 1);
       setTimeout(() => {
         inputRefs.current[i + 1]?.focus();
       }, 30);
@@ -141,7 +147,7 @@ export function AgendaEditor({
         {editing ? (
           <div className="space-y-1.5">
             {items.map((item, i) => (
-              <div key={i} className="flex items-center gap-1.5">
+              <div key={rowKeys.keys[i]} className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground w-5 text-right shrink-0 font-mono">
                   {i + 1}.
                 </span>

@@ -27,6 +27,7 @@ import type {
   SharePointDrive,
   SharePointItem,
 } from "@workspace/api-client-react";
+import { formatFileSize } from "@/lib/sharepoint-ui";
 
 export interface SharePointSelection {
   siteId: string;
@@ -508,16 +509,10 @@ function ItemsBrowser({
             <p className="text-sm truncate">{item.name}</p>
           </div>
           <span className="text-[10px] text-muted-foreground shrink-0">
-            {item.size > 0 ? formatSize(item.size) : ""}
+            {item.size > 0 ? formatFileSize(item.size) : ""}
           </span>
         </button>
       ))}
     </div>
   );
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

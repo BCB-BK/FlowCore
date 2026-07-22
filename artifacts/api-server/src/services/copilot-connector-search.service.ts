@@ -18,6 +18,52 @@ import {
   type CopilotConnectorPrincipal,
 } from "./copilot-connector-key.service";
 import { isGlossarySyncEnabled } from "./system-settings.service";
+import { envInt } from "../lib/env";
+
+/**
+ * TTL-Cache für die teuren Projektionen (mehrere DB-Roundtrips pro Knoten).
+ * Die Connector-Suche scannt alle publizierten Seiten; ohne Cache kostet
+ * jede Suchanfrage den vollen Projektionsaufwand erneut. Kurzlebige
+ * Staleness (Default 5 min) ist für Copilot-Suchergebnisse akzeptabel —
+ * Publishes ändern den Bestand selten.
+ */
+const PROJECTION_CACHE_TTL_MS =
+  envInt("COPILOT_PROJECTION_CACHE_TTL_SEC", 300) * 1000;
+
+const pageProjectionCache = new Map<
+  string,
+  { value: CopilotPageProjection | null; expiresAt: number }
+>();
+const glossaryProjectionCache = new Map<
+  string,
+  { value: GlossaryTermProjection | null; expiresAt: number }
+>();
+
+async function projectPublishedPageCached(
+  nodeId: string,
+): Promise<CopilotPageProjection | null> {
+  const hit = pageProjectionCache.get(nodeId);
+  if (hit && hit.expiresAt > Date.now()) return hit.value;
+  const value = await projectPublishedPage(nodeId);
+  pageProjectionCache.set(nodeId, {
+    value,
+    expiresAt: Date.now() + PROJECTION_CACHE_TTL_MS,
+  });
+  return value;
+}
+
+async function projectGlossaryTermCached(
+  termId: string,
+): Promise<GlossaryTermProjection | null> {
+  const hit = glossaryProjectionCache.get(termId);
+  if (hit && hit.expiresAt > Date.now()) return hit.value;
+  const value = await projectGlossaryTerm(termId);
+  glossaryProjectionCache.set(termId, {
+    value,
+    expiresAt: Date.now() + PROJECTION_CACHE_TTL_MS,
+  });
+  return value;
+}
 
 /**
  * Task 4 - "Quellenblock-freundliche Metadaten normalisieren": the fields a
@@ -260,7 +306,7 @@ export async function searchForConnector(
     const batch = rows.slice(i, i + BATCH_SIZE);
     const batchResults = await Promise.all(
       batch.map(async (row) => {
-        const projection = await projectPublishedPage(row.id);
+        const projection = await projectPublishedPageCached(row.id);
         if (!projection) return null;
 
         if (input.brandScope?.length) {
@@ -336,7 +382,7 @@ export async function searchForConnector(
     const batch = glossaryRows.slice(i, i + BATCH_SIZE);
     const batchResults = await Promise.all(
       batch.map(async (row) => {
-        const projection = await projectGlossaryTerm(row.id);
+        const projection = await projectGlossaryTermCached(row.id);
         if (!projection) return null;
 
         if (input.brandScope?.length) {

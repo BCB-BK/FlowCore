@@ -5,6 +5,7 @@ import { getPrincipalById } from "../services/principal.service";
 import { validateApiToken } from "../services/api-token.service";
 import { checkGroupMembership } from "../services/graph-client.service";
 import { logger } from "../lib/logger";
+import { envInt } from "../lib/env";
 
 export interface AuthUser {
   principalId: string;
@@ -21,7 +22,7 @@ declare global {
   }
 }
 
-const GROUP_CHECK_TTL_MS = 15 * 60 * 1000;
+const GROUP_CHECK_TTL_MS = envInt("GROUP_CHECK_TTL_MIN", 15) * 60 * 1000;
 
 interface GroupCheckEntry {
   isMember: boolean;

@@ -1,3 +1,4 @@
+import { sanitizeInternalError } from "../lib/safe-error";
 import { Router } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import {
@@ -27,7 +28,7 @@ notificationsRouter.get("/", requireAuth, async (req, res) => {
     res.json({ items, limit, offset });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -38,7 +39,7 @@ notificationsRouter.get("/unread-count", requireAuth, async (req, res) => {
     res.json({ count });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -56,7 +57,7 @@ notificationsRouter.patch("/:id/read", requireAuth, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -67,6 +68,6 @@ notificationsRouter.patch("/read-all", requireAuth, async (req, res) => {
     res.json({ count });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });

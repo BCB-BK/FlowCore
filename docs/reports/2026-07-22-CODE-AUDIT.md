@@ -205,18 +205,22 @@ Rate-Limits (30/15 min auth, 200/min API), Session-`maxAge` 8 h, Gruppen-Check-T
 13. **K3** Entra-IDs/Redirect-URI aus `.replit` entfernt — **vor dem nächsten Deploy als Replit-Secrets setzen!**
 14. **K4** `AUTH_DEV_MODE` fail-closed (nur noch bei explizitem `NODE_ENV=development` zulässig).
 
-## 7. Verbleibende offene Punkte (Stand nach 2. Durchgang)
+## 7. Abschlussstatus (nach 3. Umsetzungsdurchgang, 22.07.2026)
 
-1. ~~**M1** Vertraulichkeits-Defaults~~ — **✅ Entschieden (22.07.2026, T. Wenninger):** Unklassifiziert = `internal` = lesbar für alle angemeldeten Benutzer bleibt das gewollte Verhalten. Vertrauliche Inhalte sind bei Erstellung explizit zu klassifizieren. Zusätzlich umgesetzt: Neue Arbeitskopien werden bei Erstellung explizit mit `confidentiality: "internal"` vorbelegt (statt unklassifiziert), sofern die Basisrevision keine Stufe mitbringt.
-2. **M7** Copilot-Connector-Suche: Full-Scan + N+1 pro Anfrage — braucht ein Redesign (Projektion vorab materialisieren oder indexieren), kein Quick-Fix.
-3. **M13** Fünf parallele SharePoint-Browser-Komponenten konsolidieren (Refactoring, mittlerer Umfang).
-4. **M14** Index-Keys in umsortierbaren Editor-Listen durch stabile IDs ersetzen (7 Komponenten).
-5. **M11** KI-Modellnamen zentralisieren/konfigurierbar machen (inkl. `lib/integrations-openai-ai-server`).
-6. **M15** Rate-Limits, Session-Dauer, Upload-/Body-Limits per Env konfigurierbar machen.
-7. **N2** Roh-Fehlermeldungen in 500-Antworten (`admin.ts`, `media.ts`) durch generische Meldungen ersetzen.
-8. ~~**N4** Soft-Delete-Kaskade~~ — **✅ Entschieden und umgesetzt (22.07.2026):** Löschung wird blockiert, solange aktive Unterseiten existieren (409 mit Hinweis, Unterseiten zuerst zu verschieben). Greift beim direkten Löschen, beim Anlegen einer Löschanfrage und erneut bei deren Genehmigung.
-9. **N5** Key-Allowlist für `PUT /admin/system-settings/:key` (vorher Inventur aller verwendeten Keys nötig).
-10. **N6** Multipart-Parser durch Streaming-Lösung (z.B. busboy) ersetzen; Upload-Kontingente.
-11. **M10 (Rest)** Seed-`created_by`, SharePoint-Host und Owner-UUID in Skripten neutralisieren.
-12. **M12 (Rest)** Controlled-Content-Effekt im BlockEditor (Cursor-Reset-Risiko) entschärfen.
-13. Doku-Nachzug: `docs/05-CONFIG-ENV.md` an die neuen Env-Variablen angleichen; UI-Hinweis für Strg+B-Verhalten im Benutzerhandbuch.
+**Alle Audit-Punkte sind abgearbeitet.** Ergänzend zum 2. Durchgang wurden im 3. Durchgang umgesetzt:
+
+1. **M1** — **✅ Entschieden (T. Wenninger):** Unklassifiziert = `internal` = lesbar für alle angemeldeten Benutzer bleibt das gewollte Verhalten. Zusätzlich: Neue Arbeitskopien werden explizit mit `confidentiality: "internal"` vorbelegt, sofern die Basisrevision keine Stufe mitbringt.
+2. **M7 ✅** Copilot-Connector-Suche: TTL-Cache (Default 5 min, `COPILOT_PROJECTION_CACHE_TTL_SEC`) für die teuren Seiten-/Glossar-Projektionen — Folgeanfragen kosten keine N+1-Roundtrips mehr; die Batch-Parallelisierung besteht weiter. Einzelabruf (`GetFlowCoreNode`) bleibt bewusst uncached (immer frisch).
+3. **M13 ✅** Gemeinsame SharePoint-UI-Helfer (`src/lib/sharepoint-ui.tsx`: `getSharePointFileIcon`, `formatFileSize`) — die fünf Browser-Komponenten nutzen jetzt ein konsistentes Icon-/Größen-Mapping statt divergenter Kopien.
+4. **M14 ✅** Stabile React-Keys via neuem Hook `useRowKeys` in allen 7 umsortierbaren Editor-Listen (AgendaEditor, ReferencesEditor, QaRepeater, CompetencyAreas, ParticipantsEditor, TermRepeater, RaciMatrix); persistierte Datenstrukturen unverändert.
+5. **M11 ✅** KI-Modellnamen zentralisiert (`lib/integrations-openai-ai-server/src/models.ts`), per `AI_DEFAULT_MODEL`, `AI_IMAGE_MODEL`, `AI_AUDIO_MODEL`, `AI_TRANSCRIBE_MODEL` übersteuerbar.
+6. **M15 ✅** Betriebsparameter per Env: Rate-Limits, `SESSION_MAX_AGE_HOURS`, `GROUP_CHECK_TTL_MIN`, `JSON_BODY_LIMIT`, `MAX_UPLOAD_MB` (Dokumentation in `docs/05-CONFIG-ENV.md`).
+7. **N2 ✅** 500-Antworten in `admin.ts`, `media.ts`, `notifications.ts`, `workflows-admin.ts` liefern in Produktion generische Meldungen (`sanitizeInternalError`); Originalfehler wird geloggt.
+8. **N4** — **✅ Entschieden und umgesetzt:** Löschung wird blockiert, solange aktive Unterseiten existieren (409; beim direkten Löschen, beim Anlegen und bei der Genehmigung einer Löschanfrage).
+9. **N5 ✅** Key-Allowlist für `PUT /admin/system-settings/:key` (`setup_mode`, `flowcore_account_upn`, `glossary_sync_enabled`, `graph_sync_mock_mode`, `graph_sync_fault_injection`).
+10. **N6 ✅** Multipart-Upload auf busboy umgestellt (Streaming, hartes Größenlimit mit 413-Antwort, `MAX_UPLOAD_MB` konfigurierbar); der Binary-String-Parser ist entfernt.
+11. **M10 ✅** Seed-`created_by` neutralisiert („System"); `SHAREPOINT_HOSTNAME` und `IMPORT_SYSTEM_OWNER_ID` in den Skripten sind jetzt Pflicht-Env-Variablen.
+12. **M12 ✅** BlockEditor wendet externe Inhalts-Resets nicht mehr an, während der Editor fokussiert ist (kein Cursor-Sprung durch Autosave-Roundtrips).
+13. **Doku ✅** `docs/05-CONFIG-ENV.md` um alle neuen/fehlenden Variablen ergänzt.
+
+**Kleinere Notizen für die Zukunft** (nicht blockierend): weitere `formatFileSize`-Kopien in `SourceReferencesPanel.tsx`/`NodeViews.tsx` könnten ebenfalls auf den gemeinsamen Helfer umgestellt werden; die Farbe des Video-Icons im Settings-SharePoint-Browser nutzt weiterhin die Fallback-Farbe.

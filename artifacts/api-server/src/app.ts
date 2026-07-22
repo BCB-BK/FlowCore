@@ -10,6 +10,7 @@ import { securityHeaders } from "./middlewares/security-headers";
 import { apiRateLimit } from "./middlewares/rate-limit";
 import { notFoundHandler, errorHandler } from "./middlewares/error-handler";
 import { appConfig } from "./lib/config";
+import { envInt, envString } from "./lib/env";
 import { pool } from "@workspace/db";
 
 declare module "express-session" {
@@ -109,8 +110,9 @@ app.use((req, res, next) => {
   }
   strictCors(req, res, next);
 });
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+const jsonBodyLimit = envString("JSON_BODY_LIMIT", "2mb");
+app.use(express.json({ limit: jsonBodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: jsonBodyLimit }));
 app.use(apiRateLimit);
 app.use(
   session({
@@ -121,7 +123,7 @@ app.use(
     cookie: {
       secure: isProduction,
       httpOnly: true,
-      maxAge: 8 * 60 * 60 * 1000,
+      maxAge: envInt("SESSION_MAX_AGE_HOURS", 8) * 60 * 60 * 1000,
       sameSite: "lax",
     },
   }),

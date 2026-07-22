@@ -296,7 +296,8 @@ export async function getAiSettings() {
     return {
       id: null,
       enabled: false,
-      model: "gpt-5.2",
+      // Per AI_DEFAULT_MODEL übersteuerbar (zentraler Modell-Default)
+      model: process.env["AI_DEFAULT_MODEL"]?.trim() || "gpt-5.2",
       sourceMode: "wiki_only" as const,
       webSearchEnabled: false,
       maxCompletionTokens: 8192,

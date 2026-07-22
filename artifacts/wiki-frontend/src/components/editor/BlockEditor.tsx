@@ -238,6 +238,10 @@ export function BlockEditor({
 
   useEffect(() => {
     if (editor && content) {
+      // Während der Editor fokussiert ist (Benutzer tippt), keine externen
+      // Inhalts-Resets anwenden — setContent würde die Cursorposition
+      // zurücksetzen (z.B. wenn der Autosave-Roundtrip den Inhalt zurückgibt).
+      if (editor.isFocused) return;
       const currentJson = JSON.stringify(editor.getJSON());
       const newJson = JSON.stringify(content);
       if (currentJson !== newJson) {

@@ -6,6 +6,7 @@ import { Input } from "@workspace/ui/input";
 import { Textarea } from "@workspace/ui/textarea";
 import { HelpCircle, Plus, Trash2, Pencil, Check, X, GripVertical } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
+import { useRowKeys } from "./useRowKeys";
 
 interface QaPair {
   question: string;
@@ -33,6 +34,7 @@ function parseQaPairs(raw: string): QaPair[] {
 export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQuestions }: QaRepeaterProps) {
   const [editing, setEditing] = useState(false);
   const [pairs, setPairs] = useState<QaPair[]>(() => parseQaPairs(value));
+  const rowKeys = useRowKeys(pairs.length);
 
   const handleSave = () => {
     const filtered = pairs.filter(p => p.question.trim() || p.answer.trim());
@@ -47,10 +49,12 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
 
   const addPair = () => {
     setPairs([...pairs, { question: "", answer: "" }]);
+    rowKeys.add();
   };
 
   const removePair = (index: number) => {
     setPairs(pairs.filter((_, i) => i !== index));
+    rowKeys.remove(index);
   };
 
   const updatePair = (index: number, field: keyof QaPair, val: string) => {
@@ -101,7 +105,7 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
         {editing ? (
           <div className="space-y-3">
             {pairs.map((pair, i) => (
-              <div key={i} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+              <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <GripVertical className="h-3 w-3" />

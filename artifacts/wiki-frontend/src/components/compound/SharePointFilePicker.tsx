@@ -11,15 +11,17 @@ import {
 } from "@workspace/ui/dialog";
 import {
   Folder,
-  FileText,
   ArrowLeft,
   Search,
   Check,
   RefreshCw,
   Globe,
   HardDrive,
-  File,
 } from "lucide-react";
+import {
+  getSharePointFileIcon,
+  formatFileSize,
+} from "@/lib/sharepoint-ui";
 import {
   useListSharePointSites,
   useListSharePointDrives,
@@ -40,22 +42,6 @@ export interface SharePointPickedFile {
 interface SharePointFilePickerProps {
   onSelect: (files: SharePointPickedFile[]) => void;
   onClose: () => void;
-}
-
-function formatSize(bytes: number): string {
-  if (bytes === 0) return "-";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-}
-
-function getFileIcon(mimeType: string, isFolder: boolean) {
-  if (isFolder) return Folder;
-  if (mimeType.includes("pdf")) return FileText;
-  if (mimeType.includes("word") || mimeType.includes("document")) return FileText;
-  if (mimeType.includes("sheet") || mimeType.includes("excel")) return FileText;
-  return File;
 }
 
 export function SharePointFilePicker({ onSelect, onClose }: SharePointFilePickerProps) {
@@ -230,7 +216,7 @@ export function SharePointFilePicker({ onSelect, onClose }: SharePointFilePicker
               {itemsQuery.isLoading && <div className="flex justify-center py-8"><RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" /></div>}
               {items?.map((item) => {
                 const isSelected = selectedItems.some((s) => s.webUrl === item.webUrl);
-                const ItemIcon = getFileIcon(item.mimeType ?? "", item.isFolder ?? false);
+                const ItemIcon = getSharePointFileIcon(item.mimeType ?? "", item.isFolder ?? false);
 
                 if (item.isFolder) {
                   return (
@@ -258,7 +244,7 @@ export function SharePointFilePicker({ onSelect, onClose }: SharePointFilePicker
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{item.name}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{formatSize(item.size ?? 0)}</span>
+                        <span>{formatFileSize(item.size ?? 0)}</span>
                         {item.lastModifiedAt && <span>{new Date(item.lastModifiedAt).toLocaleDateString("de-DE")}</span>}
                         {item.lastModifiedBy && <span>{item.lastModifiedBy}</span>}
                       </div>

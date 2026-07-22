@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { rateLimitHitsTable } from "@workspace/db/schema";
 import { lt, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { envInt } from "../lib/env";
 
 interface RateLimitOptions {
   windowMs: number;
@@ -115,13 +116,13 @@ export function rateLimit(options: RateLimitOptions) {
 }
 
 export const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  maxRequests: 30,
+  windowMs: envInt("RATE_LIMIT_AUTH_WINDOW_MIN", 15) * 60 * 1000,
+  maxRequests: envInt("RATE_LIMIT_AUTH_MAX", 30),
   keyPrefix: "auth",
 });
 
 export const apiRateLimit = rateLimit({
-  windowMs: 60 * 1000,
-  maxRequests: 200,
+  windowMs: envInt("RATE_LIMIT_API_WINDOW_SEC", 60) * 1000,
+  maxRequests: envInt("RATE_LIMIT_API_MAX", 200),
   keyPrefix: "api",
 });
