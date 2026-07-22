@@ -187,8 +187,8 @@
 }
 
 .ProseMirror div[data-type="callout"][data-callout-type="success"] {
-  background: hsl(145 100% 97%);
-  border: 1px solid hsl(145 50% 85%);
+  background: hsl(117 40% 97%);
+  border: 1px solid hsl(117 30% 85%);
 }
 
 .ProseMirror img {
@@ -264,8 +264,8 @@
 }
 
 .dark .ProseMirror div[data-type="callout"][data-callout-type="success"] {
-  background: hsl(145 50% 10%);
-  border-color: hsl(145 30% 30%);
+  background: hsl(117 30% 10%);
+  border-color: hsl(117 25% 30%);
 }
 
 .dark .ProseMirror mark {

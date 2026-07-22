@@ -51,9 +51,9 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Parallelisierung (alle Pfade)",
     svg: (
       <svg width="28" height="28" viewBox="0 0 28 28">
-        <polygon points="14,2 26,14 14,26 2,14" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
-        <line x1="14" y1="7" x2="14" y2="21" stroke="#16a34a" strokeWidth="2" />
-        <line x1="7" y1="14" x2="21" y2="14" stroke="#16a34a" strokeWidth="2" />
+        <polygon points="14,2 26,14 14,26 2,14" fill="#f3f8f3" stroke="#2b7a27" strokeWidth="1.5" />
+        <line x1="14" y1="7" x2="14" y2="21" stroke="#2b7a27" strokeWidth="2" />
+        <line x1="7" y1="14" x2="21" y2="14" stroke="#2b7a27" strokeWidth="2" />
       </svg>
     ),
   },

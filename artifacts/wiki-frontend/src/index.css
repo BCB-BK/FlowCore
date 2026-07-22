@@ -6,6 +6,160 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* OneCampus Group — selbst gehostete Inter (variable Schrift, 100–900) */
+@font-face {
+  font-family: "Inter";
+  src: url("/inter-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/inter-latin-ext.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/*
+ * OneCampus Group — Angleichung der Standard-Tailwind-Paletten an das
+ * Brand Manual. Hartcodierte Utility-Klassen (bg-green-50, text-amber-600, …)
+ * rendern damit app-weit in markenkompatiblen Tönen:
+ *   grün  → Marken-Grün #3AAA35 / Accessible Green #2B7A27
+ *   blau  → Info-Stahlblau (#235B82)
+ *   amber/gelb/orange → Warn-Bronze (#8A5A00)
+ *   rot   → Fehler-Ziegelrot (#B42318)
+ *   lila/violett/indigo → neutrales Stahlgrau (Status "In Prüfung" etc.)
+ */
+@theme {
+  --color-green-50: #f3f8f3;
+  --color-green-100: #e3f0e2;
+  --color-green-200: #c8e2c6;
+  --color-green-300: #a0cd9d;
+  --color-green-400: #6bb366;
+  --color-green-500: #3aaa35;
+  --color-green-600: #2b7a27;
+  --color-green-700: #266a23;
+  --color-green-800: #20561e;
+  --color-green-900: #1b4719;
+  --color-green-950: #0d270c;
+
+  --color-emerald-50: #f3f8f3;
+  --color-emerald-100: #e3f0e2;
+  --color-emerald-200: #c8e2c6;
+  --color-emerald-300: #a0cd9d;
+  --color-emerald-400: #6bb366;
+  --color-emerald-500: #3aaa35;
+  --color-emerald-600: #2b7a27;
+  --color-emerald-700: #266a23;
+  --color-emerald-800: #20561e;
+  --color-emerald-900: #1b4719;
+  --color-emerald-950: #0d270c;
+
+  --color-blue-50: #f2f6f9;
+  --color-blue-100: #e2ecf3;
+  --color-blue-200: #c5d9e7;
+  --color-blue-300: #9abed4;
+  --color-blue-400: #679cba;
+  --color-blue-500: #40809f;
+  --color-blue-600: #235b82;
+  --color-blue-700: #1f4f70;
+  --color-blue-800: #1c445f;
+  --color-blue-900: #193a50;
+  --color-blue-950: #102636;
+
+  --color-purple-50: #f4f6f8;
+  --color-purple-100: #e8ecef;
+  --color-purple-200: #d3dade;
+  --color-purple-300: #b3bec6;
+  --color-purple-400: #8b9aa5;
+  --color-purple-500: #6b7b88;
+  --color-purple-600: #52616e;
+  --color-purple-700: #46525d;
+  --color-purple-800: #3c464f;
+  --color-purple-900: #343c44;
+  --color-purple-950: #22282e;
+
+  --color-violet-50: #f4f6f8;
+  --color-violet-100: #e8ecef;
+  --color-violet-200: #d3dade;
+  --color-violet-300: #b3bec6;
+  --color-violet-400: #8b9aa5;
+  --color-violet-500: #6b7b88;
+  --color-violet-600: #52616e;
+  --color-violet-700: #46525d;
+  --color-violet-800: #3c464f;
+  --color-violet-900: #343c44;
+  --color-violet-950: #22282e;
+
+  --color-indigo-50: #f4f6f8;
+  --color-indigo-100: #e8ecef;
+  --color-indigo-200: #d3dade;
+  --color-indigo-300: #b3bec6;
+  --color-indigo-400: #8b9aa5;
+  --color-indigo-500: #6b7b88;
+  --color-indigo-600: #52616e;
+  --color-indigo-700: #46525d;
+  --color-indigo-800: #3c464f;
+  --color-indigo-900: #343c44;
+  --color-indigo-950: #22282e;
+
+  --color-amber-50: #faf7f0;
+  --color-amber-100: #f4ecda;
+  --color-amber-200: #e8d7b0;
+  --color-amber-300: #d8bc7d;
+  --color-amber-400: #c49a4a;
+  --color-amber-500: #a87a1d;
+  --color-amber-600: #8a5a00;
+  --color-amber-700: #734b02;
+  --color-amber-800: #5e3e04;
+  --color-amber-900: #4d3305;
+  --color-amber-950: #2b1c02;
+
+  --color-yellow-50: #faf7f0;
+  --color-yellow-100: #f4ecda;
+  --color-yellow-200: #e8d7b0;
+  --color-yellow-300: #d8bc7d;
+  --color-yellow-400: #c49a4a;
+  --color-yellow-500: #a87a1d;
+  --color-yellow-600: #8a5a00;
+  --color-yellow-700: #734b02;
+  --color-yellow-800: #5e3e04;
+  --color-yellow-900: #4d3305;
+  --color-yellow-950: #2b1c02;
+
+  --color-orange-50: #faf7f0;
+  --color-orange-100: #f4ecda;
+  --color-orange-200: #e8d7b0;
+  --color-orange-300: #d8bc7d;
+  --color-orange-400: #c49a4a;
+  --color-orange-500: #a87a1d;
+  --color-orange-600: #8a5a00;
+  --color-orange-700: #734b02;
+  --color-orange-800: #5e3e04;
+  --color-orange-900: #4d3305;
+  --color-orange-950: #2b1c02;
+
+  --color-red-50: #fcf3f2;
+  --color-red-100: #f9e2e0;
+  --color-red-200: #f2c7c2;
+  --color-red-300: #e79d95;
+  --color-red-400: #d76c60;
+  --color-red-500: #c53f2f;
+  --color-red-600: #b42318;
+  --color-red-700: #961d14;
+  --color-red-800: #7c1b13;
+  --color-red-900: #671a13;
+  --color-red-950: #390b07;
+}
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -78,43 +232,48 @@
   --elevate-1: rgba(0, 0, 0, 0.03);
   --elevate-2: rgba(0, 0, 0, 0.08);
 
-  --brand: 145 76% 42%;
-  --brand-light: 145 60% 95%;
+  /* OneCampus Group Light Theme
+     Charcoal #1F2323 · Green #3AAA35 · Accessible Green #2B7A27
+     Off-White #F7F8F7 · Light Gray #E6E9E8 · Mid Gray #6B7272 */
+  --brand: 117 53% 44%;
+  --brand-light: 117 35% 94%;
 
-  --background: 0 0% 100%;
-  --foreground: 220 20% 14%;
-  --border: 220 13% 90%;
+  --background: 120 6% 97%;
+  --foreground: 180 6% 13%;
+  --border: 160 6% 91%;
   --card: 0 0% 100%;
-  --card-foreground: 220 20% 14%;
-  --card-border: 220 13% 90%;
-  --sidebar: 150 20% 97%;
-  --sidebar-foreground: 220 20% 14%;
-  --sidebar-border: 220 13% 90%;
-  --sidebar-primary: 145 76% 38%;
+  --card-foreground: 180 6% 13%;
+  --card-border: 160 6% 91%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 180 6% 13%;
+  --sidebar-border: 160 6% 91%;
+  --sidebar-primary: 180 6% 13%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 145 30% 94%;
-  --sidebar-accent-foreground: 220 20% 14%;
-  --sidebar-ring: 145 76% 38%;
+  --sidebar-accent: 120 6% 96%;
+  --sidebar-accent-foreground: 180 6% 13%;
+  --sidebar-ring: 117 52% 32%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 20% 14%;
-  --popover-border: 220 13% 90%;
-  --primary: 145 76% 38%;
+  --popover-foreground: 180 6% 13%;
+  --popover-border: 160 6% 91%;
+  /* Primärbutton: Charcoal mit weißem Text (Brand Manual) */
+  --primary: 180 6% 13%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 150 14% 96%;
-  --secondary-foreground: 220 20% 14%;
-  --muted: 150 10% 96%;
-  --muted-foreground: 220 10% 46%;
-  --accent: 150 14% 96%;
-  --accent-foreground: 220 20% 14%;
-  --destructive: 0 84% 60%;
+  --secondary: 150 5% 95%;
+  --secondary-foreground: 180 6% 13%;
+  --muted: 120 6% 96%;
+  --muted-foreground: 180 3% 43%;
+  --accent: 120 6% 95%;
+  --accent-foreground: 180 6% 13%;
+  --destructive: 4 76% 40%;
   --destructive-foreground: 0 0% 100%;
-  --input: 220 13% 90%;
-  --ring: 145 76% 38%;
-  --chart-1: 145 72% 38%;
-  --chart-2: 200 60% 45%;
-  --chart-3: 35 85% 55%;
-  --chart-4: 270 60% 55%;
-  --chart-5: 340 70% 55%;
+  --input: 160 6% 88%;
+  /* Fokusring: Accessible Green */
+  --ring: 117 52% 32%;
+  --chart-1: 117 52% 36%;
+  --chart-2: 205 58% 40%;
+  --chart-3: 39 100% 30%;
+  --chart-4: 180 6% 30%;
+  --chart-5: 180 3% 55%;
 
   --app-font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --app-font-serif: Georgia, serif;
@@ -177,43 +336,45 @@
   --elevate-1: rgba(255, 255, 255, 0.04);
   --elevate-2: rgba(255, 255, 255, 0.09);
 
-  --brand: 145 76% 50%;
-  --brand-light: 145 30% 15%;
+  /* OneCampus Group Dark Theme — Charcoal-basiert, Grün als Akzent */
+  --brand: 117 50% 48%;
+  --brand-light: 117 25% 16%;
 
-  --background: 220 20% 8%;
-  --foreground: 150 14% 96%;
-  --border: 220 15% 18%;
-  --card: 220 20% 10%;
-  --card-foreground: 150 14% 96%;
-  --card-border: 220 15% 18%;
-  --sidebar: 220 20% 7%;
-  --sidebar-foreground: 150 14% 96%;
-  --sidebar-border: 220 15% 18%;
-  --sidebar-primary: 145 76% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 150 15% 14%;
-  --sidebar-accent-foreground: 150 14% 96%;
-  --sidebar-ring: 145 76% 48%;
-  --popover: 220 20% 10%;
-  --popover-foreground: 150 14% 96%;
-  --popover-border: 220 15% 18%;
-  --primary: 145 76% 48%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 15% 14%;
-  --secondary-foreground: 150 14% 96%;
-  --muted: 220 15% 14%;
-  --muted-foreground: 220 10% 57%;
-  --accent: 220 15% 14%;
-  --accent-foreground: 150 14% 96%;
-  --destructive: 0 62% 50%;
+  --background: 180 6% 8%;
+  --foreground: 120 6% 95%;
+  --border: 180 5% 19%;
+  --card: 180 6% 10%;
+  --card-foreground: 120 6% 95%;
+  --card-border: 180 5% 19%;
+  --sidebar: 180 6% 7%;
+  --sidebar-foreground: 120 6% 95%;
+  --sidebar-border: 180 5% 19%;
+  --sidebar-primary: 120 6% 95%;
+  --sidebar-primary-foreground: 180 6% 13%;
+  --sidebar-accent: 180 5% 14%;
+  --sidebar-accent-foreground: 120 6% 95%;
+  --sidebar-ring: 117 50% 45%;
+  --popover: 180 6% 10%;
+  --popover-foreground: 120 6% 95%;
+  --popover-border: 180 5% 19%;
+  /* Primärbutton dark: helle Fläche mit Charcoal-Text (invertiert) */
+  --primary: 120 6% 95%;
+  --primary-foreground: 180 6% 13%;
+  --secondary: 180 5% 14%;
+  --secondary-foreground: 120 6% 95%;
+  --muted: 180 5% 14%;
+  --muted-foreground: 180 4% 60%;
+  --accent: 180 5% 14%;
+  --accent-foreground: 120 6% 95%;
+  --destructive: 4 65% 50%;
   --destructive-foreground: 0 0% 100%;
-  --input: 220 15% 22%;
-  --ring: 145 76% 48%;
-  --chart-1: 145 72% 48%;
-  --chart-2: 200 60% 50%;
-  --chart-3: 35 85% 60%;
-  --chart-4: 270 60% 60%;
-  --chart-5: 340 70% 60%;
+  --input: 180 5% 22%;
+  --ring: 117 50% 45%;
+  --chart-1: 117 45% 45%;
+  --chart-2: 205 50% 50%;
+  --chart-3: 39 70% 45%;
+  --chart-4: 120 6% 70%;
+  --chart-5: 180 4% 50%;
 
   --shadow-2xs: 0px 1px 2px rgba(0, 0, 0, 0.15);
   --shadow-xs: 0px 1px 2px rgba(0, 0, 0, 0.2);

@@ -9,7 +9,8 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border bg-card text-card-foreground shadow",
+      // OneCampus: ruhige Karten — Hierarchie über Rahmen statt Schatten
+      "rounded-xl border bg-card text-card-foreground shadow-2xs",
       className,
     )}
     {...props}

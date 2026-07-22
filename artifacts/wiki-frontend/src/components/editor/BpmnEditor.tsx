@@ -467,7 +467,7 @@ export function BpmnEditor({
           ctx.strokeStyle = "#ca8a04";
         } else if (s.type?.includes("Event")) {
           ctx.fillStyle = "#dcfce7";
-          ctx.strokeStyle = "#16a34a";
+          ctx.strokeStyle = "#2b7a27";
         } else {
           ctx.fillStyle = "#dbeafe";
           ctx.strokeStyle = "#3b82f6";
