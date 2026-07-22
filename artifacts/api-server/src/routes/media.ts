@@ -17,6 +17,7 @@ import { eq, and, desc, ilike } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
+import { checkConfidentialityAccess } from "../services/confidentiality.service";
 import {
   getDefaultStorageProvider,
   getDefaultProviderId,
@@ -426,6 +427,15 @@ router.get("/files/:key", requireAuth, async (req, res) => {
       let canRead = false;
       try {
         canRead = await hasPermission(req.user!.principalId, "read_page", asset.nodeId);
+        // Medien vertraulicher Seiten unterliegen derselben
+        // Vertraulichkeitsprüfung wie die Seite selbst.
+        if (canRead) {
+          const confidentiality = await checkConfidentialityAccess(
+            req.user!.principalId,
+            asset.nodeId,
+          );
+          canRead = confidentiality.allowed;
+        }
       } catch (permErr) {
         logger.error({ permErr, principalId: req.user?.principalId, nodeId: asset.nodeId }, "hasPermission failed for media file");
         res.status(500).json({ error: "Permission check failed" });

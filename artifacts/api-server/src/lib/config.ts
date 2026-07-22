@@ -59,9 +59,13 @@ function loadConfig(): AppConfig {
     );
   }
 
-  if (config.nodeEnv === "production" && config.authDevMode) {
+  // Fail-closed: Der Dev-Auth-Bypass ist ausschließlich in einer explizit als
+  // "development" deklarierten Umgebung zulässig — nicht nur "nicht production".
+  // Damit kann AUTH_DEV_MODE=true in Staging-/Test-Umgebungen den SSO-Zwang
+  // nicht aushebeln.
+  if (config.nodeEnv !== "development" && config.authDevMode) {
     throw new Error(
-      "AUTH_DEV_MODE must not be enabled in production (dev-auth-bypass is forbidden in production)",
+      "AUTH_DEV_MODE must not be enabled outside development (dev-auth-bypass is forbidden in non-development environments)",
     );
   }
 

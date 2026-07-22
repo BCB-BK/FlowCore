@@ -81,13 +81,20 @@ router.get(
   "/nodes",
   requireAuth,
   requirePermission("read_page"),
-  async (_req, res) => {
+  async (req, res) => {
     const nodes = await db
       .select()
       .from(contentNodesTable)
       .where(eq(contentNodesTable.isDeleted, false))
       .orderBy(contentNodesTable.sortOrder);
-    res.json(nodes);
+
+    // Vertraulichkeitsfilter wie bei /nodes/roots und /nodes/:id/children —
+    // ohne ihn waren Metadaten vertraulicher Seiten für alle Leser sichtbar.
+    const confidentialityMap = await checkConfidentialityAccessBatch(
+      req.user!.principalId,
+      nodes.map((n) => n.id),
+    );
+    res.json(nodes.filter((n) => confidentialityMap.get(n.id) !== false));
   },
 );
 

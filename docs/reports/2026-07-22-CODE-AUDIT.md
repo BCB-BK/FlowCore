@@ -10,33 +10,33 @@ Die mit ✅ markierten Punkte wurden im Branch `claude/flowcore-audit-feedback-x
 
 ## 1. Kritische Funde
 
-### K1 – Vertikale Rechteausweitung über die Rollenvergabe
+### K1 – ✅ Vertikale Rechteausweitung über die Rollenvergabe (behoben)
 **Ort:** `artifacts/api-server/src/routes/principals.ts` (`POST /principals/:id/roles`) + `services/principal.service.ts` (`assignRole`)
 
-Die Rollenzuweisung ist nur mit `requirePermission("manage_permissions")` geschützt und akzeptiert **jede** Rolle ungeprüft — auch `system_admin`. Die Rolle `process_manager` besitzt selbst `manage_permissions` und kann sich damit selbst (oder jedem anderen Principal) `system_admin` zuweisen. Es fehlt eine Prüfung, dass der Vergebende die zu vergebende Rolle überragt, sowie ein Selbst-Eskalations-Schutz. Damit ist die gesamte RBAC-Trennung aushebelbar.
+Die Rollenzuweisung war nur mit `requirePermission("manage_permissions")` geschützt und akzeptierte **jede** Rolle ungeprüft — auch `system_admin`. Die Rolle `process_manager` besitzt selbst `manage_permissions` und konnte sich damit selbst (oder jedem anderen Principal) `system_admin` zuweisen. Damit war die gesamte RBAC-Trennung aushebelbar.
 
-**Empfehlung:** Vergabe von `system_admin` (und ggf. `process_manager`) nur durch `system_admin` zulassen; Selbst-Zuweisung höherer Rollen blockieren; Audit-Event bleibt bestehen.
+**Fix:** Rollen-Payload wird gegen die bekannte Rollenliste validiert (400 bei unbekannter Rolle). Vergabe **und** Entzug von `system_admin` erfordern jetzt, dass der Handelnde selbst eine aktive `system_admin`-Rolle besitzt (`principalHasActiveRole`); blockierte Versuche werden als Audit-Event `role_escalation_blocked` protokolliert. Der Entzugs-Endpunkt liefert zudem 404 statt stillem 204 für unbekannte Zuweisungen.
 
-### K2 – `GET /content/nodes` liefert alle Knoten ohne Vertraulichkeitsfilter
+### K2 – ✅ `GET /content/nodes` lieferte alle Knoten ohne Vertraulichkeitsfilter (behoben)
 **Ort:** `artifacts/api-server/src/routes/content.ts` (`GET /nodes`)
 
-Anders als `/nodes/roots`, `/nodes/:id/children`, `/siblings` und `/backlinks` (die `checkConfidentialityAccessBatch` anwenden) filtert dieser Endpunkt nichts. Jeder authentifizierte Nutzer mit globalem `read_page` (bereits die `viewer`-Rolle) erhält Titel, Display-Codes, Owner und Status **aller** Knoten — inklusive `confidential` und `strictly_confidential`. Metadaten-Leak vertraulicher Seiten.
+Anders als `/nodes/roots`, `/nodes/:id/children`, `/siblings` und `/backlinks` (die `checkConfidentialityAccessBatch` anwenden) filterte dieser Endpunkt nichts. Jeder authentifizierte Nutzer mit globalem `read_page` (bereits die `viewer`-Rolle) erhielt Titel, Display-Codes, Owner und Status **aller** Knoten — inklusive `confidential` und `strictly_confidential`.
 
-**Empfehlung:** Denselben Batch-Vertraulichkeitsfilter wie in den übrigen Listen-Endpunkten anwenden.
+**Fix:** `GET /nodes` wendet jetzt denselben Batch-Vertraulichkeitsfilter an wie die übrigen Listen-Endpunkte.
 
-### K3 – Echte Entra-Identifier und Produktions-Redirect-URI im Repository
+### K3 – ✅ Echte Entra-Identifier und Produktions-Redirect-URI im Repository (behoben)
 **Ort:** `.replit` (Abschnitt `[userenv.shared]`)
 
-`ENTRA_CLIENT_ID`, `ENTRA_TENANT_ID` und die Produktions-Callback-URL sind fest eingecheckt. Damit ist das Repo an genau einen Azure-Mandanten gekoppelt, die IDs werden offengelegt, und der saubere Weg über `process.env` (in `config.ts` korrekt umgesetzt) wird unterlaufen.
+`ENTRA_CLIENT_ID`, `ENTRA_TENANT_ID` und die Produktions-Callback-URL waren fest eingecheckt. Damit war das Repo an genau einen Azure-Mandanten gekoppelt, die IDs wurden offengelegt, und der saubere Weg über `process.env` (in `config.ts` korrekt umgesetzt) wurde unterlaufen.
 
-**Empfehlung:** Werte in Replit-Secrets/Deployment-Umgebung verlagern und aus `.replit` entfernen.
+**Fix:** Die drei Werte wurden aus `.replit` entfernt (mit Hinweis-Kommentar). **⚠️ Betriebshinweis:** Vor dem nächsten Deploy müssen `ENTRA_CLIENT_ID`, `ENTRA_TENANT_ID` und `ENTRA_REDIRECT_URI` als Replit-Secrets bzw. Deployment-Umgebungsvariablen gesetzt werden (wie bereits `ENTRA_CLIENT_SECRET`), sonst schlägt der SSO-Login fehl. Da die IDs bereits in der Git-Historie liegen, ist die Offenlegung nicht rückwirkend heilbar (Client-/Tenant-Ds sind keine Secrets im engeren Sinn, aber unnötig exponiert).
 
-### K4 – `AUTH_DEV_MODE` ist aktiv, sobald `NODE_ENV` nicht exakt `production` ist
+### K4 – ✅ `AUTH_DEV_MODE`-Guard deckte nur `production` ab (behoben)
 **Ort:** `artifacts/api-server/src/lib/config.ts`, `middlewares/require-auth.ts`, `app.ts`
 
-Im Dev-Modus genügt der HTTP-Header `X-Dev-Principal-Id`, um sich als **beliebiger** Principal auszugeben — ohne SSO. Die Absicherung greift nur bei `NODE_ENV === "production"`. Ist `NODE_ENV` in einer realen Umgebung nicht gesetzt oder z. B. `staging`, ist der vollständige Auth-Bypass live. Der Prod-Guard in `config.ts` existiert, aber die Default-Logik ist eine klassische Fehlkonfigurations-Falle (fail-open).
+Im Dev-Modus genügt der HTTP-Header `X-Dev-Principal-Id`, um sich als **beliebiger** Principal auszugeben — ohne SSO. Präzisierung gegenüber der Erstfassung dieses Berichts: Der implizite Default aktiviert den Dev-Modus nur bei **explizit** gesetztem `NODE_ENV=development` (unset ⇒ aus). Die tatsächliche Lücke: Der Config-Guard verbot `AUTH_DEV_MODE=true` nur bei `NODE_ENV=production` — in Staging-/Test-Umgebungen war der vollständige Auth-Bypass per Env-Variable aktivierbar (fail-open).
 
-**Empfehlung:** Dev-Bypass nur bei explizit gesetztem `AUTH_DEV_MODE=true` UND `NODE_ENV=development` aktivieren (fail-closed).
+**Fix:** Der Guard ist jetzt fail-closed — `AUTH_DEV_MODE=true` wird in **jeder** Umgebung außer explizit `NODE_ENV=development` mit einem Startfehler abgewiesen. Das Entwickler-Setup (`pnpm dev` setzt `NODE_ENV=development`) bleibt unverändert.
 
 ### K5 – ✅ Stored-XSS in der Glossar-Ansicht (behoben)
 **Ort:** `artifacts/wiki-frontend/src/pages/GlossaryPage.tsx`
@@ -49,10 +49,12 @@ Im Dev-Modus genügt der HTTP-Header `X-Dev-Principal-Id`, um sich als **beliebi
 
 ## 2. Hohe Schwere
 
-### H1 – Medien-Download umgeht die Vertraulichkeitsprüfung
+### H1 – Medien-Download umgeht die Vertraulichkeitsprüfung *(teilweise behoben)*
 **Ort:** `artifacts/api-server/src/routes/media.ts` (`GET /media/files/:key`, `GET /media/assets`, `GET /media/assets/:id`)
 
-Beim Datei-Download wird nur `read_page` geprüft, nicht `checkConfidentialityAccess` — Medien vertraulicher Seiten sind für Nutzer ohne Vertraulichkeitsfreigabe abrufbar. Assets ohne `nodeId` (z. B. SharePoint-Import) sind für **jeden** Authentifizierten abrufbar. Die Asset-Listen-Endpunkte geben Metadaten und URLs aller Assets ohne Berechtigungsprüfung heraus.
+Beim Datei-Download wurde nur `read_page` geprüft, nicht `checkConfidentialityAccess` — Medien vertraulicher Seiten waren für Nutzer ohne Vertraulichkeitsfreigabe abrufbar. **✅ Behoben:** Der Download prüft jetzt zusätzlich die Vertraulichkeit der zugehörigen Seite.
+
+**Noch offen:** Assets ohne `nodeId` (z. B. SharePoint-Import) sind weiterhin für jeden Authentifizierten abrufbar; die Asset-Listen-Endpunkte (`GET /media/assets`, `/assets/:id`) geben Metadaten und URLs ohne Berechtigungsprüfung heraus.
 
 ### H2 – Fail-open bei Entra-Gruppenprüfung und Rate-Limiter
 **Ort:** `middlewares/require-auth.ts`, `middlewares/rate-limit.ts`
@@ -192,14 +194,19 @@ Rate-Limits (30/15 min auth, 200/min API), Session-`maxAge` 8 h, Gruppen-Check-T
 7. **Absatz-Einrückung + mehrstufige Listen** — neue `Indent`-Extension (Tab/Shift+Tab + Toolbar-Buttons), sichtbare Bullet-Stile je Ebene.
 8. **Stored-XSS Glossar behoben** (Allowlist-Sanitizer).
 9. **Slash-Menü-Tastaturblockade behoben.**
+10. **K1** Rechteausweitung Rollenvergabe: `system_admin`-Vergabe/-Entzug nur noch durch System-Administratoren, Rollen-Validierung, Audit-Event bei blockierten Versuchen.
+11. **K2** Vertraulichkeitsfilter in `GET /content/nodes`.
+12. **H1 (teilweise)** Vertraulichkeitsprüfung beim Medien-Download.
+13. **K3** Entra-IDs/Redirect-URI aus `.replit` entfernt — **vor dem nächsten Deploy als Replit-Secrets setzen!**
+14. **K4** `AUTH_DEV_MODE` fail-closed (nur noch bei explizitem `NODE_ENV=development` zulässig).
 
 ## 7. Empfohlene Priorisierung der offenen Punkte
 
-1. **K1** Rechteausweitung Rollenvergabe (kleiner, klar umrissener Fix)
-2. **K2 + H1** Vertraulichkeitsfilter in `GET /nodes` und Medien-Endpunkten
-3. **K3 + K4** Entra-IDs aus `.replit` entfernen; `AUTH_DEV_MODE` fail-closed
-4. **H2** Fail-open bei Gruppenprüfung/Rate-Limit
-5. **M2** Statusprüfung in Publish-/Approve-Transaktion
-6. **M6** OAuth-State an Session binden + `session.regenerate`
-7. **H4/H5/M9** `.gitignore`, Env-Dokumentation, Port-Vereinheitlichung
+1. **H2** Fail-open bei Gruppenprüfung/Rate-Limit
+2. **H1 (Rest)** Medien-Listen-Endpunkte + Assets ohne `nodeId` absichern
+3. **M2** Statusprüfung in Publish-/Approve-Transaktion
+4. **M6** OAuth-State an Session binden + `session.regenerate`
+5. **M3** KI-Endpunkte: Permission-Gate, Rate-Limit, Vertraulichkeit im RAG-Retriever
+6. **H4/H5/M9** `.gitignore`, Env-Dokumentation, Port-Vereinheitlichung
+7. **H6** Autosave-Cleanup im Working-Copy-Editor
 8. Restliche M-/N-Punkte im Rahmen normaler Wartung
