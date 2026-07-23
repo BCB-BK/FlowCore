@@ -27,7 +27,7 @@ Alle Konfigurationswerte werden beim Start via Zod-Schema validiert (`artifacts/
 | `TEAMS_APP_ID` | Microsoft Teams App-ID für Deep Links | — |
 | `VITE_TEAMS_APP_ID` | Teams App-ID für das Frontend (zur Build-Zeit eingebettet) | — |
 | `OPENAI_API_KEY` | OpenAI API-Schlüssel für KI-Assistent | — |
-| `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Entra-Prüfung); nur mit `NODE_ENV=development` zulässig — in allen anderen Umgebungen bricht der Server beim Start ab | `false` |
+| `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Entra-Prüfung, wählt automatisch ersten aktiven Principal als Benutzer); nur mit `NODE_ENV=development` zulässig — in allen anderen Umgebungen bricht der Server beim Start ab. **Standard: `true` wenn `NODE_ENV=development`, sonst `false`** | `true` (dev) |
 | `APP_PUBLIC_URL` | Öffentliche Basis-URL der App (CORS-Origin, Quell-URLs für Copilot/Graph, Teams-Deep-Links) | Produktions-Fallback |
 | `ENTRA_REQUIRED_GROUP_ID` | Login auf Mitglieder dieser Entra-Gruppe beschränken | — (alle Tenant-Benutzer) |
 | `GRAPH_EXTERNAL_CONNECTION_ID` | ID der Graph-External-Connection (Copilot-Index) | `flowcorewiki` |

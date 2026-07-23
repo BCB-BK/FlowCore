@@ -2,7 +2,7 @@
 
 **Bildungscampus Backnang · Prozess-Wiki**
 
-> **Stand**: März 2026 · Der Funktionsumfang kann je nach Rolle, Konfiguration und Systemversion variieren.
+> **Stand**: Juli 2026 · Der Funktionsumfang kann je nach Rolle, Konfiguration und Systemversion variieren.
 
 ---
 
@@ -50,7 +50,7 @@ Der Editor basiert auf Tiptap (ProseMirror) und bietet einen modernen Rich-Text-
 - **Formatierung**: Überschriften, Fett, Kursiv, Unterstrichen, Listen, Zitate.
 - **Tabellen**: Einfügen und Bearbeiten von Tabellen.
 - **Callouts**: Hervorgehobene Hinweisboxen (Info, Warnung, Tipp).
-- **Diagramme**: Einbettung von Mermaid-Diagrammen.
+- **BPMN-Diagramme**: Einbettung und Bearbeitung von BPMN 2.0 Prozessdiagrammen (bpmn-js).
 - **Medien**: Bilder, Videos und Dokumente per Drag & Drop oder Upload einfügen.
 - **Autosave**: Änderungen werden alle 2 Sekunden automatisch gesichert.
 
@@ -102,13 +102,13 @@ FlowCore verwendet ein mehrstufiges rollenbasiertes Zugriffskontrollsystem (RBAC
 
 | Rolle | Beschreibung | Typische Aufgaben |
 |:------|:-------------|:------------------|
-| **System-Administrator** | Vollzugriff auf alle Funktionen | Systemkonfiguration, Benutzerverwaltung, Backup, Konnektoren |
-| **Prozessmanager** | Verwaltet Inhaltsstruktur und Berechtigungen | Seiten erstellen, Struktur pflegen, Beziehungen verwalten, Freigaben erteilen |
-| **Compliance-Manager** | Überwachung und Qualitätssicherung | Audit-Logs einsehen, Backups prüfen, Templates verwalten |
-| **Editor** | Erstellt und bearbeitet Inhalte | Seiten anlegen, Inhalte schreiben, Arbeitskopien erstellen und einreichen |
-| **Reviewer (Prüfer)** | Prüft eingereichte Inhalte | Arbeitskopien prüfen, Kommentare hinterlassen, Audit-Logs einsehen |
-| **Approver (Genehmiger)** | Genehmigt und veröffentlicht | Geprüfte Inhalte final freigeben und veröffentlichen |
-| **Betrachter** | Grundlegender Lesezugriff | Veröffentlichte Seiten lesen, Suche und Glossar nutzen |
+| **System-Administrator** (`system_admin`) | Vollzugriff auf alle Funktionen | Systemkonfiguration, Benutzerverwaltung, Backup, Konnektoren |
+| **Prozessmanager** (`process_manager`) | Verwaltet Inhaltsstruktur und Berechtigungen | Seiten erstellen, Struktur pflegen, Beziehungen verwalten, Freigaben erteilen |
+| **Editor** (`editor`) | Erstellt und bearbeitet Inhalte | Seiten anlegen, Inhalte schreiben, Arbeitskopien erstellen und einreichen |
+| **Reviewer (Prüfer)** (`reviewer`) | Prüft eingereichte Inhalte | Arbeitskopien prüfen, Kommentare hinterlassen |
+| **Approver (Genehmiger)** (`approver`) | Genehmigt und veröffentlicht | Geprüfte Inhalte final freigeben und veröffentlichen |
+| **Betrachter** (`viewer`) | Grundlegender Lesezugriff | Veröffentlichte Seiten lesen, Suche und Glossar nutzen |
+| **Externer Betrachter** (`external_viewer`) | Eingeschränkter Lesezugriff | Lesezugriff auf explizit freigegebene Inhalte |
 
 **Zuweisungsebenen**: Rollen können auf drei Ebenen vergeben werden:
 
