@@ -25,6 +25,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "@workspace/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@workspace/ui/skeleton";
 import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
+import { formatBuildLabel, formatBuildTooltip } from "@/lib/build-info";
 
 export function WikiSidebar() {
   const { data: roots, isLoading } = useRootNodes();
@@ -161,7 +162,15 @@ export function WikiSidebar() {
 
       <SidebarFooter className="border-t p-3">
         <p className="text-xs text-muted-foreground text-center">
-          FlowCore v0.4 · OneCampus Group
+          FlowCore · OneCampus Group
+        </p>
+        {/* Build-Stand statt manuell gepflegter Versionsnummer: zeigt
+            eindeutig, welcher Codestand ausgeliefert ist. */}
+        <p
+          className="text-[11px] text-muted-foreground/80 text-center font-mono select-all"
+          title={formatBuildTooltip()}
+        >
+          {formatBuildLabel()}
         </p>
       </SidebarFooter>
     </Sidebar>
