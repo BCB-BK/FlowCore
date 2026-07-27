@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { formatBuildLabel, formatBuildTooltip } from "@/lib/build-info";
 
 // OneCampus Charcoal — Primärbutton laut Brand Manual
 const OC_CHARCOAL = "#1f2323";
@@ -100,8 +101,11 @@ export function LoginPage() {
       </div>
 
       <footer className="absolute bottom-6 text-center text-xs text-gray-400 space-y-0.5">
-        <p>FlowCore v0.4</p>
+        <p>FlowCore</p>
         <p>OneCampus Group</p>
+        <p className="font-mono text-[11px] select-all" title={formatBuildTooltip()}>
+          {formatBuildLabel()}
+        </p>
       </footer>
     </div>
   );

@@ -2,7 +2,32 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { execSync } from "node:child_process";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+
+/**
+ * Build-Kennung: Commit-Kürzel und Commit-Datum werden zur Build-Zeit
+ * eingebettet, damit in der laufenden App eindeutig erkennbar ist, welcher
+ * Stand ausgeliefert wird (statt einer manuell gepflegten Versionsnummer).
+ * Steht kein Git zur Verfügung (z.B. Deployment aus einem Export), wird auf
+ * das Build-Datum zurückgefallen.
+ */
+function readBuildInfo(): { commit: string; date: string } {
+  const git = (args: string) =>
+    execSync(`git ${args}`, {
+      cwd: import.meta.dirname,
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim();
+  try {
+    return { commit: git("rev-parse --short HEAD"), date: git("log -1 --format=%cI") };
+  } catch {
+    return { commit: "", date: new Date().toISOString() };
+  }
+}
+
+const buildInfo = readBuildInfo();
 
 const isBuild = process.env.NODE_ENV === "production" || process.argv.includes("build");
 
@@ -24,6 +49,10 @@ const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig({
   base: basePath,
+  define: {
+    __BUILD_COMMIT__: JSON.stringify(buildInfo.commit),
+    __BUILD_DATE__: JSON.stringify(buildInfo.date),
+  },
   plugins: [
     react(),
     tailwindcss(),
