@@ -238,15 +238,55 @@ export function WorkingCopyEditorPage() {
   const localStructuredFieldsRef = useRef<Record<string, unknown>>({});
   const sfInitializedRef = useRef(false);
   const sfInitWcIdRef = useRef<string | null>(null);
+
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingPatchRef = useRef<Record<string, unknown>>({});
+
+  // CRITICAL: nodeId-Wechsel-Cleanup – verhindert Cross-Node-Datenverschmutzung.
+  // WorkingCopyEditorPage wird bei SPA-Navigation (Wouter) NICHT neu gemountet.
+  // Ohne diesen Reset würde ein noch laufender autosave-Timer (AUTOSAVE_DELAY_MS=2s)
+  // die structuredFields (inkl. _clusters) der alten Seite in die Working Copy
+  // der neuen Seite schreiben, sobald wcRef.current auf die neue WC wechselt.
+  //
+  // WICHTIG: Dieser Effekt MUSS im Quelltext VOR dem Init-Effekt unten stehen.
+  // Beide laufen beim Mount bzw. Seitenwechsel im selben Zyklus; React führt
+  // Effekte in Definitionsreihenfolge aus. Stand der Reset NACH dem Init-Effekt,
+  // deinitialisierte er eine soeben aus dem React-Query-Cache initialisierte
+  // Arbeitskopie wieder — und da die gecachte WC ihre Objektidentität nicht
+  // ändert (staleTime + structural sharing), feuerte der Init-Effekt nie erneut:
+  // doSave brach dann bei JEDEM Speichern still ab (Symptom: neu angelegte
+  // Cluster/Inhalte der Arbeitskopie gingen verloren).
   useEffect(() => {
-    if (activeWC && activeWC.id !== sfInitWcIdRef.current) {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    pendingPatchRef.current = {};
+    sfInitializedRef.current = false;
+    sfInitWcIdRef.current = null;
+    autoCreateAttempted.current = false;
+    wcRef.current = null;
+    localStructuredFieldsRef.current = {};
+    setValidationSFSnapshot({});
+  // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId]);
+
+  useEffect(() => {
+    // Selbstheilend (|| !sfInitializedRef.current): initialisiert auch dann,
+    // wenn dieselbe WC-Instanz nach einem Reset erneut anliegt.
+    if (activeWC && (activeWC.id !== sfInitWcIdRef.current || !sfInitializedRef.current)) {
       const sf = (activeWC.structuredFields as Record<string, unknown>) ?? {};
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       sfInitializedRef.current = true;
       sfInitWcIdRef.current = activeWC.id;
+      // wcRef ebenfalls setzen: Der Sync-Effekt oben lief bereits VOR dem
+      // nodeId-Reset und würde bei unveränderter Objektidentität der
+      // gecachten WC nicht erneut feuern — doSave bräche sonst weiter still ab.
+      wcRef.current = activeWC;
     }
-  }, [activeWC]);
+  }, [activeWC, nodeId]);
 
   const editorContent = useMemo(() => {
     const raw = wcStructuredFields._editorContent ?? wcStructuredFields.discussion;
@@ -315,30 +355,6 @@ export function WorkingCopyEditorPage() {
       metadataInitRef.current = true;
     }
   }, [activeWC]);
-
-  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingPatchRef = useRef<Record<string, unknown>>({});
-
-  // CRITICAL: nodeId-Wechsel-Cleanup – verhindert Cross-Node-Datenverschmutzung.
-  // WorkingCopyEditorPage wird bei SPA-Navigation (Wouter) NICHT neu gemountet.
-  // Ohne diesen Reset würde ein noch laufender autosave-Timer (AUTOSAVE_DELAY_MS=2s)
-  // die structuredFields (inkl. _clusters) der alten Seite in die Working Copy
-  // der neuen Seite schreiben, sobald wcRef.current auf die neue WC wechselt.
-  useEffect(() => {
-    if (autosaveTimerRef.current) {
-      clearTimeout(autosaveTimerRef.current);
-      autosaveTimerRef.current = null;
-    }
-    pendingPatchRef.current = {};
-    sfInitializedRef.current = false;
-    sfInitWcIdRef.current = null;
-    autoCreateAttempted.current = false;
-    wcRef.current = null;
-    localStructuredFieldsRef.current = {};
-    setValidationSFSnapshot({});
-  // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeId]);
 
   type SavePatch = {
     title?: string;
