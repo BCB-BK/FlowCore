@@ -115,6 +115,29 @@ Auswahl fragt daher Gruppen mit aktivierter Team-Bereitstellung ab
 Ablagen ohne zugehöriges Team, etwa ältere Projektsites. Persönliche
 OneDrive-Ablagen erscheinen in keiner der beiden Ansichten.
 
+Dieselbe Navigation greift überall, wo SharePoint ausgewählt wird: beim
+Anlegen eines Quellsystems, beim Einrichten eines Ablageziels und beim
+Verknüpfen eines Dokuments auf einer Wiki-Seite.
+
+#### Ein SharePoint-Dokument mit einer Seite verknüpfen
+
+Voraussetzung ist ein aktives SharePoint-**Quellsystem** (Einstellungen →
+Konnektoren → Quellsysteme). Danach auf der gewünschten Wiki-Seite:
+
+1. Reiter „Inhalt" → Abschnitt **Externe Quellen** → „Dokument verknüpfen"
+2. Team auswählen → Bibliothek öffnen → Datei anklicken (mehrere möglich)
+3. „Verknüpfen"
+
+Die Datei bleibt in SharePoint; FlowCore speichert die Verknüpfung samt
+Ablageort. Über „Prüfen" lässt sich jederzeit feststellen, ob die Datei noch
+existiert und ob sie seit der Verknüpfung geändert wurde — der Status wechselt
+dann auf „Veraltet" bzw. „Nicht gefunden".
+
+Verweise auf Dateien, die die anmeldende Person nicht öffnen darf, werden ihr
+nicht angezeigt. Lässt sich der Zugriff gerade nicht prüfen (etwa weil Graph
+nicht erreichbar ist), bleibt der Verweis sichtbar und wird mit „Zugriff
+ungeprüft" gekennzeichnet — er verschwindet nicht stillschweigend.
+
 #### Speicheranbieter anlegen
 
 1. **Einstellungen → Konnektoren → Speicheranbieter → „Speicheranbieter hinzufügen"**

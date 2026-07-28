@@ -207,6 +207,8 @@ export interface SharePointDrive {
   driveType: string;
   webUrl: string;
   siteId: string;
+  /** Anzeigename der Site, zu der die Bibliothek gehört (für die Auswahl). */
+  siteName?: string;
 }
 
 export interface SharePointItem {
@@ -326,7 +328,8 @@ export async function listDrivesForTeam(
   );
 
   if (!site?.id) return [];
-  return listDrives(accessToken, site.id, options);
+  const drives = await listDrives(accessToken, site.id, options);
+  return drives.map((d) => ({ ...d, siteName: site.displayName ?? undefined }));
 }
 
 export async function listDrives(
@@ -412,6 +415,39 @@ export async function getDriveItemContent(
   } catch (err) {
     logger.error({ err, driveId, itemId }, "Failed to get drive item content");
     return null;
+  }
+}
+
+export type DriveItemAccess = "accessible" | "denied" | "unavailable";
+
+/**
+ * Prüft, ob eine bestimmte Person eine Datei lesen darf — und unterscheidet
+ * dabei "darf nicht" von "konnte nicht geprüft werden".
+ *
+ * Diese Unterscheidung ist der Unterschied zwischen einer bewusst verborgenen
+ * und einer stillschweigend verschwundenen Verknüpfung. Ein Graph-Ausfall darf
+ * nicht so aussehen wie eine fehlende Berechtigung.
+ */
+export async function checkDriveItemAccess(
+  accessToken: string,
+  driveId: string,
+  itemId: string,
+): Promise<DriveItemAccess> {
+  if (!accessToken) return "unavailable";
+  try {
+    await runWithGraph(accessToken, false, "Zugriff prüfen", (client) =>
+      client.api(`/drives/${driveId}/items/${itemId}`).select("id").get(),
+    );
+    return "accessible";
+  } catch (err) {
+    const status =
+      err instanceof SharePointAccessError ? err.status : undefined;
+    if (status === 401 || status === 403 || status === 404) return "denied";
+    logger.warn(
+      { err, driveId, itemId },
+      "Zugriffsprüfung auf SharePoint-Datei nicht möglich",
+    );
+    return "unavailable";
   }
 }
 

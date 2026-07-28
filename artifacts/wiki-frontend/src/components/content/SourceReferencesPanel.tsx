@@ -56,9 +56,9 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
     return null;
   }
 
-  if (!refs || refs.length === 0) {
-    return null;
-  }
+  // Die Karte bleibt sichtbar, auch wenn noch nichts verknüpft ist — sonst
+  // gibt es auf einer Seite ohne Quellen keinen Weg, die erste anzulegen.
+  const isEmpty = !refs || refs.length === 0;
 
   return (
     <Card>
@@ -84,6 +84,26 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
         </div>
       </CardHeader>
       <CardContent>
+        {isEmpty && (
+          <div className="rounded-lg border border-dashed py-8 text-center">
+            <FileText className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
+            <p className="text-sm font-medium">Noch keine externe Quelle verknüpft</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+              Verknüpfen Sie ein Dokument aus SharePoint, damit auf dieser Seite
+              erkennbar ist, worauf sie sich stützt — und FlowCore melden kann,
+              wenn sich die Quelle ändert.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => setShowBrowser(true)}
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              Dokument verknüpfen
+            </Button>
+          </div>
+        )}
         <div className="space-y-2">
           {refs?.map((ref) => {
             const statusCfg =
@@ -105,6 +125,20 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
                       <StatusIcon className="w-3 h-3 mr-1" />
                       {statusCfg.label}
                     </Badge>
+                    {/* Konnte der Zugriff nicht geprüft werden, wird das
+                        gesagt — statt die Verknüpfung stillschweigend
+                        auszublenden. */}
+                    {(ref as { accessCheck?: string }).accessCheck ===
+                      "unavailable" && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs"
+                        title="Der Zugriff auf die Datei ließ sich gerade nicht prüfen — melden Sie sich neu an, falls das bestehen bleibt."
+                      >
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        Zugriff ungeprüft
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                     <span>
