@@ -53,65 +53,90 @@ function countInMemory(key: string, windowMs: number): { hits: number; resetAtMs
   return { hits: entry.hits, resetAtMs: entry.resetAt };
 }
 
+export interface RateLimitDecision {
+  allowed: boolean;
+  hits: number;
+  remaining: number;
+  resetAtMs: number;
+  retryAfterSec: number;
+}
+
+/**
+ * Zählt einen Zugriff auf einen beliebigen Zählschlüssel und entscheidet, ob
+ * er noch im Limit liegt. Als eigene Funktion herausgezogen, weil nicht jedes
+ * Limit an der IP hängt — Integrationsschlüssel bringen ihr eigenes Limit mit.
+ */
+export async function consumeRateLimit(
+  key: string,
+  maxRequests: number,
+  windowMs: number,
+): Promise<RateLimitDecision> {
+  const now = new Date();
+  const newResetAt = new Date(now.getTime() + windowMs);
+
+  const decide = (hits: number, resetAtMs: number): RateLimitDecision => ({
+    allowed: hits <= maxRequests,
+    hits,
+    remaining: Math.max(0, maxRequests - hits),
+    resetAtMs,
+    retryAfterSec: Math.max(1, Math.ceil((resetAtMs - now.getTime()) / 1000)),
+  });
+
+  try {
+    const rows = await db.execute<{ hits: number; reset_at: Date }>(sql`
+      INSERT INTO rate_limit_hits (key, hits, reset_at)
+      VALUES (${key}, 1, ${newResetAt})
+      ON CONFLICT (key) DO UPDATE SET
+        hits = CASE
+          WHEN rate_limit_hits.reset_at < ${now} THEN 1
+          ELSE rate_limit_hits.hits + 1
+        END,
+        reset_at = CASE
+          WHEN rate_limit_hits.reset_at < ${now} THEN ${newResetAt}
+          ELSE rate_limit_hits.reset_at
+        END
+      RETURNING hits, reset_at
+    `);
+
+    const { hits, reset_at: resetAt } = rows.rows[0];
+    return decide(hits, new Date(resetAt).getTime());
+  } catch (err) {
+    logger.error(
+      { err },
+      "Rate limit DB check failed, falling back to in-memory counting",
+    );
+    const fallback = countInMemory(key, windowMs);
+    return decide(fallback.hits, fallback.resetAtMs);
+  }
+}
+
 export function rateLimit(options: RateLimitOptions) {
   const { windowMs, maxRequests, keyPrefix = "rl" } = options;
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const clientIp = req.ip || "unknown";
     const key = `${keyPrefix}:${clientIp}`;
-    const now = new Date();
-    const newResetAt = new Date(now.getTime() + windowMs);
 
-    try {
-      const rows = await db.execute<{ hits: number; reset_at: Date }>(sql`
-        INSERT INTO rate_limit_hits (key, hits, reset_at)
-        VALUES (${key}, 1, ${newResetAt})
-        ON CONFLICT (key) DO UPDATE SET
-          hits = CASE
-            WHEN rate_limit_hits.reset_at < ${now} THEN 1
-            ELSE rate_limit_hits.hits + 1
-          END,
-          reset_at = CASE
-            WHEN rate_limit_hits.reset_at < ${now} THEN ${newResetAt}
-            ELSE rate_limit_hits.reset_at
-          END
-        RETURNING hits, reset_at
-      `);
+    const decision = await consumeRateLimit(key, maxRequests, windowMs);
 
-      const { hits, reset_at: resetAt } = rows.rows[0];
-      const remaining = Math.max(0, maxRequests - hits);
-      const resetAtMs = new Date(resetAt).getTime();
-      const retryAfter = Math.ceil((resetAtMs - now.getTime()) / 1000);
+    res.setHeader("X-RateLimit-Limit", String(maxRequests));
+    res.setHeader("X-RateLimit-Remaining", String(decision.remaining));
+    res.setHeader(
+      "X-RateLimit-Reset",
+      String(Math.ceil(decision.resetAtMs / 1000)),
+    );
 
-      res.setHeader("X-RateLimit-Limit", String(maxRequests));
-      res.setHeader("X-RateLimit-Remaining", String(remaining));
-      res.setHeader("X-RateLimit-Reset", String(Math.ceil(resetAtMs / 1000)));
-
-      if (hits > maxRequests) {
-        logger.warn({ clientIp, key, count: hits }, "Rate limit exceeded");
-        res.setHeader("Retry-After", String(retryAfter));
-        res.status(429).json({
-          error: "Too many requests. Please try again later.",
-          retryAfter,
-        });
-        return;
-      }
-
-      next();
-    } catch (err) {
-      logger.error({ err }, "Rate limit DB check failed, falling back to in-memory counting");
-      const { hits, resetAtMs } = countInMemory(key, windowMs);
-      if (hits > maxRequests) {
-        const retryAfter = Math.ceil((resetAtMs - Date.now()) / 1000);
-        res.setHeader("Retry-After", String(retryAfter));
-        res.status(429).json({
-          error: "Too many requests. Please try again later.",
-          retryAfter,
-        });
-        return;
-      }
-      next();
+    if (!decision.allowed) {
+      logger.warn({ clientIp, key, count: decision.hits }, "Rate limit exceeded");
+      res.setHeader("Retry-After", String(decision.retryAfterSec));
+      res.status(429).json({
+        error: "Too many requests. Please try again later.",
+        retryAfter: decision.retryAfterSec,
+      });
+      return;
     }
+
+    next();
   };
 }
 

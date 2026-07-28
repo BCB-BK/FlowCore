@@ -390,8 +390,22 @@ export function deriveChildPagesExport(
  * revision. Returns null if the node has no published_revision_id, is
  * deleted, or does not exist (i.e. strictly published-only export).
  */
+export interface ProjectionOptions {
+  /**
+   * Für den Graph-/Copilot-Index gilt: ohne aufgelöste Entra-ACL wird nichts
+   * ausgeliefert, weil Microsoft Search die Sichtbarkeit über Gruppen steuert.
+   *
+   * Die Content-API steuert die Sichtbarkeit dagegen über die Freigabe des
+   * Integrationsschlüssels (Vertraulichkeitsgrenze, Struktur, Seitentyp) und
+   * hängt nicht an der Graph-Konfiguration. Dort wird diese Prüfung deshalb
+   * bewusst abgeschaltet — die Zugriffskontrolle findet vorgelagert statt.
+   */
+  requireGraphAcl?: boolean;
+}
+
 export async function projectPublishedPage(
   nodeId: string,
+  options: ProjectionOptions = {},
 ): Promise<CopilotPageProjection | null> {
   const [node] = await db
     .select()
@@ -519,7 +533,7 @@ export async function projectPublishedPage(
     confidentialityMapsToAcl: aclStatus.confidentialityMapsToAcl,
     aclPresent: aclStatus.aclPresent,
   });
-  if (!indexable) return null;
+  if (!indexable && (options.requireGraphAcl ?? true)) return null;
 
   const contentHash = stableContentHash({
     content: revision.content ?? null,
