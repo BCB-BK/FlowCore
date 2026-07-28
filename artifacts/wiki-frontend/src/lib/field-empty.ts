@@ -1,9 +1,14 @@
+import { looksLikeHtml, isRichTextEmpty } from "@workspace/shared/rich-text";
+
 export function isFieldEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return true;
 
   if (typeof value === "string") {
     const trimmed = value.trim();
     if (trimmed === "") return true;
+
+    // Formatierte Inhalte ohne Text (z.B. "<p></p>") gelten als leer
+    if (looksLikeHtml(trimmed)) return isRichTextEmpty(trimmed);
 
     if (
       (trimmed.startsWith("[") && trimmed.endsWith("]")) ||

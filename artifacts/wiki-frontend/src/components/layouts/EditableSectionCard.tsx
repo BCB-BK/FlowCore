@@ -3,10 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Button } from "@workspace/ui/button";
 import { Badge } from "@workspace/ui/badge";
 import { Textarea } from "@workspace/ui/textarea";
-import { Pencil, Check, X } from "lucide-react";
+import { Pencil, Check, X, Type } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import type { FieldHelp } from "@/lib/types";
 import { FieldAiButton } from "@/components/ai/FieldAiButton";
+import { RichSectionEditor } from "./RichSectionEditor";
+import { sanitizeHtml } from "@/lib/sanitize-html";
+import {
+  looksLikeHtml,
+  plainTextToHtml,
+  isRichTextEmpty,
+} from "@workspace/shared/rich-text";
 
 interface EditableSectionCardProps {
   sectionKey: string;
@@ -64,10 +71,14 @@ export function EditableSectionCard({
   const [draft, setDraft] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Formatierungsmodus: automatisch aktiv, wenn der Inhalt bereits HTML ist —
+  // sonst per Schalter oder durch Einfügen formatierter Inhalte aktivierbar.
+  const [richMode, setRichMode] = useState(() => looksLikeHtml(value));
+
   // Dependency intentionally limited to [editing] — cursor-placement runs only
   // when entering edit mode, not on every keystroke (which would jump cursor to end).
   useEffect(() => {
-    if (editing && textareaRef.current) {
+    if (editing && !richMode && textareaRef.current) {
       textareaRef.current.focus();
       textareaRef.current.setSelectionRange(draft.length, draft.length);
     }
@@ -76,7 +87,38 @@ export function EditableSectionCard({
 
   useEffect(() => {
     setDraft(value);
+    setRichMode(looksLikeHtml(value));
   }, [value]);
+
+  /**
+   * Formatierte Inhalte aus der Zwischenablage (Word, Confluence, Web)
+   * übernehmen: Enthält die Zwischenablage HTML, wechselt das Feld
+   * automatisch in den Formatierungsmodus, statt die Auszeichnung zu
+   * verwerfen.
+   */
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const html = e.clipboardData?.getData("text/html");
+      if (!html || !looksLikeHtml(html)) return;
+
+      e.preventDefault();
+      const clean = sanitizeHtml(html);
+      const el = e.currentTarget;
+      const before = draft.slice(0, el.selectionStart ?? draft.length);
+      const after = draft.slice(el.selectionEnd ?? draft.length);
+      const merged = `${plainTextToHtml(before)}${clean}${plainTextToHtml(after)}`;
+      setDraft(merged);
+      setRichMode(true);
+    },
+    [draft],
+  );
+
+  const toggleRichMode = useCallback(() => {
+    setRichMode((prev) => {
+      if (!prev) setDraft((d) => plainTextToHtml(d));
+      return !prev;
+    });
+  }, []);
 
   const handleSave = () => {
     onSave?.(sectionKey, draft);
@@ -154,6 +196,20 @@ export function EditableSectionCard({
                 <Button
                   variant="ghost"
                   size="sm"
+                  className={`h-7 px-2 text-xs ${richMode ? "text-primary" : "text-muted-foreground"}`}
+                  onClick={toggleRichMode}
+                  title={
+                    richMode
+                      ? "Formatierung ausschalten (Inhalt bleibt als HTML erhalten)"
+                      : "Formatierung einschalten – für Aufzählungen, Fettungen und Überschriften"
+                  }
+                >
+                  <Type className="h-3 w-3 mr-1" />
+                  Formatierung
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={handleCancel}
                 >
@@ -178,22 +234,38 @@ export function EditableSectionCard({
       </CardHeader>
       <CardContent>
         {editing ? (
-          <Textarea
-            ref={textareaRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="min-h-[120px] text-sm"
-            placeholder={help?.placeholder ?? `${label} eingeben...`}
-          />
+          richMode ? (
+            <RichSectionEditor
+              value={draft}
+              onChange={setDraft}
+              placeholder={help?.placeholder ?? `${label} eingeben...`}
+              autoFocus
+            />
+          ) : (
+            <Textarea
+              ref={textareaRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              className="min-h-[120px] text-sm"
+              placeholder={help?.placeholder ?? `${label} eingeben...`}
+            />
+          )
         ) : children ? (
           children
-        ) : draft ? (
-          <div className="text-sm whitespace-pre-wrap">{draft}</div>
-        ) : (
+        ) : isRichTextEmpty(draft) ? (
           <p className="text-sm text-muted-foreground text-center py-4">
             {emptyText}
           </p>
+        ) : looksLikeHtml(draft) ? (
+          // Formatierte Inhalte werden bereinigt gerendert (Allowlist-Sanitizer)
+          <div
+            className="text-sm prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(draft) }}
+          />
+        ) : (
+          <div className="text-sm whitespace-pre-wrap">{draft}</div>
         )}
       </CardContent>
     </Card>

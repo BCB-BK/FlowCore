@@ -13,6 +13,7 @@ import { eq, and, desc, isNotNull } from "drizzle-orm";
 import { serializeProseMirrorContent } from "../lib/prosemirror-serializer";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
+import { htmlToPlainText } from "@workspace/shared/rich-text";
 import {
   getAclMappingStatus,
   DEFAULT_CONFIDENTIALITY_LEVEL,
@@ -438,16 +439,20 @@ export async function projectPublishedPage(
   const agentScope = Array.isArray(sf.agent_scope)
     ? (sf.agent_scope as unknown[]).filter((v) => typeof v === "string")
     : [];
+  // Abschnittsfelder können formatiertes HTML enthalten — für Export, Suche
+  // und KI-Kontext wird daraus lesbarer Klartext erzeugt.
   const summary =
     typeof sf.summary === "string" && sf.summary.trim().length > 0
-      ? sf.summary
+      ? htmlToPlainText(sf.summary)
       : plaintext.slice(0, 400);
   const shortDescription =
     typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
-      ? sf.kurzbeschreibung
+      ? htmlToPlainText(sf.kurzbeschreibung)
       : summary;
   const scopeContext =
-    typeof sf.scope === "string" && sf.scope.trim().length > 0 ? sf.scope : null;
+    typeof sf.scope === "string" && sf.scope.trim().length > 0
+      ? htmlToPlainText(sf.scope)
+      : null;
 
   const agentMetadata = extractAgentMetadata(sf);
   const aclStatus = await getAclMappingStatus(node.id);

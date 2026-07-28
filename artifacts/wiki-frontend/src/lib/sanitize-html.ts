@@ -14,6 +14,7 @@ const ALLOWED_TAGS = new Set([
   "u",
   "s",
   "code",
+  "pre",
   "mark",
   "sub",
   "sup",
@@ -25,7 +26,16 @@ const ALLOWED_TAGS = new Set([
   "h2",
   "h3",
   "h4",
+  "h5",
+  "h6",
   "blockquote",
+  "hr",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "th",
+  "td",
 ]);
 
 function isSafeHref(href: string): boolean {
