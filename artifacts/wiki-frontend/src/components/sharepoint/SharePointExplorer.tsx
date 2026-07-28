@@ -86,6 +86,11 @@ interface SharePointExplorerProps {
    * bestätigen (für Quellsysteme und Ablageziele).
    */
   select?: SelectionMode;
+  /**
+   * Erlaubt zusätzlich, einen Ordner als Ziel zu übernehmen — man verlinkt
+   * nicht immer eine einzelne Datei, oft ist der Ordner das Richtige.
+   */
+  allowFolderSelection?: boolean;
   selectedFileIds?: string[];
   onToggleFile?: (item: SharePointItem, location: SharePointLocation) => void;
   onConfirmFolder?: (location: SharePointLocation) => void;
@@ -161,6 +166,7 @@ function Row({
   meta,
   selected,
   externalUrl,
+  action,
   onClick,
 }: {
   icon: React.ReactNode;
@@ -169,12 +175,14 @@ function Row({
   meta?: string | null;
   selected?: boolean;
   externalUrl?: string;
+  action?: React.ReactNode;
   onClick: () => void;
 }) {
   return (
     <div
       role="button"
       tabIndex={0}
+      aria-label={title}
       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         selected ? "border-primary bg-primary/5" : "hover:bg-muted/50"
       }`}
@@ -201,6 +209,7 @@ function Row({
       {meta && (
         <span className="text-xs text-muted-foreground shrink-0">{meta}</span>
       )}
+      {action}
       {externalUrl && (
         <a
           href={externalUrl}
@@ -224,6 +233,7 @@ function Row({
 
 export function SharePointExplorer({
   select = "none",
+  allowFolderSelection = false,
   selectedFileIds = [],
   onToggleFile,
   onConfirmFolder,
@@ -595,6 +605,8 @@ export function SharePointExplorer({
                   item.isFolder,
                 );
                 const selected = selectedFileIds.includes(item.id);
+                const folderSelectable =
+                  item.isFolder && select === "file" && allowFolderSelection;
                 return (
                   <Row
                     key={item.id}
@@ -605,8 +617,29 @@ export function SharePointExplorer({
                         ? `${item.childCount ?? 0} Element${item.childCount === 1 ? "" : "e"}`
                         : `${formatFileSize(item.size)} · ${item.lastModifiedBy}`
                     }
-                    selected={select === "file" && !item.isFolder && selected}
-                    externalUrl={item.isFolder ? undefined : item.webUrl}
+                    selected={select === "file" && selected}
+                    externalUrl={item.webUrl}
+                    // Ein Klick auf den Ordner öffnet ihn; übernommen wird er
+                    // über die Schaltfläche daneben.
+                    action={
+                      folderSelectable ? (
+                        <Button
+                          size="sm"
+                          variant={selected ? "secondary" : "outline"}
+                          className="h-7 px-2 text-xs shrink-0"
+                          // Eindeutiger Name: die Zeile selbst ist ebenfalls
+                          // anklickbar (sie öffnet den Ordner), und beide
+                          // Bedienelemente dürfen nicht verwechselbar sein.
+                          aria-label={`Ordner ${item.name} als Verweis übernehmen`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleFile?.(item, location);
+                          }}
+                        >
+                          {selected ? "Ausgewählt" : "Ordner wählen"}
+                        </Button>
+                      ) : undefined
+                    }
                     onClick={() => {
                       if (item.isFolder) {
                         setFolderStack([

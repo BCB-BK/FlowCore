@@ -404,10 +404,26 @@ export function ReferencesEditor({
                   );
                 }
 
+                // Externe Verweise (SharePoint, URL) öffnen direkt am
+                // Ablageort in einem neuen Tab. FlowCore reicht die Datei
+                // nicht durch — es gelten die Rechte der jeweiligen Person
+                // im Zielsystem.
+                const RowTag = ref.url ? "a" : "div";
+                const rowProps = ref.url
+                  ? {
+                      href: ref.url,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                    }
+                  : {};
+
                 return (
-                  <div
+                  <RowTag
                     key={i}
-                    className="flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-muted/40 transition-colors group"
+                    {...rowProps}
+                    className={`flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-muted/40 transition-colors group ${
+                      ref.url ? "cursor-pointer" : ""
+                    }`}
                   >
                     <div className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${colorClass}`}>
                       <TypeIcon className="h-3.5 w-3.5" />
@@ -436,7 +452,7 @@ export function ReferencesEditor({
                     <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
                       {TYPE_LABELS[ref.type] ?? "Link"}
                     </Badge>
-                  </div>
+                  </RowTag>
                 );
               })}
             </div>
