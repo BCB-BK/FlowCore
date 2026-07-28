@@ -11,7 +11,9 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import {
   listSites,
+  listTeams,
   listDrives,
+  listDrivesForTeam,
   listDriveItems,
   getDriveItemMeta,
   acquireSystemToken,
@@ -663,6 +665,36 @@ function sendSharePointError(res: Response, err: unknown): void {
   logger.error({ err }, "Unerwarteter SharePoint-Fehler");
   res.status(502).json({ error: "SharePoint-Zugriff fehlgeschlagen" });
 }
+
+connectorsRouter.get(
+  "/sharepoint/teams",
+  requireAuth,
+  requirePermission("manage_connectors"),
+  async (req, res) => {
+    const query = req.query.q as string | undefined;
+    const accessToken = resolveGraphToken(req);
+    try {
+      res.json(await listTeams(accessToken, query, CONNECTOR_BROWSE));
+    } catch (err) {
+      sendSharePointError(res, err);
+    }
+  },
+);
+
+connectorsRouter.get(
+  "/sharepoint/teams/:groupId/drives",
+  requireAuth,
+  requirePermission("manage_connectors"),
+  async (req, res) => {
+    const groupId = req.params.groupId as string;
+    const accessToken = resolveGraphToken(req);
+    try {
+      res.json(await listDrivesForTeam(accessToken, groupId, CONNECTOR_BROWSE));
+    } catch (err) {
+      sendSharePointError(res, err);
+    }
+  },
+);
 
 connectorsRouter.get(
   "/sharepoint/sites",

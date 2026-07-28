@@ -103,6 +103,18 @@ Speicheranbieter definieren, wohin Dateien hochgeladen werden und wo Backups ges
 
 **Tabs**: Speicheranbieter | Sync-Status | SharePoint-Bibliotheken
 
+#### SharePoint-Ablagen durchsuchen
+
+Der Reiter „SharePoint-Bibliotheken" beginnt bei den **Teams** der
+Organisation: Team auswählen → Dokumentbibliotheken des Teams → Ordner und
+Dateien. Technisch ist ein Team eine Microsoft-365-Gruppe mit Teamsite; die
+Auswahl fragt daher Gruppen mit aktivierter Team-Bereitstellung ab
+(Berechtigung `Group.Read.All`) und löst die zugehörige Teamsite auf.
+
+Über „Alle SharePoint-Sites" lässt sich auf die Site-Suche umschalten — für
+Ablagen ohne zugehöriges Team, etwa ältere Projektsites. Persönliche
+OneDrive-Ablagen erscheinen in keiner der beiden Ansichten.
+
 #### Speicheranbieter anlegen
 
 1. **Einstellungen → Konnektoren → Speicheranbieter → „Speicheranbieter hinzufügen"**

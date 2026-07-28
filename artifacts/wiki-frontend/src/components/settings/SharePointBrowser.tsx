@@ -14,19 +14,17 @@ import {
   ExternalLink,
   Loader2,
   AlertTriangle,
+  Users,
   HardDrive,
   Clock,
   User,
 } from "lucide-react";
+import { getSharePointFileIcon, formatFileSize } from "@/lib/sharepoint-ui";
+import { useQuery } from "@tanstack/react-query";
 import {
-  getSharePointFileIcon,
-  formatFileSize,
-} from "@/lib/sharepoint-ui";
-import {
+  customFetch,
   useListSharePointSites,
   getListSharePointSitesQueryKey,
-  useListSharePointDrives,
-  getListSharePointDrivesQueryKey,
   useListSharePointDriveItems,
   getListSharePointDriveItemsQueryKey,
 } from "@workspace/api-client-react";
@@ -38,9 +36,23 @@ import type {
 
 interface BreadcrumbEntry {
   label: string;
-  type: "root" | "site" | "drive" | "folder";
+  type: "root" | "team" | "site" | "drive" | "folder";
   id?: string;
 }
+
+interface SharePointTeam {
+  groupId: string;
+  displayName: string;
+  description: string | null;
+  mail: string | null;
+}
+
+/**
+ * Zwei Einstiege in dieselbe Ablage: über die Teams (der Regelfall — jedes
+ * Team hat eine Teamsite mit seinen Bibliotheken) oder über alle
+ * SharePoint-Sites (für Ablagen ohne zugehöriges Team).
+ */
+type BrowseMode = "teams" | "sites";
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("de-DE", {
@@ -93,10 +105,12 @@ function SharePointError({ error }: { error: unknown }) {
 }
 
 export function SharePointBrowser() {
+  const [mode, setMode] = useState<BrowseMode>("teams");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
+  const [selectedTeam, setSelectedTeam] = useState<SharePointTeam | null>(null);
   const [selectedSite, setSelectedSite] = useState<SharePointSite | null>(null);
   const [selectedDrive, setSelectedDrive] = useState<SharePointDrive | null>(
     null,
@@ -121,8 +135,15 @@ export function SharePointBrowser() {
     folderStack.length > 0 ? folderStack[folderStack.length - 1].id : undefined;
 
   const breadcrumbs: BreadcrumbEntry[] = [
-    { label: "SharePoint", type: "root" },
+    { label: mode === "teams" ? "Teams" : "SharePoint", type: "root" },
   ];
+  if (selectedTeam) {
+    breadcrumbs.push({
+      label: selectedTeam.displayName,
+      type: "team",
+      id: selectedTeam.groupId,
+    });
+  }
   if (selectedSite) {
     breadcrumbs.push({
       label: selectedSite.displayName,
@@ -144,10 +165,11 @@ export function SharePointBrowser() {
   const handleBreadcrumbClick = (index: number) => {
     const entry = breadcrumbs[index];
     if (entry.type === "root") {
+      setSelectedTeam(null);
       setSelectedSite(null);
       setSelectedDrive(null);
       setFolderStack([]);
-    } else if (entry.type === "site") {
+    } else if (entry.type === "team" || entry.type === "site") {
       setSelectedDrive(null);
       setFolderStack([]);
     } else if (entry.type === "drive") {
@@ -165,29 +187,76 @@ export function SharePointBrowser() {
       setSelectedDrive(null);
     } else if (selectedSite) {
       setSelectedSite(null);
+    } else if (selectedTeam) {
+      setSelectedTeam(null);
     }
+  };
+
+  const switchMode = (next: BrowseMode) => {
+    setMode(next);
+    setSelectedTeam(null);
+    setSelectedSite(null);
+    setSelectedDrive(null);
+    setFolderStack([]);
+    setSearchQuery("");
+    setDebouncedQuery("");
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        {(selectedSite || selectedDrive || folderStack.length > 0) && (
-          <Button variant="ghost" size="icon" aria-label="Zur vorherigen Ebene" onClick={handleBack}>
+        {(selectedTeam ||
+          selectedSite ||
+          selectedDrive ||
+          folderStack.length > 0) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Zur vorherigen Ebene"
+            onClick={handleBack}
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
         )}
-        {!selectedSite && (
+        {!selectedTeam && !selectedSite && (
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               className="pl-9"
-              placeholder="SharePoint-Sites suchen..."
+              placeholder={
+                mode === "teams"
+                  ? "Team suchen..."
+                  : "SharePoint-Sites suchen..."
+              }
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
         )}
       </div>
+
+      {/* Der Regelfall ist die Auswahl über das Team; Sites bleiben für
+          Ablagen ohne zugehöriges Team erreichbar. */}
+      {!selectedTeam && !selectedSite && (
+        <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant={mode === "teams" ? "secondary" : "ghost"}
+            onClick={() => switchMode("teams")}
+          >
+            <Users className="h-4 w-4 mr-1.5" />
+            Teams
+          </Button>
+          <Button
+            size="sm"
+            variant={mode === "sites" ? "secondary" : "ghost"}
+            onClick={() => switchMode("sites")}
+          >
+            <Globe className="h-4 w-4 mr-1.5" />
+            Alle SharePoint-Sites
+          </Button>
+        </div>
+      )}
 
       <div className="flex items-center gap-1 text-sm text-muted-foreground overflow-x-auto">
         {breadcrumbs.map((b, i) => (
@@ -209,7 +278,18 @@ export function SharePointBrowser() {
 
       <Separator />
 
-      {!selectedSite && (
+      {mode === "teams" && !selectedTeam && (
+        <TeamsList
+          searchQuery={debouncedQuery}
+          onSelectTeam={(team) => {
+            setSelectedTeam(team);
+            setSearchQuery("");
+            setDebouncedQuery("");
+          }}
+        />
+      )}
+
+      {mode === "sites" && !selectedSite && (
         <SitesList
           searchQuery={debouncedQuery}
           onSelectSite={(site) => {
@@ -220,9 +300,10 @@ export function SharePointBrowser() {
         />
       )}
 
-      {selectedSite && !selectedDrive && (
+      {(selectedTeam || selectedSite) && !selectedDrive && (
         <DrivesList
-          siteId={selectedSite.id}
+          siteId={selectedSite?.id}
+          groupId={selectedTeam?.groupId}
           onSelectDrive={(drive) => {
             setSelectedDrive(drive);
             setSearchQuery("");
@@ -306,7 +387,10 @@ function SitesList({
           className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => onSelectSite(site)}
           onKeyDown={(e) => {
-            if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+            if (
+              (e.key === "Enter" || e.key === " ") &&
+              e.target === e.currentTarget
+            ) {
               e.preventDefault();
               onSelectSite(site);
             }
@@ -339,21 +423,125 @@ function SitesList({
   );
 }
 
+/**
+ * Die Teams des Mandanten. Für die meisten Ablagen ist das der richtige
+ * Einstieg: erst das Team, dann dessen Bibliotheken.
+ */
+function TeamsList({
+  searchQuery,
+  onSelectTeam,
+}: {
+  searchQuery: string;
+  onSelectTeam: (team: SharePointTeam) => void;
+}) {
+  const {
+    data: teams,
+    isLoading,
+    error,
+  } = useQuery<SharePointTeam[]>({
+    queryKey: ["sharepoint-teams", searchQuery],
+    queryFn: () =>
+      customFetch<SharePointTeam[]>(
+        `/api/connectors/sharepoint/teams${
+          searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""
+        }`,
+      ),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">
+          Teams werden geladen...
+        </span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <SharePointError error={error} />;
+  }
+
+  if (!teams || teams.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center text-muted-foreground">
+          <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p className="font-medium">Keine Teams gefunden</p>
+          <p className="text-sm mt-1">
+            {searchQuery
+              ? "Versuchen Sie einen anderen Suchbegriff"
+              : "Stellen Sie sicher, dass die Berechtigung Group.Read.All erteilt ist"}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <p className="text-sm text-muted-foreground mb-2">
+        {teams.length} Team{teams.length !== 1 ? "s" : ""}
+      </p>
+      {teams.map((team) => (
+        <div
+          key={team.groupId}
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={() => onSelectTeam(team)}
+          onKeyDown={(e) => {
+            if (
+              (e.key === "Enter" || e.key === " ") &&
+              e.target === e.currentTarget
+            ) {
+              e.preventDefault();
+              onSelectTeam(team);
+            }
+          }}
+        >
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-950 shrink-0">
+            <Users className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{team.displayName}</p>
+            {team.description && (
+              <p className="text-xs text-muted-foreground truncate">
+                {team.description}
+              </p>
+            )}
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DrivesList({
   siteId,
+  groupId,
   onSelectDrive,
 }: {
-  siteId: string;
+  siteId?: string;
+  groupId?: string;
   onSelectDrive: (drive: SharePointDrive) => void;
 }) {
+  // Bibliotheken hängen entweder an einer Site oder — der Regelfall — am
+  // Team, dessen Teamsite serverseitig aufgelöst wird.
+  const url = groupId
+    ? `/api/connectors/sharepoint/teams/${groupId}/drives`
+    : `/api/connectors/sharepoint/sites/${siteId}/drives`;
+
   const {
     data: drives,
     isLoading,
     error,
-  } = useListSharePointDrives(siteId, {
-    query: {
-      queryKey: getListSharePointDrivesQueryKey(siteId),
-    },
+  } = useQuery<SharePointDrive[]>({
+    queryKey: ["sharepoint-drives", groupId ?? siteId],
+    queryFn: () => customFetch<SharePointDrive[]>(url),
+    enabled: !!(groupId || siteId),
   });
 
   if (isLoading) {
@@ -395,7 +583,10 @@ function DrivesList({
           className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => onSelectDrive(drive)}
           onKeyDown={(e) => {
-            if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+            if (
+              (e.key === "Enter" || e.key === " ") &&
+              e.target === e.currentTarget
+            ) {
               e.preventDefault();
               onSelectDrive(drive);
             }
@@ -442,15 +633,11 @@ function ItemsList({
     data: items,
     isLoading,
     error,
-  } = useListSharePointDriveItems(
-    driveId,
-    params,
-    {
-      query: {
-        queryKey: getListSharePointDriveItemsQueryKey(driveId, params),
-      },
+  } = useListSharePointDriveItems(driveId, params, {
+    query: {
+      queryKey: getListSharePointDriveItemsQueryKey(driveId, params),
     },
-  );
+  });
 
   if (isLoading) {
     return (
@@ -548,15 +735,24 @@ function ItemRow({
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       className={`grid grid-cols-12 gap-2 items-center px-4 py-2.5 text-sm border-b last:border-b-0 hover:bg-muted/50 transition-colors ${
-        onClick ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring" : ""
+        onClick
+          ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+          : ""
       }`}
       onClick={onClick}
-      onKeyDown={onClick ? (e) => {
-        if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
-          e.preventDefault();
-          onClick();
-        }
-      } : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (
+                (e.key === "Enter" || e.key === " ") &&
+                e.target === e.currentTarget
+              ) {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
     >
       <div className="col-span-5 flex items-center gap-2 min-w-0">
         <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />

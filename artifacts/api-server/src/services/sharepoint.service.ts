@@ -193,6 +193,14 @@ export interface SharePointSite {
   description?: string;
 }
 
+export interface SharePointTeam {
+  /** Objekt-ID der Microsoft-365-Gruppe hinter dem Team. */
+  groupId: string;
+  displayName: string;
+  description: string | null;
+  mail: string | null;
+}
+
 export interface SharePointDrive {
   id: string;
   name: string;
@@ -223,6 +231,15 @@ function getGraphClient(accessToken: string): Client {
   });
 }
 
+/**
+ * Persönliche OneDrive-Sites liegen unter /personal/ und tragen oft
+ * gleichlautende Anzeigenamen ("Designer", "Mein Arbeitsbereich"). Sie sind
+ * keine Ablage für Team-Dokumente und gehören nicht in die Auswahl.
+ */
+function isPersonalSite(site: { webUrl?: string }): boolean {
+  return /\/personal\//i.test(site.webUrl ?? "");
+}
+
 export async function listSites(
   accessToken: string,
   query?: string,
@@ -237,10 +254,79 @@ export async function listSites(
       client
         .api(`/sites?search=${encodeURIComponent(searchTerm)}`)
         .select("id,displayName,webUrl,description")
-        .top(50)
+        .top(200)
         .get(),
   );
-  return (result.value ?? []).map(mapSite);
+  return ((result.value ?? []) as Record<string, string>[])
+    .filter((site) => !isPersonalSite(site))
+    .map(mapSite);
+}
+
+/**
+ * Die Microsoft-365-Teams des Mandanten.
+ *
+ * Ein Team ist technisch eine Microsoft-365-Gruppe mit aktivierter
+ * Team-Bereitstellung — das Filterkriterium `resourceProvisioningOptions`
+ * trennt sie von reinen Verteiler- und Sicherheitsgruppen. Jedes Team hat
+ * genau eine SharePoint-Teamsite, deren Bibliotheken über
+ * `listDrivesForTeam` erreichbar sind.
+ */
+export async function listTeams(
+  accessToken: string,
+  query?: string,
+  options: SharePointCallOptions = {},
+): Promise<SharePointTeam[]> {
+  const result = await runWithGraph(
+    accessToken,
+    options.allowAppFallback ?? false,
+    "Teams lesen",
+    (client) =>
+      client
+        .api("/groups")
+        .filter("resourceProvisioningOptions/Any(x:x eq 'Team')")
+        .select("id,displayName,description,mail")
+        .top(999)
+        .get(),
+  );
+
+  const needle = query?.trim().toLowerCase();
+  return ((result.value ?? []) as Record<string, string>[])
+    .map((g) => ({
+      groupId: g.id,
+      displayName: g.displayName,
+      description: g.description ?? null,
+      mail: g.mail ?? null,
+    }))
+    .filter((t) =>
+      needle ? t.displayName?.toLowerCase().includes(needle) : true,
+    )
+    .sort((a, b) =>
+      (a.displayName ?? "").localeCompare(b.displayName ?? "", "de"),
+    );
+}
+
+/**
+ * Die Dokumentbibliotheken der Teamsite einer Gruppe. Der Umweg über
+ * `/groups/{id}/sites/root` erspart es, die Site-ID separat zu pflegen.
+ */
+export async function listDrivesForTeam(
+  accessToken: string,
+  groupId: string,
+  options: SharePointCallOptions = {},
+): Promise<SharePointDrive[]> {
+  const site = await runWithGraph(
+    accessToken,
+    options.allowAppFallback ?? false,
+    "Teamsite auflösen",
+    (client) =>
+      client
+        .api(`/groups/${groupId}/sites/root`)
+        .select("id,displayName,webUrl")
+        .get(),
+  );
+
+  if (!site?.id) return [];
+  return listDrives(accessToken, site.id, options);
 }
 
 export async function listDrives(
