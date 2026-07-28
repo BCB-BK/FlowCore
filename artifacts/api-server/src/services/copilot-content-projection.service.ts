@@ -14,6 +14,8 @@ import { serializeProseMirrorContent } from "../lib/prosemirror-serializer";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
 import { htmlToPlainText } from "@workspace/shared/rich-text";
+import { getPageType } from "@workspace/shared/page-types";
+import { AGENT_METADATA_KEYS, SYNC_ONLY_KEYS } from "../lib/agent-metadata";
 import {
   getAclMappingStatus,
   DEFAULT_CONFIDENTIALITY_LEVEL,
@@ -97,6 +99,57 @@ async function resolvePrincipalName(id: string | null | undefined): Promise<stri
   if (!id) return null;
   const principal = await getPrincipalById(id);
   return principal?.displayName ?? null;
+}
+
+/**
+ * Systemfelder, die unabhängig vom Seitentemplate im Export verbleiben
+ * (Steuerungs- und Indexierungsinformationen, keine fachlichen Inhalte).
+ */
+const NON_TEMPLATE_EXPORT_KEYS = new Set<string>([
+  "confidentiality",
+  "summary",
+  "kurzbeschreibung",
+  "scope",
+  ...AGENT_METADATA_KEYS,
+  ...SYNC_ONLY_KEYS,
+]);
+
+/**
+ * Seitentypen, bei denen ausschließlich die aktuell im Template definierten
+ * Abschnitte als fachlicher Inhalt exportiert werden.
+ *
+ * Hintergrund: Beim Umbau des Markenprofils wurden operative Felder aus dem
+ * Template entfernt. Ihre Inhalte bleiben in den Revisionen erhalten (keine
+ * Datenlöschung), dürfen aber nicht mehr als aktueller Markenprofilinhalt an
+ * Graph/Copilot ausgeliefert werden.
+ */
+const TEMPLATE_SCOPED_EXPORT_TYPES = new Set<string>(["brand_profile"]);
+
+function scopeStructuredFieldsToTemplate(
+  templateType: string,
+  fields: Record<string, unknown>,
+): Record<string, unknown> {
+  if (!TEMPLATE_SCOPED_EXPORT_TYPES.has(templateType)) return fields;
+  const def = getPageType(templateType);
+  if (!def) return fields;
+
+  // Aktive Abschnitte UND Metadatenfelder bleiben erhalten — gefiltert werden
+  // nur fachliche Abschnitte, die nicht mehr Teil des Templates sind.
+  const activeKeys = new Set([
+    ...def.sections.map((section) => section.key),
+    ...def.metadataFields.map((field) => field.key),
+  ]);
+  const scoped: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    if (
+      activeKeys.has(key) ||
+      key.startsWith("_") ||
+      NON_TEMPLATE_EXPORT_KEYS.has(key)
+    ) {
+      scoped[key] = value;
+    }
+  }
+  return scoped;
 }
 
 export function deriveBrandScope(tags: string[]): string[] {
@@ -408,7 +461,10 @@ export async function projectPublishedPage(
   );
 
   const structuredFields = {
-    ...(revision.structuredFields ?? {}),
+    ...scopeStructuredFieldsToTemplate(
+      node.templateType,
+      (revision.structuredFields ?? {}) as Record<string, unknown>,
+    ),
     media,
   };
 

@@ -12,6 +12,7 @@ import { sanitizeHtml } from "@/lib/sanitize-html";
 import {
   looksLikeHtml,
   plainTextToHtml,
+  htmlToPlainText,
   isRichTextEmpty,
 } from "@workspace/shared/rich-text";
 
@@ -33,6 +34,30 @@ interface EditableSectionCardProps {
   pageType?: string;
   nodeId?: string;
   showAiAssist?: boolean;
+  /** Redaktionelle Empfehlung: Zeichenumfang (nicht blockierend) */
+  softLimitChars?: number;
+  /** Redaktionelle Empfehlung: Anzahl Einträge/Punkte (nicht blockierend) */
+  softLimitItems?: number;
+}
+
+/** Zeichenzahl des reinen Textes — HTML-Auszeichnung zählt nicht mit. */
+function countChars(value: string): number {
+  return (looksLikeHtml(value) ? htmlToPlainText(value) : value).trim().length;
+}
+
+/**
+ * Anzahl der Einträge: Listenpunkte im formatierten Modus, sonst
+ * nicht-leere Zeilen (Aufzählungszeichen werden nicht doppelt gezählt).
+ */
+function countItems(value: string): number {
+  if (looksLikeHtml(value)) {
+    const listItems = value.match(/<li\b/gi);
+    if (listItems) return listItems.length;
+    return htmlToPlainText(value)
+      .split("\n")
+      .filter((line) => line.trim().length > 0).length;
+  }
+  return value.split("\n").filter((line) => line.trim().length > 0).length;
 }
 
 function RequirementBadge({ requirement, publishRequired }: { requirement?: string; publishRequired?: boolean }) {
@@ -66,6 +91,8 @@ export function EditableSectionCard({
   pageType,
   nodeId,
   showAiAssist = true,
+  softLimitChars,
+  softLimitItems,
 }: EditableSectionCardProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -144,6 +171,31 @@ export function EditableSectionCard({
     return draft;
   }, [draft]);
 
+  // Redaktionelle Empfehlung — bewusst nur ein Hinweis, kein Speicher-Blocker.
+  const softLimit = (() => {
+    if (softLimitChars) {
+      const count = countChars(draft);
+      return {
+        count,
+        limit: softLimitChars,
+        over: count > softLimitChars,
+        text: `${count.toLocaleString("de-DE")} / ${softLimitChars.toLocaleString("de-DE")} Zeichen`,
+        hint: "Empfehlung: knapper fassen — Details gehören auf die verknüpften Standardseiten.",
+      };
+    }
+    if (softLimitItems) {
+      const count = countItems(draft);
+      return {
+        count,
+        limit: softLimitItems,
+        over: count > softLimitItems,
+        text: `${count} / ${softLimitItems} Einträge`,
+        hint: "Empfehlung: auf die wesentlichen Punkte verdichten.",
+      };
+    }
+    return null;
+  })();
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       handleCancel();
@@ -158,9 +210,18 @@ export function EditableSectionCard({
             <CardTitle className="text-sm flex items-center gap-2">
               {icon}
               {label}
-              {required && <span className="text-destructive text-xs">*</span>}
+              {required && onSave && (
+                <span className="text-destructive text-xs">*</span>
+              )}
             </CardTitle>
-            <RequirementBadge requirement={requirement} publishRequired={publishRequired} />
+            {/* Pflicht-/Empfehlungshinweise sind Redaktionshilfen — in der
+                Leseansicht bleiben sie aus. */}
+            {onSave && (
+              <RequirementBadge
+                requirement={requirement}
+                publishRequired={publishRequired}
+              />
+            )}
             <FieldHelpTooltip
               fillHelp={help?.fillHelp}
               example={help?.example}
@@ -266,6 +327,16 @@ export function EditableSectionCard({
           />
         ) : (
           <div className="text-sm whitespace-pre-wrap">{draft}</div>
+        )}
+        {editing && softLimit && (
+          <p
+            className={`mt-1.5 text-[11px] ${
+              softLimit.over ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+            }`}
+          >
+            {softLimit.text}
+            {softLimit.over && ` \u00b7 ${softLimit.hint}`}
+          </p>
         )}
       </CardContent>
     </Card>

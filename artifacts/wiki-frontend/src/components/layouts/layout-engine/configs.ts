@@ -262,48 +262,29 @@ export const useCaseConfig: LayoutConfig = {
   ],
 };
 
-// Markenprofil — zweistufige Gliederung: Gruppenüberschriften (group) fassen
-// die zugehörigen Abschnitte zusammen. Der Abschnitt "references" wird bewusst
-// nicht hier geführt, sondern separat vom Referenzen-Editor gerendert.
+// Markenprofil — kompakte, verbindliche Markenidentität in fünf Feldgruppen.
+// Operative Umsetzung (Website, KI, Kampagnen, Kanäle, Go-to-Market) wird auf
+// eigenen Seiten gepflegt und im Relationsbereich am Ende nur verknüpft.
 export const brandProfileConfig: LayoutConfig = {
   pageTypeKey: "brand_profile",
   rows: [
-    { key: "strategic_decision", component: "editable", label: "Strategische Leitentscheidung", description: "Die übergeordnete Weichenstellung für diese Marke", icon: Flag, iconColor: "text-primary", emptyText: "Noch keine strategische Leitentscheidung erfasst" },
+    { key: "strategic_decision", component: "editable", group: "Strategischer Kern", label: "Strategische Leitentscheidung", description: "Die zentrale strategische Entscheidung für diese Marke", icon: Flag, iconColor: "text-primary", emptyText: "Noch keine strategische Leitentscheidung erfasst" },
+    { key: "brand_purpose", component: "editable", group: "Strategischer Kern", label: "Markenauftrag und Purpose", description: "Warum die Marke existiert und welchen dauerhaften Beitrag sie leistet", icon: Target, iconColor: "text-primary", emptyText: "Noch kein Markenauftrag beschrieben" },
+    { key: "brand_role", component: "editable", group: "Strategischer Kern", label: "Markenrolle im Gruppensystem", description: "Funktion der Marke innerhalb der Gruppe", icon: Layers, iconColor: "text-primary", emptyText: "Noch keine Markenrolle beschrieben" },
+    { key: "brand_mandate", component: "editable", group: "Strategischer Kern", label: "Mandat und Verantwortungsrahmen", description: "Richtlinienkompetenz, Steuerungsmandat, Zuständigkeiten und Grenzen", icon: Gavel, iconColor: "text-primary", emptyText: "Noch kein Mandat definiert" },
 
-    { key: "brand_role", component: "editable", group: "Markenbasis", label: "Markenrolle", description: "Rolle der Marke innerhalb der Gruppe", icon: Layers, iconColor: "text-primary", emptyText: "Noch keine Markenrolle beschrieben" },
-    { key: "primary_target_groups", component: "editable", group: "Markenbasis", label: "Primäre Zielgruppen", description: "Wen adressiert die Marke in erster Linie?", icon: Users, iconColor: "text-blue-600", emptyText: "Noch keine Zielgruppen benannt" },
-    { key: "core_promise", component: "editable", group: "Markenbasis", label: "Kernversprechen", description: "Was sagt die Marke verbindlich zu?", icon: Heart, iconColor: "text-primary", emptyText: "Noch kein Kernversprechen formuliert" },
-    { key: "guiding_idea", component: "editable", group: "Markenbasis", label: "Leitidee", description: "Der gedankliche Kern der Marke", icon: Brain, iconColor: "text-primary", emptyText: "Noch keine Leitidee beschrieben" },
-    { key: "recommended_claim", component: "editable", group: "Markenbasis", label: "Empfohlener Claim", description: "Der empfohlene Hauptclaim", icon: MessageSquare, iconColor: "text-primary", emptyText: "Noch kein Claim empfohlen" },
-    { key: "campaign_line", component: "editable", group: "Markenbasis", label: "Kampagnenlinie", description: "Übergreifende Linie der Kommunikation", icon: Zap, iconColor: "text-amber-600", emptyText: "Noch keine Kampagnenlinie definiert" },
-    { key: "tonality", component: "editable", group: "Markenbasis", label: "Tonalität", description: "Wie spricht die Marke?", icon: MessageSquare, iconColor: "text-blue-600", emptyText: "Noch keine Tonalität beschrieben" },
+    { key: "primary_target_groups", component: "editable", group: "Zielgruppe und Leistungsversprechen", label: "Primäre Zielgruppen", description: "Dauerhaft relevante Kernzielgruppen", icon: Users, iconColor: "text-blue-600", emptyText: "Noch keine Zielgruppen benannt" },
+    { key: "core_promise", component: "editable", group: "Zielgruppe und Leistungsversprechen", label: "Kernversprechen", description: "Der verbindlich zugesagte Nutzen", icon: Heart, iconColor: "text-primary", emptyText: "Noch kein Kernversprechen formuliert" },
+    { key: "service_logic", component: "editable", group: "Zielgruppe und Leistungsversprechen", label: "Leistungs- und Lösungslogik", description: "Leistungsarten und Lösungsprinzipien", icon: PackageOpen, iconColor: "text-blue-600", emptyText: "Noch keine Leistungslogik beschrieben" },
 
-    { key: "claim_set", component: "editable", group: "Claim-Set und Kampagnenmotive", label: "Claim-Set", description: "Claim-Varianten für unterschiedliche Anlässe", icon: BookMarked, iconColor: "text-primary", emptyText: "Noch kein Claim-Set hinterlegt" },
-    { key: "campaign_motifs", component: "editable", group: "Claim-Set und Kampagnenmotive", label: "Kampagnenmotive / Kartenlogik", description: "Motivwelt und Aufbaulogik der Kommunikationsmittel", icon: Layers, iconColor: "text-blue-600", emptyText: "Noch keine Kampagnenmotive beschrieben" },
+    { key: "brand_delimitation", component: "editable", group: "Abgrenzung und Markenführung", label: "Abgrenzung und Zusammenspiel der Marken", description: "Zuständigkeit, Übergänge und Zusammenspiel", icon: ArrowLeftRight, iconColor: "text-primary", emptyText: "Noch keine Abgrenzung dokumentiert" },
+    { key: "brand_principles", component: "editable", group: "Abgrenzung und Markenführung", label: "Markenprinzipien und No-Gos", description: "Dauerhafte Grundsätze und ausdrückliche Ausschlüsse", icon: Ban, iconColor: "text-red-600", emptyText: "Noch keine Markenprinzipien festgelegt" },
 
-    { key: "language_guardrails", component: "editable", label: "Sprachleitplanken", description: "Verbindliche Regeln für Sprache und Begriffe", icon: Ban, iconColor: "text-red-600", emptyText: "Noch keine Sprachleitplanken definiert" },
+    { key: "guiding_idea", component: "editable", group: "Markenausdruck", label: "Leitidee", description: "Der gedankliche Kern der Marke", icon: Brain, iconColor: "text-primary", emptyText: "Noch keine Leitidee beschrieben" },
+    { key: "recommended_claim", component: "editable", group: "Markenausdruck", label: "Hauptclaim", description: "Der verbindliche Hauptclaim der Marke", icon: MessageSquare, iconColor: "text-primary", emptyText: "Noch kein Hauptclaim hinterlegt" },
+    { key: "tonality", component: "editable", group: "Markenausdruck", label: "Tonalitätskern", description: "Die dauerhaft geltenden Tonalitätsmerkmale", icon: MessageSquare, iconColor: "text-blue-600", emptyText: "Noch kein Tonalitätskern beschrieben" },
 
-    { key: "audience_core_message", component: "editable", group: "Zielgruppenarchitektur und Priorisierung", label: "Kernaussage", description: "Leitsatz der Zielgruppenarchitektur", icon: Target, iconColor: "text-primary", emptyText: "Noch keine Kernaussage formuliert" },
-    { key: "audience_priorities", component: "editable", group: "Zielgruppenarchitektur und Priorisierung", label: "Zielgruppen nach Priorität", description: "Reihenfolge und Gewichtung der Zielgruppen", icon: ListChecks, iconColor: "text-blue-600", emptyText: "Noch keine Priorisierung vorgenommen" },
-    { key: "homepage_vs_landingpages", component: "editable", group: "Zielgruppenarchitektur und Priorisierung", label: "Homepage vs. Landingpages", description: "Aufgabenteilung zwischen Startseite und Landingpages", icon: Monitor, iconColor: "text-blue-600", emptyText: "Noch keine Abgrenzung definiert" },
-    { key: "secondary_content_landingpages", component: "editable", group: "Zielgruppenarchitektur und Priorisierung", label: "Sekundäre Inhalte und separate Landingpage-Logik", description: "Umgang mit nachgelagerten Inhalten", icon: FileStack, iconColor: "text-muted-foreground", emptyText: "Noch keine Logik hinterlegt" },
-    { key: "product_matrix", component: "editable", group: "Zielgruppenarchitektur und Priorisierung", label: "Produktmatrix-Ableitung", description: "Ableitung des Angebots aus der Zielgruppenarchitektur", icon: PackageOpen, iconColor: "text-primary", emptyText: "Noch keine Produktmatrix abgeleitet" },
-    { key: "industry_landingpages", component: "editable", group: "Zielgruppenarchitektur und Priorisierung", label: "Branchenlandingpages", description: "Branchenspezifische Einstiegsseiten", icon: Building2, iconColor: "text-blue-600", emptyText: "Noch keine Branchenlandingpages vorgesehen" },
-
-    { key: "website_role", component: "editable", group: "Website-, KI-, StudyGuide- und Journey-Architektur", label: "Website-Rolle", description: "Aufgabe der Website im Gesamtsystem", icon: Monitor, iconColor: "text-primary", emptyText: "Noch keine Website-Rolle definiert" },
-    { key: "homepage_structure", component: "editable", group: "Website-, KI-, StudyGuide- und Journey-Architektur", label: "Empfohlene Startseiten-Struktur", description: "Empfohlener Aufbau der Startseite", icon: Layers, iconColor: "text-blue-600", emptyText: "Noch keine Struktur empfohlen" },
-    { key: "ai_maturity_sales_model", component: "editable", group: "Website-, KI-, StudyGuide- und Journey-Architektur", label: "KI-Reifegrad und Vertriebsmodell", description: "Reifegrad der KI-Unterstützung und Vertriebslogik", icon: Cpu, iconColor: "text-primary", emptyText: "Noch kein Reifegrad eingeordnet" },
-    { key: "ai_assistant_tasks", component: "editable", group: "Website-, KI-, StudyGuide- und Journey-Architektur", label: "Aufgaben des KI-Assistenten", description: "Was der Assistent übernimmt — und was nicht", icon: Brain, iconColor: "text-primary", emptyText: "Noch keine Aufgaben definiert" },
-    { key: "human_handover", component: "editable", group: "Website-, KI-, StudyGuide- und Journey-Architektur", label: "Human-Handover-Punkte", description: "Übergabe an Menschen", icon: Users, iconColor: "text-amber-600", emptyText: "Noch keine Handover-Punkte festgelegt" },
-
-    { key: "channel_strategy", component: "editable", group: "Kanalstrategie und Maßnahmen", label: "Kanalstrategie", description: "Eingesetzte Kanäle und ihre Rollen", icon: GitBranch, iconColor: "text-primary", emptyText: "Noch keine Kanalstrategie beschrieben" },
-    { key: "ai_search_answer_engines", component: "editable", group: "Kanalstrategie und Maßnahmen", label: "AI Search / Answer Engines", description: "Sichtbarkeit in KI-gestützten Suchsystemen", icon: SearchCheck, iconColor: "text-primary", emptyText: "Noch keine Festlegung getroffen" },
-    { key: "campaign_clusters", component: "editable", group: "Kanalstrategie und Maßnahmen", label: "Empfohlene Kampagnen-Cluster", description: "Thematische Bündel für Kampagnen", icon: Layers, iconColor: "text-blue-600", emptyText: "Noch keine Cluster empfohlen" },
-    { key: "example_ads", component: "editable", group: "Kanalstrategie und Maßnahmen", label: "Beispielanzeigen", description: "Konkrete Anzeigenbeispiele", icon: FileText, iconColor: "text-muted-foreground", emptyText: "Noch keine Beispielanzeigen hinterlegt" },
-
-    { key: "b2b_b2c_b2g", component: "editable", group: "StudyGuide-/Marketing-Betrieb und Prioritäten", label: "B2B-/B2C-/B2G-Abgrenzung", description: "Abgrenzung der Geschäftslogiken", icon: ArrowLeftRight, iconColor: "text-primary", emptyText: "Noch keine Abgrenzung dokumentiert" },
-    { key: "rollout_sequence", component: "editable", group: "StudyGuide-/Marketing-Betrieb und Prioritäten", label: "Strategische Aufbaufolge", description: "Reihenfolge der Umsetzung", icon: ListChecks, iconColor: "text-blue-600", emptyText: "Noch keine Aufbaufolge festgelegt" },
-    { key: "success_levers", component: "editable", group: "StudyGuide-/Marketing-Betrieb und Prioritäten", label: "Erfolgshebel und Umsetzungssicherung", description: "Wirksamkeit und Absicherung der Umsetzung", icon: CheckCircle2, iconColor: "text-primary", emptyText: "Noch keine Erfolgshebel benannt" },
+    { key: "references", component: "references_editor", group: "Mitgeltende Grundlagen" },
   ],
 };
 

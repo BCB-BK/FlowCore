@@ -8,6 +8,7 @@ export {
   getSuitableChildTypes,
   getContainerCapabilities,
   getMetadataGroups,
+  getMetadataDefaults,
   calculateCompleteness,
   validateForPublication,
   validateForDraft,

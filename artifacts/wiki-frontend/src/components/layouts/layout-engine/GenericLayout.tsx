@@ -188,6 +188,8 @@ function FieldRenderer({
           guidingQuestions={sectionDef?.guidingQuestions}
           requirement={field.requirement ?? sectionDef?.requirement}
           publishRequired={sectionDef?.publishRequired}
+          softLimitChars={sectionDef?.softLimitChars}
+          softLimitItems={sectionDef?.softLimitItems}
         />
       );
     }

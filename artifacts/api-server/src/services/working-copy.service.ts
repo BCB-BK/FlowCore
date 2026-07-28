@@ -10,7 +10,10 @@ import {
 } from "@workspace/db/schema";
 import { eq, and, sql, notInArray, desc, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
-import { validateForPublication } from "@workspace/shared/page-types";
+import {
+  getMetadataDefaults,
+  validateForPublication,
+} from "@workspace/shared/page-types";
 import { isSetupMode } from "./system-settings.service";
 import { isWorkflowActiveForPageType } from "./workflow.service";
 import {
@@ -190,6 +193,7 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
       .select({
         publishedRevisionId: contentNodesTable.publishedRevisionId,
         title: contentNodesTable.title,
+        templateType: contentNodesTable.templateType,
       })
       .from(contentNodesTable)
       .where(eq(contentNodesTable.id, nodeId));
@@ -234,6 +238,13 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
     // gesetzte Stufen (aus der Basisrevision) bleiben unangetastet.
     if (!structuredFields?.confidentiality) {
       structuredFields = { ...(structuredFields ?? {}), confidentiality: "internal" };
+    }
+
+    // Seitentyp-spezifische Vorbelegungen (registry: metadataFields.defaultValue),
+    // z. B. "Führende Quelle = FlowCore" beim Markenprofil. Nur leere Felder.
+    const metadataDefaults = getMetadataDefaults(node.templateType, structuredFields);
+    if (Object.keys(metadataDefaults).length > 0) {
+      structuredFields = { ...(structuredFields ?? {}), ...metadataDefaults };
     }
 
     const [wc] = await tx

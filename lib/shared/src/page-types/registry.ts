@@ -50,6 +50,8 @@ export interface MetadataFieldDef {
   publishRequired?: boolean;
   errorMessage?: string;
   help?: FieldHelp;
+  /** Vorbelegung beim Anlegen, sofern das Feld noch leer ist. */
+  defaultValue?: string;
 }
 
 export interface PageTypeSection {
@@ -73,6 +75,17 @@ export interface PageTypeSection {
    * (zweistufige Gliederung). Abschnitte ohne Gruppe stehen für sich.
    */
   group?: string;
+  /**
+   * Redaktionelle Orientierung: empfohlene Höchstlänge in Zeichen.
+   * Eine Überschreitung blockiert die Veröffentlichung NICHT, erzeugt aber
+   * im Bearbeitungsmodus einen Hinweis.
+   */
+  softLimitChars?: number;
+  /**
+   * Redaktionelle Orientierung: empfohlene Höchstzahl an Aufzählungspunkten.
+   * Ebenfalls nicht veröffentlichungsblockierend.
+   */
+  softLimitItems?: number;
 }
 
 export type VariantCategory = "schlank" | "standard" | "qm_detail" | "grafisch" | "container";
@@ -3380,16 +3393,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     label: "Brand Profile",
     labelDe: "Markenprofil",
     description:
-      "Strategic brand profile with positioning, claim set, audience architecture, channel strategy and governance",
+      "Compact, binding description of a brand: purpose, role, mandate, audiences, promise and brand principles",
     descriptionDe:
-      "Strategisches Markenprofil mit Positionierung, Claim-Set, Zielgruppenarchitektur, Kanalstrategie und Governance",
+      "Kompakte, verbindliche Beschreibung einer Marke: Auftrag, Rolle, Mandat, Zielgruppen, Nutzenversprechen und Markenprinzipien",
     icon: "Gem",
     color: "hsl(117, 45%, 32%)",
     category: "governance",
     displayProfile: "governance_document",
     displayIdPrefix: "MP",
     helpText:
-      "Beschreiben Sie die strategische Markenbasis: Markenrolle, Zielgruppen, Kernversprechen, Claim-Set, Sprachleitplanken sowie Website-, KI- und Kanalstrategie. Grundlage für Marketing, StudyGuide und KI-Assistenten.",
+      "Ein Markenprofil beschreibt die dauerhafte Identität einer Marke: wofür sie existiert, welche Rolle und welches Mandat sie hat, wen sie adressiert und welche Prinzipien gelten. Operative Umsetzung (Website, KI, Kampagnen, Kanäle, Go-to-Market) wird auf eigenen Seiten gepflegt und hier nur verknüpft.",
     allowedChildTypes: [
       "policy",
       "faq",
@@ -3405,20 +3418,30 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     canBeReferenceHub: false,
     canBeGovernanceContainer: true,
     usageHint:
-      "Verbindliches Markenprofil einer Einzelmarke oder der Dachmarke. Strategische Leitentscheidung, Positionierung und Kommunikationsleitplanken an einer Stelle.",
+      "Dauerhafte Markenidentität einer Einzelmarke oder der Dachmarke. Keine operativen Umsetzungsdetails — diese gehören auf die verknüpften Standardseiten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
-      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS.map((f) =>
+        f.key === "source_of_truth"
+          ? {
+              ...f,
+              // Markenprofile werden in FlowCore selbst geführt
+              defaultValue: "FlowCore",
+            }
+          : f,
+      ),
       ...COMMON_VALIDITY_FIELDS,
       ...COMMON_CLASSIFICATION_FIELDS,
       {
         key: "brand_name",
         label: "Marke",
         type: "text",
-        required: false,
-        requirement: "recommended",
+        required: true,
+        requirement: "required",
+        publishRequired: true,
         group: "identity",
         description: "Marke bzw. Bildungsinstitution, die dieses Profil beschreibt",
+        errorMessage: "Bitte geben Sie an, für welche Marke dieses Profil gilt.",
         help: {
           fillHelp:
             "Tragen Sie die Marke ein, für die dieses Profil gilt (Dachmarke oder Einzelmarke).",
@@ -3429,429 +3452,373 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "brand_level",
         label: "Markenebene",
         type: "enum",
-        required: false,
-        requirement: "recommended",
+        required: true,
+        requirement: "required",
+        publishRequired: true,
         group: "classification",
         options: ["dachmarke", "einzelmarke", "submarke", "kampagnenmarke"],
         description: "Einordnung in die Markenarchitektur der Gruppe",
+        errorMessage: "Bitte ordnen Sie die Marke einer Markenebene zu.",
+        help: {
+          fillHelp:
+            "Legen Sie fest, auf welcher Ebene der Markenarchitektur die Marke steht.",
+          example: "Einzelmarke",
+        },
       },
     ],
     sections: [
+      // ---------- Feldgruppe 1: Strategischer Kern ----------
       {
         key: "strategic_decision",
         label: "Strategische Leitentscheidung",
-        description: "Die übergeordnete Weichenstellung für diese Marke",
+        group: "Strategischer Kern",
+        description: "Die zentrale strategische Entscheidung für diese Marke",
         helpText:
-          "Halten Sie die zentrale strategische Entscheidung fest, aus der sich alle weiteren Festlegungen ableiten.",
+          "Welche grundlegende strategische Entscheidung gilt für diese Marke? Beschreiben Sie Rolle, Ausrichtung und zentrale Abgrenzung in kompakter Form.",
         guidingQuestions: [
-          "Welche grundsätzliche Entscheidung wurde für diese Marke getroffen?",
-          "Welche Alternativen wurden verworfen und warum?",
-          "Woraus leitet sich die Entscheidung ab (Marktlage, Portfolio, Gruppenstrategie)?",
+          "Welche grundsätzliche Weichenstellung gilt für diese Marke?",
+          "Welche Ausrichtung wurde bewusst gewählt — und welche verworfen?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 1,
+        softLimitChars: 1200,
+        help: {
+          fillHelp:
+            "Kompakte Festlegung der strategischen Ausrichtung, aus der sich alle weiteren Felder ableiten.",
+          example:
+            "Die Marke tritt als eigenständige Fachmarke im Sportsegment auf und adressiert Unternehmen wie Privatpersonen über berufsbegleitende Formate.",
+          badExample:
+            "Konkrete Kampagnenplanung, Kanalauswahl oder Startseiten-Aufbau — das gehört auf die Go-to-Market- bzw. Website-Seiten.",
+        },
       },
-
       {
-        key: "brand_role",
-        label: "Markenrolle",
-        group: "Markenbasis",
-        description: "Rolle der Marke innerhalb der Gruppe",
+        key: "brand_purpose",
+        label: "Markenauftrag und Purpose",
+        group: "Strategischer Kern",
+        description: "Warum die Marke existiert und welchen dauerhaften Beitrag sie leistet",
         helpText:
-          "Beschreiben Sie, welche Rolle die Marke im Markenportfolio übernimmt und wie sie sich zu den anderen Marken verhält.",
+          "Warum existiert die Marke? Welchen dauerhaften Nutzen stiftet sie für ihre Zielgruppen und innerhalb der Gruppe?",
         guidingQuestions: [
-          "Welche Funktion hat die Marke in der Markenarchitektur?",
-          "Wie grenzt sie sich von den Schwestermarken ab?",
+          "Welchen Beitrag leistet die Marke dauerhaft?",
+          "Was ginge verloren, wenn es die Marke nicht gäbe?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 2,
+        softLimitChars: 1000,
+        help: {
+          fillHelp:
+            "Der dauerhafte Daseinszweck der Marke — unabhängig von einzelnen Angeboten oder Kampagnen.",
+          example:
+            "Die Marke macht berufliche Entwicklung im Gesundheits- und Sportsektor auch für Menschen ohne klassischen Bildungsweg zugänglich.",
+          badExample:
+            "Aufzählung des aktuellen Kursportfolios oder Umsatzziele.",
+        },
       },
       {
-        key: "primary_target_groups",
-        label: "Primäre Zielgruppen",
-        group: "Markenbasis",
-        description: "Wen adressiert die Marke in erster Linie?",
+        key: "brand_role",
+        label: "Markenrolle im Gruppensystem",
+        group: "Strategischer Kern",
+        description: "Funktion der Marke innerhalb der Gruppe",
         helpText:
-          "Benennen Sie die primären Zielgruppen konkret — nach Rolle, Situation und Bedarf, nicht nur nach Demografie.",
+          "Welche Funktion übernimmt die Marke innerhalb der Gruppe? Wie ergänzt sie die anderen Marken?",
         guidingQuestions: [
-          "Welche Personen oder Organisationen adressiert die Marke zuerst?",
-          "Welchen Bedarf oder welche Ausgangssituation haben sie?",
+          "Welche Rolle übernimmt die Marke im Portfolio?",
+          "Wie ergänzt sie die Schwestermarken?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 3,
+        softLimitChars: 1000,
+        help: {
+          fillHelp:
+            "Die Funktion im Markenportfolio — Dachmarke, Fachmarke, Hochschule, Spezialanbieter.",
+          example:
+            "Fachmarke für den Sport- und Gesundheitsbereich; ergänzt die Dachmarke um fachspezifische Tiefe.",
+          badExample:
+            "Detaillierte Abgrenzung einzelner Produkte — dafür gibt es das Feld „Abgrenzung und Zusammenspiel der Marken“.",
+        },
       },
       {
-        key: "core_promise",
-        label: "Kernversprechen",
-        group: "Markenbasis",
-        description: "Was sagt die Marke verbindlich zu?",
+        key: "brand_mandate",
+        label: "Mandat und Verantwortungsrahmen",
+        group: "Strategischer Kern",
+        description: "Richtlinienkompetenz, Steuerungsmandat, Zuständigkeiten und Grenzen",
         helpText:
-          "Formulieren Sie das Versprechen, das die Marke einlösen muss — konkret und überprüfbar.",
+          "Welche gruppenweiten oder markenspezifischen Entscheidungen und Standards führt die Marke? Welche Verantwortung verbleibt ausdrücklich bei anderen Marken, Gesellschaften, Fachstellen oder Organen?",
         guidingQuestions: [
-          "Was können Kundinnen und Kunden verlässlich erwarten?",
-          "Woran lässt sich die Einlösung messen?",
+          "Welche Standards oder Entscheidungen verantwortet die Marke verbindlich?",
+          "Wo endet ihr Mandat ausdrücklich?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 4,
+        softLimitChars: 1500,
+        help: {
+          fillHelp:
+            "Klare Aussage zu Richtlinienkompetenz und Grenzen — wichtig für Governance und Konfliktfälle.",
+          example:
+            "Die Marke verantwortet die fachlichen Curricula ihres Segments. Prüfungsrecht und Akkreditierung verbleiben bei der Hochschule.",
+          badExample:
+            "Allgemeine Absichtserklärungen ohne benannte Zuständigkeit.",
+        },
       },
+
+      // ---------- Feldgruppe 2: Zielgruppe und Leistungsversprechen ----------
       {
-        key: "guiding_idea",
-        label: "Leitidee",
-        group: "Markenbasis",
-        description: "Der gedankliche Kern der Marke",
+        key: "primary_target_groups",
+        label: "Primäre Zielgruppen",
+        group: "Zielgruppe und Leistungsversprechen",
+        description: "Dauerhaft relevante Kernzielgruppen",
         helpText:
-          "Beschreiben Sie die Leitidee, die Haltung und Angebot der Marke zusammenhält.",
+          "Wen adressiert die Marke primär? Beschränken Sie sich auf die dauerhaft relevanten Kernzielgruppen.",
+        guidingQuestions: [
+          "Welche Zielgruppen sind dauerhaft zentral?",
+          "Welche sind bewusst nachrangig?",
+        ],
         required: true,
         publishRequired: true,
         guidedModeStep: 5,
+        softLimitItems: 8,
+        help: {
+          fillHelp:
+            "Zielgruppen auf hoher Ebene, als kurze Aufzählung — maximal acht.",
+          example:
+            "Personalverantwortliche in Fitness- und Gesundheitsunternehmen; Quereinsteigende mit Berufserfahrung.",
+          badExample:
+            "Personas, Kanalzuordnungen oder Landingpage-Architektur — das gehört in die Zielgruppen- und Segmentierungslogik.",
+        },
       },
       {
-        key: "recommended_claim",
-        label: "Empfohlener Claim",
-        group: "Markenbasis",
-        description: "Der empfohlene Hauptclaim",
+        key: "core_promise",
+        label: "Kernversprechen",
+        group: "Zielgruppe und Leistungsversprechen",
+        description: "Der verbindlich zugesagte Nutzen",
         helpText:
-          "Halten Sie den empfohlenen Claim fest und begründen Sie ihn kurz.",
+          "Welchen verbindlichen Nutzen sagt die Marke ihren Zielgruppen zu?",
         guidingQuestions: [
-          "Wie lautet der Claim wörtlich?",
-          "Warum trägt er die Positionierung?",
-        ],
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "campaign_line",
-        label: "Kampagnenlinie",
-        group: "Markenbasis",
-        description: "Übergreifende Linie der Kommunikation",
-        helpText:
-          "Beschreiben Sie die durchgängige Kampagnenlinie, an der sich einzelne Maßnahmen ausrichten.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "tonality",
-        label: "Tonalität",
-        group: "Markenbasis",
-        description: "Wie spricht die Marke?",
-        helpText:
-          "Beschreiben Sie Tonfall und Haltung in der Ansprache — inklusive dessen, was bewusst vermieden wird.",
-        guidingQuestions: [
-          "Welche Haltung transportiert die Ansprache?",
-          "Welche Tonalität ist ausgeschlossen?",
+          "Was können Zielgruppen verlässlich erwarten?",
+          "Woran ließe sich die Einlösung messen?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 6,
-      },
-
-      {
-        key: "claim_set",
-        label: "Claim-Set",
-        group: "Claim-Set und Kampagnenmotive",
-        description: "Claim-Varianten für unterschiedliche Anlässe",
-        helpText:
-          "Sammeln Sie die abgestimmten Claim-Varianten mit ihrem jeweiligen Einsatzzweck.",
-        required: false,
-        requirement: "recommended",
+        softLimitChars: 600,
+        help: {
+          fillHelp:
+            "Ein kurzes, überprüfbares Versprechen — kein Werbeslogan.",
+          example:
+            "Qualifizierung, die berufsbegleitend absolvierbar ist und auf anerkannte Abschlüsse anrechenbar bleibt.",
+          badExample:
+            "Superlative wie „das beste Angebot am Markt“ ohne belegbaren Inhalt.",
+        },
       },
       {
-        key: "campaign_motifs",
-        label: "Kampagnenmotive / Kartenlogik",
-        group: "Claim-Set und Kampagnenmotive",
-        description: "Motivwelt und Aufbaulogik der Kommunikationsmittel",
+        key: "service_logic",
+        label: "Leistungs- und Lösungslogik",
+        group: "Zielgruppe und Leistungsversprechen",
+        description: "Leistungsarten und Lösungsprinzipien",
         helpText:
-          "Beschreiben Sie die Motive und die Logik, nach der Karten bzw. Werbemittel aufgebaut werden.",
-        required: false,
-        requirement: "recommended",
-      },
-
-      {
-        key: "language_guardrails",
-        label: "Sprachleitplanken",
-        description: "Verbindliche Regeln für Sprache und Begriffe",
-        helpText:
-          "Legen Sie bevorzugte Begriffe, zu vermeidende Formulierungen und die Anrede fest.",
+          "Welche Arten von Leistungen, Bildungswegen und Lösungen stellt die Marke grundsätzlich bereit? Keine vollständige Produktliste einfügen.",
         guidingQuestions: [
-          "Welche Begriffe werden bevorzugt verwendet?",
-          "Welche Formulierungen sind zu vermeiden?",
-          "Welche Anrede gilt (Sie/Du)?",
+          "Welche Leistungsarten bietet die Marke grundsätzlich an?",
+          "Nach welchem Prinzip bauen die Angebote aufeinander auf?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 7,
+        softLimitItems: 10,
+        help: {
+          fillHelp:
+            "Leistungsarten und Aufbaulogik, als Aufzählung — maximal zehn Punkte.",
+          example:
+            "Zertifikatslehrgänge; berufsbegleitende Studiengänge; Inhouse-Qualifizierung; geförderte Maßnahmen.",
+          badExample:
+            "Vollständiger Kurskatalog mit Preisen und Terminen.",
+        },
       },
 
+      // ---------- Feldgruppe 3: Abgrenzung und Markenführung ----------
       {
-        key: "audience_core_message",
-        label: "Kernaussage",
-        group: "Zielgruppenarchitektur und Priorisierung",
-        description: "Leitsatz der Zielgruppenarchitektur",
+        key: "brand_delimitation",
+        label: "Abgrenzung und Zusammenspiel der Marken",
+        group: "Abgrenzung und Markenführung",
+        description: "Zuständigkeit, Übergänge und Zusammenspiel",
         helpText:
-          "Fassen Sie in einem Satz zusammen, wie die Marke ihre Zielgruppen ordnet und priorisiert.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "audience_priorities",
-        label: "Zielgruppen nach Priorität",
-        group: "Zielgruppenarchitektur und Priorisierung",
-        description: "Reihenfolge und Gewichtung der Zielgruppen",
-        helpText:
-          "Ordnen Sie die Zielgruppen nach Priorität und begründen Sie die Reihenfolge.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "homepage_vs_landingpages",
-        label: "Homepage vs. Landingpages",
-        group: "Zielgruppenarchitektur und Priorisierung",
-        description: "Aufgabenteilung zwischen Startseite und Landingpages",
-        helpText:
-          "Legen Sie fest, welche Aufgabe die Startseite übernimmt und was auf Landingpages gehört.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "secondary_content_landingpages",
-        label: "Sekundäre Inhalte und separate Landingpage-Logik",
-        group: "Zielgruppenarchitektur und Priorisierung",
-        description: "Umgang mit nachgelagerten Inhalten",
-        helpText:
-          "Beschreiben Sie, welche Inhalte bewusst separat geführt werden und nach welcher Logik.",
-        required: false,
-      },
-      {
-        key: "product_matrix",
-        label: "Produktmatrix-Ableitung",
-        group: "Zielgruppenarchitektur und Priorisierung",
-        description: "Ableitung des Angebots aus der Zielgruppenarchitektur",
-        helpText:
-          "Zeigen Sie, wie sich das Produkt- und Leistungsangebot aus den Zielgruppen ableitet.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "industry_landingpages",
-        label: "Branchenlandingpages",
-        group: "Zielgruppenarchitektur und Priorisierung",
-        description: "Branchenspezifische Einstiegsseiten",
-        helpText:
-          "Halten Sie fest, für welche Branchen eigene Landingpages vorgesehen sind und warum.",
-        required: false,
-      },
-
-      {
-        key: "website_role",
-        label: "Website-Rolle",
-        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
-        description: "Aufgabe der Website im Gesamtsystem",
-        helpText:
-          "Beschreiben Sie, welche Rolle die Website übernimmt — Einstiegstor, Beratung, Abschluss oder Kombination.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "homepage_structure",
-        label: "Empfohlene Startseiten-Struktur",
-        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
-        description: "Empfohlener Aufbau der Startseite",
-        helpText:
-          "Skizzieren Sie die empfohlene Abfolge der Startseiten-Abschnitte.",
-        required: false,
-      },
-      {
-        key: "ai_maturity_sales_model",
-        label: "KI-Reifegrad und Vertriebsmodell",
-        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
-        description: "Reifegrad der KI-Unterstützung und Vertriebslogik",
-        helpText:
-          "Ordnen Sie ein, wie weit KI-Unterstützung geht und wie sie mit dem Vertriebsmodell zusammenspielt.",
-        required: false,
-      },
-      {
-        key: "ai_assistant_tasks",
-        label: "Aufgaben des KI-Assistenten",
-        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
-        description: "Was der Assistent übernimmt — und was nicht",
-        helpText:
-          "Benennen Sie die Aufgaben des KI-Assistenten und die bewusst ausgeschlossenen Themen.",
+          "Wofür ist diese Marke zuständig? Was übernehmen andere Marken? Wann erfolgt ein Übergang zu einer anderen Marke?",
         guidingQuestions: [
-          "Welche Fragen beantwortet der Assistent eigenständig?",
-          "Wo endet seine Zuständigkeit?",
-        ],
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "human_handover",
-        label: "Human-Handover-Punkte",
-        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
-        description: "Übergabe an Menschen",
-        helpText:
-          "Legen Sie fest, an welchen Punkten zwingend an eine Person übergeben wird (z.B. individuelle Beratung, Beschwerden, Krisen, Vertragsfragen).",
-        guidingQuestions: [
-          "Bei welchen Anliegen ist eine persönliche Betreuung verpflichtend?",
-          "Wie läuft die Übergabe konkret ab?",
+          "Wo verläuft die Grenze zu den Schwestermarken?",
+          "Bei welchem Bedarf wird an eine andere Marke übergeben?",
         ],
         required: true,
         publishRequired: true,
         guidedModeStep: 8,
+        help: {
+          fillHelp:
+            "Klare Zuordnung und benannte Übergabepunkte zwischen den Marken der Gruppe.",
+          example:
+            "Akademische Abschlüsse laufen über die Hochschule; berufliche Zertifikate verantwortet diese Marke. Übergang bei Anrechnungswunsch.",
+          badExample:
+            "Reine Aufzählung der anderen Marken ohne Aussage zur Abgrenzung.",
+        },
+      },
+      {
+        key: "brand_principles",
+        label: "Markenprinzipien und No-Gos",
+        group: "Abgrenzung und Markenführung",
+        description: "Dauerhafte Grundsätze und ausdrückliche Ausschlüsse",
+        helpText:
+          "Welche dauerhaften Grundsätze gelten für die Marke? Welche Darstellungen, Versprechen oder Vermischungen sind ausdrücklich ausgeschlossen?",
+        guidingQuestions: [
+          "Welche Grundsätze gelten unabhängig von Kampagne und Kanal?",
+          "Welche Aussagen oder Vermischungen sind ausgeschlossen?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 9,
+        softLimitItems: 12,
+        help: {
+          fillHelp:
+            "Grundsätze und No-Gos als Aufzählung — maximal zwölf Punkte.",
+          example:
+            "Keine Erfolgsgarantien; keine Vermischung von Hochschul- und Zertifikatsabschlüssen in der Darstellung.",
+          badExample:
+            "Formulierungsregeln und Wortlisten — diese gehören in die Kommunikations- und Sprachleitplanken.",
+        },
       },
 
+      // ---------- Feldgruppe 4: Markenausdruck ----------
       {
-        key: "channel_strategy",
-        label: "Kanalstrategie",
-        group: "Kanalstrategie und Maßnahmen",
-        description: "Eingesetzte Kanäle und ihre Rollen",
+        key: "guiding_idea",
+        label: "Leitidee",
+        group: "Markenausdruck",
+        description: "Der gedankliche Kern der Marke",
         helpText:
-          "Beschreiben Sie die genutzten Kanäle und welche Aufgabe jeder Kanal übernimmt.",
+          "Welche Leitidee hält Haltung und Angebot der Marke zusammen?",
         required: false,
         requirement: "recommended",
+        softLimitChars: 400,
+        help: {
+          fillHelp: "Ein bis zwei Sätze, die den gedanklichen Kern fassen.",
+          example: "Entwicklung beginnt dort, wo Menschen bereits stehen.",
+          badExample: "Ausformulierte Kampagnentexte.",
+        },
       },
       {
-        key: "ai_search_answer_engines",
-        label: "AI Search / Answer Engines",
-        group: "Kanalstrategie und Maßnahmen",
-        description: "Sichtbarkeit in KI-gestützten Suchsystemen",
+        key: "recommended_claim",
+        label: "Hauptclaim",
+        group: "Markenausdruck",
+        description: "Der verbindliche Hauptclaim der Marke",
         helpText:
-          "Halten Sie fest, wie die Marke in Answer Engines auffindbar und korrekt zitierfähig ist.",
+          "Wie lautet der Hauptclaim der Marke? Weitere Claim-Varianten werden auf der Kommunikationsseite gepflegt.",
         required: false,
+        requirement: "recommended",
+        softLimitChars: 160,
+        help: {
+          fillHelp: "Nur der Hauptclaim, wörtlich.",
+          example: "Menschen entwickeln. Zukunft möglich machen.",
+          badExample:
+            "Ein ganzes Claim-Set mit Varianten je Anlass — dieses gehört auf die Kommunikationsseite.",
+        },
       },
       {
-        key: "campaign_clusters",
-        label: "Empfohlene Kampagnen-Cluster",
-        group: "Kanalstrategie und Maßnahmen",
-        description: "Thematische Bündel für Kampagnen",
+        key: "tonality",
+        label: "Tonalitätskern",
+        group: "Markenausdruck",
+        description: "Die dauerhaft geltenden Tonalitätsmerkmale",
         helpText:
-          "Gruppieren Sie Kampagnenthemen zu Clustern mit jeweiligem Ziel.",
-        required: false,
-      },
-      {
-        key: "example_ads",
-        label: "Beispielanzeigen",
-        group: "Kanalstrategie und Maßnahmen",
-        description: "Konkrete Anzeigenbeispiele",
-        helpText:
-          "Hinterlegen Sie Beispieltexte als Referenz für Tonalität und Argumentation.",
-        required: false,
+          "Beschreiben Sie die dauerhaft geltenden vier bis sechs Tonalitätsmerkmale. Ausführliche Sprachleitplanken werden auf einer separaten Seite gepflegt.",
+        guidingQuestions: [
+          "Welche vier bis sechs Merkmale beschreiben die Ansprache dauerhaft?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 10,
+        softLimitItems: 6,
+        help: {
+          fillHelp:
+            "Vier bis sechs Merkmale als kurze Aufzählung — keine ausformulierten Regeln.",
+          example: "Sachlich; ermutigend; konkret; auf Augenhöhe.",
+          badExample:
+            "Bevorzugte und verbotene Begriffe, Anredeform, Satzbauregeln — das gehört in die Sprachleitplanken.",
+        },
       },
 
-      {
-        key: "b2b_b2c_b2g",
-        label: "B2B-/B2C-/B2G-Abgrenzung",
-        group: "StudyGuide-/Marketing-Betrieb und Prioritäten",
-        description: "Abgrenzung der Geschäftslogiken",
-        helpText:
-          "Grenzen Sie ab, welche Inhalte und Wege für Unternehmen, Privatpersonen und öffentliche Auftraggeber gelten.",
-        required: false,
-        requirement: "recommended",
-      },
-      {
-        key: "rollout_sequence",
-        label: "Strategische Aufbaufolge",
-        group: "StudyGuide-/Marketing-Betrieb und Prioritäten",
-        description: "Reihenfolge der Umsetzung",
-        helpText:
-          "Beschreiben Sie, in welcher Reihenfolge die Bausteine aufgebaut werden.",
-        required: false,
-      },
-      {
-        key: "success_levers",
-        label: "Erfolgshebel und Umsetzungssicherung",
-        group: "StudyGuide-/Marketing-Betrieb und Prioritäten",
-        description: "Wirksamkeit und Absicherung der Umsetzung",
-        helpText:
-          "Benennen Sie die wesentlichen Hebel und wie die Umsetzung nachgehalten wird.",
-        required: false,
-        requirement: "recommended",
-      },
-
+      // ---------- Feldgruppe 5: Mitgeltende Grundlagen ----------
       {
         key: "references",
-        label: "Quellen, Referenzen und mitgeltende Gruppenstandards",
-        description: "Zugrundeliegende Dokumente und Gruppenvorgaben",
+        label: "Mitgeltende Seiten und Standards",
+        group: "Mitgeltende Grundlagen",
+        description: "Verknüpfte Standards statt wiederholter Inhalte",
         helpText:
-          "Verknüpfen Sie Markenhandbuch, Gruppenstandards und weitere mitgeltende Dokumente.",
+          "Verknüpfen Sie die mitgeltenden Seiten — z.B. gruppenweite Markenarchitektur, Zielgruppen- und Segmentierungslogik, Kommunikations- und Sprachleitplanken, Website- und Journey-Architektur, KI-/StudyGuide-/Handover-Standard, Go-to-Market-Leitplanken sowie Förder- und Finanzierungslogik. Inhalte nicht erneut ausformulieren.",
         required: false,
         requirement: "recommended",
+        help: {
+          fillHelp:
+            "Verlinken Sie bestehende Seiten über die Auswahl, statt Inhalte zu kopieren.",
+          example: "Verlinkung auf „Kommunikations- und Sprachleitplanken“.",
+          badExample:
+            "Vollständige Wiederholung der verlinkten Inhalte in diesem Feld.",
+        },
       },
     ],
     publicationRules: {
       minimumSections: [
         "strategic_decision",
+        "brand_purpose",
         "brand_role",
+        "brand_mandate",
         "primary_target_groups",
         "core_promise",
-        "guiding_idea",
+        "service_logic",
+        "brand_delimitation",
+        "brand_principles",
         "tonality",
-        "language_guardrails",
-        "human_handover",
       ],
-      minimumMetadata: ["owner"],
+      minimumMetadata: ["owner", "brand_name", "brand_level"],
       minSectionContentLength: 30,
     },
     variants: [
       {
         key: "blank",
         label: "Schlank",
-        description: "Markenbasis und Sprachleitplanken — für eine schnelle Erstfassung",
+        description: "Strategischer Kern und Zielgruppen — für eine schnelle Erstfassung",
         variantCategory: "schlank",
         prefilledSections: [
           "strategic_decision",
+          "brand_purpose",
           "brand_role",
           "primary_target_groups",
           "core_promise",
-          "guiding_idea",
-          "tonality",
-          "language_guardrails",
         ],
       },
       {
         key: "full",
         label: "Vollständiges Markenprofil",
         description:
-          "Alle Abschnitte inklusive Claim-Set, Zielgruppenarchitektur, Website-/KI-Architektur und Kanalstrategie",
+          "Alle verbindlichen Felder inklusive Mandat, Abgrenzung, Markenprinzipien und Markenausdruck",
         variantCategory: "standard",
         prefilledSections: [
           "strategic_decision",
+          "brand_purpose",
           "brand_role",
+          "brand_mandate",
           "primary_target_groups",
           "core_promise",
+          "service_logic",
+          "brand_delimitation",
+          "brand_principles",
           "guiding_idea",
           "recommended_claim",
-          "campaign_line",
           "tonality",
-          "claim_set",
-          "campaign_motifs",
-          "language_guardrails",
-          "audience_core_message",
-          "audience_priorities",
-          "homepage_vs_landingpages",
-          "secondary_content_landingpages",
-          "product_matrix",
-          "industry_landingpages",
-          "website_role",
-          "homepage_structure",
-          "ai_maturity_sales_model",
-          "ai_assistant_tasks",
-          "human_handover",
-          "channel_strategy",
-          "ai_search_answer_engines",
-          "campaign_clusters",
-          "example_ads",
-          "b2b_b2c_b2g",
-          "rollout_sequence",
-          "success_levers",
           "references",
         ],
       },
     ],
   },
+
 };
 
 export const ALL_TEMPLATE_TYPES = Object.keys(
@@ -3893,6 +3860,29 @@ export function getMetadataGroups(
   }
 
   return groups;
+}
+
+/**
+ * Liefert die Vorbelegungen (defaultValue) eines Seitentyps für alle
+ * Metadatenfelder, die im übergebenen Datensatz noch leer sind.
+ * Bereits gesetzte Werte werden nie überschrieben.
+ */
+export function getMetadataDefaults(
+  type: string,
+  current: Record<string, unknown> | null | undefined,
+): Record<string, string> {
+  const def = getPageType(type);
+  if (!def) return {};
+
+  const defaults: Record<string, string> = {};
+  for (const field of def.metadataFields) {
+    if (!field.defaultValue) continue;
+    const val = current?.[field.key];
+    if (val === undefined || val === null || val === "") {
+      defaults[field.key] = field.defaultValue;
+    }
+  }
+  return defaults;
 }
 
 export const METADATA_GROUP_LABELS: Record<MetadataGroupKey, string> = {
