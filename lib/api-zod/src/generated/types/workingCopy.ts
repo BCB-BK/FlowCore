@@ -34,4 +34,6 @@ export interface WorkingCopy {
   submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst) */
+  authorDisplayName?: string | null;
 }

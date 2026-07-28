@@ -86,6 +86,7 @@ import type {
   GraphPerson,
   HealthStatus,
   LinkGlossaryTermBody,
+  ListActiveSessions200,
   ListBackupRunsParams,
   ListDeletionRequestsParams,
   ListGlossaryTermsParams,
@@ -153,6 +154,7 @@ import type {
   TeamsContextResponse,
   TeamsSsoBody,
   TeamsSsoResponse,
+  TerminateSession200,
   TrackMediaUsageBody,
   TrackSearchClick201,
   TrackSearchClickBody,
@@ -13314,6 +13316,167 @@ export function useRunConsistencyCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Returns all currently active (non-expired) user sessions. Requires manage_settings permission.
+ * @summary List active user sessions
+ */
+export const getListActiveSessionsUrl = () => {
+  return `/api/admin/sessions`;
+};
+
+export const listActiveSessions = async (
+  options?: RequestInit,
+): Promise<ListActiveSessions200> => {
+  return customFetch<ListActiveSessions200>(getListActiveSessionsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListActiveSessionsQueryKey = () => {
+  return [`/api/admin/sessions`] as const;
+};
+
+export const getListActiveSessionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listActiveSessions>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listActiveSessions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListActiveSessionsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listActiveSessions>>
+  > = ({ signal }) => listActiveSessions({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listActiveSessions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListActiveSessionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listActiveSessions>>
+>;
+export type ListActiveSessionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List active user sessions
+ */
+
+export function useListActiveSessions<
+  TData = Awaited<ReturnType<typeof listActiveSessions>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listActiveSessions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListActiveSessionsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Immediately destroys a specific session by ID. Requires manage_settings permission.
+ * @summary Terminate a user session
+ */
+export const getTerminateSessionUrl = (sid: string) => {
+  return `/api/admin/sessions/${sid}`;
+};
+
+export const terminateSession = async (
+  sid: string,
+  options?: RequestInit,
+): Promise<TerminateSession200> => {
+  return customFetch<TerminateSession200>(getTerminateSessionUrl(sid), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getTerminateSessionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof terminateSession>>,
+    TError,
+    { sid: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof terminateSession>>,
+  TError,
+  { sid: string },
+  TContext
+> => {
+  const mutationKey = ["terminateSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof terminateSession>>,
+    { sid: string }
+  > = (props) => {
+    const { sid } = props ?? {};
+
+    return terminateSession(sid, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TerminateSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof terminateSession>>
+>;
+
+export type TerminateSessionMutationError = ErrorType<void>;
+
+/**
+ * @summary Terminate a user session
+ */
+export const useTerminateSession = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof terminateSession>>,
+    TError,
+    { sid: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof terminateSession>>,
+  TError,
+  { sid: string },
+  TContext
+> => {
+  return useMutation(getTerminateSessionMutationOptions(options));
+};
 
 /**
  * Returns all release records ordered by creation date

@@ -17,7 +17,8 @@ export type TemplateType =
   | "meeting_protocol"
   | "training_resource"
   | "audit_object"
-  | "doc_registry";
+  | "doc_registry"
+  | "brand_profile";
 
 export type MetadataGroupKey =
   | "identity"
@@ -66,6 +67,12 @@ export interface PageTypeSection {
   errorMessage?: string;
   help?: FieldHelp;
   compoundType?: "sipoc_cards" | "raci_matrix" | "qa_repeater" | "term_repeater" | "check_items" | "competency_areas";
+  /**
+   * Optionale Gruppenüberschrift. Abschnitte mit identischem Gruppennamen
+   * werden im Layout unter einer gemeinsamen Überschrift zusammengefasst
+   * (zweistufige Gliederung). Abschnitte ohne Gruppe stehen für sich.
+   */
+  group?: string;
 }
 
 export type VariantCategory = "schlank" | "standard" | "qm_detail" | "grafisch" | "container";
@@ -432,6 +439,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "training_resource",
       "audit_object",
       "doc_registry",
+      "brand_profile",
     ],
     recommendedChildTypes: [
       "process_page_text",
@@ -710,6 +718,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "training_resource",
       "audit_object",
       "doc_registry",
+      "brand_profile",
     ],
     recommendedChildTypes: [
       "core_process_overview",
@@ -3326,7 +3335,9 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "role_profile",
       "system_documentation",
       "interface_description",
+      "brand_profile",
     ],
+    recommendedChildTypes: ["brand_profile", "policy", "meeting_protocol"],
     supportsClusterGroups: true,
     supportsChildPages: true,
     canBeRootNode: false,
@@ -3360,6 +3371,484 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description: "Leeres Dokumentationsregister",
         variantCategory: "schlank",
         prefilledSections: [],
+      },
+    ],
+  },
+
+  brand_profile: {
+    type: "brand_profile",
+    label: "Brand Profile",
+    labelDe: "Markenprofil",
+    description:
+      "Strategic brand profile with positioning, claim set, audience architecture, channel strategy and governance",
+    descriptionDe:
+      "Strategisches Markenprofil mit Positionierung, Claim-Set, Zielgruppenarchitektur, Kanalstrategie und Governance",
+    icon: "Gem",
+    color: "hsl(117, 45%, 32%)",
+    category: "governance",
+    displayProfile: "governance_document",
+    displayIdPrefix: "MP",
+    helpText:
+      "Beschreiben Sie die strategische Markenbasis: Markenrolle, Zielgruppen, Kernversprechen, Claim-Set, Sprachleitplanken sowie Website-, KI- und Kanalstrategie. Grundlage für Marketing, StudyGuide und KI-Assistenten.",
+    allowedChildTypes: [
+      "policy",
+      "faq",
+      "use_case",
+      "work_instruction",
+      "checklist",
+      "doc_registry",
+    ],
+    recommendedChildTypes: ["policy", "faq"],
+    supportsClusterGroups: false,
+    supportsChildPages: true,
+    canBeRootNode: false,
+    canBeReferenceHub: false,
+    canBeGovernanceContainer: true,
+    usageHint:
+      "Verbindliches Markenprofil einer Einzelmarke oder der Dachmarke. Strategische Leitentscheidung, Positionierung und Kommunikationsleitplanken an einer Stelle.",
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS,
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "brand_name",
+        label: "Marke",
+        type: "text",
+        required: false,
+        requirement: "recommended",
+        group: "identity",
+        description: "Marke bzw. Bildungsinstitution, die dieses Profil beschreibt",
+        help: {
+          fillHelp:
+            "Tragen Sie die Marke ein, für die dieses Profil gilt (Dachmarke oder Einzelmarke).",
+          example: "Academy of Sports",
+        },
+      },
+      {
+        key: "brand_level",
+        label: "Markenebene",
+        type: "enum",
+        required: false,
+        requirement: "recommended",
+        group: "classification",
+        options: ["dachmarke", "einzelmarke", "submarke", "kampagnenmarke"],
+        description: "Einordnung in die Markenarchitektur der Gruppe",
+      },
+    ],
+    sections: [
+      {
+        key: "strategic_decision",
+        label: "Strategische Leitentscheidung",
+        description: "Die übergeordnete Weichenstellung für diese Marke",
+        helpText:
+          "Halten Sie die zentrale strategische Entscheidung fest, aus der sich alle weiteren Festlegungen ableiten.",
+        guidingQuestions: [
+          "Welche grundsätzliche Entscheidung wurde für diese Marke getroffen?",
+          "Welche Alternativen wurden verworfen und warum?",
+          "Woraus leitet sich die Entscheidung ab (Marktlage, Portfolio, Gruppenstrategie)?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 1,
+      },
+
+      {
+        key: "brand_role",
+        label: "Markenrolle",
+        group: "Markenbasis",
+        description: "Rolle der Marke innerhalb der Gruppe",
+        helpText:
+          "Beschreiben Sie, welche Rolle die Marke im Markenportfolio übernimmt und wie sie sich zu den anderen Marken verhält.",
+        guidingQuestions: [
+          "Welche Funktion hat die Marke in der Markenarchitektur?",
+          "Wie grenzt sie sich von den Schwestermarken ab?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 2,
+      },
+      {
+        key: "primary_target_groups",
+        label: "Primäre Zielgruppen",
+        group: "Markenbasis",
+        description: "Wen adressiert die Marke in erster Linie?",
+        helpText:
+          "Benennen Sie die primären Zielgruppen konkret — nach Rolle, Situation und Bedarf, nicht nur nach Demografie.",
+        guidingQuestions: [
+          "Welche Personen oder Organisationen adressiert die Marke zuerst?",
+          "Welchen Bedarf oder welche Ausgangssituation haben sie?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 3,
+      },
+      {
+        key: "core_promise",
+        label: "Kernversprechen",
+        group: "Markenbasis",
+        description: "Was sagt die Marke verbindlich zu?",
+        helpText:
+          "Formulieren Sie das Versprechen, das die Marke einlösen muss — konkret und überprüfbar.",
+        guidingQuestions: [
+          "Was können Kundinnen und Kunden verlässlich erwarten?",
+          "Woran lässt sich die Einlösung messen?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 4,
+      },
+      {
+        key: "guiding_idea",
+        label: "Leitidee",
+        group: "Markenbasis",
+        description: "Der gedankliche Kern der Marke",
+        helpText:
+          "Beschreiben Sie die Leitidee, die Haltung und Angebot der Marke zusammenhält.",
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 5,
+      },
+      {
+        key: "recommended_claim",
+        label: "Empfohlener Claim",
+        group: "Markenbasis",
+        description: "Der empfohlene Hauptclaim",
+        helpText:
+          "Halten Sie den empfohlenen Claim fest und begründen Sie ihn kurz.",
+        guidingQuestions: [
+          "Wie lautet der Claim wörtlich?",
+          "Warum trägt er die Positionierung?",
+        ],
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "campaign_line",
+        label: "Kampagnenlinie",
+        group: "Markenbasis",
+        description: "Übergreifende Linie der Kommunikation",
+        helpText:
+          "Beschreiben Sie die durchgängige Kampagnenlinie, an der sich einzelne Maßnahmen ausrichten.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "tonality",
+        label: "Tonalität",
+        group: "Markenbasis",
+        description: "Wie spricht die Marke?",
+        helpText:
+          "Beschreiben Sie Tonfall und Haltung in der Ansprache — inklusive dessen, was bewusst vermieden wird.",
+        guidingQuestions: [
+          "Welche Haltung transportiert die Ansprache?",
+          "Welche Tonalität ist ausgeschlossen?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 6,
+      },
+
+      {
+        key: "claim_set",
+        label: "Claim-Set",
+        group: "Claim-Set und Kampagnenmotive",
+        description: "Claim-Varianten für unterschiedliche Anlässe",
+        helpText:
+          "Sammeln Sie die abgestimmten Claim-Varianten mit ihrem jeweiligen Einsatzzweck.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "campaign_motifs",
+        label: "Kampagnenmotive / Kartenlogik",
+        group: "Claim-Set und Kampagnenmotive",
+        description: "Motivwelt und Aufbaulogik der Kommunikationsmittel",
+        helpText:
+          "Beschreiben Sie die Motive und die Logik, nach der Karten bzw. Werbemittel aufgebaut werden.",
+        required: false,
+        requirement: "recommended",
+      },
+
+      {
+        key: "language_guardrails",
+        label: "Sprachleitplanken",
+        description: "Verbindliche Regeln für Sprache und Begriffe",
+        helpText:
+          "Legen Sie bevorzugte Begriffe, zu vermeidende Formulierungen und die Anrede fest.",
+        guidingQuestions: [
+          "Welche Begriffe werden bevorzugt verwendet?",
+          "Welche Formulierungen sind zu vermeiden?",
+          "Welche Anrede gilt (Sie/Du)?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 7,
+      },
+
+      {
+        key: "audience_core_message",
+        label: "Kernaussage",
+        group: "Zielgruppenarchitektur und Priorisierung",
+        description: "Leitsatz der Zielgruppenarchitektur",
+        helpText:
+          "Fassen Sie in einem Satz zusammen, wie die Marke ihre Zielgruppen ordnet und priorisiert.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "audience_priorities",
+        label: "Zielgruppen nach Priorität",
+        group: "Zielgruppenarchitektur und Priorisierung",
+        description: "Reihenfolge und Gewichtung der Zielgruppen",
+        helpText:
+          "Ordnen Sie die Zielgruppen nach Priorität und begründen Sie die Reihenfolge.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "homepage_vs_landingpages",
+        label: "Homepage vs. Landingpages",
+        group: "Zielgruppenarchitektur und Priorisierung",
+        description: "Aufgabenteilung zwischen Startseite und Landingpages",
+        helpText:
+          "Legen Sie fest, welche Aufgabe die Startseite übernimmt und was auf Landingpages gehört.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "secondary_content_landingpages",
+        label: "Sekundäre Inhalte und separate Landingpage-Logik",
+        group: "Zielgruppenarchitektur und Priorisierung",
+        description: "Umgang mit nachgelagerten Inhalten",
+        helpText:
+          "Beschreiben Sie, welche Inhalte bewusst separat geführt werden und nach welcher Logik.",
+        required: false,
+      },
+      {
+        key: "product_matrix",
+        label: "Produktmatrix-Ableitung",
+        group: "Zielgruppenarchitektur und Priorisierung",
+        description: "Ableitung des Angebots aus der Zielgruppenarchitektur",
+        helpText:
+          "Zeigen Sie, wie sich das Produkt- und Leistungsangebot aus den Zielgruppen ableitet.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "industry_landingpages",
+        label: "Branchenlandingpages",
+        group: "Zielgruppenarchitektur und Priorisierung",
+        description: "Branchenspezifische Einstiegsseiten",
+        helpText:
+          "Halten Sie fest, für welche Branchen eigene Landingpages vorgesehen sind und warum.",
+        required: false,
+      },
+
+      {
+        key: "website_role",
+        label: "Website-Rolle",
+        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
+        description: "Aufgabe der Website im Gesamtsystem",
+        helpText:
+          "Beschreiben Sie, welche Rolle die Website übernimmt — Einstiegstor, Beratung, Abschluss oder Kombination.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "homepage_structure",
+        label: "Empfohlene Startseiten-Struktur",
+        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
+        description: "Empfohlener Aufbau der Startseite",
+        helpText:
+          "Skizzieren Sie die empfohlene Abfolge der Startseiten-Abschnitte.",
+        required: false,
+      },
+      {
+        key: "ai_maturity_sales_model",
+        label: "KI-Reifegrad und Vertriebsmodell",
+        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
+        description: "Reifegrad der KI-Unterstützung und Vertriebslogik",
+        helpText:
+          "Ordnen Sie ein, wie weit KI-Unterstützung geht und wie sie mit dem Vertriebsmodell zusammenspielt.",
+        required: false,
+      },
+      {
+        key: "ai_assistant_tasks",
+        label: "Aufgaben des KI-Assistenten",
+        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
+        description: "Was der Assistent übernimmt — und was nicht",
+        helpText:
+          "Benennen Sie die Aufgaben des KI-Assistenten und die bewusst ausgeschlossenen Themen.",
+        guidingQuestions: [
+          "Welche Fragen beantwortet der Assistent eigenständig?",
+          "Wo endet seine Zuständigkeit?",
+        ],
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "human_handover",
+        label: "Human-Handover-Punkte",
+        group: "Website-, KI-, StudyGuide- und Journey-Architektur",
+        description: "Übergabe an Menschen",
+        helpText:
+          "Legen Sie fest, an welchen Punkten zwingend an eine Person übergeben wird (z.B. individuelle Beratung, Beschwerden, Krisen, Vertragsfragen).",
+        guidingQuestions: [
+          "Bei welchen Anliegen ist eine persönliche Betreuung verpflichtend?",
+          "Wie läuft die Übergabe konkret ab?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 8,
+      },
+
+      {
+        key: "channel_strategy",
+        label: "Kanalstrategie",
+        group: "Kanalstrategie und Maßnahmen",
+        description: "Eingesetzte Kanäle und ihre Rollen",
+        helpText:
+          "Beschreiben Sie die genutzten Kanäle und welche Aufgabe jeder Kanal übernimmt.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "ai_search_answer_engines",
+        label: "AI Search / Answer Engines",
+        group: "Kanalstrategie und Maßnahmen",
+        description: "Sichtbarkeit in KI-gestützten Suchsystemen",
+        helpText:
+          "Halten Sie fest, wie die Marke in Answer Engines auffindbar und korrekt zitierfähig ist.",
+        required: false,
+      },
+      {
+        key: "campaign_clusters",
+        label: "Empfohlene Kampagnen-Cluster",
+        group: "Kanalstrategie und Maßnahmen",
+        description: "Thematische Bündel für Kampagnen",
+        helpText:
+          "Gruppieren Sie Kampagnenthemen zu Clustern mit jeweiligem Ziel.",
+        required: false,
+      },
+      {
+        key: "example_ads",
+        label: "Beispielanzeigen",
+        group: "Kanalstrategie und Maßnahmen",
+        description: "Konkrete Anzeigenbeispiele",
+        helpText:
+          "Hinterlegen Sie Beispieltexte als Referenz für Tonalität und Argumentation.",
+        required: false,
+      },
+
+      {
+        key: "b2b_b2c_b2g",
+        label: "B2B-/B2C-/B2G-Abgrenzung",
+        group: "StudyGuide-/Marketing-Betrieb und Prioritäten",
+        description: "Abgrenzung der Geschäftslogiken",
+        helpText:
+          "Grenzen Sie ab, welche Inhalte und Wege für Unternehmen, Privatpersonen und öffentliche Auftraggeber gelten.",
+        required: false,
+        requirement: "recommended",
+      },
+      {
+        key: "rollout_sequence",
+        label: "Strategische Aufbaufolge",
+        group: "StudyGuide-/Marketing-Betrieb und Prioritäten",
+        description: "Reihenfolge der Umsetzung",
+        helpText:
+          "Beschreiben Sie, in welcher Reihenfolge die Bausteine aufgebaut werden.",
+        required: false,
+      },
+      {
+        key: "success_levers",
+        label: "Erfolgshebel und Umsetzungssicherung",
+        group: "StudyGuide-/Marketing-Betrieb und Prioritäten",
+        description: "Wirksamkeit und Absicherung der Umsetzung",
+        helpText:
+          "Benennen Sie die wesentlichen Hebel und wie die Umsetzung nachgehalten wird.",
+        required: false,
+        requirement: "recommended",
+      },
+
+      {
+        key: "references",
+        label: "Quellen, Referenzen und mitgeltende Gruppenstandards",
+        description: "Zugrundeliegende Dokumente und Gruppenvorgaben",
+        helpText:
+          "Verknüpfen Sie Markenhandbuch, Gruppenstandards und weitere mitgeltende Dokumente.",
+        required: false,
+        requirement: "recommended",
+      },
+    ],
+    publicationRules: {
+      minimumSections: [
+        "strategic_decision",
+        "brand_role",
+        "primary_target_groups",
+        "core_promise",
+        "guiding_idea",
+        "tonality",
+        "language_guardrails",
+        "human_handover",
+      ],
+      minimumMetadata: ["owner"],
+      minSectionContentLength: 30,
+    },
+    variants: [
+      {
+        key: "blank",
+        label: "Schlank",
+        description: "Markenbasis und Sprachleitplanken — für eine schnelle Erstfassung",
+        variantCategory: "schlank",
+        prefilledSections: [
+          "strategic_decision",
+          "brand_role",
+          "primary_target_groups",
+          "core_promise",
+          "guiding_idea",
+          "tonality",
+          "language_guardrails",
+        ],
+      },
+      {
+        key: "full",
+        label: "Vollständiges Markenprofil",
+        description:
+          "Alle Abschnitte inklusive Claim-Set, Zielgruppenarchitektur, Website-/KI-Architektur und Kanalstrategie",
+        variantCategory: "standard",
+        prefilledSections: [
+          "strategic_decision",
+          "brand_role",
+          "primary_target_groups",
+          "core_promise",
+          "guiding_idea",
+          "recommended_claim",
+          "campaign_line",
+          "tonality",
+          "claim_set",
+          "campaign_motifs",
+          "language_guardrails",
+          "audience_core_message",
+          "audience_priorities",
+          "homepage_vs_landingpages",
+          "secondary_content_landingpages",
+          "product_matrix",
+          "industry_landingpages",
+          "website_role",
+          "homepage_structure",
+          "ai_maturity_sales_model",
+          "ai_assistant_tasks",
+          "human_handover",
+          "channel_strategy",
+          "ai_search_answer_engines",
+          "campaign_clusters",
+          "example_ads",
+          "b2b_b2c_b2g",
+          "rollout_sequence",
+          "success_levers",
+          "references",
+        ],
       },
     ],
   },

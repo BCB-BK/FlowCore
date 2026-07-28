@@ -29,4 +29,5 @@ export const ContentNodeTemplateType = {
   training_resource: "training_resource",
   audit_object: "audit_object",
   doc_registry: "doc_registry",
+  brand_profile: "brand_profile",
 } as const;

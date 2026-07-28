@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { getPageType } from "@/lib/types";
 import { EditableSectionCard } from "../EditableSectionCard";
 import { BpmnDiagramSection } from "../BpmnDiagramSection";
@@ -304,20 +305,34 @@ export function GenericLayout({
     return null;
   }
 
+  const rowGroup = (row: LayoutRow): string | undefined =>
+    Array.isArray(row) ? row[0]?.group : row.group;
+
   return (
     <div className="space-y-4">
       {visibleRows.map((row, idx) => {
         const key = Array.isArray(row) ? row.map((f) => f.key).join("-") : row.key;
+        // Gruppenüberschrift nur beim ersten Feld einer Gruppe ausgeben
+        const group = rowGroup(row);
+        const showGroupHeading =
+          !!group && (idx === 0 || rowGroup(visibleRows[idx - 1]) !== group);
         return (
-          <RowRenderer
-            key={key || idx}
-            row={row}
-            structuredFields={structuredFields}
-            onSectionSave={onSectionSave}
-            pageType={pageType}
-            nodeId={nodeId}
-            sectionDefs={sectionDefs}
-          />
+          <Fragment key={key || idx}>
+            {showGroupHeading && (
+              <div className="pt-3 first:pt-0">
+                <h3 className="text-sm font-semibold tracking-tight">{group}</h3>
+                <div className="mt-2 h-px bg-border" />
+              </div>
+            )}
+            <RowRenderer
+              row={row}
+              structuredFields={structuredFields}
+              onSectionSave={onSectionSave}
+              pageType={pageType}
+              nodeId={nodeId}
+              sectionDefs={sectionDefs}
+            />
+          </Fragment>
         );
       })}
 
