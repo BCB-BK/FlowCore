@@ -40,6 +40,9 @@ import {
   Loader2,
   AlertTriangle,
   FileText,
+  BookOpen,
+  FileJson,
+  ExternalLink,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY, type TemplateType } from "@/lib/types";
@@ -223,6 +226,42 @@ function StructureNode({
   );
 }
 
+/**
+ * Ein kopierbarer Wert. Adressen und Header werden abgetippt, wenn man sie
+ * nicht kopieren kann — und abgetippt wird falsch.
+ */
+function CopyRow({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-40 shrink-0 text-xs text-muted-foreground">
+        {label}
+      </span>
+      <code className="flex-1 truncate rounded bg-muted px-2 py-1.5 text-xs font-mono">
+        {value}
+      </code>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-7 w-7 shrink-0"
+        title="Kopieren"
+        onClick={() => {
+          navigator.clipboard.writeText(value).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          });
+        }}
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </Button>
+    </div>
+  );
+}
+
 function ScopeCheckboxGrid({
   options,
   selected,
@@ -279,6 +318,11 @@ export function IntegrationKeysTab() {
   const [copied, setCopied] = useState(false);
 
   const { data: roots } = useRootNodes();
+
+  // Die Basis-Adresse ist installationsabhängig — sie aus dem Browser zu
+  // nehmen erspart es, sie irgendwo zu pflegen.
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://<host>";
 
   const allPageTypes = useMemo(
     () =>
@@ -919,30 +963,48 @@ export function IntegrationKeysTab() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Anbindung</CardTitle>
+          <CardDescription>
+            Alles, was das Zielsystem braucht — Basis-Adresse, Header und die
+            Schnittstellenbeschreibung zum Import.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            Das Zielsystem übergibt den Schlüssel im Header{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              X-FlowCore-Api-Key
-            </code>
-            . Die Schnittstellenbeschreibung zum Import in Salesforce, Postman
-            oder die Power Platform liegt unter{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              /api/content/v1/openapi.json
-            </code>
-            .
-          </p>
-          <p>
-            Womit ein Schlüssel arbeitet, verrät{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              GET /api/content/v1/scope
-            </code>{" "}
-            — für den laufenden Abgleich gibt es{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">
-              GET /api/content/v1/changes?since=…
-            </code>
-            .
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <CopyRow label="Basis-Adresse" value={`${origin}/api/content`} />
+            <CopyRow label="Header" value="X-FlowCore-Api-Key: <Schlüssel>" />
+            <CopyRow
+              label="Erster Testaufruf"
+              value={`curl -H "X-FlowCore-Api-Key: <Schlüssel>" ${origin}/api/content/v1/scope`}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href="/docs?doc=30-CONTENT-API.md">
+                <BookOpen className="h-4 w-4 mr-1.5" />
+                Dokumentation öffnen
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <a
+                href="/api/content/v1/openapi.json"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FileJson className="h-4 w-4 mr-1.5" />
+                Schnittstellenbeschreibung (OpenAPI)
+                <ExternalLink className="h-3 w-3 ml-1.5" />
+              </a>
+            </Button>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Die Schnittstellenbeschreibung lässt sich direkt in Salesforce
+            (External Services), Postman, die Power Platform oder einen
+            Codegenerator importieren. Sie ist ohne Schlüssel abrufbar und
+            enthält keine Inhalte, nur die Form der Endpunkte.
           </p>
         </CardContent>
       </Card>

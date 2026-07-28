@@ -37,6 +37,10 @@
 - [Agent-Anweisung](./copilot-studio/flowcore-agent-instructions.md) — Kopiervorlage für die Instructions des Agenten inkl. Priorisierungslogik (authority_level, source_priority, decision_status, confidentiality)
 - [Testfragen](./copilot-studio/flowcore-testfragen.md) — Testfragen zur Abnahme (Positiv- und Negativfälle gegen Halluzination)
 
+## Schnittstellen
+
+- [30 – Content-API & Integrationsschlüssel](./30-CONTENT-API.md) — Lesender Zugriff für Fremdsysteme (Salesforce, Intranet, Portale): Freigabe nach Vertraulichkeit, Seitentypen, Kernprozessen und Einzelseiten, Endpunkte, Synchronisation, Fehlerbilder
+
 ## Benutzerhandbücher
 
 - [20 – Editor-Leitfaden](./20-EDITOR-GUIDE.md) — Seiten erstellen, Block-Editor, BPMN, Medien, KI-Assistent, Revisionen

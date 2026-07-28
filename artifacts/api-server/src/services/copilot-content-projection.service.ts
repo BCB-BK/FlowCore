@@ -152,6 +152,33 @@ function scopeStructuredFieldsToTemplate(
   return scoped;
 }
 
+/**
+ * Findet das Editor-Dokument einer Revision.
+ *
+ * Der Fließtext liegt heute in `structuredFields._editorContent`; das Feld
+ * `content` trägt die Metadaten der Seite. Ältere Revisionen haben das
+ * ProseMirror-Dokument dagegen direkt in `content`. Wird nur `content`
+ * serialisiert, bleibt der gesamte Fließtext aktueller Seiten im Export leer —
+ * betrifft Copilot-Index und Content-API gleichermaßen.
+ */
+function pickEditorDocument(
+  content: unknown,
+  structuredFields: unknown,
+): Record<string, unknown> | null {
+  if (isProseMirrorDoc(content)) return content;
+  const sf = (structuredFields ?? {}) as Record<string, unknown>;
+  if (isProseMirrorDoc(sf._editorContent)) return sf._editorContent;
+  return isRecord(content) ? content : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function isProseMirrorDoc(value: unknown): value is Record<string, unknown> {
+  return isRecord(value) && value.type === "doc";
+}
+
 export function deriveBrandScope(tags: string[]): string[] {
   const scope: string[] = [];
   for (const tag of tags) {
@@ -471,7 +498,7 @@ export async function projectPublishedPage(
     .limit(1);
 
   const { plaintext, markdown, media } = serializeProseMirrorContent(
-    revision.content ?? null,
+    pickEditorDocument(revision.content, revision.structuredFields),
   );
 
   const structuredFields = {

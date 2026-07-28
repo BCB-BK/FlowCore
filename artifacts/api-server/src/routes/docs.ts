@@ -105,6 +105,12 @@ const DOCS_CATALOG: DocEntry[] = [
       "User-Acceptance-Test-Protokoll: Abnahmetests, Testszenarien und Akzeptanzkriterien.",
   },
   {
+    filename: "30-CONTENT-API.md",
+    title: "Content-API & Integrationsschlüssel",
+    description:
+      "Lesender Zugriff für Fremdsysteme (Salesforce, Intranet, Portale): Freigabe zuschneiden, Schlüssel verwalten, Endpunkte, Synchronisation und Fehlerbilder.",
+  },
+  {
     filename: "00-INDEX.md",
     title: "Dokumentations-Index",
     description:
