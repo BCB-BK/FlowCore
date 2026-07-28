@@ -2,7 +2,12 @@ import { ConfidentialClientApplication } from "@azure/msal-node";
 import { appConfig } from "../lib/config";
 import { logger } from "../lib/logger";
 
-const ENTRA_SCOPES = ["openid", "profile", "email", "User.Read"];
+// Anmelde-Scopes stammen aus der Konfiguration (ENTRA_SCOPES). Sie enthalten
+// standardmäßig "Sites.Read.All", weil das Benutzertoken sonst keinerlei
+// SharePoint-Rechte trägt und benutzerbezogene SharePoint-Funktionen ins Leere
+// laufen. Ist die Berechtigung im Mandanten nicht erteilt, kann die Liste über
+// ENTRA_SCOPES reduziert werden.
+const ENTRA_SCOPES = appConfig.entraScopes;
 
 let msalClient: ConfidentialClientApplication | null = null;
 

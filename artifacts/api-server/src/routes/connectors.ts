@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Response } from "express";
 import { db } from "@workspace/db";
 import {
   sourceSystemsTable,
@@ -15,8 +15,10 @@ import {
   listDriveItems,
   getDriveItemMeta,
   acquireSystemToken,
+  SharePointAccessError,
 } from "../services/sharepoint.service";
 import { invalidateProviderCache } from "../services/storage.service";
+import { logger } from "../lib/logger";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -639,6 +641,29 @@ connectorsRouter.post(
   },
 );
 
+// Die Konnektor-Verwaltung ist die Stelle, an der FlowCore als Integration
+// auftritt: Hier darf auf das Anwendungstoken zurückgefallen werden, wenn das
+// Benutzertoken keine SharePoint-Berechtigung trägt.
+const CONNECTOR_BROWSE = { allowAppFallback: true } as const;
+
+/**
+ * Fehler aus Graph nicht verschlucken — eine leere Liste sieht in der
+ * Oberfläche wie "nichts gefunden" aus und verdeckt Berechtigungsprobleme.
+ */
+function sendSharePointError(res: Response, err: unknown): void {
+  if (err instanceof SharePointAccessError) {
+    res.status(502).json({
+      error: err.message,
+      graphStatus: err.status,
+      graphCode: err.graphCode,
+      triedIdentities: err.triedIdentities,
+    });
+    return;
+  }
+  logger.error({ err }, "Unerwarteter SharePoint-Fehler");
+  res.status(502).json({ error: "SharePoint-Zugriff fehlgeschlagen" });
+}
+
 connectorsRouter.get(
   "/sharepoint/sites",
   requireAuth,
@@ -646,8 +671,11 @@ connectorsRouter.get(
   async (req, res) => {
     const query = req.query.q as string | undefined;
     const accessToken = resolveGraphToken(req);
-    const sites = await listSites(accessToken, query);
-    res.json(sites);
+    try {
+      res.json(await listSites(accessToken, query, CONNECTOR_BROWSE));
+    } catch (err) {
+      sendSharePointError(res, err);
+    }
   },
 );
 
@@ -658,8 +686,11 @@ connectorsRouter.get(
   async (req, res) => {
     const siteId = req.params.siteId as string;
     const accessToken = resolveGraphToken(req);
-    const drives = await listDrives(accessToken, siteId);
-    res.json(drives);
+    try {
+      res.json(await listDrives(accessToken, siteId, CONNECTOR_BROWSE));
+    } catch (err) {
+      sendSharePointError(res, err);
+    }
   },
 );
 
@@ -671,8 +702,13 @@ connectorsRouter.get(
     const driveId = req.params.driveId as string;
     const folderId = req.query.folderId as string | undefined;
     const accessToken = resolveGraphToken(req);
-    const items = await listDriveItems(accessToken, driveId, folderId);
-    res.json(items);
+    try {
+      res.json(
+        await listDriveItems(accessToken, driveId, folderId, CONNECTOR_BROWSE),
+      );
+    } catch (err) {
+      sendSharePointError(res, err);
+    }
   },
 );
 
@@ -684,7 +720,12 @@ connectorsRouter.get(
     const driveId = req.params.driveId as string;
     const itemId = req.params.itemId as string;
     const accessToken = resolveGraphToken(req);
-    const item = await getDriveItemMeta(accessToken, driveId, itemId);
+    const item = await getDriveItemMeta(
+      accessToken,
+      driveId,
+      itemId,
+      CONNECTOR_BROWSE,
+    );
     if (!item) {
       res.status(404).json({ error: "Item not found" });
       return;

@@ -30,6 +30,7 @@ Alle Konfigurationswerte werden beim Start via Zod-Schema validiert (`artifacts/
 | `AUTH_DEV_MODE` | Entwicklungsmodus (deaktiviert Entra-Prüfung, wählt automatisch ersten aktiven Principal als Benutzer); nur mit `NODE_ENV=development` zulässig — in allen anderen Umgebungen bricht der Server beim Start ab. **Standard: `true` wenn `NODE_ENV=development`, sonst `false`** | `true` (dev) |
 | `APP_PUBLIC_URL` | Öffentliche Basis-URL der App (CORS-Origin, Quell-URLs für Copilot/Graph, Teams-Deep-Links) | Produktions-Fallback |
 | `ENTRA_REQUIRED_GROUP_ID` | Login auf Mitglieder dieser Entra-Gruppe beschränken | — (alle Tenant-Benutzer) |
+| `ENTRA_SCOPES` | Delegierte Graph-Berechtigungen, die beim Anmelden angefordert werden (kommagetrennt). `Sites.Read.All` ist nötig, damit benutzerbezogene SharePoint-Funktionen (Quellverweise, Dateiimport) auf Graph zugreifen können. Nur reduzieren, wenn der Mandant die Berechtigung nicht erteilt hat — sonst schlägt die Anmeldung mit einer Zustimmungsaufforderung fehl. | `openid,profile,email,User.Read,Sites.Read.All` |
 | `GRAPH_EXTERNAL_CONNECTION_ID` | ID der Graph-External-Connection (Copilot-Index) | `flowcorewiki` |
 | `GRAPH_EXTERNAL_CONNECTION_NAME` | Anzeigename der Graph-Connection | `FlowCore Wiki` |
 | `GRAPH_EXTERNAL_CONNECTION_DESCRIPTION` | Beschreibung der Graph-Connection | — |

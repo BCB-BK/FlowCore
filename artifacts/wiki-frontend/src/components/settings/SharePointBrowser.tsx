@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   ExternalLink,
   Loader2,
+  AlertTriangle,
   HardDrive,
   Clock,
   User,
@@ -49,6 +50,46 @@ function formatDate(dateStr: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Ein Graph-Fehler darf nicht wie "nichts gefunden" aussehen — sonst sucht man
+ * an der falschen Stelle. Die Ursache (Berechtigung, Konfiguration) wird
+ * ausgeschrieben, die technischen Details bleiben aufklappbar.
+ */
+function SharePointError({ error }: { error: unknown }) {
+  const detail =
+    error && typeof error === "object" && "data" in error
+      ? ((error as { data?: { error?: string; graphStatus?: number } }).data ??
+        null)
+      : null;
+  const status =
+    error && typeof error === "object" && "status" in error
+      ? (error as { status?: number }).status
+      : undefined;
+  const graphStatus = detail?.graphStatus;
+
+  const hint =
+    graphStatus === 401 || graphStatus === 403
+      ? "SharePoint hat den Zugriff abgelehnt. Prüfen Sie in Entra, ob die Berechtigung Sites.Read.All erteilt und die Administratorzustimmung vorhanden ist — und melden Sie sich einmal neu an, damit ein aktuelles Token ausgestellt wird."
+      : "Der Zugriff auf Microsoft Graph ist fehlgeschlagen. Details stehen im Serverprotokoll.";
+
+  return (
+    <Card className="border-destructive/40">
+      <CardContent className="py-10 text-center">
+        <AlertTriangle className="h-10 w-10 mx-auto mb-3 text-destructive/70" />
+        <p className="font-medium">SharePoint konnte nicht abgefragt werden</p>
+        <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
+          {hint}
+        </p>
+        {(detail?.error || status) && (
+          <p className="text-xs text-muted-foreground mt-3 font-mono">
+            {detail?.error ?? `HTTP ${status}`}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export function SharePointBrowser() {
@@ -211,7 +252,11 @@ function SitesList({
   onSelectSite: (site: SharePointSite) => void;
 }) {
   const params = searchQuery ? { q: searchQuery } : undefined;
-  const { data: sites, isLoading } = useListSharePointSites(params, {
+  const {
+    data: sites,
+    isLoading,
+    error,
+  } = useListSharePointSites(params, {
     query: {
       queryKey: getListSharePointSitesQueryKey(params),
     },
@@ -226,6 +271,10 @@ function SitesList({
         </span>
       </div>
     );
+  }
+
+  if (error) {
+    return <SharePointError error={error} />;
   }
 
   if (!sites || sites.length === 0) {
@@ -297,7 +346,11 @@ function DrivesList({
   siteId: string;
   onSelectDrive: (drive: SharePointDrive) => void;
 }) {
-  const { data: drives, isLoading } = useListSharePointDrives(siteId, {
+  const {
+    data: drives,
+    isLoading,
+    error,
+  } = useListSharePointDrives(siteId, {
     query: {
       queryKey: getListSharePointDrivesQueryKey(siteId),
     },
@@ -312,6 +365,10 @@ function DrivesList({
         </span>
       </div>
     );
+  }
+
+  if (error) {
+    return <SharePointError error={error} />;
   }
 
   if (!drives || drives.length === 0) {
@@ -381,7 +438,11 @@ function ItemsList({
   onOpenFolder: (item: SharePointItem) => void;
 }) {
   const params = folderId ? { folderId } : undefined;
-  const { data: items, isLoading } = useListSharePointDriveItems(
+  const {
+    data: items,
+    isLoading,
+    error,
+  } = useListSharePointDriveItems(
     driveId,
     params,
     {
@@ -398,6 +459,10 @@ function ItemsList({
         <span className="ml-2 text-muted-foreground">Wird geladen...</span>
       </div>
     );
+  }
+
+  if (error) {
+    return <SharePointError error={error} />;
   }
 
   if (!items || items.length === 0) {

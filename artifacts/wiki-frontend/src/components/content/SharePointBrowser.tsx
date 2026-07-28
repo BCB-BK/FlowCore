@@ -297,7 +297,13 @@ export function SharePointBrowser({
                   </div>
                 </button>
               ))}
-              {!sitesLoading && (!sites || sites.length === 0) && (
+              {!sitesLoading && sitesQuery.error && (
+                <p className="text-center text-destructive py-8 text-sm">
+                  SharePoint konnte nicht abgefragt werden — bitte die
+                  SharePoint-Berechtigungen in den Einstellungen prüfen.
+                </p>
+              )}
+              {!sitesLoading && !sitesQuery.error && (!sites || sites.length === 0) && (
                 <p className="text-center text-muted-foreground py-8">
                   Keine Sites gefunden
                 </p>
