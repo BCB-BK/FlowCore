@@ -52,6 +52,8 @@ export const ContentNodeTemplateType = {
   meeting_protocol: "meeting_protocol",
   training_resource: "training_resource",
   audit_object: "audit_object",
+  doc_registry: "doc_registry",
+  brand_profile: "brand_profile",
 } as const;
 
 export type ContentNodeStatus =
@@ -109,6 +111,8 @@ export const CreateNodeInputTemplateType = {
   meeting_protocol: "meeting_protocol",
   training_resource: "training_resource",
   audit_object: "audit_object",
+  doc_registry: "doc_registry",
+  brand_profile: "brand_profile",
 } as const;
 
 export interface CreateNodeInput {
@@ -142,6 +146,8 @@ export const UpdateNodeInputTemplateType = {
   meeting_protocol: "meeting_protocol",
   training_resource: "training_resource",
   audit_object: "audit_object",
+  doc_registry: "doc_registry",
+  brand_profile: "brand_profile",
 } as const;
 
 export interface UpdateNodeInput {
@@ -1924,6 +1930,7 @@ export interface WorkingCopy {
   submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst) */
   authorDisplayName?: string | null;
 }
 
@@ -2496,6 +2503,27 @@ export type ValidateBackupTargetBody = {
 export type ValidateBackupTarget200 = {
   valid: boolean;
   error?: string | null;
+};
+
+export type ListActiveSessions200SessionsItemUser = {
+  principalId?: string | null;
+  externalId?: string | null;
+  displayName?: string | null;
+  email?: string | null;
+} | null;
+
+export type ListActiveSessions200SessionsItem = {
+  sid?: string;
+  expire?: string;
+  user?: ListActiveSessions200SessionsItemUser;
+};
+
+export type ListActiveSessions200 = {
+  sessions: ListActiveSessions200SessionsItem[];
+};
+
+export type TerminateSession200 = {
+  success: boolean;
 };
 
 export type ListReleases200 = {

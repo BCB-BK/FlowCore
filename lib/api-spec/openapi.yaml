@@ -3561,6 +3561,8 @@ components:
             - meeting_protocol
             - training_resource
             - audit_object
+            - doc_registry
+            - brand_profile
         templateId:
           type: string
           format: uuid
@@ -3638,6 +3640,8 @@ components:
             - meeting_protocol
             - training_resource
             - audit_object
+            - doc_registry
+            - brand_profile
         templateId:
           type: string
           format: uuid
@@ -3678,6 +3682,8 @@ components:
             - meeting_protocol
             - training_resource
             - audit_object
+            - doc_registry
+            - brand_profile
 
     MoveNodeInput:
       type: object
@@ -6702,6 +6708,10 @@ components:
           type: string
         updatedAt:
           type: string
+        authorDisplayName:
+          type: string
+          nullable: true
+          description: Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)
       required:
         - id
         - nodeId
