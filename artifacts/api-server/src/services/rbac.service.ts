@@ -93,10 +93,11 @@ const ROLE_PERMISSIONS: Record<WikiRole, WikiPermission[]> = {
     "view_dashboard",
     "view_tasks",
     "view_settings",
-    "view_backups",
+    // "view_backups", "run_backup" und "restore_backup" stehen bereits weiter
+    // oben in dieser Liste — die Dubletten sind entfernt (Audit A5, durch den
+    // neuen Matrix-Test aufgedeckt). "manage_backups" bleibt: eigenes Recht,
+    // nicht identisch mit dem weiter oben stehenden "manage_backup".
     "manage_backups",
-    "run_backup",
-    "restore_backup",
     "create_working_copy",
     "edit_working_copy",
     "submit_working_copy",
@@ -313,7 +314,10 @@ export async function getEffectivePermissions(
   return permissions;
 }
 
-const nodeScopeCache = new Map<string, { scopes: Set<string>; expiresAt: number }>();
+const nodeScopeCache = new Map<
+  string,
+  { scopes: Set<string>; expiresAt: number }
+>();
 const NODE_SCOPE_CACHE_TTL_MS = 30_000;
 
 async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
@@ -322,7 +326,8 @@ async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
     return new Set(cached.scopes);
   }
 
-  const rows = (await db.execute(sql`
+  const rows = (
+    await db.execute(sql`
     WITH RECURSIVE ancestors AS (
       SELECT id, parent_node_id, display_code, 0 AS depth
       FROM content_nodes
@@ -334,7 +339,8 @@ async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
       WHERE a.depth < 100
     )
     SELECT id, display_code FROM ancestors
-  `)).rows as Array<{ id: string; display_code: string | null }>;
+  `)
+  ).rows as Array<{ id: string; display_code: string | null }>;
 
   const scopes = new Set<string>();
   for (const row of rows) {
@@ -345,7 +351,10 @@ async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
   }
   scopes.add("global");
 
-  nodeScopeCache.set(nodeId, { scopes: new Set(scopes), expiresAt: Date.now() + NODE_SCOPE_CACHE_TTL_MS });
+  nodeScopeCache.set(nodeId, {
+    scopes: new Set(scopes),
+    expiresAt: Date.now() + NODE_SCOPE_CACHE_TTL_MS,
+  });
 
   if (nodeScopeCache.size > 500) {
     const now = Date.now();
@@ -353,7 +362,9 @@ async function resolveNodeScopes(nodeId: string): Promise<Set<string>> {
       if (val.expiresAt <= now) nodeScopeCache.delete(key);
     }
     if (nodeScopeCache.size > 1000) {
-      const entries = [...nodeScopeCache.entries()].sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+      const entries = [...nodeScopeCache.entries()].sort(
+        (a, b) => a[1].expiresAt - b[1].expiresAt,
+      );
       const toRemove = entries.slice(0, entries.length - 500);
       for (const [key] of toRemove) nodeScopeCache.delete(key);
     }
@@ -534,9 +545,7 @@ export async function hasPermissionBatch(
       );
 
     if (delegations.length > 0) {
-      const delegatorIds = [
-        ...new Set(delegations.map((d) => d.delegatorId)),
-      ];
+      const delegatorIds = [...new Set(delegations.map((d) => d.delegatorId))];
       const delegatorRoles = await db
         .select({
           principalId: roleAssignmentsTable.principalId,
@@ -560,8 +569,7 @@ export async function hasPermissionBatch(
         let granted = false;
         for (const delegation of delegations) {
           const delegationScopeOk =
-            delegation.scope === "global" ||
-            nodeScopes.has(delegation.scope);
+            delegation.scope === "global" || nodeScopes.has(delegation.scope);
           if (!delegationScopeOk) continue;
 
           for (const dr of delegatorRoles) {
@@ -592,7 +600,8 @@ async function resolvePagePermissions(
   principalId: string,
   nodeId: string,
 ): Promise<WikiPermission[]> {
-  const rows = (await db.execute(sql`
+  const rows = (
+    await db.execute(sql`
     WITH RECURSIVE ancestors AS (
       SELECT id, parent_node_id, 0 AS depth
       FROM content_nodes
@@ -608,7 +617,8 @@ async function resolvePagePermissions(
     JOIN ancestors a ON pp.node_id = a.id
     WHERE pp.principal_id = ${principalId}::uuid
     ORDER BY a.depth ASC
-  `)).rows as Array<{ permission: string; depth: number }>;
+  `)
+  ).rows as Array<{ permission: string; depth: number }>;
 
   if (rows.length === 0) return [];
 
@@ -668,8 +678,7 @@ async function resolveDeputyPermissions(
     scopeConditions.add("global");
 
     const delegationScopeOk =
-      delegation.scope === "global" ||
-      scopeConditions.has(delegation.scope);
+      delegation.scope === "global" || scopeConditions.has(delegation.scope);
 
     if (!delegationScopeOk) continue;
 
@@ -704,10 +713,12 @@ export interface SodCheckResult {
 
 const SOD_RULES = {
   four_eyes_review: {
-    description: "Einreicher darf eigene Inhalte nicht prüfen/freigeben (Vier-Augen-Prinzip)",
+    description:
+      "Einreicher darf eigene Inhalte nicht prüfen/freigeben (Vier-Augen-Prinzip)",
   },
   four_eyes_publish: {
-    description: "Einreicher darf eigene Inhalte nicht veröffentlichen (Vier-Augen-Prinzip)",
+    description:
+      "Einreicher darf eigene Inhalte nicht veröffentlichen (Vier-Augen-Prinzip)",
   },
 } as const;
 
@@ -771,7 +782,10 @@ export async function getSodConfig(): Promise<
 }
 
 export function isValidSodRuleKey(key: string): key is SodRuleKey {
-  return key in SOD_RULES;
+  // hasOwnProperty statt `in`: der `in`-Operator laeuft die Prototypenkette
+  // entlang, wodurch "__proto__", "constructor" oder "toString" die Pruefung
+  // faelschlich bestehen und in updateSodConfig landen wuerden.
+  return Object.prototype.hasOwnProperty.call(SOD_RULES, key);
 }
 
 export async function updateSodConfig(
@@ -800,12 +814,15 @@ export async function updateSodConfig(
   }
 }
 
-export async function grantPagePermission(input: {
-  nodeId: string;
-  principalId: string;
-  permission: WikiPermission;
-  grantedBy?: string;
-}, txOrDb: Pick<typeof db, "select" | "insert"> = db) {
+export async function grantPagePermission(
+  input: {
+    nodeId: string;
+    principalId: string;
+    permission: WikiPermission;
+    grantedBy?: string;
+  },
+  txOrDb: Pick<typeof db, "select" | "insert"> = db,
+) {
   const [existing] = await txOrDb
     .select({ id: pagePermissionsTable.id })
     .from(pagePermissionsTable)
@@ -837,11 +854,18 @@ export async function grantPagePermission(input: {
     },
     "Page permission granted",
   );
-  await enqueueSync({ itemType: "page", nodeId: input.nodeId, operation: "upsert" });
+  await enqueueSync({
+    itemType: "page",
+    nodeId: input.nodeId,
+    operation: "upsert",
+  });
   return perm.id;
 }
 
-export async function revokePagePermission(permissionId: string, txOrDb: Pick<typeof db, "select" | "delete"> = db) {
+export async function revokePagePermission(
+  permissionId: string,
+  txOrDb: Pick<typeof db, "select" | "delete"> = db,
+) {
   const [existing] = await txOrDb
     .select({ nodeId: pagePermissionsTable.nodeId })
     .from(pagePermissionsTable)
@@ -852,7 +876,11 @@ export async function revokePagePermission(permissionId: string, txOrDb: Pick<ty
     .where(eq(pagePermissionsTable.id, permissionId));
 
   if (existing) {
-    await enqueueSync({ itemType: "page", nodeId: existing.nodeId, operation: "upsert" });
+    await enqueueSync({
+      itemType: "page",
+      nodeId: existing.nodeId,
+      operation: "upsert",
+    });
   }
 }
 
@@ -863,13 +891,16 @@ export async function getPagePermissions(nodeId: string) {
     .where(eq(pagePermissionsTable.nodeId, nodeId));
 }
 
-export async function setNodeOwnership(input: {
-  nodeId: string;
-  ownerId: string;
-  deputyId?: string;
-  reviewerId?: string;
-  approverId?: string;
-}, txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db) {
+export async function setNodeOwnership(
+  input: {
+    nodeId: string;
+    ownerId: string;
+    deputyId?: string;
+    reviewerId?: string;
+    approverId?: string;
+  },
+  txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db,
+) {
   const [existing] = await txOrDb
     .select({ id: nodeOwnershipTable.id })
     .from(nodeOwnershipTable)
@@ -945,15 +976,18 @@ export async function getActiveDelegationsForPrincipal(principalId: string) {
     );
 }
 
-export async function createDelegation(input: {
-  principalId: string;
-  deputyId: string;
-  scope?: string;
-  reason?: string;
-  startsAt: Date;
-  endsAt?: Date;
-  createdBy?: string;
-}, txOrDb: Pick<typeof db, "insert"> = db): Promise<string> {
+export async function createDelegation(
+  input: {
+    principalId: string;
+    deputyId: string;
+    scope?: string;
+    reason?: string;
+    startsAt: Date;
+    endsAt?: Date;
+    createdBy?: string;
+  },
+  txOrDb: Pick<typeof db, "insert"> = db,
+): Promise<string> {
   const [delegation] = await txOrDb
     .insert(deputyDelegationsTable)
     .values({
@@ -982,7 +1016,10 @@ export async function createDelegation(input: {
   return delegation.id;
 }
 
-export async function revokeDelegation(delegationId: string, txOrDb: Pick<typeof db, "update"> = db): Promise<void> {
+export async function revokeDelegation(
+  delegationId: string,
+  txOrDb: Pick<typeof db, "update"> = db,
+): Promise<void> {
   await txOrDb
     .update(deputyDelegationsTable)
     .set({ isActive: false, updatedAt: new Date() })

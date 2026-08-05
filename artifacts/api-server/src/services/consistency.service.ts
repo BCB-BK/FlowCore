@@ -103,7 +103,10 @@ async function checkExpectedTables(): Promise<ConsistencyCheckResult[]> {
 
     const codeTableSet = new Set(expectedTables);
     for (const existing of existingTables) {
-      if (!codeTableSet.has(existing as string) && !(existing as string).startsWith("drizzle_")) {
+      if (
+        !codeTableSet.has(existing as string) &&
+        !(existing as string).startsWith("drizzle_")
+      ) {
         results.push({
           category: "Schema",
           item: `Tabelle: ${existing}`,
@@ -211,8 +214,7 @@ function checkEnvironmentConfig(): ConsistencyCheckResult[] {
       category: "Sicherheit",
       item: "Session-Secret",
       status: "error",
-      message:
-        "SESSION_SECRET hat einen unsicheren Standardwert in Produktion",
+      message: "SESSION_SECRET hat einen unsicheren Standardwert in Produktion",
     });
   }
 
@@ -336,7 +338,10 @@ function checkBuildArtifacts(): ConsistencyCheckResult[] {
 
   const workspaceRoot = getWorkspaceRoot();
 
-  const apiDist = path.join(workspaceRoot, "artifacts/api-server/dist/index.mjs");
+  const apiDist = path.join(
+    workspaceRoot,
+    "artifacts/api-server/dist/index.mjs",
+  );
   if (fs.existsSync(apiDist)) {
     const distStat = fs.statSync(apiDist);
     const srcDir = path.join(workspaceRoot, "artifacts/api-server/src");
@@ -376,7 +381,8 @@ function checkBuildArtifacts(): ConsistencyCheckResult[] {
       item: "API-Server Build",
       status: "error",
       message: "Kein Build-Artefakt gefunden (dist/index.mjs)",
-      details: "API-Server wurde noch nicht gebaut oder Build-Artefakte fehlen.",
+      details:
+        "API-Server wurde noch nicht gebaut oder Build-Artefakte fehlen.",
     });
   }
 
@@ -430,7 +436,8 @@ function checkCodegenFreshness(): ConsistencyCheckResult[] {
         item: "OpenAPI Codegen",
         status: "warning",
         message: "Generiertes Verzeichnis fehlt (lib/api-zod/src/generated/)",
-        details: "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus.",
+        details:
+          "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus.",
       });
     }
   } catch {
@@ -445,7 +452,9 @@ function checkCodegenFreshness(): ConsistencyCheckResult[] {
   return results;
 }
 
-async function checkReleaseSyncConsistency(): Promise<ConsistencyCheckResult[]> {
+async function checkReleaseSyncConsistency(): Promise<
+  ConsistencyCheckResult[]
+> {
   const results: ConsistencyCheckResult[] = [];
 
   try {
@@ -522,8 +531,8 @@ function checkMigrationFiles(): ConsistencyCheckResult[] {
   const drizzleDir = path.join(workspaceRoot, "lib/db/drizzle");
   try {
     if (fs.existsSync(drizzleDir)) {
-      const files = (fs.readdirSync(drizzleDir) as string[]).filter((f: string) =>
-        f.endsWith(".sql"),
+      const files = (fs.readdirSync(drizzleDir) as string[]).filter(
+        (f: string) => f.endsWith(".sql"),
       );
       results.push({
         category: "Build-Konsistenz",

@@ -55,7 +55,8 @@ export function useSafeLinkProps() {
     (to: string) => ({
       href: to,
       onClick: (e: MouseEvent<HTMLElement>) => {
-        if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)
+          return;
         e.preventDefault();
         confirmLeave(() => navigate(to));
       },

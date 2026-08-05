@@ -51,7 +51,10 @@ export interface GlossaryTermProjection {
 }
 
 function synthesizeDisplayCode(slug: string): string {
-  return `GL-${slug.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`;
+  return `GL-${slug
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
 }
 
 /**
@@ -185,7 +188,9 @@ export async function projectGlossaryTerm(
   };
 }
 
-export async function isGlossaryTermExportable(termId: string): Promise<boolean> {
+export async function isGlossaryTermExportable(
+  termId: string,
+): Promise<boolean> {
   const projection = await projectGlossaryTerm(termId);
   return projection !== null;
 }

@@ -2,7 +2,10 @@ import { useMemo } from "react";
 import { Link2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
-import { useGetBacklinks, getGetBacklinksQueryKey } from "@workspace/api-client-react";
+import {
+  useGetBacklinks,
+  getGetBacklinksQueryKey,
+} from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PAGE_TYPE_LABELS, getPageType } from "@/lib/types";
 import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
@@ -47,7 +50,8 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
   });
 
   const { grouped, hiddenCount } = useMemo(() => {
-    if (!backlinks || backlinks.length === 0) return { grouped: null, hiddenCount: 0 };
+    if (!backlinks || backlinks.length === 0)
+      return { grouped: null, hiddenCount: 0 };
     const map = new Map<string, typeof backlinks>();
     let hidden = 0;
     for (const link of backlinks) {
@@ -63,7 +67,8 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
       category: c,
       links: map.get(c)!,
     }));
-    if (groups.length === 0 && hidden === 0) return { grouped: null, hiddenCount: 0 };
+    if (groups.length === 0 && hidden === 0)
+      return { grouped: null, hiddenCount: 0 };
     if (groups.length === 0) return { grouped: null, hiddenCount: hidden };
     return { grouped: groups, hiddenCount: hidden };
   }, [backlinks]);
@@ -87,52 +92,54 @@ export function BacklinksPanel({ nodeId }: BacklinksPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {grouped && grouped.map(({ category, links }) => (
-          <div key={category}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-              {category} ({links.length})
-            </p>
-            <div className="space-y-0.5">
-              {links.map((link) => {
-                const pageDef = link.sourceTemplateType
-                  ? getPageType(link.sourceTemplateType)
-                  : null;
-                return (
-                  <a
-                    key={link.id}
-                    {...getLinkProps(`/node/${link.sourceId}`)}
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent flex items-center gap-2 transition-colors"
-                  >
-                    {pageDef && (
-                      <PageTypeIcon
-                        iconName={pageDef.icon}
-                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {link.sourceTitle}
-                      </p>
-                      {(link.sourceDisplayCode || link.sourceTemplateType) && (
-                        <p className="text-[10px] text-muted-foreground">
-                          {link.sourceDisplayCode}
-                          {link.sourceDisplayCode &&
-                            link.sourceTemplateType && <> · </>}
-                          {link.sourceTemplateType &&
-                            (PAGE_TYPE_LABELS[link.sourceTemplateType] ||
-                              link.sourceTemplateType)}
-                        </p>
+        {grouped &&
+          grouped.map(({ category, links }) => (
+            <div key={category}>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                {category} ({links.length})
+              </p>
+              <div className="space-y-0.5">
+                {links.map((link) => {
+                  const pageDef = link.sourceTemplateType
+                    ? getPageType(link.sourceTemplateType)
+                    : null;
+                  return (
+                    <a
+                      key={link.id}
+                      {...getLinkProps(`/node/${link.sourceId}`)}
+                      className="w-full text-left px-2 py-1.5 rounded hover:bg-accent flex items-center gap-2 transition-colors"
+                    >
+                      {pageDef && (
+                        <PageTypeIcon
+                          iconName={pageDef.icon}
+                          className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                        />
                       )}
-                    </div>
-                    <Badge variant="outline" className="text-[10px] shrink-0">
-                      {category}
-                    </Badge>
-                  </a>
-                );
-              })}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {link.sourceTitle}
+                        </p>
+                        {(link.sourceDisplayCode ||
+                          link.sourceTemplateType) && (
+                          <p className="text-[10px] text-muted-foreground">
+                            {link.sourceDisplayCode}
+                            {link.sourceDisplayCode &&
+                              link.sourceTemplateType && <> · </>}
+                            {link.sourceTemplateType &&
+                              (PAGE_TYPE_LABELS[link.sourceTemplateType] ||
+                                link.sourceTemplateType)}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant="outline" className="text-[10px] shrink-0">
+                        {category}
+                      </Badge>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
         {hiddenCount > 0 && (
           <p className="text-[11px] text-muted-foreground border-t pt-2 mt-1">
             {hiddenCount === 1

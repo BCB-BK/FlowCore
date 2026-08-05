@@ -25,7 +25,9 @@ backupRouter.get(
       const config = await getBackupConfig();
       res.json(config || { enabled: false });
     } catch (err) {
-      res.status(500).json({ error: "Fehler beim Laden der Backup-Konfiguration" });
+      res
+        .status(500)
+        .json({ error: "Fehler beim Laden der Backup-Konfiguration" });
     }
   },
 );
@@ -38,7 +40,10 @@ backupRouter.put(
     try {
       const validation = await validateBackupConfigInput(req.body);
       if (!validation.valid) {
-        res.status(400).json({ error: "Ungültige Konfiguration", details: validation.errors });
+        res.status(400).json({
+          error: "Ungültige Konfiguration",
+          details: validation.errors,
+        });
         return;
       }
 
@@ -55,7 +60,9 @@ backupRouter.put(
 
       res.json(config);
     } catch (err) {
-      res.status(500).json({ error: "Fehler beim Speichern der Backup-Konfiguration" });
+      res
+        .status(500)
+        .json({ error: "Fehler beim Speichern der Backup-Konfiguration" });
     }
   },
 );
@@ -69,7 +76,10 @@ backupRouter.post(
       const runId = await runBackup(req.user!.principalId);
       res.json({ id: runId, status: "started" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Backup konnte nicht gestartet werden";
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Backup konnte nicht gestartet werden";
       const status = msg.includes("läuft bereits") ? 409 : 400;
       res.status(status).json({ error: msg });
     }
@@ -115,7 +125,10 @@ backupRouter.post(
   requirePermission("restore_backup"),
   async (req, res) => {
     try {
-      const result = await restoreBackup(req.params.id as string, req.user!.principalId);
+      const result = await restoreBackup(
+        req.params.id as string,
+        req.user!.principalId,
+      );
       if (result.success) {
         res.json({ status: "restored" });
       } else {

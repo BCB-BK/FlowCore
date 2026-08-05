@@ -101,16 +101,30 @@ function ClusterSection({
   const hiddenCount = sorted.length - MAX_VISIBLE;
 
   const isUnassigned = cluster === null;
-  const canReassign = isUnassigned && !!onAssignToCluster && allClusters && allClusters.length > 0;
+  const canReassign =
+    isUnassigned &&
+    !!onAssignToCluster &&
+    allClusters &&
+    allClusters.length > 0;
 
   return (
-    <div className={`rounded-lg border bg-card ${isUnassigned && children.length > 0 ? "border-amber-200 dark:border-amber-800" : ""}`}>
-      <div className={`flex items-center gap-3 px-4 py-3 border-b ${isUnassigned && children.length > 0 ? "bg-amber-50/60 dark:bg-amber-950/30" : "bg-muted/40"}`}>
-        <div className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${isUnassigned && children.length > 0 ? "bg-amber-100 dark:bg-amber-900" : "bg-primary/10"}`}>
-          <Layers className={`h-4 w-4 ${isUnassigned && children.length > 0 ? "text-amber-600" : "text-primary"}`} />
+    <div
+      className={`rounded-lg border bg-card ${isUnassigned && children.length > 0 ? "border-amber-200 dark:border-amber-800" : ""}`}
+    >
+      <div
+        className={`flex items-center gap-3 px-4 py-3 border-b ${isUnassigned && children.length > 0 ? "bg-amber-50/60 dark:bg-amber-950/30" : "bg-muted/40"}`}
+      >
+        <div
+          className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${isUnassigned && children.length > 0 ? "bg-amber-100 dark:bg-amber-900" : "bg-primary/10"}`}
+        >
+          <Layers
+            className={`h-4 w-4 ${isUnassigned && children.length > 0 ? "text-amber-600" : "text-primary"}`}
+          />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className={`text-sm font-semibold leading-tight truncate ${isUnassigned && children.length > 0 ? "text-amber-700 dark:text-amber-400" : ""}`}>
+          <h4
+            className={`text-sm font-semibold leading-tight truncate ${isUnassigned && children.length > 0 ? "text-amber-700 dark:text-amber-400" : ""}`}
+          >
             {cluster?.title ?? "Nicht zugeordnet"}
           </h4>
           {isUnassigned && children.length > 0 && (
@@ -181,7 +195,10 @@ function ClusterSection({
                       className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
                       style={{ backgroundColor: childDef.color }}
                     >
-                      <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                      <PageTypeIcon
+                        iconName={childDef.icon}
+                        className="h-3.5 w-3.5"
+                      />
                     </div>
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
@@ -194,7 +211,10 @@ function ClusterSection({
                         {child.title}
                       </p>
                       {linkedNodeIds?.has(child.id) && (
-                        <span title="Verlinkte Seite (kein Kind dieser Seite)" className="shrink-0">
+                        <span
+                          title="Verlinkte Seite (kein Kind dieser Seite)"
+                          className="shrink-0"
+                        >
                           <Link2 className="h-3 w-3 text-muted-foreground" />
                         </span>
                       )}
@@ -217,7 +237,9 @@ function ClusterSection({
                   </div>
                   <StatusBadge
                     status={
-                      child.status as Parameters<typeof StatusBadge>[0]["status"]
+                      child.status as Parameters<
+                        typeof StatusBadge
+                      >[0]["status"]
                     }
                     compact
                   />
@@ -225,8 +247,16 @@ function ClusterSection({
                 {canEdit && cluster?.id && onRemoveFromCluster && (
                   <button
                     className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded"
-                    aria-label={linkedNodeIds?.has(child.id) ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
-                    title={linkedNodeIds?.has(child.id) ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
+                    aria-label={
+                      linkedNodeIds?.has(child.id)
+                        ? "Verlinkung entfernen"
+                        : "Aus Cluster entfernen"
+                    }
+                    title={
+                      linkedNodeIds?.has(child.id)
+                        ? "Verlinkung entfernen"
+                        : "Aus Cluster entfernen"
+                    }
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemoveFromCluster(child.id, cluster.id);
@@ -239,7 +269,10 @@ function ClusterSection({
                   <Select
                     value={NOT_ASSIGNED_SENTINEL}
                     onValueChange={(val) =>
-                      onAssignToCluster!(child.id, val === NOT_ASSIGNED_SENTINEL ? null : val)
+                      onAssignToCluster!(
+                        child.id,
+                        val === NOT_ASSIGNED_SENTINEL ? null : val,
+                      )
                     }
                   >
                     <SelectTrigger
@@ -341,7 +374,9 @@ function FilterBar({
         <SelectContent>
           <SelectItem value="all">Alle Status</SelectItem>
           {Object.entries(STATUS_LABELS).map(([val, label]) => (
-            <SelectItem key={val} value={val}>{label}</SelectItem>
+            <SelectItem key={val} value={val}>
+              {label}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -405,7 +440,8 @@ export function DocRegistryView({
     [allChildren],
   );
 
-  const activeFilterCount = (filterStatus !== "all" ? 1 : 0) + (filterType !== "all" ? 1 : 0);
+  const activeFilterCount =
+    (filterStatus !== "all" ? 1 : 0) + (filterType !== "all" ? 1 : 0);
   const hasActiveFilter = activeFilterCount > 0;
 
   function matchesFilter(child: ChildNode) {
@@ -437,7 +473,8 @@ export function DocRegistryView({
   const showFilterBar = allChildren.length > 0;
 
   const recommendedPresetTypes = useMemo(
-    () => (parentTemplateType ? getRecommendedChildTypes(parentTemplateType) : []),
+    () =>
+      parentTemplateType ? getRecommendedChildTypes(parentTemplateType) : [],
     [parentTemplateType],
   );
 
@@ -471,7 +508,10 @@ export function DocRegistryView({
                         size="sm"
                         onClick={() => onCreateInCluster(null, type)}
                       >
-                        <PageTypeIcon iconName={def.icon} className="h-3.5 w-3.5 mr-1.5" />
+                        <PageTypeIcon
+                          iconName={def.icon}
+                          className="h-3.5 w-3.5 mr-1.5"
+                        />
                         {def.labelDe ?? def.label}
                       </Button>
                     );
@@ -479,7 +519,9 @@ export function DocRegistryView({
                 </div>
               )}
               <Button
-                variant={recommendedPresetTypes.length > 0 ? "ghost" : "outline"}
+                variant={
+                  recommendedPresetTypes.length > 0 ? "ghost" : "outline"
+                }
                 size="sm"
                 className="mt-3"
                 onClick={() => onCreateInCluster(null)}
@@ -510,8 +552,15 @@ export function DocRegistryView({
         )}
         {sorted.length === 0 ? (
           <div className="rounded-lg border bg-card px-4 py-8 text-center">
-            <p className="text-sm text-muted-foreground">Keine Einträge entsprechen dem Filter</p>
-            <Button variant="ghost" size="sm" className="mt-2 text-xs" onClick={clearFilters}>
+            <p className="text-sm text-muted-foreground">
+              Keine Einträge entsprechen dem Filter
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-2 text-xs"
+              onClick={clearFilters}
+            >
               Filter zurücksetzen
             </Button>
           </div>
@@ -550,8 +599,15 @@ export function DocRegistryView({
 
       {filteredClusterGroups.length === 0 && hasActiveFilter ? (
         <div className="rounded-lg border bg-card px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">Keine Einträge entsprechen dem Filter</p>
-          <Button variant="ghost" size="sm" className="mt-2 text-xs" onClick={clearFilters}>
+          <p className="text-sm text-muted-foreground">
+            Keine Einträge entsprechen dem Filter
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2 text-xs"
+            onClick={clearFilters}
+          >
             Filter zurücksetzen
           </Button>
         </div>

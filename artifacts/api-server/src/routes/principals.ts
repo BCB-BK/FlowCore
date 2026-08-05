@@ -107,14 +107,17 @@ router.post(
     const { upsertPrincipal: upsert } =
       await import("../services/principal.service");
     const principalId = await db.transaction(async (tx) => {
-      const id = await upsert({
-        principalType: principalType as "user" | "group",
-        externalProvider: "entra",
-        externalId: externalId.trim(),
-        displayName: displayName.trim(),
-        email: typeof email === "string" ? email.trim() : undefined,
-        upn: typeof upn === "string" ? upn.trim() : undefined,
-      }, tx);
+      const id = await upsert(
+        {
+          principalType: principalType as "user" | "group",
+          externalProvider: "entra",
+          externalId: externalId.trim(),
+          displayName: displayName.trim(),
+          email: typeof email === "string" ? email.trim() : undefined,
+          upn: typeof upn === "string" ? upn.trim() : undefined,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -228,12 +231,15 @@ router.post(
     }
 
     const assignmentId = await db.transaction(async (tx) => {
-      const aId = await assignRole({
-        principalId: id,
-        role: req.body.role,
-        scope: req.body.scope,
-        grantedBy: req.user!.principalId,
-      }, tx);
+      const aId = await assignRole(
+        {
+          principalId: id,
+          role: req.body.role,
+          scope: req.body.scope,
+          grantedBy: req.user!.principalId,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -396,12 +402,15 @@ router.post(
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const id = await db.transaction(async (tx) => {
-      const permId = await grantPagePermission({
-        nodeId,
-        principalId: req.body.principalId,
-        permission: req.body.permission,
-        grantedBy: req.user!.principalId,
-      }, tx);
+      const permId = await grantPagePermission(
+        {
+          nodeId,
+          principalId: req.body.principalId,
+          permission: req.body.permission,
+          grantedBy: req.user!.principalId,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -462,13 +471,16 @@ router.put(
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const id = await db.transaction(async (tx) => {
-      const ownershipId = await setNodeOwnership({
-        nodeId,
-        ownerId: req.body.ownerId,
-        deputyId: req.body.deputyId,
-        reviewerId: req.body.reviewerId,
-        approverId: req.body.approverId,
-      }, tx);
+      const ownershipId = await setNodeOwnership(
+        {
+          nodeId,
+          ownerId: req.body.ownerId,
+          deputyId: req.body.deputyId,
+          reviewerId: req.body.reviewerId,
+          approverId: req.body.approverId,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -541,80 +553,74 @@ router.get(
   },
 );
 
-router.get(
-  "/principals/:id/delegations",
-  requireAuth,
-  async (req, res) => {
-    const id = req.params.id as string;
-    const isSelf = req.user!.principalId === id;
-    if (!isSelf) {
-      const perms = await getEffectivePermissions(req.user!.principalId);
-      if (!perms.has("manage_permissions")) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
-      }
-    }
-    const outgoing = await getActiveDelegationsForPrincipal(id);
-    const incoming = await getActiveDelegationsForDeputy(id);
-    res.json({ outgoing, incoming });
-  },
-);
-
-router.post(
-  "/principals/:id/delegations",
-  requireAuth,
-  async (req, res) => {
-    const principalId = req.params.id as string;
-    const isSelf = req.user!.principalId === principalId;
-    if (!isSelf) {
-      const perms = await getEffectivePermissions(req.user!.principalId);
-      if (!perms.has("manage_permissions")) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
-      }
-    }
-
-    const { deputyId, scope, reason, startsAt, endsAt } = req.body;
-    if (!deputyId || !startsAt) {
-      res.status(400).json({ error: "deputyId and startsAt are required" });
+router.get("/principals/:id/delegations", requireAuth, async (req, res) => {
+  const id = req.params.id as string;
+  const isSelf = req.user!.principalId === id;
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
+  }
+  const outgoing = await getActiveDelegationsForPrincipal(id);
+  const incoming = await getActiveDelegationsForDeputy(id);
+  res.json({ outgoing, incoming });
+});
 
-    if (deputyId === principalId) {
-      res.status(400).json({ error: "Cannot delegate to yourself" });
+router.post("/principals/:id/delegations", requireAuth, async (req, res) => {
+  const principalId = req.params.id as string;
+  const isSelf = req.user!.principalId === principalId;
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
+  }
 
-    const validScope = scope ?? "global";
-    const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
-    if (!scopePattern.test(validScope)) {
-      res.status(400).json({
-        error: "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
-      });
+  const { deputyId, scope, reason, startsAt, endsAt } = req.body;
+  if (!deputyId || !startsAt) {
+    res.status(400).json({ error: "deputyId and startsAt are required" });
+    return;
+  }
+
+  if (deputyId === principalId) {
+    res.status(400).json({ error: "Cannot delegate to yourself" });
+    return;
+  }
+
+  const validScope = scope ?? "global";
+  const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
+  if (!scopePattern.test(validScope)) {
+    res.status(400).json({
+      error: "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
+    });
+    return;
+  }
+
+  const parsedStartsAt = new Date(startsAt);
+  if (isNaN(parsedStartsAt.getTime())) {
+    res.status(400).json({ error: "startsAt must be a valid date" });
+    return;
+  }
+
+  let parsedEndsAt: Date | undefined;
+  if (endsAt) {
+    parsedEndsAt = new Date(endsAt);
+    if (isNaN(parsedEndsAt.getTime())) {
+      res.status(400).json({ error: "endsAt must be a valid date" });
       return;
     }
-
-    const parsedStartsAt = new Date(startsAt);
-    if (isNaN(parsedStartsAt.getTime())) {
-      res.status(400).json({ error: "startsAt must be a valid date" });
+    if (parsedEndsAt <= parsedStartsAt) {
+      res.status(400).json({ error: "endsAt must be after startsAt" });
       return;
     }
+  }
 
-    let parsedEndsAt: Date | undefined;
-    if (endsAt) {
-      parsedEndsAt = new Date(endsAt);
-      if (isNaN(parsedEndsAt.getTime())) {
-        res.status(400).json({ error: "endsAt must be a valid date" });
-        return;
-      }
-      if (parsedEndsAt <= parsedStartsAt) {
-        res.status(400).json({ error: "endsAt must be after startsAt" });
-        return;
-      }
-    }
-
-    const delegationId = await db.transaction(async (tx) => {
-      const dId = await createDelegation({
+  const delegationId = await db.transaction(async (tx) => {
+    const dId = await createDelegation(
+      {
         principalId,
         deputyId,
         scope: validScope,
@@ -622,61 +628,58 @@ router.post(
         startsAt: parsedStartsAt,
         endsAt: parsedEndsAt,
         createdBy: req.user!.principalId,
-      }, tx);
+      },
+      tx,
+    );
 
-      await tx.insert(auditEventsTable).values({
-        eventType: "rbac",
-        action: "delegation_created",
-        actorId: req.user!.principalId,
-        resourceType: "deputy_delegation",
-        resourceId: dId,
-        details: { principalId, deputyId, scope, startsAt, endsAt, reason },
-      });
-
-      return dId;
+    await tx.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "delegation_created",
+      actorId: req.user!.principalId,
+      resourceType: "deputy_delegation",
+      resourceId: dId,
+      details: { principalId, deputyId, scope, startsAt, endsAt, reason },
     });
 
-    res.status(201).json({ id: delegationId });
-  },
-);
+    return dId;
+  });
 
-router.delete(
-  "/delegations/:delegationId",
-  requireAuth,
-  async (req, res) => {
-    const delegationId = req.params.delegationId as string;
-    const actorId = req.user!.principalId;
+  res.status(201).json({ id: delegationId });
+});
 
-    const delegation = await getDelegationById(delegationId);
-    if (!delegation) {
-      res.status(404).json({ error: "Delegation not found" });
+router.delete("/delegations/:delegationId", requireAuth, async (req, res) => {
+  const delegationId = req.params.delegationId as string;
+  const actorId = req.user!.principalId;
+
+  const delegation = await getDelegationById(delegationId);
+  if (!delegation) {
+    res.status(404).json({ error: "Delegation not found" });
+    return;
+  }
+
+  const isSelfRevoke =
+    delegation.principalId === actorId || delegation.deputyId === actorId;
+  if (!isSelfRevoke) {
+    const perms = await getEffectivePermissions(actorId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
+  }
 
-    const isSelfRevoke =
-      delegation.principalId === actorId || delegation.deputyId === actorId;
-    if (!isSelfRevoke) {
-      const perms = await getEffectivePermissions(actorId);
-      if (!perms.has("manage_permissions")) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
-      }
-    }
+  await db.transaction(async (tx) => {
+    await revokeDelegation(delegationId, tx);
 
-    await db.transaction(async (tx) => {
-      await revokeDelegation(delegationId, tx);
-
-      await tx.insert(auditEventsTable).values({
-        eventType: "rbac",
-        action: "delegation_revoked",
-        actorId: req.user!.principalId,
-        resourceType: "deputy_delegation",
-        resourceId: delegationId,
-      });
+    await tx.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "delegation_revoked",
+      actorId: req.user!.principalId,
+      resourceType: "deputy_delegation",
+      resourceId: delegationId,
     });
+  });
 
-    res.status(204).send();
-  },
-);
+  res.status(204).send();
+});
 
 export default router;

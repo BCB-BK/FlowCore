@@ -170,9 +170,7 @@ class Serializer {
 
       case "codeBlock": {
         if (inline) return { plain: "", md: "" };
-        const code = (node.content ?? [])
-          .map((c) => c.text ?? "")
-          .join("");
+        const code = (node.content ?? []).map((c) => c.text ?? "").join("");
         this.plaintextParts.push(code);
         this.markdownParts.push(`\`\`\`\n${code}\n\`\`\``);
         return { plain: "", md: "" };
@@ -267,8 +265,12 @@ class Serializer {
             url: str(img.src, "") || null,
           });
         }
-        this.plaintextParts.push(`[Galerie: ${caption} (${images.length} Bilder)]`);
-        this.markdownParts.push(`[Galerie: ${caption} (${images.length} Bilder)]`);
+        this.plaintextParts.push(
+          `[Galerie: ${caption} (${images.length} Bilder)]`,
+        );
+        this.markdownParts.push(
+          `[Galerie: ${caption} (${images.length} Bilder)]`,
+        );
         return { plain: "", md: "" };
       }
 
@@ -314,7 +316,10 @@ class Serializer {
   }
 
   collectListItem(item: PMNode, depth: number): { plain: string; md: string } {
-    const before = { p: this.plaintextParts.length, m: this.markdownParts.length };
+    const before = {
+      p: this.plaintextParts.length,
+      m: this.markdownParts.length,
+    };
     let inlinePlain = "";
     let inlineMd = "";
     for (const child of item.content ?? []) {

@@ -98,7 +98,11 @@ function formatDate(dateStr: string | null | undefined): string {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof CheckCircle }
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    icon: typeof CheckCircle;
+  }
 > = {
   completed: { label: "Erfolgreich", variant: "default", icon: CheckCircle },
   running: { label: "Läuft", variant: "secondary", icon: RefreshCw },
@@ -123,7 +127,9 @@ function extractErrorMessage(err: unknown): string {
       if (data && typeof data === "object") {
         const d = data as Record<string, unknown>;
         if (d.error && typeof d.error === "string") {
-          const details = Array.isArray(d.details) ? `: ${(d.details as string[]).join(", ")}` : "";
+          const details = Array.isArray(d.details)
+            ? `: ${(d.details as string[]).join(", ")}`
+            : "";
           return `${d.error}${details}`;
         }
       }
@@ -133,7 +139,13 @@ function extractErrorMessage(err: unknown): string {
   return String(err);
 }
 
-function ErrorBanner({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+function ErrorBanner({
+  message,
+  onDismiss,
+}: {
+  message: string;
+  onDismiss: () => void;
+}) {
   return (
     <div className="p-3 bg-destructive/10 rounded-lg flex items-start gap-2 mb-4">
       <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
@@ -141,7 +153,12 @@ function ErrorBanner({ message, onDismiss }: { message: string; onDismiss: () =>
         <p className="text-sm font-medium text-destructive">Fehler</p>
         <p className="text-sm text-destructive/80">{message}</p>
       </div>
-      <Button variant="ghost" size="sm" onClick={onDismiss} className="shrink-0 h-6 w-6 p-0">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onDismiss}
+        className="shrink-0 h-6 w-6 p-0"
+      >
         <XCircle className="w-3.5 h-3.5" />
       </Button>
     </div>
@@ -149,7 +166,9 @@ function ErrorBanner({ message, onDismiss }: { message: string; onDismiss: () =>
 }
 
 export function BackupTab() {
-  const [activeSection, setActiveSection] = useState<"config" | "history">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "history">(
+    "config",
+  );
 
   return (
     <div className="space-y-6">
@@ -194,7 +213,9 @@ function BackupConfigSection() {
   const [includeConnectors, setIncludeConnectors] = useState(true);
   const [includeMediaIndex, setIncludeMediaIndex] = useState(true);
   const [includeAuditMeta, setIncludeAuditMeta] = useState(true);
-  const [spSelection, setSpSelection] = useState<SharePointSelection | null>(null);
+  const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
+    null,
+  );
   const [initialized, setInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -247,9 +268,14 @@ function BackupConfigSection() {
             folderId: spSelection.folderId || undefined,
           },
         });
-        const result = validation as unknown as { valid: boolean; error?: string };
+        const result = validation as unknown as {
+          valid: boolean;
+          error?: string;
+        };
         if (!result.valid) {
-          setError(`Ungültiger SharePoint-Zielordner: ${result.error || "Ordner nicht erreichbar"}`);
+          setError(
+            `Ungültiger SharePoint-Zielordner: ${result.error || "Ordner nicht erreichbar"}`,
+          );
           setSaving(false);
           return;
         }
@@ -277,7 +303,9 @@ function BackupConfigSection() {
       queryClient.invalidateQueries({ queryKey: getGetBackupConfigQueryKey() });
       setSuccess("Konfiguration gespeichert");
     } catch (err: unknown) {
-      const msg = extractErrorMessage(err) || "Konfiguration konnte nicht gespeichert werden";
+      const msg =
+        extractErrorMessage(err) ||
+        "Konfiguration konnte nicht gespeichert werden";
       setError(msg);
     } finally {
       setSaving(false);
@@ -292,14 +320,17 @@ function BackupConfigSection() {
       queryClient.invalidateQueries({ queryKey: getListBackupRunsQueryKey() });
       setSuccess("Backup wurde gestartet");
     } catch (err: unknown) {
-      const msg = extractErrorMessage(err) || "Backup konnte nicht gestartet werden";
+      const msg =
+        extractErrorMessage(err) || "Backup konnte nicht gestartet werden";
       setError(msg);
     }
   };
 
   return (
     <div className="space-y-4">
-      {error && <ErrorBanner message={error} onDismiss={() => setError(null)} />}
+      {error && (
+        <ErrorBanner message={error} onDismiss={() => setError(null)} />
+      )}
       {success && (
         <div className="p-3 bg-green-500/10 rounded-lg flex items-center gap-2 mb-4">
           <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
@@ -315,7 +346,8 @@ function BackupConfigSection() {
                 Backup-Konfiguration
               </CardTitle>
               <CardDescription>
-                Automatische und manuelle Sicherung der Datenbank und Konfiguration
+                Automatische und manuelle Sicherung der Datenbank und
+                Konfiguration
               </CardDescription>
             </div>
             <Button
@@ -335,7 +367,9 @@ function BackupConfigSection() {
           <div className="flex items-center gap-3">
             <Switch checked={enabled} onCheckedChange={setEnabled} />
             <div>
-              <Label className="text-sm font-medium">Automatisches Backup</Label>
+              <Label className="text-sm font-medium">
+                Automatisches Backup
+              </Label>
               <p className="text-xs text-muted-foreground">
                 Erstellt regelmäßig automatische Sicherungen
               </p>
@@ -366,18 +400,21 @@ function BackupConfigSection() {
               SharePoint-Zugangsdaten (Konnektoren)
             </p>
             <p className="text-xs text-blue-700 leading-relaxed">
-              Die Anmeldedaten für SharePoint (Mandanten-ID, App-ID, Client-Secret) werden
-              aus dem Speicheranbieter mit dem Zweck <strong>„Backup-Ziel"</strong> unter{" "}
-              <strong>Einstellungen → Konnektoren → Speicheranbieter</strong> bezogen.
-              Stellen Sie sicher, dass dort ein aktiver SharePoint-Eintrag mit Zweck „Backup-Ziel"
-              und vollständigen App-Credentials hinterlegt ist.
+              Die Anmeldedaten für SharePoint (Mandanten-ID, App-ID,
+              Client-Secret) werden aus dem Speicheranbieter mit dem Zweck{" "}
+              <strong>„Backup-Ziel"</strong> unter{" "}
+              <strong>Einstellungen → Konnektoren → Speicheranbieter</strong>{" "}
+              bezogen. Stellen Sie sicher, dass dort ein aktiver
+              SharePoint-Eintrag mit Zweck „Backup-Ziel" und vollständigen
+              App-Credentials hinterlegt ist.
             </p>
           </div>
 
           <div>
             <Label className="mb-2 block">SharePoint-Zielordner</Label>
             <p className="text-xs text-muted-foreground mb-2">
-              Wählen Sie den Ordner innerhalb der konfigurierten Backup-Bibliothek aus.
+              Wählen Sie den Ordner innerhalb der konfigurierten
+              Backup-Bibliothek aus.
             </p>
             <SharePointSiteDrivePicker
               value={spSelection}
@@ -387,10 +424,14 @@ function BackupConfigSection() {
           </div>
 
           <div>
-            <Label className="text-sm font-medium mb-3 block">Aufbewahrungsregeln</Label>
+            <Label className="text-sm font-medium mb-3 block">
+              Aufbewahrungsregeln
+            </Label>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label className="text-xs text-muted-foreground">Tägliche behalten</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Tägliche behalten
+                </Label>
                 <Input
                   type="number"
                   value={retainDaily}
@@ -400,7 +441,9 @@ function BackupConfigSection() {
                 />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Wöchentliche behalten</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Wöchentliche behalten
+                </Label>
                 <Input
                   type="number"
                   value={retainWeekly}
@@ -410,7 +453,9 @@ function BackupConfigSection() {
                 />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Monatliche behalten</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Monatliche behalten
+                </Label>
                 <Input
                   type="number"
                   value={retainMonthly}
@@ -425,24 +470,44 @@ function BackupConfigSection() {
           <div className="space-y-3">
             <Label className="text-sm font-medium">Backup-Inhalte</Label>
             <p className="text-xs text-muted-foreground">
-              Der Datenbank-Dump und die System-Konfiguration werden immer eingeschlossen.
-              Zusätzliche Komponenten können aktiviert werden:
+              Der Datenbank-Dump und die System-Konfiguration werden immer
+              eingeschlossen. Zusätzliche Komponenten können aktiviert werden:
             </p>
             <div className="flex items-center gap-3">
-              <Switch checked={includeTemplates} onCheckedChange={setIncludeTemplates} />
-              <Label className="text-sm">Template-Definitionen einschließen</Label>
+              <Switch
+                checked={includeTemplates}
+                onCheckedChange={setIncludeTemplates}
+              />
+              <Label className="text-sm">
+                Template-Definitionen einschließen
+              </Label>
             </div>
             <div className="flex items-center gap-3">
-              <Switch checked={includeConnectors} onCheckedChange={setIncludeConnectors} />
-              <Label className="text-sm">Konnektoren-Konfiguration einschließen (ohne Secrets)</Label>
+              <Switch
+                checked={includeConnectors}
+                onCheckedChange={setIncludeConnectors}
+              />
+              <Label className="text-sm">
+                Konnektoren-Konfiguration einschließen (ohne Secrets)
+              </Label>
             </div>
             <div className="flex items-center gap-3">
-              <Switch checked={includeMediaIndex} onCheckedChange={setIncludeMediaIndex} />
-              <Label className="text-sm">Medien-Index einschließen (Asset-Metadaten)</Label>
+              <Switch
+                checked={includeMediaIndex}
+                onCheckedChange={setIncludeMediaIndex}
+              />
+              <Label className="text-sm">
+                Medien-Index einschließen (Asset-Metadaten)
+              </Label>
             </div>
             <div className="flex items-center gap-3">
-              <Switch checked={includeAuditMeta} onCheckedChange={setIncludeAuditMeta} />
-              <Label className="text-sm">Audit-Metadaten einschließen (letzte 1.000 Einträge)</Label>
+              <Switch
+                checked={includeAuditMeta}
+                onCheckedChange={setIncludeAuditMeta}
+              />
+              <Label className="text-sm">
+                Audit-Metadaten einschließen (letzte 1.000 Einträge)
+              </Label>
             </div>
           </div>
 
@@ -452,12 +517,50 @@ function BackupConfigSection() {
               Backup-Umfang
             </p>
             <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
-              <li><span className="font-medium text-foreground">DB-Dump</span> – Vollständiger PostgreSQL-Datenbankexport (pg_dump oder JSON-Fallback)</li>
-              <li><span className="font-medium text-foreground">System-Konfiguration</span> – Backup- und Systemeinstellungen</li>
-              {includeTemplates && <li><span className="font-medium text-foreground">Template-Definitionen</span> – Alle Inhalts-Templates</li>}
-              {includeConnectors && <li><span className="font-medium text-foreground">Konnektoren</span> – Quellsysteme und Speicheranbieter (ohne Secrets)</li>}
-              {includeMediaIndex && <li><span className="font-medium text-foreground">Medien-Index</span> – Metadaten aller Medien-Assets (Dateinamen, Typen, Verknüpfungen)</li>}
-              {includeAuditMeta && <li><span className="font-medium text-foreground">Audit-Metadaten</span> – Letzte 1.000 Audit-Einträge für Nachvollziehbarkeit</li>}
+              <li>
+                <span className="font-medium text-foreground">DB-Dump</span> –
+                Vollständiger PostgreSQL-Datenbankexport (pg_dump oder
+                JSON-Fallback)
+              </li>
+              <li>
+                <span className="font-medium text-foreground">
+                  System-Konfiguration
+                </span>{" "}
+                – Backup- und Systemeinstellungen
+              </li>
+              {includeTemplates && (
+                <li>
+                  <span className="font-medium text-foreground">
+                    Template-Definitionen
+                  </span>{" "}
+                  – Alle Inhalts-Templates
+                </li>
+              )}
+              {includeConnectors && (
+                <li>
+                  <span className="font-medium text-foreground">
+                    Konnektoren
+                  </span>{" "}
+                  – Quellsysteme und Speicheranbieter (ohne Secrets)
+                </li>
+              )}
+              {includeMediaIndex && (
+                <li>
+                  <span className="font-medium text-foreground">
+                    Medien-Index
+                  </span>{" "}
+                  – Metadaten aller Medien-Assets (Dateinamen, Typen,
+                  Verknüpfungen)
+                </li>
+              )}
+              {includeAuditMeta && (
+                <li>
+                  <span className="font-medium text-foreground">
+                    Audit-Metadaten
+                  </span>{" "}
+                  – Letzte 1.000 Audit-Einträge für Nachvollziehbarkeit
+                </li>
+              )}
             </ul>
           </div>
 
@@ -510,7 +613,8 @@ function BackupHistorySection() {
           <HardDrive className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>Noch keine Backups erstellt</p>
           <p className="text-sm mt-1">
-            Erstellen Sie ein manuelles Backup oder aktivieren Sie die automatische Sicherung
+            Erstellen Sie ein manuelles Backup oder aktivieren Sie die
+            automatische Sicherung
           </p>
         </CardContent>
       </Card>
@@ -546,14 +650,13 @@ function BackupHistorySection() {
               <tbody>
                 {backupRuns.map((run) => {
                   const status = run.status || "pending";
-                  const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+                  const statusCfg =
+                    STATUS_CONFIG[status] || STATUS_CONFIG.pending;
                   const StatusIcon = statusCfg.icon;
 
                   return (
                     <tr key={run.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4">
-                        {formatDate(run.createdAt)}
-                      </td>
+                      <td className="py-2 pr-4">{formatDate(run.createdAt)}</td>
                       <td className="py-2 pr-4">
                         <Badge variant="outline">
                           {TYPE_LABELS[run.backupType] || run.backupType}
@@ -584,13 +687,24 @@ function BackupHistorySection() {
                           >
                             <FileText className="w-3.5 h-3.5" />
                           </Button>
-                          {status === "completed" && run.driveItemId && (
+                          {status === "completed" &&
+                            run.driveItemId &&
                             (() => {
-                              const manifest = run.manifest as Record<string, unknown> | null;
-                              const dbFormat = (manifest?.database as Record<string, string> | undefined)?.format;
+                              const manifest = run.manifest as Record<
+                                string,
+                                unknown
+                              > | null;
+                              const dbFormat = (
+                                manifest?.database as
+                                  | Record<string, string>
+                                  | undefined
+                              )?.format;
                               const isJsonFallback = dbFormat === "json_export";
                               return isJsonFallback ? (
-                                <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs text-amber-600 border-amber-300"
+                                >
                                   <AlertTriangle className="w-3 h-3 mr-1" />
                                   Nur Export
                                 </Badge>
@@ -604,8 +718,7 @@ function BackupHistorySection() {
                                   <RotateCcw className="w-3.5 h-3.5" />
                                 </Button>
                               );
-                            })()
-                          )}
+                            })()}
                         </div>
                       </td>
                     </tr>
@@ -618,10 +731,7 @@ function BackupHistorySection() {
       </Card>
 
       {logRun && (
-        <BackupLogDialog
-          run={logRun}
-          onClose={() => setLogRun(null)}
-        />
+        <BackupLogDialog run={logRun} onClose={() => setLogRun(null)} />
       )}
 
       {restoreRun && (
@@ -688,7 +798,11 @@ const COMPONENT_LABELS: Record<string, string> = {
   "system-config": "System-Konfiguration",
 };
 
-function ManifestPreview({ manifest }: { manifest: Record<string, unknown> | null | undefined }) {
+function ManifestPreview({
+  manifest,
+}: {
+  manifest: Record<string, unknown> | null | undefined;
+}) {
   if (!manifest) return null;
   const components = (manifest.components as string[]) ?? [];
   const db = manifest.database as Record<string, string> | undefined;
@@ -704,16 +818,26 @@ function ManifestPreview({ manifest }: { manifest: Record<string, unknown> | nul
         {components.map((c) => (
           <li key={c}>
             {COMPONENT_LABELS[c] || c}
-            {c === "database" && db?.format && <span className="ml-1">({db.format})</span>}
-            {c === "templates" && templates?.count != null && <span className="ml-1">({templates.count} Stück)</span>}
+            {c === "database" && db?.format && (
+              <span className="ml-1">({db.format})</span>
+            )}
+            {c === "templates" && templates?.count != null && (
+              <span className="ml-1">({templates.count} Stück)</span>
+            )}
             {c === "connectors" && connectors && (
               <span className="ml-1">
-                ({connectors.sourceSystemCount} Quellsysteme, {connectors.storageProviderCount} Speicheranbieter)
+                ({connectors.sourceSystemCount} Quellsysteme,{" "}
+                {connectors.storageProviderCount} Speicheranbieter)
               </span>
             )}
-            {c === "media-index" && mediaIndex?.count != null && <span className="ml-1">({mediaIndex.count} Assets)</span>}
+            {c === "media-index" && mediaIndex?.count != null && (
+              <span className="ml-1">({mediaIndex.count} Assets)</span>
+            )}
             {c === "audit-metadata" && auditMeta && (
-              <span className="ml-1">({auditMeta.exportedCount} von {auditMeta.totalEventCount} Einträgen)</span>
+              <span className="ml-1">
+                ({auditMeta.exportedCount} von {auditMeta.totalEventCount}{" "}
+                Einträgen)
+              </span>
             )}
           </li>
         ))}
@@ -747,7 +871,11 @@ function RestoreDialog({
     setRestoreError(null);
     try {
       const data = await dryRun.mutateAsync({ id: run.id });
-      const result = data as { feasible?: boolean; details?: Record<string, unknown>; warnings?: string[] };
+      const result = data as {
+        feasible?: boolean;
+        details?: Record<string, unknown>;
+        warnings?: string[];
+      };
       setDryRunResult({
         feasible: result.feasible ?? false,
         details: result.details ?? {},
@@ -767,7 +895,8 @@ function RestoreDialog({
       queryClient.invalidateQueries({ queryKey: getListBackupRunsQueryKey() });
       onClose();
     } catch (err: unknown) {
-      const msg = extractErrorMessage(err) || "Wiederherstellung fehlgeschlagen";
+      const msg =
+        extractErrorMessage(err) || "Wiederherstellung fehlgeschlagen";
       setRestoreError(msg);
     }
   };
@@ -781,7 +910,8 @@ function RestoreDialog({
             Backup wiederherstellen
           </DialogTitle>
           <DialogDescription>
-            Diese Aktion überschreibt die aktuelle Datenbank mit dem Backup-Stand.
+            Diese Aktion überschreibt die aktuelle Datenbank mit dem
+            Backup-Stand.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -794,21 +924,38 @@ function RestoreDialog({
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Alle Änderungen seit dem Backup-Zeitpunkt (
-                  {formatDate(run.createdAt)}) gehen verloren.
-                  Diese Aktion kann nicht rückgängig gemacht werden.
+                  {formatDate(run.createdAt)}) gehen verloren. Diese Aktion kann
+                  nicht rückgängig gemacht werden.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="text-sm space-y-1">
-            <p><span className="font-medium">Datei:</span> {run.fileName || "–"}</p>
-            <p><span className="font-medium">Erstellt:</span> {formatDate(run.createdAt)}</p>
-            <p><span className="font-medium">Typ:</span> {TYPE_LABELS[run.backupType] || run.backupType}</p>
-            <p><span className="font-medium">Größe:</span> {formatBytes(run.sizeBytes)}</p>
-            <p><span className="font-medium">Dauer:</span> {formatDuration(run.durationMs)}</p>
+            <p>
+              <span className="font-medium">Datei:</span> {run.fileName || "–"}
+            </p>
+            <p>
+              <span className="font-medium">Erstellt:</span>{" "}
+              {formatDate(run.createdAt)}
+            </p>
+            <p>
+              <span className="font-medium">Typ:</span>{" "}
+              {TYPE_LABELS[run.backupType] || run.backupType}
+            </p>
+            <p>
+              <span className="font-medium">Größe:</span>{" "}
+              {formatBytes(run.sizeBytes)}
+            </p>
+            <p>
+              <span className="font-medium">Dauer:</span>{" "}
+              {formatDuration(run.durationMs)}
+            </p>
             {run.triggeredBy && (
-              <p><span className="font-medium">Ausgelöst von:</span> {run.triggeredBy}</p>
+              <p>
+                <span className="font-medium">Ausgelöst von:</span>{" "}
+                {run.triggeredBy}
+              </p>
             )}
           </div>
 
@@ -833,8 +980,12 @@ function RestoreDialog({
             </div>
             {dryRunResult && (
               <div className="space-y-1">
-                <Badge variant={dryRunResult.feasible ? "default" : "destructive"}>
-                  {dryRunResult.feasible ? "Wiederherstellung möglich" : "Wiederherstellung nicht möglich"}
+                <Badge
+                  variant={dryRunResult.feasible ? "default" : "destructive"}
+                >
+                  {dryRunResult.feasible
+                    ? "Wiederherstellung möglich"
+                    : "Wiederherstellung nicht möglich"}
                 </Badge>
                 {dryRunResult.warnings.length > 0 && (
                   <ul className="text-xs text-amber-700 space-y-0.5 ml-4 list-disc">
@@ -848,7 +999,10 @@ function RestoreDialog({
           </div>
 
           {restoreError && (
-            <ErrorBanner message={restoreError} onDismiss={() => setRestoreError(null)} />
+            <ErrorBanner
+              message={restoreError}
+              onDismiss={() => setRestoreError(null)}
+            />
           )}
 
           <div className="flex items-center gap-3">
@@ -865,7 +1019,11 @@ function RestoreDialog({
           <Button
             variant="destructive"
             onClick={handleRestore}
-            disabled={!confirmed || restore.isPending || (dryRunResult !== null && !dryRunResult.feasible)}
+            disabled={
+              !confirmed ||
+              restore.isPending ||
+              (dryRunResult !== null && !dryRunResult.feasible)
+            }
           >
             {restore.isPending ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

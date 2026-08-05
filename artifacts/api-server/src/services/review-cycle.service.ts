@@ -46,10 +46,7 @@ async function checkOverdueReviews(): Promise<void> {
     return;
   }
 
-  logger.info(
-    { count: overdueRevisions.length },
-    "Found overdue reviews",
-  );
+  logger.info({ count: overdueRevisions.length }, "Found overdue reviews");
 
   for (const rev of overdueRevisions) {
     if (!rev.nextReviewDate) continue;
@@ -64,7 +61,12 @@ async function checkOverdueReviews(): Promise<void> {
       .where(
         and(
           eq(notificationsTable.nodeId, rev.nodeId),
-          eq(notificationsTable.type, daysOverdue >= ESCALATION_DAYS ? "review_overdue_escalation" : "review_overdue"),
+          eq(
+            notificationsTable.type,
+            daysOverdue >= ESCALATION_DAYS
+              ? "review_overdue_escalation"
+              : "review_overdue",
+          ),
           sql`${notificationsTable.createdAt} > NOW() - INTERVAL '24 hours'`,
         ),
       )

@@ -77,7 +77,10 @@ interface BlockEditorProps {
   conflictWarning?: string | null;
   className?: string;
   onTrackMediaUsage?: (assetId: string) => void;
-  onCreateSubpage?: (context: { headingText: string; afterPos: number }) => void;
+  onCreateSubpage?: (context: {
+    headingText: string;
+    afterPos: number;
+  }) => void;
   parentTemplateType?: string;
   fieldKey?: string;
 }
@@ -139,7 +142,7 @@ export function BlockEditor({
         dropcursor: { color: "hsl(var(--primary))", width: 2 },
       }),
       Placeholder.configure({
-        placeholder: '',
+        placeholder: "",
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -209,7 +212,11 @@ export function BlockEditor({
       // verursachte Tipp-Latenz auf langen Seiten.
       const { state } = ed;
       const { from } = state.selection;
-      const textBefore = state.doc.textBetween(Math.max(0, from - 20), from, "");
+      const textBefore = state.doc.textBetween(
+        Math.max(0, from - 20),
+        from,
+        "",
+      );
       // Nur Slash am Zeilen-/Wortanfang öffnet das Menü — nicht "und/oder".
       const slashMatch = textBefore.match(/(?:^|\s)(\/([^/\s]*))$/);
 
@@ -351,7 +358,9 @@ export function BlockEditor({
 
   useEffect(() => {
     const handleWikiPickerEvent = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { editor?: unknown } | undefined;
+      const detail = (e as CustomEvent).detail as
+        | { editor?: unknown }
+        | undefined;
       if (detail?.editor !== editor) return;
       setWikiPickerOpen(true);
     };
@@ -673,7 +682,12 @@ export function BlockEditor({
           if (!open) {
             window.dispatchEvent(new CustomEvent("editor:media-dialog-closed"));
           }
-          setMediaDialog({ open, type: null, replace: false, galleryMode: false });
+          setMediaDialog({
+            open,
+            type: null,
+            replace: false,
+            galleryMode: false,
+          });
         }}
         onSelect={handleMediaSelect}
         filterType={mediaDialog.type}

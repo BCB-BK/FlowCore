@@ -12,12 +12,8 @@ import {
 } from "@workspace/db/schema";
 import { eq, and, desc, isNull, sql, inArray, notInArray } from "drizzle-orm";
 import { createContentNode, moveNode } from "../services/identity.service";
-import {
-  getVersionTree,
-} from "../services/revision.service";
-import {
-  restoreAsWorkingCopy,
-} from "../services/working-copy.service";
+import { getVersionTree } from "../services/revision.service";
+import { restoreAsWorkingCopy } from "../services/working-copy.service";
 import {
   createRelation,
   removeRelation,
@@ -29,7 +25,10 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
 import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
-import { checkConfidentialityAccess, checkConfidentialityAccessBatch } from "../services/confidentiality.service";
+import {
+  checkConfidentialityAccess,
+  checkConfidentialityAccessBatch,
+} from "../services/confidentiality.service";
 import { AppError } from "../lib/app-error";
 import { recordEvent } from "../services/graph-change-feed.service";
 import {
@@ -103,18 +102,16 @@ router.get(
   requireAuth,
   requirePermission("read_page"),
   async (_req, res) => {
-    const childrenAlias = db
-      .$with("children_count")
-      .as(
-        db
-          .select({
-            parentNodeId: contentNodesTable.parentNodeId,
-            count: sql<number>`count(*)::int`.as("count"),
-          })
-          .from(contentNodesTable)
-          .where(eq(contentNodesTable.isDeleted, false))
-          .groupBy(contentNodesTable.parentNodeId),
-      );
+    const childrenAlias = db.$with("children_count").as(
+      db
+        .select({
+          parentNodeId: contentNodesTable.parentNodeId,
+          count: sql<number>`count(*)::int`.as("count"),
+        })
+        .from(contentNodesTable)
+        .where(eq(contentNodesTable.isDeleted, false))
+        .groupBy(contentNodesTable.parentNodeId),
+    );
 
     const roots = await db
       .with(childrenAlias)
@@ -135,10 +132,15 @@ router.get(
         deletedAt: contentNodesTable.deletedAt,
         createdAt: contentNodesTable.createdAt,
         updatedAt: contentNodesTable.updatedAt,
-        childCount: sql<number>`coalesce(${childrenAlias.count}, 0)`.as("childCount"),
+        childCount: sql<number>`coalesce(${childrenAlias.count}, 0)`.as(
+          "childCount",
+        ),
       })
       .from(contentNodesTable)
-      .leftJoin(childrenAlias, eq(contentNodesTable.id, sql`${childrenAlias.parentNodeId}`))
+      .leftJoin(
+        childrenAlias,
+        eq(contentNodesTable.id, sql`${childrenAlias.parentNodeId}`),
+      )
       .where(
         and(
           isNull(contentNodesTable.parentNodeId),
@@ -218,7 +220,12 @@ router.patch(
     if (Object.keys(updates).length === 0) {
       res.status(400).json({
         error: "Validierungsfehler",
-        details: [{ field: "(root)", message: "Keine aktualisierbaren Felder angegeben" }],
+        details: [
+          {
+            field: "(root)",
+            message: "Keine aktualisierbaren Felder angegeben",
+          },
+        ],
       });
       return;
     }
@@ -301,7 +308,8 @@ router.post(
         );
         if (!canEditTarget) {
           res.status(403).json({
-            error: "Keine Berechtigung, Seiten unter dem Zielknoten einzuordnen",
+            error:
+              "Keine Berechtigung, Seiten unter dem Zielknoten einzuordnen",
           });
           return;
         }
@@ -340,7 +348,10 @@ router.delete(
     const id = req.params.id as string;
 
     const [node] = await db
-      .select({ id: contentNodesTable.id, isDeleted: contentNodesTable.isDeleted })
+      .select({
+        id: contentNodesTable.id,
+        isDeleted: contentNodesTable.isDeleted,
+      })
       .from(contentNodesTable)
       .where(eq(contentNodesTable.id, id));
     if (!node || node.isDeleted) {
@@ -397,18 +408,16 @@ router.get(
   async (req, res) => {
     const id = req.params.id as string;
 
-    const grandchildrenCount = db
-      .$with("grandchildren_count")
-      .as(
-        db
-          .select({
-            parentNodeId: contentNodesTable.parentNodeId,
-            count: sql<number>`count(*)::int`.as("count"),
-          })
-          .from(contentNodesTable)
-          .where(eq(contentNodesTable.isDeleted, false))
-          .groupBy(contentNodesTable.parentNodeId),
-      );
+    const grandchildrenCount = db.$with("grandchildren_count").as(
+      db
+        .select({
+          parentNodeId: contentNodesTable.parentNodeId,
+          count: sql<number>`count(*)::int`.as("count"),
+        })
+        .from(contentNodesTable)
+        .where(eq(contentNodesTable.isDeleted, false))
+        .groupBy(contentNodesTable.parentNodeId),
+    );
 
     const children = await db
       .with(grandchildrenCount)
@@ -429,10 +438,15 @@ router.get(
         deletedAt: contentNodesTable.deletedAt,
         createdAt: contentNodesTable.createdAt,
         updatedAt: contentNodesTable.updatedAt,
-        childCount: sql<number>`coalesce(${grandchildrenCount.count}, 0)`.as("childCount"),
+        childCount: sql<number>`coalesce(${grandchildrenCount.count}, 0)`.as(
+          "childCount",
+        ),
       })
       .from(contentNodesTable)
-      .leftJoin(grandchildrenCount, eq(contentNodesTable.id, sql`${grandchildrenCount.parentNodeId}`))
+      .leftJoin(
+        grandchildrenCount,
+        eq(contentNodesTable.id, sql`${grandchildrenCount.parentNodeId}`),
+      )
       .where(
         and(
           eq(contentNodesTable.parentNodeId, id),
@@ -459,14 +473,22 @@ router.get(
           authorDisplayName: principalsTable.displayName,
         })
         .from(contentWorkingCopiesTable)
-        .leftJoin(principalsTable, sql`${contentWorkingCopiesTable.authorId}::uuid = ${principalsTable.id}`)
+        .leftJoin(
+          principalsTable,
+          sql`${contentWorkingCopiesTable.authorId}::uuid = ${principalsTable.id}`,
+        )
         .where(
           and(
             inArray(contentWorkingCopiesTable.nodeId, filteredIds),
-            notInArray(contentWorkingCopiesTable.status, ["cancelled", "published"]),
+            notInArray(contentWorkingCopiesTable.status, [
+              "cancelled",
+              "published",
+            ]),
           ),
         );
-      wcAuthorNameMap = new Map(activeWCs.map((wc) => [wc.nodeId, wc.authorDisplayName ?? null]));
+      wcAuthorNameMap = new Map(
+        activeWCs.map((wc) => [wc.nodeId, wc.authorDisplayName ?? null]),
+      );
     }
 
     const result = filteredChildren.map((c) => ({
@@ -487,7 +509,11 @@ router.get(
     const siblings = await getSiblings(id);
     const principalId = req.user!.principalId;
     const siblingIds = siblings.map((sib) => sib.id);
-    const permMap = await hasPermissionBatch(principalId, "read_page", siblingIds);
+    const permMap = await hasPermissionBatch(
+      principalId,
+      "read_page",
+      siblingIds,
+    );
     const filtered = siblings.filter((sib) => permMap.get(sib.id) === true);
     res.json(filtered);
   },
@@ -554,15 +580,12 @@ router.get(
   },
 );
 
-router.post(
-  "/nodes/:id/revisions",
-  requireAuth,
-  (_req, res) => {
-    res.status(409).json({
-      error: "Direkte Revisionserstellung ist deaktiviert. Bitte verwenden Sie den Arbeitskopie-Workflow (POST /nodes/:id/working-copies).",
-    });
-  },
-);
+router.post("/nodes/:id/revisions", requireAuth, (_req, res) => {
+  res.status(409).json({
+    error:
+      "Direkte Revisionserstellung ist deaktiviert. Bitte verwenden Sie den Arbeitskopie-Workflow (POST /nodes/:id/working-copies).",
+  });
+});
 
 router.get(
   "/nodes/:id/revisions",
@@ -575,15 +598,12 @@ router.get(
   },
 );
 
-router.post(
-  "/revisions/:id/publish",
-  requireAuth,
-  (_req, res) => {
-    res.status(409).json({
-      error: "Direktes Veröffentlichen von Revisionen ist deaktiviert. Veröffentlichung erfolgt ausschließlich über den Arbeitskopie-Freigabe-Workflow (POST /working-copies/:id/publish).",
-    });
-  },
-);
+router.post("/revisions/:id/publish", requireAuth, (_req, res) => {
+  res.status(409).json({
+    error:
+      "Direktes Veröffentlichen von Revisionen ist deaktiviert. Veröffentlichung erfolgt ausschließlich über den Arbeitskopie-Freigabe-Workflow (POST /working-copies/:id/publish).",
+  });
+});
 
 router.post(
   "/revisions/:id/restore",
@@ -615,7 +635,11 @@ router.post(
     } catch (err) {
       const code = (err as { code?: string }).code;
       if (code === "WORKING_COPY_ACTIVE") {
-        throw new AppError(409, "Es existiert bereits eine aktive Arbeitskopie für diesen Inhalt.", { code });
+        throw new AppError(
+          409,
+          "Es existiert bereits eine aktive Arbeitskopie für diesen Inhalt.",
+          { code },
+        );
       }
       throw err;
     }
@@ -738,8 +762,14 @@ router.get(
 
     const principalId = req.user!.principalId;
     const sourceIds = backlinks.map((link) => link.sourceId);
-    const permMap = await hasPermissionBatch(principalId, "read_page", sourceIds);
-    const filtered = backlinks.filter((link) => permMap.get(link.sourceId) === true);
+    const permMap = await hasPermissionBatch(
+      principalId,
+      "read_page",
+      sourceIds,
+    );
+    const filtered = backlinks.filter(
+      (link) => permMap.get(link.sourceId) === true,
+    );
 
     res.json(filtered);
   },
@@ -776,8 +806,14 @@ router.get(
 
     const principalId = req.user!.principalId;
     const targetIds = forwardLinks.map((link) => link.targetId);
-    const permMap = await hasPermissionBatch(principalId, "read_page", targetIds);
-    const filtered = forwardLinks.filter((link) => permMap.get(link.targetId) === true);
+    const permMap = await hasPermissionBatch(
+      principalId,
+      "read_page",
+      targetIds,
+    );
+    const filtered = forwardLinks.filter(
+      (link) => permMap.get(link.targetId) === true,
+    );
 
     res.json(filtered);
   },
@@ -811,7 +847,11 @@ router.get(
       );
 
     const brokenSourceIds = brokenRelations.map((rel) => rel.sourceNodeId);
-    const brokenPermMap = await hasPermissionBatch(principalId, "read_page", brokenSourceIds);
+    const brokenPermMap = await hasPermissionBatch(
+      principalId,
+      "read_page",
+      brokenSourceIds,
+    );
     const filteredRelations = brokenRelations.filter(
       (rel) => brokenPermMap.get(rel.sourceNodeId) === true,
     );
@@ -835,7 +875,11 @@ router.get(
       );
 
     const orphanIds = orphanedNodes.map((node) => node.id);
-    const orphanPermMap = await hasPermissionBatch(principalId, "read_page", orphanIds);
+    const orphanPermMap = await hasPermissionBatch(
+      principalId,
+      "read_page",
+      orphanIds,
+    );
     const filteredOrphans = orphanedNodes.filter(
       (node) => orphanPermMap.get(node.id) === true,
     );

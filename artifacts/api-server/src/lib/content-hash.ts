@@ -18,7 +18,8 @@ function stableStringify(value: unknown): string {
   }
   const keys = Object.keys(value as Record<string, unknown>).sort();
   const entries = keys.map(
-    (k) => `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`,
+    (k) =>
+      `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`,
   );
   return `{${entries.join(",")}}`;
 }

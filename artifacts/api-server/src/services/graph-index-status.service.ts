@@ -28,7 +28,9 @@ export interface GlossaryIndexStatus {
   lastSyncedAt: Date | null;
 }
 
-function toIndexStatus(lastResult: string | undefined | null): PageIndexStatus["indexStatus"] {
+function toIndexStatus(
+  lastResult: string | undefined | null,
+): PageIndexStatus["indexStatus"] {
   if (lastResult === "success") return "synced";
   if (lastResult === "failed") return "failed";
   if (lastResult === "skipped") return "skipped";
@@ -72,7 +74,9 @@ export async function listPageIndexStatus(): Promise<PageIndexStatus[]> {
 }
 
 /** Index status per glossary term ("Indexstatus pro Glossarbegriff"). */
-export async function listGlossaryIndexStatus(): Promise<GlossaryIndexStatus[]> {
+export async function listGlossaryIndexStatus(): Promise<
+  GlossaryIndexStatus[]
+> {
   const terms = await db
     .select({ id: glossaryTermsTable.id, term: glossaryTermsTable.term })
     .from(glossaryTermsTable);

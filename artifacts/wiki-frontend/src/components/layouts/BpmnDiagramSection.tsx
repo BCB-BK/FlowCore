@@ -2,7 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import { BpmnEditor, DEFAULT_BPMN_XML } from "@/components/editor/BpmnEditor";
 import { DiagramLegend } from "@/components/qm/DiagramLegend";
 import { Button } from "@workspace/ui/button";
-import { GitBranch, Pencil, ImageUp, ArrowLeftRight, X, Upload, Link2, Trash2 } from "lucide-react";
+import {
+  GitBranch,
+  Pencil,
+  ImageUp,
+  ArrowLeftRight,
+  X,
+  Upload,
+  Link2,
+  Trash2,
+} from "lucide-react";
 
 interface BpmnDiagramData {
   xml: string;
@@ -11,7 +20,12 @@ interface BpmnDiagramData {
 }
 
 function isBpmnData(v: unknown): v is BpmnDiagramData {
-  return typeof v === "object" && v !== null && "xml" in v && typeof (v as BpmnDiagramData).xml === "string";
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    "xml" in v &&
+    typeof (v as BpmnDiagramData).xml === "string"
+  );
 }
 
 interface BpmnDiagramSectionProps {
@@ -32,8 +46,10 @@ function sanitizeSvg(raw: string): string {
         const name = attr.name.toLowerCase();
         if (
           name.startsWith("on") ||
-          (name === "href" && attr.value.trim().toLowerCase().startsWith("javascript:")) ||
-          (name === "xlink:href" && attr.value.trim().toLowerCase().startsWith("javascript:"))
+          (name === "href" &&
+            attr.value.trim().toLowerCase().startsWith("javascript:")) ||
+          (name === "xlink:href" &&
+            attr.value.trim().toLowerCase().startsWith("javascript:"))
         ) {
           el.removeAttribute(attr.name);
         }
@@ -66,26 +82,36 @@ function SvgViewer({ svgContent }: { svgContent: string }) {
     svgEl.setAttribute("height", "100%");
 
     let cancelled = false;
-    import("svg-pan-zoom").then(({ default: svgPanZoom }) => {
-      if (cancelled || !svgEl.parentNode) return;
-      try {
-        const instance = svgPanZoom(svgEl as SVGElement, {
-          zoomEnabled: true,
-          panEnabled: true,
-          controlIconsEnabled: true,
-          fit: true,
-          center: true,
-          minZoom: 0.1,
-          maxZoom: 20,
-        });
-        panZoomRef.current = instance;
-      } catch { /* ignore */ }
-    }).catch(() => { /* ignore */ });
+    import("svg-pan-zoom")
+      .then(({ default: svgPanZoom }) => {
+        if (cancelled || !svgEl.parentNode) return;
+        try {
+          const instance = svgPanZoom(svgEl as SVGElement, {
+            zoomEnabled: true,
+            panEnabled: true,
+            controlIconsEnabled: true,
+            fit: true,
+            center: true,
+            minZoom: 0.1,
+            maxZoom: 20,
+          });
+          panZoomRef.current = instance;
+        } catch {
+          /* ignore */
+        }
+      })
+      .catch(() => {
+        /* ignore */
+      });
 
     return () => {
       cancelled = true;
       if (panZoomRef.current) {
-        try { panZoomRef.current.destroy(); } catch { /* ignore */ }
+        try {
+          panZoomRef.current.destroy();
+        } catch {
+          /* ignore */
+        }
         panZoomRef.current = null;
       }
     };
@@ -156,7 +182,10 @@ function SvgImportEditor({
     <div className="rounded-lg border p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">SVG-Datei einbetten</h3>
-        <button onClick={onCancel} className="p-1 rounded hover:bg-accent text-muted-foreground">
+        <button
+          onClick={onCancel}
+          className="p-1 rounded hover:bg-accent text-muted-foreground"
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -186,7 +215,9 @@ function SvgImportEditor({
           <ImageUp className="h-8 w-8 text-muted-foreground/50" />
           <div className="text-center">
             <p className="text-sm font-medium">SVG-Datei auswählen</p>
-            <p className="text-xs text-muted-foreground mt-1">z. B. Miro-Export, Draw.io, Visio-Export</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              z. B. Miro-Export, Draw.io, Visio-Export
+            </p>
           </div>
           <input
             ref={fileInputRef}
@@ -200,7 +231,9 @@ function SvgImportEditor({
 
       {mode === "url" && (
         <div className="space-y-2">
-          <label className="text-xs text-muted-foreground">SVG-URL (öffentlich erreichbar)</label>
+          <label className="text-xs text-muted-foreground">
+            SVG-URL (öffentlich erreichbar)
+          </label>
           <div className="flex gap-2">
             <input
               type="url"
@@ -209,20 +242,24 @@ function SvgImportEditor({
               placeholder="https://example.com/diagram.svg"
               className="flex-1 rounded border px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary"
             />
-            <Button size="sm" onClick={handleUrl} disabled={loading || !urlValue.trim()}>
+            <Button
+              size="sm"
+              onClick={handleUrl}
+              disabled={loading || !urlValue.trim()}
+            >
               {loading ? "Laden…" : "Laden"}
             </Button>
           </div>
         </div>
       )}
 
-      {error && (
-        <p className="text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
       {current && (
         <div className="pt-2 border-t">
-          <p className="text-xs text-muted-foreground mb-2">Aktuelle SVG-Vorschau:</p>
+          <p className="text-xs text-muted-foreground mb-2">
+            Aktuelle SVG-Vorschau:
+          </p>
           <SvgViewer svgContent={current} />
         </div>
       )}
@@ -230,7 +267,11 @@ function SvgImportEditor({
   );
 }
 
-export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagramSectionProps) {
+export function BpmnDiagramSection({
+  data,
+  onSave,
+  readOnly = false,
+}: BpmnDiagramSectionProps) {
   const [editing, setEditing] = useState(false);
   const [svgEditing, setSvgEditing] = useState(false);
 
@@ -251,7 +292,11 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
   }
 
   function handleSvgSave(svgContent: string) {
-    onSave?.({ xml: xml ?? DEFAULT_BPMN_XML, svgEmbed: svgContent, mode: "svg" });
+    onSave?.({
+      xml: xml ?? DEFAULT_BPMN_XML,
+      svgEmbed: svgContent,
+      mode: "svg",
+    });
     setSvgEditing(false);
   }
 
@@ -264,7 +309,9 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 py-12 text-center">
         <GitBranch className="h-8 w-8 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">Kein BPMN-Diagramm vorhanden</p>
+        <p className="text-sm text-muted-foreground">
+          Kein BPMN-Diagramm vorhanden
+        </p>
       </div>
     );
   }
@@ -274,14 +321,15 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
       <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-primary/40 bg-muted/20 py-14 text-center">
         <GitBranch className="h-10 w-10 text-primary/50" />
         <div>
-          <p className="text-sm font-medium text-foreground">Noch kein BPMN 2.0-Diagramm vorhanden</p>
-          <p className="mt-1 text-xs text-muted-foreground">Erstelle ein Prozessdiagramm oder bette eine externe SVG ein</p>
+          <p className="text-sm font-medium text-foreground">
+            Noch kein BPMN 2.0-Diagramm vorhanden
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Erstelle ein Prozessdiagramm oder bette eine externe SVG ein
+          </p>
         </div>
         <div className="flex gap-3 flex-wrap justify-center">
-          <Button
-            size="sm"
-            onClick={() => setEditing(true)}
-          >
+          <Button size="sm" onClick={() => setEditing(true)}>
             <GitBranch className="mr-2 h-4 w-4" />
             BPMN-Diagramm erstellen
           </Button>
@@ -332,13 +380,21 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
           </div>
           <div className="flex gap-2">
             {mode === "svg" && (
-              <Button variant="outline" size="sm" onClick={() => setSvgEditing(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSvgEditing(true)}
+              >
                 <ImageUp className="mr-2 h-3.5 w-3.5" />
                 SVG ersetzen
               </Button>
             )}
             {mode === "bpmn" && !editing && (
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditing(true)}
+              >
                 <Pencil className="mr-2 h-3.5 w-3.5" />
                 Diagramm bearbeiten
               </Button>
@@ -349,7 +405,11 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
                 size="sm"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => {
-                  if (window.confirm("Diagramm wirklich entfernen? Diese Aktion kann rückgängig gemacht werden, solange die Arbeitskopie noch nicht gespeichert ist.")) {
+                  if (
+                    window.confirm(
+                      "Diagramm wirklich entfernen? Diese Aktion kann rückgängig gemacht werden, solange die Arbeitskopie noch nicht gespeichert ist.",
+                    )
+                  ) {
                     onSave?.(null);
                   }
                 }}
@@ -366,7 +426,11 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
         <div className="space-y-3">
           <SvgViewer svgContent={svgEmbed} />
           {!readOnly && !hasSvgEmbed && (
-            <Button variant="outline" size="sm" onClick={() => setSvgEditing(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSvgEditing(true)}
+            >
               <ImageUp className="mr-2 h-3.5 w-3.5" />
               SVG hochladen
             </Button>
@@ -378,7 +442,9 @@ export function BpmnDiagramSection({ data, onSave, readOnly = false }: BpmnDiagr
           onClick={() => setSvgEditing(true)}
         >
           <ImageUp className="h-8 w-8 text-primary/50" />
-          <p className="text-sm text-muted-foreground">SVG-Datei hochladen oder URL eingeben</p>
+          <p className="text-sm text-muted-foreground">
+            SVG-Datei hochladen oder URL eingeben
+          </p>
         </div>
       ) : (
         <>

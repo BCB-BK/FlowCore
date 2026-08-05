@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from "@tiptap/react";
+import {
+  NodeViewWrapper,
+  NodeViewContent,
+  type NodeViewProps,
+} from "@tiptap/react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -280,16 +284,21 @@ function formatFileSize(bytes: number): string {
 }
 
 export function FileBlockNodeView({ node, editor }: NodeViewProps) {
-  const { src, filename, filesize, mimeType, caption, altText, source, license, sourceType } =
-    node.attrs;
+  const {
+    src,
+    filename,
+    filesize,
+    mimeType,
+    caption,
+    altText,
+    source,
+    license,
+    sourceType,
+  } = node.attrs;
 
   const handleUpdateAttrs = useCallback(
     (attrs: Record<string, string>) => {
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("fileBlock", attrs)
-        .run();
+      editor.chain().focus().updateAttributes("fileBlock", attrs).run();
     },
     [editor],
   );
@@ -351,11 +360,7 @@ export function VideoBlockNodeView({ node, editor }: NodeViewProps) {
 
   const handleUpdateAttrs = useCallback(
     (attrs: Record<string, string>) => {
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("videoBlock", attrs)
-        .run();
+      editor.chain().focus().updateAttributes("videoBlock", attrs).run();
     },
     [editor],
   );
@@ -414,7 +419,9 @@ export function VideoBlockNodeView({ node, editor }: NodeViewProps) {
     );
   }
 
-  const isLocal = src.startsWith("/api/media/") || src.startsWith(import.meta.env.BASE_URL + "api/media/");
+  const isLocal =
+    src.startsWith("/api/media/") ||
+    src.startsWith(import.meta.env.BASE_URL + "api/media/");
   const embedUrl = isLocal ? src : getVideoEmbedUrl(src);
   const isAllowed = isLocal || isAllowedVideoSource(src);
 
@@ -456,10 +463,7 @@ export function VideoBlockNodeView({ node, editor }: NodeViewProps) {
           )}
           {editor.isEditable && (
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <ReplaceMediaButton
-                onReplace={handleReplace}
-                mediaType="Video"
-              />
+              <ReplaceMediaButton onReplace={handleReplace} mediaType="Video" />
             </div>
           )}
         </div>
@@ -482,11 +486,7 @@ export function EmbedBlockNodeView({ node, editor }: NodeViewProps) {
 
   const handleUpdateAttrs = useCallback(
     (attrs: Record<string, string>) => {
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("embedBlock", attrs)
-        .run();
+      editor.chain().focus().updateAttributes("embedBlock", attrs).run();
     },
     [editor],
   );
@@ -631,7 +631,9 @@ export function EmbedBlockNodeView({ node, editor }: NodeViewProps) {
                 }
               }}
             >
-              {caption ? "Beschriftung bearbeiten" : "+ Beschriftung hinzufügen"}
+              {caption
+                ? "Beschriftung bearbeiten"
+                : "+ Beschriftung hinzufügen"}
             </button>
           </div>
         )}
@@ -641,16 +643,13 @@ export function EmbedBlockNodeView({ node, editor }: NodeViewProps) {
 }
 
 export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
-  const { diagramType, src, caption, description, bpmnXml, showLegend } = node.attrs;
+  const { diagramType, src, caption, description, bpmnXml, showLegend } =
+    node.attrs;
   const [editingBpmn, setEditingBpmn] = useState(false);
 
   const handleUpdateAttrs = useCallback(
     (attrs: Record<string, unknown>) => {
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("diagramBlock", attrs)
-        .run();
+      editor.chain().focus().updateAttributes("diagramBlock", attrs).run();
     },
     [editor],
   );
@@ -718,7 +717,9 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
             </p>
           )}
           {description && (
-            <p className="text-xs text-muted-foreground px-3 pb-2">{description}</p>
+            <p className="text-xs text-muted-foreground px-3 pb-2">
+              {description}
+            </p>
           )}
         </div>
       </NodeViewWrapper>
@@ -763,7 +764,11 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
             )}
           </div>
           {isImage ? (
-            <img src={src} alt={caption || "Diagramm"} className="w-full rounded" />
+            <img
+              src={src}
+              alt={caption || "Diagramm"}
+              className="w-full rounded"
+            />
           ) : (
             <iframe
               src={src}
@@ -773,7 +778,9 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
             />
           )}
           {caption && (
-            <p className="text-sm text-center mt-2 text-muted-foreground">{caption}</p>
+            <p className="text-sm text-center mt-2 text-muted-foreground">
+              {caption}
+            </p>
           )}
           {description && (
             <p className="text-xs text-muted-foreground mt-1">{description}</p>
@@ -788,9 +795,12 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
       <div className="rounded-lg border-2 border-dashed p-6 my-2">
         <div className="flex flex-col items-center justify-center text-muted-foreground">
           <GitBranch className="h-10 w-10 mb-3 text-purple-500" />
-          <p className="text-sm font-semibold text-foreground">BPMN-Prozessdiagramm</p>
+          <p className="text-sm font-semibold text-foreground">
+            BPMN-Prozessdiagramm
+          </p>
           <p className="text-xs mt-1 text-center max-w-xs">
-            Professionelle Prozessmodellierung nach BPMN 2.0 — mit Swimlanes, Gateways, parallelen Pfaden und mehr
+            Professionelle Prozessmodellierung nach BPMN 2.0 — mit Swimlanes,
+            Gateways, parallelen Pfaden und mehr
           </p>
         </div>
 
@@ -836,10 +846,11 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
 
         {!editor.isEditable && (
           <div className="text-center mt-3">
-            <p className="text-xs text-muted-foreground italic">Kein Diagramm definiert</p>
+            <p className="text-xs text-muted-foreground italic">
+              Kein Diagramm definiert
+            </p>
           </div>
         )}
-
       </div>
     </NodeViewWrapper>
   );
@@ -866,7 +877,11 @@ function DiagramMetaPanel({
   roles: DiagramRole[];
   onUpdateAttrs: (attrs: Record<string, unknown>) => void;
   onAddStep: () => void;
-  onUpdateStep: (id: string, field: keyof ProcessStep, value: string | number) => void;
+  onUpdateStep: (
+    id: string,
+    field: keyof ProcessStep,
+    value: string | number,
+  ) => void;
   onRemoveStep: (id: string) => void;
   onAddRole: () => void;
   onUpdateRole: (id: string, field: keyof DiagramRole, value: string) => void;
@@ -910,10 +925,7 @@ function DiagramMetaPanel({
         ) : (
           <div className="space-y-1">
             {steps.map((step, idx) => (
-              <div
-                key={step.id}
-                className="flex items-center gap-1.5 text-xs"
-              >
+              <div key={step.id} className="flex items-center gap-1.5 text-xs">
                 <span className="w-5 text-muted-foreground text-right shrink-0">
                   {idx + 1}.
                 </span>
@@ -1016,11 +1028,7 @@ export function GalleryBlockNodeView({ node, editor }: NodeViewProps) {
 
   const handleUpdateAttrs = useCallback(
     (attrs: Record<string, unknown>) => {
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("galleryBlock", attrs)
-        .run();
+      editor.chain().focus().updateAttributes("galleryBlock", attrs).run();
     },
     [editor],
   );
@@ -1029,7 +1037,10 @@ export function GalleryBlockNodeView({ node, editor }: NodeViewProps) {
 
   const cleanupGalleryListener = useCallback(() => {
     if (galleryListenerRef.current) {
-      window.removeEventListener("editor:gallery-media-selected", galleryListenerRef.current);
+      window.removeEventListener(
+        "editor:gallery-media-selected",
+        galleryListenerRef.current,
+      );
       galleryListenerRef.current = null;
     }
   }, []);
@@ -1135,9 +1146,7 @@ export function GalleryBlockNodeView({ node, editor }: NodeViewProps) {
               <select
                 className="text-[10px] px-1.5 py-0.5 rounded border bg-background"
                 value={galleryLayout}
-                onChange={(e) =>
-                  handleUpdateAttrs({ layout: e.target.value })
-                }
+                onChange={(e) => handleUpdateAttrs({ layout: e.target.value })}
               >
                 <option value="grid">Raster</option>
               </select>
@@ -1315,7 +1324,9 @@ export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
       >
         <BookOpen className="h-3 w-3 shrink-0" />
         {displayCode && (
-          <span className="font-mono text-[10px] opacity-70">{displayCode}</span>
+          <span className="font-mono text-[10px] opacity-70">
+            {displayCode}
+          </span>
         )}
         <span className="max-w-[200px] truncate">{label}</span>
         <ArrowRight className="h-2.5 w-2.5 shrink-0 opacity-50" />

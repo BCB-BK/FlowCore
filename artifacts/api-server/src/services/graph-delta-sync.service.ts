@@ -7,7 +7,10 @@ import {
 } from "./graph-sync-queue.service";
 import { syncPage, syncGlossaryTerm } from "./graph-single-item-sync.service";
 import { deindexItem } from "./graph-delete-handler.service";
-import { buildPageExternalItem, buildGlossaryExternalItem } from "./graph-schema-registration.service";
+import {
+  buildPageExternalItem,
+  buildGlossaryExternalItem,
+} from "./graph-schema-registration.service";
 import { AppError } from "../lib/app-error";
 import { db } from "@workspace/db";
 import { contentNodesTable } from "@workspace/db/schema";
@@ -58,9 +61,10 @@ export async function runDeltaSync(limit = 25): Promise<DeltaSyncSummary> {
       }
 
       if (job.operation === "delete") {
-        const itemId = job.itemType === "page" && job.nodeId
-          ? await resolvePageItemId(job.nodeId)
-          : `flowcore_glossary_${job.termId}`;
+        const itemId =
+          job.itemType === "page" && job.nodeId
+            ? await resolvePageItemId(job.nodeId)
+            : `flowcore_glossary_${job.termId}`;
         await deindexItem({
           itemType: job.itemType as "page" | "glossary",
           itemId,

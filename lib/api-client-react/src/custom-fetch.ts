@@ -179,7 +179,10 @@ function isSessionInvalidated(data: unknown): boolean {
     const rec = data as Record<string, unknown>;
     for (const key of ["message", "error", "detail", "title"]) {
       const val = rec[key];
-      if (typeof val === "string" && val.toLowerCase().includes("session invalidated")) {
+      if (
+        typeof val === "string" &&
+        val.toLowerCase().includes("session invalidated")
+      ) {
         return true;
       }
     }
@@ -408,7 +411,12 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers, credentials: "include" });
+  const response = await fetch(input, {
+    ...init,
+    method,
+    headers,
+    credentials: "include",
+  });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

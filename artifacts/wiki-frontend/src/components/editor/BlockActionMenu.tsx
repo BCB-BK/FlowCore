@@ -589,7 +589,9 @@ export function BlockActionMenu({ editor }: BlockActionMenuProps) {
                         }}
                       >
                         <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="font-medium text-xs">{item.title}</span>
+                        <span className="font-medium text-xs">
+                          {item.title}
+                        </span>
                         {item.isTable && (
                           <span className="ml-auto text-[10px] text-muted-foreground">
                             ▸

@@ -39,7 +39,10 @@ function isTokenExpired(token: string): boolean {
     const payload = JSON.parse(
       Buffer.from(token.split(".")[1], "base64").toString(),
     );
-    return typeof payload.exp === "number" && payload.exp * 1000 < Date.now() - 60_000;
+    return (
+      typeof payload.exp === "number" &&
+      payload.exp * 1000 < Date.now() - 60_000
+    );
   } catch {
     return false;
   }
@@ -224,7 +227,10 @@ export async function checkGroupMembership(
         const appMatchedIds: string[] = appResult.value ?? [];
         return appMatchedIds.includes(groupId);
       } catch (fallbackErr) {
-        logger.error({ fallbackErr, userId, groupId }, "checkGroupMembership fallback also failed");
+        logger.error(
+          { fallbackErr, userId, groupId },
+          "checkGroupMembership fallback also failed",
+        );
         return false;
       }
     }

@@ -40,7 +40,14 @@ interface WorkingCopyActionsProps {
   sodRules?: Record<string, boolean>;
 }
 
-export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentUserId, userPermissions, sodRules }: WorkingCopyActionsProps) {
+export function WorkingCopyActions({
+  workingCopy,
+  nodeId,
+  templateType,
+  currentUserId,
+  userPermissions,
+  sodRules,
+}: WorkingCopyActionsProps) {
   const [approveOpen, setApproveOpen] = useState(false);
   const [returnOpen, setReturnOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -58,7 +65,8 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
   const publishValidation = useMemo(() => {
     if (!templateType) return null;
     const metadata = (workingCopy.content as Record<string, unknown>) ?? {};
-    const rawSectionData = (workingCopy.structuredFields as Record<string, unknown>) ?? {};
+    const rawSectionData =
+      (workingCopy.structuredFields as Record<string, unknown>) ?? {};
 
     // Für meeting_protocol: Block-Editor-Inhalt ist unter _editorContent gespeichert,
     // muss aber für die Validierung als "discussion" (Entscheidungen) verfügbar sein.
@@ -66,7 +74,8 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
       templateType === "meeting_protocol"
         ? {
             ...rawSectionData,
-            discussion: rawSectionData._editorContent ?? rawSectionData.discussion,
+            discussion:
+              rawSectionData._editorContent ?? rawSectionData.discussion,
           }
         : rawSectionData;
 
@@ -74,8 +83,12 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
   }, [templateType, workingCopy.content, workingCopy.structuredFields]);
 
   const invalidateNode = () => {
-    queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}`] });
-    queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
+    queryClient.invalidateQueries({
+      queryKey: [`/api/content/nodes/${nodeId}`],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [`/api/content/nodes/${nodeId}/revisions`],
+    });
   };
 
   const updateWcCache = (result: unknown) => {
@@ -83,7 +96,9 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
   };
 
   const removeWcCache = () => {
-    queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+    queryClient.removeQueries({
+      queryKey: getGetActiveWorkingCopyQueryKey(nodeId),
+    });
   };
 
   const resetDialogs = () => {
@@ -146,21 +161,39 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
         workingCopyId: workingCopy.id,
         data: { versionLabel: versionLabel.trim() },
       });
-      toast({ title: "Veröffentlicht", description: `Version ${versionLabel.trim()}` });
+      toast({
+        title: "Veröffentlicht",
+        description: `Version ${versionLabel.trim()}`,
+      });
       resetDialogs();
       removeWcCache();
-      queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true });
-      queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
+      queryClient.removeQueries({
+        queryKey: [`/api/content/nodes/${nodeId}`],
+        exact: true,
+      });
+      queryClient.removeQueries({
+        queryKey: [`/api/content/nodes/${nodeId}/revisions`],
+      });
       await Promise.all([
-        queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true }),
-        queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] }),
+        queryClient.refetchQueries({
+          queryKey: [`/api/content/nodes/${nodeId}`],
+          exact: true,
+        }),
+        queryClient.refetchQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/revisions`],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/children`],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["/api/content/nodes/roots"],
+        }),
       ]);
     } catch (err) {
       toast({
         variant: "destructive",
-        title: err instanceof Error ? err.message : "Fehler beim Veröffentlichen",
+        title:
+          err instanceof Error ? err.message : "Fehler beim Veröffentlichen",
       });
     }
   };
@@ -184,12 +217,16 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
   };
 
   const isAuthor = !!currentUserId && workingCopy.authorId === currentUserId;
-  const isSubmitter = !!currentUserId && workingCopy.submittedBy === currentUserId;
+  const isSubmitter =
+    !!currentUserId && workingCopy.submittedBy === currentUserId;
   const isSodSubject = isSubmitter || (!workingCopy.submittedBy && isAuthor);
   const isOwner = !currentUserId || isAuthor;
-  const hasReviewPermission = userPermissions?.includes("review_working_copy") ?? false;
-  const hasPublishPermission = userPermissions?.includes("publish_working_copy") ?? false;
-  const hasCancelPermission = userPermissions?.includes("cancel_working_copy") ?? false;
+  const hasReviewPermission =
+    userPermissions?.includes("review_working_copy") ?? false;
+  const hasPublishPermission =
+    userPermissions?.includes("publish_working_copy") ?? false;
+  const hasCancelPermission =
+    userPermissions?.includes("cancel_working_copy") ?? false;
 
   const sodReviewEnabled = sodRules?.four_eyes_review !== false;
   const sodPublishEnabled = sodRules?.four_eyes_publish !== false;
@@ -198,8 +235,10 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
 
   const isReviewPhase =
     workingCopy.status === "submitted" || workingCopy.status === "in_review";
-  const showApproveReturn = isReviewPhase && hasReviewPermission && !authorBlockedFromReview;
-  const showSodBlockedHint = isReviewPhase && hasReviewPermission && authorBlockedFromReview;
+  const showApproveReturn =
+    isReviewPhase && hasReviewPermission && !authorBlockedFromReview;
+  const showSodBlockedHint =
+    isReviewPhase && hasReviewPermission && authorBlockedFromReview;
   const showPublish =
     workingCopy.status === "approved_for_publish" &&
     hasPublishPermission &&
@@ -211,10 +250,17 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
   const showCancel =
     (isOwner || hasCancelPermission) &&
     (workingCopy.status === "draft" ||
-    workingCopy.status === "submitted" ||
-    workingCopy.status === "changes_requested");
+      workingCopy.status === "submitted" ||
+      workingCopy.status === "changes_requested");
 
-  if (!showApproveReturn && !showPublish && !showCancel && !showSodBlockedHint && !showPublishSodHint) return null;
+  if (
+    !showApproveReturn &&
+    !showPublish &&
+    !showCancel &&
+    !showSodBlockedHint &&
+    !showPublishSodHint
+  )
+    return null;
 
   return (
     <>
@@ -243,7 +289,10 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
         {showSodBlockedHint && (
           <div className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-1.5">
             <ShieldAlert className="h-4 w-4 shrink-0" />
-            <span>Vier-Augen-Prinzip: Eigene Arbeitskopien können nicht selbst freigegeben werden.</span>
+            <span>
+              Vier-Augen-Prinzip: Eigene Arbeitskopien können nicht selbst
+              freigegeben werden.
+            </span>
           </div>
         )}
         {showPublish && (
@@ -259,7 +308,10 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
         {showPublishSodHint && (
           <div className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-1.5">
             <ShieldAlert className="h-4 w-4 shrink-0" />
-            <span>Vier-Augen-Prinzip: Eigene Arbeitskopien können nicht selbst veröffentlicht werden.</span>
+            <span>
+              Vier-Augen-Prinzip: Eigene Arbeitskopien können nicht selbst
+              veröffentlicht werden.
+            </span>
           </div>
         )}
         {showCancel && (
@@ -291,7 +343,13 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setApproveOpen(false); setComment(""); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setApproveOpen(false);
+                setComment("");
+              }}
+            >
               Abbrechen
             </Button>
             <Button
@@ -299,7 +357,9 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
               disabled={approve.isPending}
               className="bg-green-600 hover:bg-green-700"
             >
-              {approve.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              {approve.isPending && (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              )}
               Freigeben
             </Button>
           </DialogFooter>
@@ -322,7 +382,13 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setReturnOpen(false); setComment(""); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReturnOpen(false);
+                setComment("");
+              }}
+            >
               Abbrechen
             </Button>
             <Button
@@ -330,7 +396,9 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
               onClick={handleReturn}
               disabled={returnForChanges.isPending}
             >
-              {returnForChanges.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              {returnForChanges.isPending && (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              )}
               Zurückgeben
             </Button>
           </DialogFooter>
@@ -345,11 +413,15 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
           {publishValidation && !publishValidation.valid && (
             <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 p-3 space-y-2">
               <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                Veröffentlichungsanforderungen nicht erfüllt ({publishValidation.readinessPercentage}% bereit)
+                Veröffentlichungsanforderungen nicht erfüllt (
+                {publishValidation.readinessPercentage}% bereit)
               </p>
               <ul className="text-xs space-y-1">
                 {publishValidation.errors.map((e) => (
-                  <li key={e.field} className="flex items-start gap-1.5 text-red-600 dark:text-red-400">
+                  <li
+                    key={e.field}
+                    className="flex items-start gap-1.5 text-red-600 dark:text-red-400"
+                  >
                     <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
                     <span>{e.message}</span>
                   </li>
@@ -368,15 +440,27 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setPublishOpen(false); setVersionLabel(""); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPublishOpen(false);
+                setVersionLabel("");
+              }}
+            >
               Abbrechen
             </Button>
             <Button
               onClick={handlePublish}
-              disabled={publish.isPending || !versionLabel.trim() || (publishValidation !== null && !publishValidation.valid)}
+              disabled={
+                publish.isPending ||
+                !versionLabel.trim() ||
+                (publishValidation !== null && !publishValidation.valid)
+              }
               className="bg-green-600 hover:bg-green-700"
             >
-              {publish.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              {publish.isPending && (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              )}
               Veröffentlichen
             </Button>
           </DialogFooter>
@@ -389,7 +473,8 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
             <DialogTitle>Arbeitskopie abbrechen?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Alle nicht veröffentlichten Änderungen in dieser Arbeitskopie gehen verloren.
+            Alle nicht veröffentlichten Änderungen in dieser Arbeitskopie gehen
+            verloren.
           </p>
           <div className="space-y-3">
             <div className="space-y-1">
@@ -402,7 +487,13 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setCancelOpen(false); setComment(""); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelOpen(false);
+                setComment("");
+              }}
+            >
               Zurück
             </Button>
             <Button
@@ -410,7 +501,9 @@ export function WorkingCopyActions({ workingCopy, nodeId, templateType, currentU
               onClick={handleCancel}
               disabled={cancel.isPending}
             >
-              {cancel.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              {cancel.isPending && (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              )}
               Abbrechen
             </Button>
           </DialogFooter>

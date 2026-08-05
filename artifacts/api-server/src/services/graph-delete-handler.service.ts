@@ -80,8 +80,8 @@ export async function deindexItem(input: DeindexInput) {
     const message = err instanceof Error ? err.message : String(err);
     const graphResponseCode =
       err instanceof AppError
-        ? ((err.details as { graphResponseCode?: number } | undefined)?.graphResponseCode ??
-          (err.status >= 500 ? err.status : null))
+        ? ((err.details as { graphResponseCode?: number } | undefined)
+            ?.graphResponseCode ?? (err.status >= 500 ? err.status : null))
         : null;
     await recordSyncLog({
       itemId: input.itemId,

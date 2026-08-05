@@ -14,7 +14,10 @@ interface WikiNodePickerDialogProps {
   onClose: () => void;
 }
 
-export function WikiNodePickerDialog({ onSelect, onClose }: WikiNodePickerDialogProps) {
+export function WikiNodePickerDialog({
+  onSelect,
+  onClose,
+}: WikiNodePickerDialogProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -116,10 +119,14 @@ export function WikiNodePickerDialog({ onSelect, onClose }: WikiNodePickerDialog
                           </span>
                         )}
                         {r.displayCode && r.templateType && (
-                          <span className="text-muted-foreground text-[10px]">·</span>
+                          <span className="text-muted-foreground text-[10px]">
+                            ·
+                          </span>
                         )}
                         {r.templateType && (
-                          <span className="text-[10px] text-muted-foreground">{r.templateType}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {r.templateType}
+                          </span>
                         )}
                         {r.status === "draft" && (
                           <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-amber-100 text-amber-700 leading-none">

@@ -118,7 +118,8 @@ export async function listConnectorKeys() {
       keyPrefix: copilotConnectorKeysTable.keyPrefix,
       agentScopes: copilotConnectorKeysTable.agentScopes,
       brandScopes: copilotConnectorKeysTable.brandScopes,
-      maxConfidentialityLevel: copilotConnectorKeysTable.maxConfidentialityLevel,
+      maxConfidentialityLevel:
+        copilotConnectorKeysTable.maxConfidentialityLevel,
       revoked: copilotConnectorKeysTable.revoked,
       lastUsedAt: copilotConnectorKeysTable.lastUsedAt,
       createdAt: copilotConnectorKeysTable.createdAt,

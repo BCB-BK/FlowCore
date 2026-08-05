@@ -119,11 +119,7 @@ const SECTION_SUGGESTIONS: Record<string, string[]> = {
     "Zuständigkeiten",
     "Inkrafttreten",
   ],
-  default: [
-    "Einleitung",
-    "Hauptteil",
-    "Zusammenfassung",
-  ],
+  default: ["Einleitung", "Hauptteil", "Zusammenfassung"],
 };
 
 export function ContentCompletenessBar({
@@ -141,9 +137,13 @@ export function ContentCompletenessBar({
   const allPassed = checks.every((c) => c.passed);
 
   const completenessPercent =
-    totalRequired > 0 ? Math.round((passedRequired / totalRequired) * 100) : 100;
+    totalRequired > 0
+      ? Math.round((passedRequired / totalRequired) * 100)
+      : 100;
 
-  const suggestions = SECTION_SUGGESTIONS[parentTemplateType || "default"] || SECTION_SUGGESTIONS.default;
+  const suggestions =
+    SECTION_SUGGESTIONS[parentTemplateType || "default"] ||
+    SECTION_SUGGESTIONS.default;
 
   const existingHeadings = new Set<string>();
   editor.state.doc.descendants((node) => {
@@ -161,7 +161,11 @@ export function ContentCompletenessBar({
       .chain()
       .focus()
       .insertContent([
-        { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: sectionName }] },
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [{ type: "text", text: sectionName }],
+        },
         { type: "paragraph" },
       ])
       .run();

@@ -1,5 +1,9 @@
 import { db } from "@workspace/db";
-import { contentRelationsTable, contentNodesTable, auditEventsTable } from "@workspace/db/schema";
+import {
+  contentRelationsTable,
+  contentNodesTable,
+  auditEventsTable,
+} from "@workspace/db/schema";
 import { eq, and, or, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { type InsertAuditEvent } from "../lib/audit";
@@ -72,8 +76,16 @@ export async function createRelation(
     return relation.id;
   });
 
-  await enqueueSync({ itemType: "page", nodeId: input.sourceNodeId, operation: "upsert" });
-  await enqueueSync({ itemType: "page", nodeId: input.targetNodeId, operation: "upsert" });
+  await enqueueSync({
+    itemType: "page",
+    nodeId: input.sourceNodeId,
+    operation: "upsert",
+  });
+  await enqueueSync({
+    itemType: "page",
+    nodeId: input.targetNodeId,
+    operation: "upsert",
+  });
 
   logger.info(
     {
@@ -138,8 +150,16 @@ export async function removeRelation(
   });
 
   if (existing) {
-    await enqueueSync({ itemType: "page", nodeId: existing.sourceNodeId, operation: "upsert" });
-    await enqueueSync({ itemType: "page", nodeId: existing.targetNodeId, operation: "upsert" });
+    await enqueueSync({
+      itemType: "page",
+      nodeId: existing.sourceNodeId,
+      operation: "upsert",
+    });
+    await enqueueSync({
+      itemType: "page",
+      nodeId: existing.targetNodeId,
+      operation: "upsert",
+    });
   }
 }
 

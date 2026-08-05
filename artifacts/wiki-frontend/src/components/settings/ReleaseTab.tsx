@@ -53,7 +53,10 @@ const STATUS_LABELS: Record<string, string> = {
   revoked: "Zurückgezogen",
 };
 
-const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const STATUS_VARIANTS: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   in_progress: "secondary",
   audit_pending: "outline",
   audit_passed: "default",
@@ -97,7 +100,9 @@ export function ReleaseTab() {
       setReleases(data.releases);
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Releases konnten nicht geladen werden";
+        err instanceof Error
+          ? err.message
+          : "Releases konnten nicht geladen werden";
       setError(msg);
     } finally {
       setLoading(false);
@@ -108,7 +113,9 @@ export function ReleaseTab() {
     loadReleases();
   }, [loadReleases]);
 
-  const [transitionMeta, setTransitionMeta] = useState<Record<string, string>>({});
+  const [transitionMeta, setTransitionMeta] = useState<Record<string, string>>(
+    {},
+  );
 
   const handleTransition = async (releaseId: string, newStatus: string) => {
     setTransitioning(true);
@@ -126,9 +133,7 @@ export function ReleaseTab() {
       await loadReleases();
     } catch (err) {
       const msg =
-        err instanceof Error
-          ? err.message
-          : "Statusübergang fehlgeschlagen";
+        err instanceof Error ? err.message : "Statusübergang fehlgeschlagen";
       setError(msg);
     } finally {
       setTransitioning(false);
@@ -161,17 +166,10 @@ export function ReleaseTab() {
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={loadReleases}
-                variant="outline"
-                size="sm"
-              >
+              <Button onClick={loadReleases} variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              <Button
-                onClick={() => setShowCreate(true)}
-                size="sm"
-              >
+              <Button onClick={() => setShowCreate(true)} size="sm">
                 <Plus className="h-4 w-4 mr-1.5" />
                 Neuer Release
               </Button>
@@ -223,8 +221,8 @@ export function ReleaseTab() {
       {releases.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Noch keine Releases registriert. Erstellen Sie einen neuen
-            Release, um den Abnahmepfad zu starten.
+            Noch keine Releases registriert. Erstellen Sie einen neuen Release,
+            um den Abnahmepfad zu starten.
           </CardContent>
         </Card>
       )}
@@ -235,9 +233,7 @@ export function ReleaseTab() {
           className={`cursor-pointer transition-all hover:shadow-md ${
             selectedId === rel.id ? "ring-2 ring-primary" : ""
           }`}
-          onClick={() =>
-            setSelectedId(selectedId === rel.id ? null : rel.id)
-          }
+          onClick={() => setSelectedId(selectedId === rel.id ? null : rel.id)}
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -304,7 +300,16 @@ export function ReleaseTab() {
                         label="Sync"
                         date={selectedRelease.syncedAt}
                         done={!!selectedRelease.syncedAt}
-                        note={[selectedRelease.syncRef ? `Ref: ${selectedRelease.syncRef}` : null, selectedRelease.syncNotes].filter(Boolean).join(" — ") || null}
+                        note={
+                          [
+                            selectedRelease.syncRef
+                              ? `Ref: ${selectedRelease.syncRef}`
+                              : null,
+                            selectedRelease.syncNotes,
+                          ]
+                            .filter(Boolean)
+                            .join(" — ") || null
+                        }
                       />
                       <TimelineItem
                         label="Release"
@@ -438,13 +443,9 @@ function TimelineItem({
           </span>
         )}
         {by && (
-          <span className="text-[10px] text-muted-foreground ml-1">
-            ({by})
-          </span>
+          <span className="text-[10px] text-muted-foreground ml-1">({by})</span>
         )}
-        {note && (
-          <p className="text-[10px] text-muted-foreground">{note}</p>
-        )}
+        {note && <p className="text-[10px] text-muted-foreground">{note}</p>}
       </div>
     </div>
   );
@@ -481,9 +482,7 @@ function CreateReleaseForm({
       });
       onCreated();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Erstellen fehlgeschlagen",
-      );
+      setError(err instanceof Error ? err.message : "Erstellen fehlgeschlagen");
     } finally {
       setSaving(false);
     }

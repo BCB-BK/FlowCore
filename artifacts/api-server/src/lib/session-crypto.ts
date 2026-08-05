@@ -21,7 +21,12 @@
  * GCM liefert die Integritätsprüfung mit: ein manipulierter Sitzungsdatensatz
  * lässt sich nicht entschlüsseln, statt stillschweigend Unsinn zu liefern.
  */
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  randomBytes,
+  scryptSync,
+} from "crypto";
 import { appConfig } from "./config";
 import { logger } from "./logger";
 
@@ -46,7 +51,10 @@ function getSchluessel(): Buffer {
 export function encryptToken(klartext: string): string {
   const iv = randomBytes(IV_LAENGE);
   const cipher = createCipheriv(ALGORITHMUS, getSchluessel(), iv);
-  const daten = Buffer.concat([cipher.update(klartext, "utf8"), cipher.final()]);
+  const daten = Buffer.concat([
+    cipher.update(klartext, "utf8"),
+    cipher.final(),
+  ]);
   const tag = cipher.getAuthTag();
   return [
     iv.toString("base64url"),
@@ -61,7 +69,9 @@ export function encryptToken(klartext: string): string {
  * anderen Schlüssel erzeugt wurde — der Aufrufer behandelt das wie "kein
  * Token vorhanden" und fordert gegebenenfalls eine neue Anmeldung an.
  */
-export function decryptToken(gespeichert: string | undefined): string | undefined {
+export function decryptToken(
+  gespeichert: string | undefined,
+): string | undefined {
   if (!gespeichert) return undefined;
   const teile = gespeichert.split(".");
   if (teile.length !== 3) {

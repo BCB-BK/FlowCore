@@ -256,7 +256,9 @@ export function GlossaryPage() {
                           </div>
                           <div
                             className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5"
-                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(t.definition) }}
+                            dangerouslySetInnerHTML={{
+                              __html: sanitizeHtml(t.definition),
+                            }}
                           />
                           {t.synonyms && t.synonyms.length > 0 && (
                             <p className="text-xs text-muted-foreground mt-1">

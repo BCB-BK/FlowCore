@@ -47,10 +47,16 @@ export function SessionsTab() {
     setLoading(true);
     setError(null);
     try {
-      const data = await customFetch<{ sessions: Session[] }>("/api/admin/sessions");
+      const data = await customFetch<{ sessions: Session[] }>(
+        "/api/admin/sessions",
+      );
       setSessions(data.sessions);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sitzungen konnten nicht geladen werden");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Sitzungen konnten nicht geladen werden",
+      );
     } finally {
       setLoading(false);
     }
@@ -68,7 +74,11 @@ export function SessionsTab() {
       });
       setSessions((prev) => prev.filter((s) => s.sid !== sid));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sitzung konnte nicht beendet werden");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Sitzung konnte nicht beendet werden",
+      );
     } finally {
       setTerminating((prev) => {
         const next = new Set(prev);
@@ -97,10 +107,17 @@ export function SessionsTab() {
                 Aktive Sitzungen
               </CardTitle>
               <CardDescription className="mt-1">
-                Alle derzeit aktiven Benutzersitzungen. Sitzungen werden automatisch ungültig, wenn der Benutzer nicht mehr in der Entra-Gruppe ist.
+                Alle derzeit aktiven Benutzersitzungen. Sitzungen werden
+                automatisch ungültig, wenn der Benutzer nicht mehr in der
+                Entra-Gruppe ist.
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={loadSessions} disabled={loading}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadSessions}
+              disabled={loading}
+            >
               <RefreshCw className="h-4 w-4 mr-1.5" />
               Aktualisieren
             </Button>
@@ -121,10 +138,12 @@ export function SessionsTab() {
           ) : (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground mb-3">
-                {sessions.length} aktive {sessions.length === 1 ? "Sitzung" : "Sitzungen"}
+                {sessions.length} aktive{" "}
+                {sessions.length === 1 ? "Sitzung" : "Sitzungen"}
               </p>
               {sessions.map((session) => {
-                const isOwnSession = session.user?.principalId === currentUser?.principalId;
+                const isOwnSession =
+                  session.user?.principalId === currentUser?.principalId;
                 const isTerminating = terminating.has(session.sid);
                 return (
                   <div
@@ -138,10 +157,14 @@ export function SessionsTab() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-medium truncate">
-                            {session.user?.displayName ?? "Unbekannter Benutzer"}
+                            {session.user?.displayName ??
+                              "Unbekannter Benutzer"}
                           </span>
                           {isOwnSession && (
-                            <Badge variant="secondary" className="text-xs shrink-0">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs shrink-0"
+                            >
                               Ihre Sitzung
                             </Badge>
                           )}
@@ -162,7 +185,11 @@ export function SessionsTab() {
                       size="sm"
                       disabled={isTerminating || isOwnSession}
                       onClick={() => terminateSession(session.sid)}
-                      title={isOwnSession ? "Eigene Sitzung kann nicht beendet werden" : "Sitzung beenden"}
+                      title={
+                        isOwnSession
+                          ? "Eigene Sitzung kann nicht beendet werden"
+                          : "Sitzung beenden"
+                      }
                       className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 disabled:opacity-50"
                     >
                       {isTerminating ? (
@@ -184,15 +211,20 @@ export function SessionsTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Automatische Sitzungsvalidierung</CardTitle>
+          <CardTitle className="text-base">
+            Automatische Sitzungsvalidierung
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>
-            Bei jedem API-Aufruf wird die Entra-Gruppenmitgliedschaft des Benutzers geprüft (gecacht für 15 Minuten).
-            Wird ein Benutzer aus der Entra-Gruppe entfernt, wird seine Sitzung beim nächsten Aufruf automatisch beendet und er wird zur Login-Seite umgeleitet.
+            Bei jedem API-Aufruf wird die Entra-Gruppenmitgliedschaft des
+            Benutzers geprüft (gecacht für 15 Minuten). Wird ein Benutzer aus
+            der Entra-Gruppe entfernt, wird seine Sitzung beim nächsten Aufruf
+            automatisch beendet und er wird zur Login-Seite umgeleitet.
           </p>
           <p>
-            Über diese Ansicht können Administratoren aktive Sitzungen auch manuell und sofort beenden.
+            Über diese Ansicht können Administratoren aktive Sitzungen auch
+            manuell und sofort beenden.
           </p>
         </CardContent>
       </Card>

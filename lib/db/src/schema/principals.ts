@@ -60,9 +60,7 @@ export const roleAssignmentsTable = pgTable(
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     isActive: boolean("is_active").notNull().default(true),
   },
-  (table) => [
-    index("idx_role_assignments_principal").on(table.principalId),
-  ],
+  (table) => [index("idx_role_assignments_principal").on(table.principalId)],
 );
 
 export const pagePermissionsTable = pgTable(

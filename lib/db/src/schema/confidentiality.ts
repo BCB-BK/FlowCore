@@ -1,4 +1,11 @@
-import { pgTable, uuid, text, timestamp, unique, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  unique,
+  index,
+} from "drizzle-orm/pg-core";
 import { principalsTable } from "./principals";
 
 export const confidentialityAccessConfigTable = pgTable(

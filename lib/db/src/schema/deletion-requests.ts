@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  uuid,
-  text,
-  timestamp,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, index } from "drizzle-orm/pg-core";
 import { deletionRequestStatusEnum } from "./enums";
 import { contentNodesTable } from "./content-nodes";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -36,5 +30,9 @@ export const deletionRequestsTable = pgTable(
   ],
 );
 
-export const insertDeletionRequestSchema = createInsertSchema(deletionRequestsTable);
-export const selectDeletionRequestSchema = createSelectSchema(deletionRequestsTable);
+export const insertDeletionRequestSchema = createInsertSchema(
+  deletionRequestsTable,
+);
+export const selectDeletionRequestSchema = createSelectSchema(
+  deletionRequestsTable,
+);

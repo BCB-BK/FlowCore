@@ -21,7 +21,10 @@ function readBuildInfo(): { commit: string; date: string } {
       .toString()
       .trim();
   try {
-    return { commit: git("rev-parse --short HEAD"), date: git("log -1 --format=%cI") };
+    return {
+      commit: git("rev-parse --short HEAD"),
+      date: git("log -1 --format=%cI"),
+    };
   } catch {
     return { commit: "", date: new Date().toISOString() };
   }
@@ -29,7 +32,8 @@ function readBuildInfo(): { commit: string; date: string } {
 
 const buildInfo = readBuildInfo();
 
-const isBuild = process.env.NODE_ENV === "production" || process.argv.includes("build");
+const isBuild =
+  process.env.NODE_ENV === "production" || process.argv.includes("build");
 
 const rawPort = process.env.PORT;
 const port = rawPort ? Number(rawPort) : 3000;

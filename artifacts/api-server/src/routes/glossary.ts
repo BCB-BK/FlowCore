@@ -164,7 +164,11 @@ router.post(
         })
         .returning();
 
-      await recordEvent({ itemType: "glossary", termId: created.id, eventType: "glossary_change" });
+      await recordEvent({
+        itemType: "glossary",
+        termId: created.id,
+        eventType: "glossary_change",
+      });
 
       res.status(201).json(created);
     } catch (err) {
@@ -227,7 +231,11 @@ router.patch(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: updated.id,
+      eventType: "glossary_change",
+    });
     res.json(updated);
   },
 );
@@ -255,7 +263,11 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: updated.id,
+      eventType: "glossary_change",
+    });
     res.json(updated);
   },
 );
@@ -277,7 +289,11 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: updated.id,
+      eventType: "glossary_change",
+    });
     res.json(updated);
   },
 );
@@ -304,7 +320,11 @@ router.delete(
   async (req, res) => {
     const id = req.params.id as string;
     await db.delete(glossaryTermsTable).where(eq(glossaryTermsTable.id, id));
-    await recordEvent({ itemType: "glossary", termId: id, eventType: "delete" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: id,
+      eventType: "delete",
+    });
     res.status(204).send();
   },
 );
@@ -367,7 +387,9 @@ router.post(
       const row = rows[i];
       const rowNum = i + 2;
 
-      const term = String(row["term"] ?? row["Term"] ?? row["Begriff"] ?? "").trim();
+      const term = String(
+        row["term"] ?? row["Term"] ?? row["Begriff"] ?? "",
+      ).trim();
       const definition = String(
         row["definition"] ?? row["Definition"] ?? row["Beschreibung"] ?? "",
       ).trim();
@@ -386,13 +408,12 @@ router.post(
       const rawSynonyms = String(
         row["synonyms"] ?? row["Synonyme"] ?? "",
       ).trim();
-      const synonyms =
-        rawSynonyms
-          ? rawSynonyms
-              .split(/[,;]/)
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : null;
+      const synonyms = rawSynonyms
+        ? rawSynonyms
+            .split(/[,;]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null;
 
       const abbreviation =
         String(row["abbreviation"] ?? row["Abkürzung"] ?? "").trim() || null;

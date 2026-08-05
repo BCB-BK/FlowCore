@@ -818,7 +818,10 @@ export async function getPersonalWorkItems(
       displayCode: str(r, "display_code"),
       templateType: str(r, "template_type"),
       status: str(r, "wc_status"),
-      detail: str(r, "wc_status") === "changes_requested" ? "Änderung zurückgegeben" : "Entwurf wartet auf Fertigstellung",
+      detail:
+        str(r, "wc_status") === "changes_requested"
+          ? "Änderung zurückgegeben"
+          : "Entwurf wartet auf Fertigstellung",
       priority: "medium",
       updatedAt: str(r, "updated_at"),
     });

@@ -55,14 +55,25 @@ function isTipTapEmpty(obj: Record<string, unknown>): boolean {
   if (content.length === 0) return true;
   return content.every((node) => {
     if (node.type === "paragraph") {
-      if (!node.content || (Array.isArray(node.content) && node.content.length === 0)) return true;
+      if (
+        !node.content ||
+        (Array.isArray(node.content) && node.content.length === 0)
+      )
+        return true;
     }
     return false;
   });
 }
 
 function isSipocEmpty(obj: Record<string, unknown>): boolean {
-  const sipocKeys = ["suppliers", "inputs", "outputs", "customers", "trigger", "process"];
+  const sipocKeys = [
+    "suppliers",
+    "inputs",
+    "outputs",
+    "customers",
+    "trigger",
+    "process",
+  ];
   const hasSipocShape = sipocKeys.some((k) => k in obj);
   if (!hasSipocShape) return false;
 

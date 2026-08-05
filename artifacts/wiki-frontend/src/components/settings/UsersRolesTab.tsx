@@ -603,7 +603,10 @@ function PrincipalRow({
       }`}
       onClick={onSelect}
       onKeyDown={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          e.target === e.currentTarget
+        ) {
           e.preventDefault();
           onSelect();
         }
@@ -894,7 +897,10 @@ function RoleOverviewSection({
               className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => setEditingRole(roleKey)}
               onKeyDown={(e) => {
-                if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                if (
+                  (e.key === "Enter" || e.key === " ") &&
+                  e.target === e.currentTarget
+                ) {
                   e.preventDefault();
                   setEditingRole(roleKey);
                 }

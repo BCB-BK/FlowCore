@@ -259,9 +259,10 @@ function GapBadge({ gap }: { gap: string }) {
   );
 }
 
-function filteredOwnershipItems<
-  T extends { gapTypes: string[] },
->(items: T[], filter: string): T[] {
+function filteredOwnershipItems<T extends { gapTypes: string[] }>(
+  items: T[],
+  filter: string,
+): T[] {
   if (filter === "all") return items;
   if (filter === "multiple") return items.filter((i) => i.gapTypes.length > 1);
   return items.filter((i) => i.gapTypes.includes(filter));
@@ -277,7 +278,9 @@ function PageFlagIcons({ page }: { page: PageQualityRow }) {
               <AlertTriangleIcon className="h-4 w-4 text-amber-500" />
             </TooltipTrigger>
             <TooltipContent>
-              {"\u00DCbergeordnete Seite gel\u00F6scht \u2013 Seite ist verwaist"}
+              {
+                "\u00DCbergeordnete Seite gel\u00F6scht \u2013 Seite ist verwaist"
+              }
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -298,9 +301,7 @@ function PageFlagIcons({ page }: { page: PageQualityRow }) {
             <TooltipTrigger>
               <Clock className="h-4 w-4 text-red-500" />
             </TooltipTrigger>
-            <TooltipContent>
-              {"Review \u00FCberf\u00E4llig"}
-            </TooltipContent>
+            <TooltipContent>{"Review \u00FCberf\u00E4llig"}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -310,9 +311,7 @@ function PageFlagIcons({ page }: { page: PageQualityRow }) {
             <TooltipTrigger>
               <Users className="h-4 w-4 text-orange-500" />
             </TooltipTrigger>
-            <TooltipContent>
-              Kein Verantwortlicher
-            </TooltipContent>
+            <TooltipContent>Kein Verantwortlicher</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -351,7 +350,9 @@ function buildTree(pages: PageQualityRow[]): TreeNode[] {
   }
   const sortNodes = (nodes: TreeNode[]) => {
     nodes.sort((a, b) =>
-      (a.page.displayCode || "").localeCompare(b.page.displayCode || "", "de", { numeric: true })
+      (a.page.displayCode || "").localeCompare(b.page.displayCode || "", "de", {
+        numeric: true,
+      }),
     );
     for (const n of nodes) sortNodes(n.children);
   };
@@ -459,7 +460,9 @@ function PagesTreeView({
   };
 
   const expandAll = () => {
-    const allIds = new Set(pages.filter((p) => p.childCount > 0).map((p) => p.nodeId));
+    const allIds = new Set(
+      pages.filter((p) => p.childCount > 0).map((p) => p.nodeId),
+    );
     setExpandedSet(allIds);
   };
 
@@ -498,7 +501,12 @@ function BulkMoveTreeNode({
   depth,
   excludedIds,
 }: {
-  node: { id: string; title: string; displayCode: string | null; templateType: string };
+  node: {
+    id: string;
+    title: string;
+    displayCode: string | null;
+    templateType: string;
+  };
   selectedId: string | null;
   onSelect: (id: string) => void;
   depth: number;
@@ -517,7 +525,11 @@ function BulkMoveTreeNode({
     <div>
       <div
         className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md text-sm transition-colors ${
-          isExcluded ? "opacity-40 cursor-not-allowed" : isSelected ? "bg-primary/10 ring-1 ring-primary/30 cursor-pointer" : "hover:bg-muted/60 cursor-pointer"
+          isExcluded
+            ? "opacity-40 cursor-not-allowed"
+            : isSelected
+              ? "bg-primary/10 ring-1 ring-primary/30 cursor-pointer"
+              : "hover:bg-muted/60 cursor-pointer"
         }`}
         style={{ paddingLeft: `${depth * 20 + 8}px` }}
         onClick={() => !isExcluded && onSelect(node.id)}
@@ -525,28 +537,57 @@ function BulkMoveTreeNode({
         aria-selected={isSelected}
         aria-disabled={isExcluded}
         tabIndex={isExcluded ? -1 : 0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!isExcluded) onSelect(node.id); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            if (!isExcluded) onSelect(node.id);
+          }
+        }}
       >
         <button
           className="p-0.5 hover:bg-muted rounded shrink-0"
           aria-label={expanded ? "Zuklappen" : "Aufklappen"}
-          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(!expanded);
+          }}
         >
-          {expanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+          {expanded ? (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
         </button>
         {pageDef ? (
-          <div className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0" style={{ backgroundColor: pageDef.color }}>
+          <div
+            className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0"
+            style={{ backgroundColor: pageDef.color }}
+          >
             <PageTypeIcon iconName={pageDef.icon} className="h-3 w-3" />
           </div>
         ) : (
           <FolderOpen className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
         <span className="truncate font-medium">{node.title}</span>
-        {node.displayCode && <span className="text-[10px] text-muted-foreground shrink-0">{node.displayCode}</span>}
+        {node.displayCode && (
+          <span className="text-[10px] text-muted-foreground shrink-0">
+            {node.displayCode}
+          </span>
+        )}
       </div>
-      {expanded && children?.filter((c) => !excludedIds.has(c.id)).map((child) => (
-        <BulkMoveTreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} excludedIds={excludedIds} />
-      ))}
+      {expanded &&
+        children
+          ?.filter((c) => !excludedIds.has(c.id))
+          .map((child) => (
+            <BulkMoveTreeNode
+              key={child.id}
+              node={child}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              depth={depth + 1}
+              excludedIds={excludedIds}
+            />
+          ))}
     </div>
   );
 }
@@ -565,7 +606,9 @@ function BulkMoveDialog({
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: roots } = useListRootNodes({ query: { queryKey: getListRootNodesQueryKey(), enabled: open } });
+  const { data: roots } = useListRootNodes({
+    query: { queryKey: getListRootNodesQueryKey(), enabled: open },
+  });
   const excludedIds = useMemo(() => new Set(nodeIds), [nodeIds]);
 
   useEffect(() => {
@@ -592,8 +635,13 @@ function BulkMoveDialog({
       onComplete();
       onOpenChange(false);
     } catch (err) {
-      const base = err instanceof Error ? err.message : "Fehler beim Verschieben";
-      setError(succeeded > 0 ? `${succeeded}/${nodeIds.length} verschoben. ${base}` : base);
+      const base =
+        err instanceof Error ? err.message : "Fehler beim Verschieben";
+      setError(
+        succeeded > 0
+          ? `${succeeded}/${nodeIds.length} verschoben. ${base}`
+          : base,
+      );
     } finally {
       setMoving(false);
     }
@@ -608,10 +656,24 @@ function BulkMoveDialog({
             {`W\u00E4hlen Sie das neue Ziel f\u00FCr die ausgew\u00E4hlten Seiten.`}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto border rounded-md p-2 min-h-[200px] max-h-[400px]" role="tree">
-          {roots && roots.length > 0 ? roots.filter((r) => !excludedIds.has(r.id)).map((root) => (
-            <BulkMoveTreeNode key={root.id} node={root} selectedId={selectedParentId} onSelect={setSelectedParentId} depth={0} excludedIds={excludedIds} />
-          )) : (
+        <div
+          className="flex-1 overflow-y-auto border rounded-md p-2 min-h-[200px] max-h-[400px]"
+          role="tree"
+        >
+          {roots && roots.length > 0 ? (
+            roots
+              .filter((r) => !excludedIds.has(r.id))
+              .map((root) => (
+                <BulkMoveTreeNode
+                  key={root.id}
+                  node={root}
+                  selectedId={selectedParentId}
+                  onSelect={setSelectedParentId}
+                  depth={0}
+                  excludedIds={excludedIds}
+                />
+              ))
+          ) : (
             <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
               Lade Seitenstruktur...
@@ -625,9 +687,15 @@ function BulkMoveDialog({
           </p>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Abbrechen
+          </Button>
           <Button onClick={handleMove} disabled={!selectedParentId || moving}>
-            {moving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <ArrowRight className="h-4 w-4 mr-1" />}
+            {moving ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <ArrowRight className="h-4 w-4 mr-1" />
+            )}
             Verschieben
           </Button>
         </DialogFooter>
@@ -669,8 +737,13 @@ function BulkDeleteDialog({
       onComplete();
       onOpenChange(false);
     } catch (err) {
-      const base = err instanceof Error ? err.message : "Fehler beim L\u00F6schen";
-      setError(succeeded > 0 ? `${succeeded}/${nodeIds.length} gel\u00F6scht. ${base}` : base);
+      const base =
+        err instanceof Error ? err.message : "Fehler beim L\u00F6schen";
+      setError(
+        succeeded > 0
+          ? `${succeeded}/${nodeIds.length} gel\u00F6scht. ${base}`
+          : base,
+      );
     } finally {
       setDeleting(false);
     }
@@ -685,13 +758,19 @@ function BulkDeleteDialog({
             {nodeIds.length} Seiten l\u00F6schen
           </DialogTitle>
           <DialogDescription>
-            Die folgenden Seiten werden gel\u00F6scht. Dieser Vorgang kann nicht r\u00FCckg\u00E4ngig gemacht werden.
+            Die folgenden Seiten werden gel\u00F6scht. Dieser Vorgang kann nicht
+            r\u00FCckg\u00E4ngig gemacht werden.
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[200px] overflow-y-auto border rounded-md divide-y">
           {selectedPages.map((p) => (
-            <div key={p.nodeId} className="flex items-center gap-2 px-3 py-2 text-sm">
-              <span className="font-mono text-xs text-muted-foreground">{p.displayCode}</span>
+            <div
+              key={p.nodeId}
+              className="flex items-center gap-2 px-3 py-2 text-sm"
+            >
+              <span className="font-mono text-xs text-muted-foreground">
+                {p.displayCode}
+              </span>
               <span className="truncate">{p.title}</span>
             </div>
           ))}
@@ -703,9 +782,19 @@ function BulkDeleteDialog({
           </p>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-            {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Trash2 className="h-4 w-4 mr-1" />}
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-1" />
+            )}
             {nodeIds.length} Seiten l\u00F6schen
           </Button>
         </DialogFooter>
@@ -751,8 +840,13 @@ function BulkArchiveDialog({
       onComplete();
       onOpenChange(false);
     } catch (err) {
-      const base = err instanceof Error ? err.message : "Fehler beim Archivieren";
-      setError(succeeded > 0 ? `${succeeded}/${nodeIds.length} archiviert. ${base}` : base);
+      const base =
+        err instanceof Error ? err.message : "Fehler beim Archivieren";
+      setError(
+        succeeded > 0
+          ? `${succeeded}/${nodeIds.length} archiviert. ${base}`
+          : base,
+      );
     } finally {
       setArchiving(false);
     }
@@ -767,13 +861,19 @@ function BulkArchiveDialog({
             {nodeIds.length} Seiten archivieren
           </DialogTitle>
           <DialogDescription>
-            Die folgenden Seiten werden archiviert und sind danach nicht mehr aktiv sichtbar.
+            Die folgenden Seiten werden archiviert und sind danach nicht mehr
+            aktiv sichtbar.
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[200px] overflow-y-auto border rounded-md divide-y">
           {selectedPages.map((p) => (
-            <div key={p.nodeId} className="flex items-center gap-2 px-3 py-2 text-sm">
-              <span className="font-mono text-xs text-muted-foreground">{p.displayCode}</span>
+            <div
+              key={p.nodeId}
+              className="flex items-center gap-2 px-3 py-2 text-sm"
+            >
+              <span className="font-mono text-xs text-muted-foreground">
+                {p.displayCode}
+              </span>
               <span className="truncate">{p.title}</span>
               <StatusLabel status={p.status} />
             </div>
@@ -786,9 +886,15 @@ function BulkArchiveDialog({
           </p>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Abbrechen
+          </Button>
           <Button onClick={handleArchive} disabled={archiving}>
-            {archiving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Archive className="h-4 w-4 mr-1" />}
+            {archiving ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <Archive className="h-4 w-4 mr-1" />
+            )}
             {nodeIds.length} Seiten archivieren
           </Button>
         </DialogFooter>
@@ -806,11 +912,14 @@ export function QualityDashboard() {
   const [reviewStatusFilter, setReviewStatusFilter] = useState<string>("all");
   const [reviewOwnerFilter, setReviewOwnerFilter] = useState<string>("");
   const [reviewMinAge, setReviewMinAge] = useState<string>("");
-  const [reviewTemplateFilter, setReviewTemplateFilter] = useState<string>("all");
+  const [reviewTemplateFilter, setReviewTemplateFilter] =
+    useState<string>("all");
   const [ownershipGapFilter, setOwnershipGapFilter] = useState<string>("all");
   const [escalationThreshold, setEscalationThreshold] = useState<string>("30");
 
-  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -903,7 +1012,11 @@ export function QualityDashboard() {
             Qualitätsmetriken und Wartungsübersicht
           </p>
         </div>
-        <Button variant="outline" className="self-start sm:self-auto shrink-0" onClick={() => navigate("/my-work")}>
+        <Button
+          variant="outline"
+          className="self-start sm:self-auto shrink-0"
+          onClick={() => navigate("/my-work")}
+        >
           Meine Aufgaben
           <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
@@ -1022,50 +1135,50 @@ export function QualityDashboard() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-        <TabsList className="inline-flex w-max">
-          <TabsTrigger value="overview">Seitenqualität</TabsTrigger>
-          <TabsTrigger value="pages">Seitenliste</TabsTrigger>
-          <TabsTrigger value="hints">
-            Wartungshinweise
-            {hints && hints.length > 0 && (
-              <Badge variant="destructive" className="ml-2 text-xs px-1.5">
-                {hints.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="duplicates">
-            Duplikate
-            {duplicates && duplicates.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs px-1.5">
-                {duplicates.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="reviews">
-            Arbeitskopien
-            {reviewDashboard && reviewDashboard.totalWorkingCopies > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs px-1.5">
-                {reviewDashboard.totalWorkingCopies}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="ownership">
-            Verantwortlichkeit
-            {ownershipMonitor && ownershipMonitor.pagesWithoutOwner > 0 && (
-              <Badge variant="destructive" className="ml-2 text-xs px-1.5">
-                {ownershipMonitor.pagesWithoutOwner}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="search">
-            Suche
-            {overview && overview.zeroResultSearches > 0 && (
-              <Badge variant="outline" className="ml-2 text-xs px-1.5">
-                {overview.zeroResultSearches}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+          <TabsList className="inline-flex w-max">
+            <TabsTrigger value="overview">Seitenqualität</TabsTrigger>
+            <TabsTrigger value="pages">Seitenliste</TabsTrigger>
+            <TabsTrigger value="hints">
+              Wartungshinweise
+              {hints && hints.length > 0 && (
+                <Badge variant="destructive" className="ml-2 text-xs px-1.5">
+                  {hints.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="duplicates">
+              Duplikate
+              {duplicates && duplicates.length > 0 && (
+                <Badge variant="secondary" className="ml-2 text-xs px-1.5">
+                  {duplicates.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="reviews">
+              Arbeitskopien
+              {reviewDashboard && reviewDashboard.totalWorkingCopies > 0 && (
+                <Badge variant="secondary" className="ml-2 text-xs px-1.5">
+                  {reviewDashboard.totalWorkingCopies}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="ownership">
+              Verantwortlichkeit
+              {ownershipMonitor && ownershipMonitor.pagesWithoutOwner > 0 && (
+                <Badge variant="destructive" className="ml-2 text-xs px-1.5">
+                  {ownershipMonitor.pagesWithoutOwner}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="search">
+              Suche
+              {overview && overview.zeroResultSearches > 0 && (
+                <Badge variant="outline" className="ml-2 text-xs px-1.5">
+                  {overview.zeroResultSearches}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
         </div>
 
         <TabsContent value="overview" className="space-y-4">
@@ -1162,46 +1275,49 @@ export function QualityDashboard() {
                 </div>
               ) : processByType && processByType.length > 0 ? (
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Typ</TableHead>
-                      <TableHead className="text-right">Gesamt</TableHead>
-                      <TableHead className="text-right">Veröff.</TableHead>
-                      <TableHead className="text-right">Entwurf</TableHead>
-                      <TableHead className="text-right">Ohne Verantw.</TableHead>
-                      <TableHead className="text-right">Ohne Tags</TableHead>
-                      <TableHead className="text-right">Ø Vollst.</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {processByType.map((row) => (
-                      <TableRow key={row.templateType}>
-                        <TableCell className="font-medium text-sm">
-                          {PAGE_TYPE_LABELS[row.templateType] || row.templateType.replace(/_/g, " ")}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.totalPages}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.publishedPages}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.draftPages}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.pagesWithoutOwner}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {row.pagesWithoutTags}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <CompletenessBar value={row.avgCompleteness} />
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Typ</TableHead>
+                        <TableHead className="text-right">Gesamt</TableHead>
+                        <TableHead className="text-right">Veröff.</TableHead>
+                        <TableHead className="text-right">Entwurf</TableHead>
+                        <TableHead className="text-right">
+                          Ohne Verantw.
+                        </TableHead>
+                        <TableHead className="text-right">Ohne Tags</TableHead>
+                        <TableHead className="text-right">Ø Vollst.</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {processByType.map((row) => (
+                        <TableRow key={row.templateType}>
+                          <TableCell className="font-medium text-sm">
+                            {PAGE_TYPE_LABELS[row.templateType] ||
+                              row.templateType.replace(/_/g, " ")}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {row.totalPages}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {row.publishedPages}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {row.draftPages}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {row.pagesWithoutOwner}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {row.pagesWithoutTags}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <CompletenessBar value={row.avgCompleteness} />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
@@ -1234,7 +1350,9 @@ export function QualityDashboard() {
                 <SelectItem value="broken_refs">
                   Defekte Verkn{"\u00FC"}pfungen
                 </SelectItem>
-                <SelectItem value="incomplete">Unvollst{"\u00E4"}ndig</SelectItem>
+                <SelectItem value="incomplete">
+                  Unvollst{"\u00E4"}ndig
+                </SelectItem>
               </SelectContent>
             </Select>
             {pages && (
@@ -1272,108 +1390,141 @@ export function QualityDashboard() {
                 </div>
               ) : pages && pages.items.length > 0 ? (
                 pagesViewMode === "flat" ? (
-                <div>
-                {selectedNodeIds.size > 0 && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/5 border-b">
-                    <Badge variant="secondary" className="font-mono">
-                      {selectedNodeIds.size}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground mr-auto">
-                      {selectedNodeIds.size === 1 ? "Seite ausgew\u00E4hlt" : "Seiten ausgew\u00E4hlt"}
-                    </span>
-                    <Button size="sm" variant="outline" onClick={() => setShowMoveDialog(true)}>
-                      <ArrowRight className="h-3.5 w-3.5 mr-1" />
-                      Verschieben
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setShowArchiveDialog(true)}>
-                      <Archive className="h-3.5 w-3.5 mr-1" />
-                      Archivieren
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setShowDeleteDialog(true)}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />
-                      L\u00F6schen
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={clearSelection}>
-                      <X className="h-3.5 w-3.5" />
-                    </Button>
+                  <div>
+                    {selectedNodeIds.size > 0 && (
+                      <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/5 border-b">
+                        <Badge variant="secondary" className="font-mono">
+                          {selectedNodeIds.size}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground mr-auto">
+                          {selectedNodeIds.size === 1
+                            ? "Seite ausgew\u00E4hlt"
+                            : "Seiten ausgew\u00E4hlt"}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowMoveDialog(true)}
+                        >
+                          <ArrowRight className="h-3.5 w-3.5 mr-1" />
+                          Verschieben
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowArchiveDialog(true)}
+                        >
+                          <Archive className="h-3.5 w-3.5 mr-1" />
+                          Archivieren
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setShowDeleteDialog(true)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          L\u00F6schen
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={clearSelection}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-10 px-2">
+                              <input
+                                type="checkbox"
+                                aria-label="Alle Seiten ausw\u00E4hlen"
+                                className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+                                checked={
+                                  pages.items.length > 0 &&
+                                  pages.items.every((p) =>
+                                    selectedNodeIds.has(p.nodeId),
+                                  )
+                                }
+                                ref={(el) => {
+                                  if (el) {
+                                    el.indeterminate =
+                                      selectedNodeIds.size > 0 &&
+                                      !pages.items.every((p) =>
+                                        selectedNodeIds.has(p.nodeId),
+                                      );
+                                  }
+                                }}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedNodeIds(
+                                      new Set(pages.items.map((p) => p.nodeId)),
+                                    );
+                                  } else {
+                                    clearSelection();
+                                  }
+                                }}
+                              />
+                            </TableHead>
+                            <TableHead>Kennung</TableHead>
+                            <TableHead>Titel</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Vollst.</TableHead>
+                            <TableHead>Tags</TableHead>
+                            <TableHead>Flags</TableHead>
+                            <TableHead className="text-right">Kinder</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pages.items.map((page) => (
+                            <TableRow
+                              key={page.nodeId}
+                              className={`cursor-pointer hover:bg-muted/50 ${selectedNodeIds.has(page.nodeId) ? "bg-primary/5" : ""}`}
+                              onClick={() => navigate(`/node/${page.nodeId}`)}
+                            >
+                              <TableCell
+                                className="px-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <input
+                                  type="checkbox"
+                                  aria-label={`${page.title} ausw\u00E4hlen`}
+                                  className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+                                  checked={selectedNodeIds.has(page.nodeId)}
+                                  onChange={() => toggleSelection(page.nodeId)}
+                                />
+                              </TableCell>
+                              <TableCell className="font-mono text-xs">
+                                {page.displayCode}
+                              </TableCell>
+                              <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
+                                {page.title}
+                              </TableCell>
+                              <TableCell>
+                                <StatusLabel status={page.status} />
+                              </TableCell>
+                              <TableCell>
+                                <CompletenessBar value={page.completeness} />
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {page.tagCount}
+                              </TableCell>
+                              <TableCell>
+                                <PageFlagIcons page={page} />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {page.childCount}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
-                )}
-                <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10 px-2">
-                        <input
-                          type="checkbox"
-                          aria-label="Alle Seiten ausw\u00E4hlen"
-                          className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
-                          checked={pages.items.length > 0 && pages.items.every((p) => selectedNodeIds.has(p.nodeId))}
-                          ref={(el) => {
-                            if (el) {
-                              el.indeterminate = selectedNodeIds.size > 0 && !pages.items.every((p) => selectedNodeIds.has(p.nodeId));
-                            }
-                          }}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedNodeIds(new Set(pages.items.map((p) => p.nodeId)));
-                            } else {
-                              clearSelection();
-                            }
-                          }}
-                        />
-                      </TableHead>
-                      <TableHead>Kennung</TableHead>
-                      <TableHead>Titel</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Vollst.</TableHead>
-                      <TableHead>Tags</TableHead>
-                      <TableHead>Flags</TableHead>
-                      <TableHead className="text-right">Kinder</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pages.items.map((page) => (
-                      <TableRow
-                        key={page.nodeId}
-                        className={`cursor-pointer hover:bg-muted/50 ${selectedNodeIds.has(page.nodeId) ? "bg-primary/5" : ""}`}
-                        onClick={() => navigate(`/node/${page.nodeId}`)}
-                      >
-                        <TableCell className="px-2" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            aria-label={`${page.title} ausw\u00E4hlen`}
-                            className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
-                            checked={selectedNodeIds.has(page.nodeId)}
-                            onChange={() => toggleSelection(page.nodeId)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {page.displayCode}
-                        </TableCell>
-                        <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
-                          {page.title}
-                        </TableCell>
-                        <TableCell>
-                          <StatusLabel status={page.status} />
-                        </TableCell>
-                        <TableCell>
-                          <CompletenessBar value={page.completeness} />
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {page.tagCount}
-                        </TableCell>
-                        <TableCell>
-                          <PageFlagIcons page={page} />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {page.childCount}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                </div>
-                </div>
                 ) : (
                   <PagesTreeView pages={pages.items} onNavigate={navigate} />
                 )
@@ -1406,51 +1557,51 @@ export function QualityDashboard() {
                 </div>
               ) : hints && hints.length > 0 ? (
                 <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-24">Priorität</TableHead>
-                      <TableHead className="w-40">Typ</TableHead>
-                      <TableHead>Seite</TableHead>
-                      <TableHead>Detail</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {hints.map((hint, idx) => (
-                      <TableRow
-                        key={`${hint.nodeId}-${hint.type}-${idx}`}
-                        className={
-                          hint.targetType === "media"
-                            ? ""
-                            : "cursor-pointer hover:bg-muted/50"
-                        }
-                        onClick={() => {
-                          if (hint.targetType !== "media") {
-                            navigate(`/node/${hint.nodeId}`);
-                          }
-                        }}
-                      >
-                        <TableCell>
-                          <SeverityBadge severity={hint.severity} />
-                        </TableCell>
-                        <TableCell>
-                          <HintTypeLabel type={hint.type} />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <span className="font-mono text-xs text-muted-foreground mr-2">
-                              {hint.displayCode}
-                            </span>
-                            <span className="font-medium">{hint.title}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-[200px] lg:max-w-[300px] truncate">
-                          {hint.detail}
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-24">Priorität</TableHead>
+                        <TableHead className="w-40">Typ</TableHead>
+                        <TableHead>Seite</TableHead>
+                        <TableHead>Detail</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {hints.map((hint, idx) => (
+                        <TableRow
+                          key={`${hint.nodeId}-${hint.type}-${idx}`}
+                          className={
+                            hint.targetType === "media"
+                              ? ""
+                              : "cursor-pointer hover:bg-muted/50"
+                          }
+                          onClick={() => {
+                            if (hint.targetType !== "media") {
+                              navigate(`/node/${hint.nodeId}`);
+                            }
+                          }}
+                        >
+                          <TableCell>
+                            <SeverityBadge severity={hint.severity} />
+                          </TableCell>
+                          <TableCell>
+                            <HintTypeLabel type={hint.type} />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <span className="font-mono text-xs text-muted-foreground mr-2">
+                                {hint.displayCode}
+                              </span>
+                              <span className="font-medium">{hint.title}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-[200px] lg:max-w-[300px] truncate">
+                            {hint.detail}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
@@ -1514,7 +1665,8 @@ export function QualityDashboard() {
                             </span>
                             <StatusLabel status={node.status} />
                             <span className="text-muted-foreground">
-                              {PAGE_TYPE_LABELS[node.templateType] || node.templateType}
+                              {PAGE_TYPE_LABELS[node.templateType] ||
+                                node.templateType}
                             </span>
                             <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" />
                           </div>
@@ -1603,7 +1755,10 @@ export function QualityDashboard() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap">
-            <Select value={reviewStatusFilter} onValueChange={setReviewStatusFilter}>
+            <Select
+              value={reviewStatusFilter}
+              onValueChange={setReviewStatusFilter}
+            >
               <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue placeholder="Status wählen" />
               </SelectTrigger>
@@ -1613,23 +1768,40 @@ export function QualityDashboard() {
                 <SelectItem value="in_review">In Review</SelectItem>
                 <SelectItem value="submitted">Eingereicht</SelectItem>
                 <SelectItem value="changes_requested">Zurückgegeben</SelectItem>
-                <SelectItem value="approved_for_publish">Zur Freigabe</SelectItem>
+                <SelectItem value="approved_for_publish">
+                  Zur Freigabe
+                </SelectItem>
               </SelectContent>
             </Select>
-            <Select value={reviewTemplateFilter} onValueChange={setReviewTemplateFilter}>
+            <Select
+              value={reviewTemplateFilter}
+              onValueChange={setReviewTemplateFilter}
+            >
               <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue placeholder="Seitentyp wählen" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Alle Seitentypen</SelectItem>
-                <SelectItem value="process_page_text">Prozessseite (Text)</SelectItem>
-                <SelectItem value="process_page_graphic">Prozessseite (Grafik)</SelectItem>
+                <SelectItem value="process_page_text">
+                  Prozessseite (Text)
+                </SelectItem>
+                <SelectItem value="process_page_graphic">
+                  Prozessseite (Grafik)
+                </SelectItem>
                 <SelectItem value="area_overview">Bereichsübersicht</SelectItem>
-                <SelectItem value="core_process_overview">Kernprozess-Übersicht</SelectItem>
-                <SelectItem value="work_instruction">Arbeitsanweisung</SelectItem>
-                <SelectItem value="procedure_instruction">Verfahrensanweisung</SelectItem>
+                <SelectItem value="core_process_overview">
+                  Kernprozess-Übersicht
+                </SelectItem>
+                <SelectItem value="work_instruction">
+                  Arbeitsanweisung
+                </SelectItem>
+                <SelectItem value="procedure_instruction">
+                  Verfahrensanweisung
+                </SelectItem>
                 <SelectItem value="policy">Richtlinie / Policy</SelectItem>
-                <SelectItem value="checklist">Checkliste / Formularvorlage</SelectItem>
+                <SelectItem value="checklist">
+                  Checkliste / Formularvorlage
+                </SelectItem>
                 <SelectItem value="faq">FAQ / Wissensartikel</SelectItem>
               </SelectContent>
             </Select>
@@ -1683,7 +1855,9 @@ export function QualityDashboard() {
                         <TableRow
                           key={item.workingCopyId}
                           className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => navigate(`/nodes/${item.nodeId}/review`)}
+                          onClick={() =>
+                            navigate(`/nodes/${item.nodeId}/review`)
+                          }
                         >
                           <TableCell className="font-mono text-xs">
                             {item.displayCode}
@@ -1701,10 +1875,18 @@ export function QualityDashboard() {
                             {item.authorId.substring(0, 8)}…
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground font-mono">
-                            {item.reviewerId ? `${item.reviewerId.substring(0, 8)}…` : "—"}
+                            {item.reviewerId
+                              ? `${item.reviewerId.substring(0, 8)}…`
+                              : "—"}
                           </TableCell>
                           <TableCell className="text-right text-sm">
-                            <span className={item.ageDays > 7 ? "text-red-600 font-medium" : ""}>
+                            <span
+                              className={
+                                item.ageDays > 7
+                                  ? "text-red-600 font-medium"
+                                  : ""
+                              }
+                            >
                               {item.ageDays === 0
                                 ? "Heute"
                                 : item.ageDays === 1
@@ -1797,8 +1979,8 @@ export function QualityDashboard() {
                       {ownershipMonitor.escalatedCount > 0 && (
                         <p className="text-sm text-red-600 font-medium mt-1">
                           {ownershipMonitor.escalatedCount} Seiten sind seit
-                          über {parsedThreshold} Tagen ohne Verantwortlichen und wurden zur
-                          Eskalation vorgemerkt.
+                          über {parsedThreshold} Tagen ohne Verantwortlichen und
+                          wurden zur Eskalation vorgemerkt.
                         </p>
                       )}
                       <p className="text-sm text-muted-foreground mt-1">
@@ -1822,7 +2004,10 @@ export function QualityDashboard() {
             )}
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap">
-            <Select value={ownershipGapFilter} onValueChange={setOwnershipGapFilter}>
+            <Select
+              value={ownershipGapFilter}
+              onValueChange={setOwnershipGapFilter}
+            >
               <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue placeholder="Filter wählen" />
               </SelectTrigger>
@@ -1850,7 +2035,13 @@ export function QualityDashboard() {
             </div>
             {ownershipMonitor && (
               <span className="text-sm text-muted-foreground">
-                {filteredOwnershipItems(ownershipMonitor.items, ownershipGapFilter).length} Seiten
+                {
+                  filteredOwnershipItems(
+                    ownershipMonitor.items,
+                    ownershipGapFilter,
+                  ).length
+                }{" "}
+                Seiten
               </span>
             )}
           </div>
@@ -1873,7 +2064,10 @@ export function QualityDashboard() {
                   ))}
                 </div>
               ) : ownershipMonitor &&
-                filteredOwnershipItems(ownershipMonitor.items, ownershipGapFilter).length > 0 ? (
+                filteredOwnershipItems(
+                  ownershipMonitor.items,
+                  ownershipGapFilter,
+                ).length > 0 ? (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -1886,61 +2080,63 @@ export function QualityDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredOwnershipItems(ownershipMonitor.items, ownershipGapFilter).map(
-                        (item) => (
-                          <TableRow
-                            key={item.nodeId}
-                            className={`cursor-pointer hover:bg-muted/50 ${item.isEscalated ? "bg-red-50/50 dark:bg-red-950/10" : ""}`}
-                            onClick={() => navigate(`/node/${item.nodeId}`)}
-                          >
-                            <TableCell className="font-mono text-xs">
-                              <div className="flex items-center gap-1">
-                                {item.isEscalated && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        Eskaliert: &gt;{parsedThreshold} Tage ohne Verantwortlichen
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                                {item.displayCode}
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
-                              {item.title}
-                            </TableCell>
-                            <TableCell>
-                              <StatusLabel status={item.status} />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1 flex-wrap">
-                                {item.gapTypes.map((gap) => (
-                                  <GapBadge key={gap} gap={gap} />
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right text-sm">
-                              <span
-                                className={
-                                  item.daysSinceUpdate > parsedThreshold
-                                    ? "text-red-600 font-medium"
-                                    : ""
-                                }
-                              >
-                                {item.daysSinceUpdate === 0
-                                  ? "Heute"
-                                  : item.daysSinceUpdate === 1
-                                    ? "1 Tag"
-                                    : `${item.daysSinceUpdate} Tage`}
-                              </span>
-                            </TableCell>
-                          </TableRow>
-                        ),
-                      )}
+                      {filteredOwnershipItems(
+                        ownershipMonitor.items,
+                        ownershipGapFilter,
+                      ).map((item) => (
+                        <TableRow
+                          key={item.nodeId}
+                          className={`cursor-pointer hover:bg-muted/50 ${item.isEscalated ? "bg-red-50/50 dark:bg-red-950/10" : ""}`}
+                          onClick={() => navigate(`/node/${item.nodeId}`)}
+                        >
+                          <TableCell className="font-mono text-xs">
+                            <div className="flex items-center gap-1">
+                              {item.isEscalated && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      Eskaliert: &gt;{parsedThreshold} Tage ohne
+                                      Verantwortlichen
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                              {item.displayCode}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium max-w-[200px] lg:max-w-[300px] truncate">
+                            {item.title}
+                          </TableCell>
+                          <TableCell>
+                            <StatusLabel status={item.status} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap">
+                              {item.gapTypes.map((gap) => (
+                                <GapBadge key={gap} gap={gap} />
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-sm">
+                            <span
+                              className={
+                                item.daysSinceUpdate > parsedThreshold
+                                  ? "text-red-600 font-medium"
+                                  : ""
+                              }
+                            >
+                              {item.daysSinceUpdate === 0
+                                ? "Heute"
+                                : item.daysSinceUpdate === 1
+                                  ? "1 Tag"
+                                  : `${item.daysSinceUpdate} Tage`}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </div>

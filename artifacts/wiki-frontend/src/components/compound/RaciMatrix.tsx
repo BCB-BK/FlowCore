@@ -23,7 +23,13 @@ interface RaciMatrixProps {
   value: string;
   onSave?: (key: string, value: string) => void;
   sectionKey: string;
-  help?: { fillHelp?: string; example?: string; badExample?: string; placeholder?: string; expectedFormat?: string };
+  help?: {
+    fillHelp?: string;
+    example?: string;
+    badExample?: string;
+    placeholder?: string;
+    expectedFormat?: string;
+  };
   helpText?: string;
   guidingQuestions?: string[];
 }
@@ -34,7 +40,8 @@ interface RaciData {
 }
 
 function parseRaci(raw: string): RaciData {
-  if (!raw) return { roles: [""], entries: [{ activity: "", assignments: {} }] };
+  if (!raw)
+    return { roles: [""], entries: [{ activity: "", assignments: {} }] };
   try {
     const parsed = JSON.parse(raw);
     if (parsed && parsed.roles && parsed.entries) return parsed;
@@ -57,7 +64,14 @@ const RACI_COLORS: Record<string, string> = {
   I: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
 };
 
-export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQuestions }: RaciMatrixProps) {
+export function RaciMatrix({
+  value,
+  onSave,
+  sectionKey,
+  help,
+  helpText,
+  guidingQuestions,
+}: RaciMatrixProps) {
   const [editing, setEditing] = useState(false);
   const [data, setData] = useState<RaciData>(() => parseRaci(value));
   const roleKeys = useRowKeys(data.roles.length);
@@ -65,8 +79,8 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
 
   const handleSave = () => {
     const cleaned: RaciData = {
-      roles: data.roles.filter(r => r.trim()),
-      entries: data.entries.filter(e => e.activity.trim()),
+      roles: data.roles.filter((r) => r.trim()),
+      entries: data.entries.filter((e) => e.activity.trim()),
     };
     onSave?.(sectionKey, JSON.stringify(cleaned));
     setEditing(false);
@@ -85,7 +99,7 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
     const roleName = data.roles[index];
     setData({
       roles: data.roles.filter((_, i) => i !== index),
-      entries: data.entries.map(e => {
+      entries: data.entries.map((e) => {
         const newAssignments = { ...e.assignments };
         delete newAssignments[roleName];
         return { ...e, assignments: newAssignments };
@@ -95,7 +109,10 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
   };
 
   const addActivity = () => {
-    setData({ ...data, entries: [...data.entries, { activity: "", assignments: {} }] });
+    setData({
+      ...data,
+      entries: [...data.entries, { activity: "", assignments: {} }],
+    });
     entryKeys.add();
   };
   const removeActivity = (index: number) => {
@@ -109,7 +126,9 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
     .filter((r) => r.role.trim());
 
   const displayData = parseRaci(value);
-  const hasContent = displayData.entries.some(e => e.activity.trim()) && displayData.roles.some(r => r.trim());
+  const hasContent =
+    displayData.entries.some((e) => e.activity.trim()) &&
+    displayData.roles.some((r) => r.trim());
 
   return (
     <Card>
@@ -119,7 +138,12 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
             <CardTitle className="text-sm flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               RACI-Matrix
-              <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>
+              <Badge
+                variant="destructive"
+                className="text-[9px] px-1 py-0 h-4 leading-none"
+              >
+                Pflicht
+              </Badge>
             </CardTitle>
             <FieldHelpTooltip
               fillHelp={help?.fillHelp}
@@ -131,25 +155,44 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
             />
           </div>
           {onSave && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => { setData(parseRaci(value)); setEditing(true); }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setData(parseRaci(value));
+                setEditing(true);
+              }}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">Responsible, Accountable, Consulted, Informed</p>
+        <p className="text-xs text-muted-foreground">
+          Responsible, Accountable, Consulted, Informed
+        </p>
       </CardHeader>
       <CardContent>
         {editing ? (
@@ -158,7 +201,10 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
               <p className="text-xs font-medium mb-2">Rollen</p>
               <div className="flex flex-wrap gap-2">
                 {data.roles.map((role, i) => (
-                  <div key={roleKeys.keys[i]} className="flex items-center gap-1">
+                  <div
+                    key={roleKeys.keys[i]}
+                    className="flex items-center gap-1"
+                  >
                     <Input
                       value={role}
                       onChange={(e) => {
@@ -169,12 +215,22 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                       placeholder={`Rolle ${i + 1}`}
                       className="text-xs w-32 h-8"
                     />
-                    <Button variant="ghost" size="sm" className="h-6 px-1 text-destructive" onClick={() => removeRole(i)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-1 text-destructive"
+                      onClick={() => removeRole(i)}
+                    >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 ))}
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={addRole}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={addRole}
+                >
                   <Plus className="h-3 w-3 mr-1" />
                   Rolle
                 </Button>
@@ -185,9 +241,16 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr>
-                    <th className="text-left p-1.5 border-b font-medium">Aktivität</th>
+                    <th className="text-left p-1.5 border-b font-medium">
+                      Aktivität
+                    </th>
                     {visibleRoles.map(({ role, key }) => (
-                      <th key={key} className="text-center p-1.5 border-b font-medium min-w-[80px]">{role}</th>
+                      <th
+                        key={key}
+                        className="text-center p-1.5 border-b font-medium min-w-[80px]"
+                      >
+                        {role}
+                      </th>
                     ))}
                     <th className="w-8"></th>
                   </tr>
@@ -200,7 +263,10 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                           value={entry.activity}
                           onChange={(e) => {
                             const newEntries = [...data.entries];
-                            newEntries[ei] = { ...entry, activity: e.target.value };
+                            newEntries[ei] = {
+                              ...entry,
+                              activity: e.target.value,
+                            };
                             setData({ ...data, entries: newEntries });
                           }}
                           placeholder="Aktivität..."
@@ -213,7 +279,13 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                             value={entry.assignments[role] ?? ""}
                             onValueChange={(v) => {
                               const newEntries = [...data.entries];
-                              newEntries[ei] = { ...entry, assignments: { ...entry.assignments, [role]: v } };
+                              newEntries[ei] = {
+                                ...entry,
+                                assignments: {
+                                  ...entry.assignments,
+                                  [role]: v,
+                                },
+                              };
                               setData({ ...data, entries: newEntries });
                             }}
                           >
@@ -221,15 +293,25 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
-                              {RACI_VALUES.map(rv => (
-                                <SelectItem key={rv.value || "empty"} value={rv.value || "none"}>{rv.label}</SelectItem>
+                              {RACI_VALUES.map((rv) => (
+                                <SelectItem
+                                  key={rv.value || "empty"}
+                                  value={rv.value || "none"}
+                                >
+                                  {rv.label}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </td>
                       ))}
                       <td className="p-1.5 border-b">
-                        <Button variant="ghost" size="sm" className="h-6 px-1 text-destructive" onClick={() => removeActivity(ei)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-1 text-destructive"
+                          onClick={() => removeActivity(ei)}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </td>
@@ -237,7 +319,12 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                   ))}
                 </tbody>
               </table>
-              <Button variant="outline" size="sm" className="w-full mt-2 text-xs" onClick={addActivity}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-2 text-xs"
+                onClick={addActivity}
+              >
                 <Plus className="h-3 w-3 mr-1" />
                 Aktivität hinzufügen
               </Button>
@@ -248,9 +335,16 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left p-2 border-b font-medium">Aktivität</th>
+                  <th className="text-left p-2 border-b font-medium">
+                    Aktivität
+                  </th>
                   {displayData.roles.map((role, i) => (
-                    <th key={i} className="text-center p-2 border-b font-medium">{role}</th>
+                    <th
+                      key={i}
+                      className="text-center p-2 border-b font-medium"
+                    >
+                      {role}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -263,7 +357,11 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                       return (
                         <td key={ri} className="p-2 border-b text-center">
                           {val && val !== "none" && (
-                            <Badge className={`text-xs ${RACI_COLORS[val] ?? ""}`}>{val}</Badge>
+                            <Badge
+                              className={`text-xs ${RACI_COLORS[val] ?? ""}`}
+                            >
+                              {val}
+                            </Badge>
                           )}
                         </td>
                       );

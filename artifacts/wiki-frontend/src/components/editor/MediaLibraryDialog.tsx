@@ -10,7 +10,15 @@ import { Input } from "@workspace/ui/input";
 import { Label } from "@workspace/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Search, Image, FileText, Video, Loader2, Globe } from "lucide-react";
+import {
+  Upload,
+  Search,
+  Image,
+  FileText,
+  Video,
+  Loader2,
+  Globe,
+} from "lucide-react";
 import { SharePointMediaBrowser } from "./SharePointMediaBrowser";
 
 interface MediaAsset {

@@ -29,18 +29,37 @@ interface KPITableProps {
 }
 
 function emptyEntry(): KPIEntry {
-  return { kpi: "", definition: "", formula: "", target: "", dataSource: "", frequency: "", owner: "" };
+  return {
+    kpi: "",
+    definition: "",
+    formula: "",
+    target: "",
+    dataSource: "",
+    frequency: "",
+    owner: "",
+  };
 }
 
 function normalize(raw: unknown): KPIEntry[] | null {
   if (!raw) return null;
   if (typeof raw === "string" && raw.trim()) {
-    return [{ kpi: raw, definition: "", formula: "", target: "", dataSource: "", frequency: "", owner: "" }];
+    return [
+      {
+        kpi: raw,
+        definition: "",
+        formula: "",
+        target: "",
+        dataSource: "",
+        frequency: "",
+        owner: "",
+      },
+    ];
   }
   if (!Array.isArray(raw)) return null;
   if (raw.length === 0) return null;
   return raw.map((item: unknown) => {
-    if (typeof item !== "object" || item === null) return { ...emptyEntry(), kpi: String(item ?? "") };
+    if (typeof item !== "object" || item === null)
+      return { ...emptyEntry(), kpi: String(item ?? "") };
     const obj = item as Record<string, unknown>;
     return {
       kpi: String(obj.kpi ?? obj.name ?? ""),
@@ -56,7 +75,11 @@ function normalize(raw: unknown): KPIEntry[] | null {
 
 const COLUMNS = [
   { key: "kpi" as const, label: "KPI", width: "min-w-[140px]" },
-  { key: "definition" as const, label: "Definition/Scope", width: "min-w-[160px]" },
+  {
+    key: "definition" as const,
+    label: "Definition/Scope",
+    width: "min-w-[160px]",
+  },
   { key: "formula" as const, label: "Formel", width: "min-w-[120px]" },
   { key: "target" as const, label: "Ziel", width: "min-w-[100px]" },
   { key: "dataSource" as const, label: "Datenquelle", width: "min-w-[120px]" },
@@ -94,7 +117,9 @@ export function KPITable({ data, onSave, readOnly }: KPITableProps) {
 
   const updateField = (index: number, field: keyof KPIEntry, value: string) => {
     setDraft((prev) =>
-      prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry))
+      prev.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry,
+      ),
     );
   };
 
@@ -109,18 +134,32 @@ export function KPITable({ data, onSave, readOnly }: KPITableProps) {
             KPIs & Kennzahlen
           </CardTitle>
           {onSave && !readOnly && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={startEdit}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground"
+              onClick={startEdit}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
@@ -131,7 +170,9 @@ export function KPITable({ data, onSave, readOnly }: KPITableProps) {
       <CardContent>
         {!current || current.length === 0 ? (
           <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground mb-2">Keine KPIs definiert</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Keine KPIs definiert
+            </p>
             {onSave && !readOnly && (
               <Button variant="outline" size="sm" onClick={startEdit}>
                 <Plus className="h-3 w-3 mr-1" />
@@ -161,18 +202,27 @@ export function KPITable({ data, onSave, readOnly }: KPITableProps) {
                           {editing ? (
                             <Input
                               value={entry[col.key]}
-                              onChange={(e) => updateField(idx, col.key, e.target.value)}
+                              onChange={(e) =>
+                                updateField(idx, col.key, e.target.value)
+                              }
                               className="h-7 text-xs"
                               placeholder={col.label}
                             />
                           ) : (
-                            <span className="text-xs">{entry[col.key] || "—"}</span>
+                            <span className="text-xs">
+                              {entry[col.key] || "—"}
+                            </span>
                           )}
                         </TableCell>
                       ))}
                       {editing && (
                         <TableCell>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeRow(idx)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeRow(idx)}
+                          >
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </TableCell>
@@ -183,7 +233,12 @@ export function KPITable({ data, onSave, readOnly }: KPITableProps) {
               </Table>
             </div>
             {editing && (
-              <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={addRow}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 text-xs"
+                onClick={addRow}
+              >
                 <Plus className="h-3 w-3 mr-1" />
                 KPI hinzufügen
               </Button>

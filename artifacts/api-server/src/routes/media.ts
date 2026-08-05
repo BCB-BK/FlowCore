@@ -219,14 +219,18 @@ router.post(
       };
 
       if (!driveId || !itemId || !filename) {
-        res.status(400).json({ error: "driveId, itemId and filename are required" });
+        res
+          .status(400)
+          .json({ error: "driveId, itemId and filename are required" });
         return;
       }
 
       const accessToken = resolveGraphToken(req);
       const content = await getDriveItemContent(accessToken, driveId, itemId);
       if (!content) {
-        res.status(404).json({ error: "SharePoint file not found or inaccessible" });
+        res
+          .status(404)
+          .json({ error: "SharePoint file not found or inaccessible" });
         return;
       }
 
@@ -298,72 +302,82 @@ router.post(
 // Medienbibliothek: nur für Benutzer mit Bearbeitungsrechten (die Dialoge
 // existieren ausschließlich im Editor-Kontext). Ohne Gate konnte jeder
 // Authentifizierte Metadaten und URLs aller Assets auflisten.
-router.get("/assets", requireAuth, requirePermission("edit_content"), async (req, res) => {
-  const q = req.query.q as string | undefined;
-  const classification = req.query.classification as string | undefined;
-  const limit = Math.min(
-    parseInt((req.query.limit as string) || "50", 10),
-    100,
-  );
-  const offset = parseInt((req.query.offset as string) || "0", 10);
-
-  const conditions = [eq(mediaAssetsTable.isDeleted, false)];
-
-  if (q) {
-    conditions.push(ilike(mediaAssetsTable.originalFilename, `%${q}%`));
-  }
-
-  if (classification) {
-    conditions.push(
-      eq(
-        mediaAssetsTable.classification,
-        classification as
-          | "document"
-          | "image"
-          | "video"
-          | "audio"
-          | "spreadsheet"
-          | "presentation"
-          | "template"
-          | "form"
-          | "archive"
-          | "other",
-      ),
+router.get(
+  "/assets",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    const q = req.query.q as string | undefined;
+    const classification = req.query.classification as string | undefined;
+    const limit = Math.min(
+      parseInt((req.query.limit as string) || "50", 10),
+      100,
     );
-  }
+    const offset = parseInt((req.query.offset as string) || "0", 10);
 
-  const assets = await db
-    .select()
-    .from(mediaAssetsTable)
-    .where(and(...conditions))
-    .orderBy(desc(mediaAssetsTable.createdAt))
-    .limit(limit)
-    .offset(offset);
+    const conditions = [eq(mediaAssetsTable.isDeleted, false)];
 
-  const assetsWithUrls = assets.map((a) => ({
-    ...a,
-    url: `/api/media/files/${a.storageKey}`,
-  }));
+    if (q) {
+      conditions.push(ilike(mediaAssetsTable.originalFilename, `%${q}%`));
+    }
 
-  res.json(assetsWithUrls);
-});
+    if (classification) {
+      conditions.push(
+        eq(
+          mediaAssetsTable.classification,
+          classification as
+            | "document"
+            | "image"
+            | "video"
+            | "audio"
+            | "spreadsheet"
+            | "presentation"
+            | "template"
+            | "form"
+            | "archive"
+            | "other",
+        ),
+      );
+    }
 
-router.get("/assets/:id", requireAuth, requirePermission("edit_content"), async (req, res) => {
-  const id = req.params.id as string;
-  const [asset] = await db
-    .select()
-    .from(mediaAssetsTable)
-    .where(
-      and(eq(mediaAssetsTable.id, id), eq(mediaAssetsTable.isDeleted, false)),
-    );
+    const assets = await db
+      .select()
+      .from(mediaAssetsTable)
+      .where(and(...conditions))
+      .orderBy(desc(mediaAssetsTable.createdAt))
+      .limit(limit)
+      .offset(offset);
 
-  if (!asset) {
-    res.status(404).json({ error: "Asset not found" });
-    return;
-  }
+    const assetsWithUrls = assets.map((a) => ({
+      ...a,
+      url: `/api/media/files/${a.storageKey}`,
+    }));
 
-  res.json({ ...asset, url: `/api/media/files/${asset.storageKey}` });
-});
+    res.json(assetsWithUrls);
+  },
+);
+
+router.get(
+  "/assets/:id",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    const id = req.params.id as string;
+    const [asset] = await db
+      .select()
+      .from(mediaAssetsTable)
+      .where(
+        and(eq(mediaAssetsTable.id, id), eq(mediaAssetsTable.isDeleted, false)),
+      );
+
+    if (!asset) {
+      res.status(404).json({ error: "Asset not found" });
+      return;
+    }
+
+    res.json({ ...asset, url: `/api/media/files/${asset.storageKey}` });
+  },
+);
 
 router.delete(
   "/assets/:id",
@@ -416,7 +430,11 @@ router.get("/files/:key", requireAuth, async (req, res) => {
     if (asset.nodeId) {
       let canRead = false;
       try {
-        canRead = await hasPermission(req.user!.principalId, "read_page", asset.nodeId);
+        canRead = await hasPermission(
+          req.user!.principalId,
+          "read_page",
+          asset.nodeId,
+        );
         // Medien vertraulicher Seiten unterliegen derselben
         // Vertraulichkeitsprüfung wie die Seite selbst.
         if (canRead) {
@@ -427,7 +445,10 @@ router.get("/files/:key", requireAuth, async (req, res) => {
           canRead = confidentiality.allowed;
         }
       } catch (permErr) {
-        logger.error({ permErr, principalId: req.user?.principalId, nodeId: asset.nodeId }, "hasPermission failed for media file");
+        logger.error(
+          { permErr, principalId: req.user?.principalId, nodeId: asset.nodeId },
+          "hasPermission failed for media file",
+        );
         res.status(500).json({ error: "Permission check failed" });
         return;
       }
@@ -448,7 +469,13 @@ router.get("/files/:key", requireAuth, async (req, res) => {
           .limit(20);
         for (const usage of usages) {
           if (!usage.nodeId) continue;
-          if (await hasPermission(req.user!.principalId, "read_page", usage.nodeId)) {
+          if (
+            await hasPermission(
+              req.user!.principalId,
+              "read_page",
+              usage.nodeId,
+            )
+          ) {
             const confidentiality = await checkConfidentialityAccess(
               req.user!.principalId,
               usage.nodeId,
@@ -463,7 +490,10 @@ router.get("/files/:key", requireAuth, async (req, res) => {
           canRead = await hasPermission(req.user!.principalId, "edit_content");
         }
       } catch (permErr) {
-        logger.error({ permErr, principalId: req.user?.principalId, assetId: asset.id }, "Permission check failed for node-less media file");
+        logger.error(
+          { permErr, principalId: req.user?.principalId, assetId: asset.id },
+          "Permission check failed for node-less media file",
+        );
         res.status(500).json({ error: "Permission check failed" });
         return;
       }
@@ -514,7 +544,10 @@ router.post(
       .select({ id: mediaAssetsTable.id })
       .from(mediaAssetsTable)
       .where(
-        and(eq(mediaAssetsTable.id, assetId), eq(mediaAssetsTable.isDeleted, false)),
+        and(
+          eq(mediaAssetsTable.id, assetId),
+          eq(mediaAssetsTable.isDeleted, false),
+        ),
       );
     if (!asset) {
       res.status(404).json({ error: "Asset not found" });

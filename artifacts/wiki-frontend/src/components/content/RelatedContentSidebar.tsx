@@ -31,11 +31,14 @@ const RELATION_TYPE_LABELS: Record<string, string> = {
   references: "Referenziert",
 };
 
-const RELATION_CATEGORIES: Record<string, {
-  label: string;
-  icon: typeof Link2;
-  types: string[];
-}> = {
+const RELATION_CATEGORIES: Record<
+  string,
+  {
+    label: string;
+    icon: typeof Link2;
+    types: string[];
+  }
+> = {
   process_flow: {
     label: "Prozessfluss",
     icon: ArrowUpDown,
@@ -74,7 +77,8 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
   const { data: parentNode } = useNode(parentId ?? undefined);
 
   const hasBacklinks = Array.isArray(backlinks) && backlinks.length > 0;
-  const hasForwardLinks = Array.isArray(forwardLinks) && forwardLinks.length > 0;
+  const hasForwardLinks =
+    Array.isArray(forwardLinks) && forwardLinks.length > 0;
   const hasSiblings = Array.isArray(siblings) && siblings.length > 0;
   const hasChildren = Array.isArray(children) && children.length > 0;
   const hasParent = !!parentNode;
@@ -150,7 +154,8 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                 </p>
                 <p className="text-[10px] text-muted-foreground">
                   {parentNode.displayCode} ·{" "}
-                  {PAGE_TYPE_LABELS[parentNode.templateType] || parentNode.templateType}
+                  {PAGE_TYPE_LABELS[parentNode.templateType] ||
+                    parentNode.templateType}
                 </p>
               </div>
               <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -205,9 +210,7 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                   {...getLinkProps(`/node/${sib.id}`)}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-xs truncate">
-                      {sib.title}
-                    </p>
+                    <p className="font-medium text-xs truncate">{sib.title}</p>
                     <p className="text-[10px] text-muted-foreground">
                       {sib.displayCode}
                     </p>
@@ -247,11 +250,13 @@ export function RelatedContentSidebar({ nodeId }: RelatedContentSidebarProps) {
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {link.nodeDisplayCode} ·{" "}
-                        {PAGE_TYPE_LABELS[link.nodeTemplateType || ""] || link.nodeTemplateType}
+                        {PAGE_TYPE_LABELS[link.nodeTemplateType || ""] ||
+                          link.nodeTemplateType}
                       </p>
                     </div>
                     <Badge variant="outline" className="text-[10px] shrink-0">
-                      {RELATION_TYPE_LABELS[link.relationType] || link.relationType}
+                      {RELATION_TYPE_LABELS[link.relationType] ||
+                        link.relationType}
                     </Badge>
                   </a>
                 ))}

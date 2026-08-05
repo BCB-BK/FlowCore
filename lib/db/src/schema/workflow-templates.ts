@@ -133,8 +133,9 @@ export type PageTypeWorkflowAssignment =
 export const insertNotificationRuleSchema = createInsertSchema(
   notificationRulesTable,
 ).omit({ id: true, createdAt: true, updatedAt: true });
-export const selectNotificationRuleSchema =
-  createSelectSchema(notificationRulesTable);
+export const selectNotificationRuleSchema = createSelectSchema(
+  notificationRulesTable,
+);
 export type InsertNotificationRule = z.infer<
   typeof insertNotificationRuleSchema
 >;

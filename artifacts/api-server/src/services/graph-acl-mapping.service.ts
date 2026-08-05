@@ -6,9 +6,7 @@ import {
   resolveReadAccessPrincipals,
   resolveConfidentialityLevelPrincipals,
 } from "./flowcore-permission-resolver.service";
-import {
-  resolvePrincipalsToEntra,
-} from "./entra-principal-mapping.service";
+import { resolvePrincipalsToEntra } from "./entra-principal-mapping.service";
 import { getGroupMapping } from "./graph-external-group-mapping.service";
 import { logger } from "../lib/logger";
 
@@ -37,9 +35,7 @@ export class GraphAclNotExportableError extends Error {
  *    node)
  *  - strictly_confidential -> executive (a single dedicated group)
  */
-export function determineAclTier(
-  level: ConfidentialityLevel,
-): GraphAclTier {
+export function determineAclTier(level: ConfidentialityLevel): GraphAclTier {
   switch (level) {
     case "public":
     case "internal":
@@ -138,9 +134,7 @@ async function buildRestrictedAcl(
     );
   }
 
-  const { resolved, unmapped } = await resolvePrincipalsToEntra([
-    ...combined,
-  ]);
+  const { resolved, unmapped } = await resolvePrincipalsToEntra([...combined]);
 
   if (unmapped.length > 0) {
     logger.warn(
@@ -196,7 +190,10 @@ export async function buildAclForItem(params: {
       tier: null,
       aclSummary: null,
       result: "failed",
-      reason: err instanceof GraphAclNotExportableError ? err.reason : "unknown_error",
+      reason:
+        err instanceof GraphAclNotExportableError
+          ? err.reason
+          : "unknown_error",
     });
     throw err;
   }
@@ -239,7 +236,10 @@ export async function buildAclForItem(params: {
       tier,
       aclSummary: null,
       result: "failed",
-      reason: err instanceof GraphAclNotExportableError ? err.reason : "unknown_error",
+      reason:
+        err instanceof GraphAclNotExportableError
+          ? err.reason
+          : "unknown_error",
     });
     throw err;
   }

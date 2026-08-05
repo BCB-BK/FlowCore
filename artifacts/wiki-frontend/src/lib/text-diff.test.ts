@@ -25,7 +25,7 @@ describe("detectCompoundType", () => {
       inputs: "Rohmaterial",
       process: "Verarbeitung in 3 Schritten",
       outputs: "Fertigprodukt",
-      customers: "Endkunde"
+      customers: "Endkunde",
     };
     expect(detectCompoundType(sipoc)).toBe("sipoc_cards");
   });
@@ -36,7 +36,7 @@ describe("detectCompoundType", () => {
       inputs: "",
       process: "Schritt 1",
       outputs: "",
-      customers: ""
+      customers: "",
     });
     expect(detectCompoundType(sipocJson)).toBe("sipoc_cards");
   });
@@ -50,9 +50,15 @@ describe("detectCompoundType", () => {
     const raci = {
       roles: ["Manager", "Dev", "QA"],
       entries: [
-        { activity: "Code Review", assignments: { Manager: "A", Dev: "R", QA: "C" } },
-        { activity: "Testing", assignments: { Manager: "I", Dev: "C", QA: "R" } }
-      ]
+        {
+          activity: "Code Review",
+          assignments: { Manager: "A", Dev: "R", QA: "C" },
+        },
+        {
+          activity: "Testing",
+          assignments: { Manager: "I", Dev: "C", QA: "R" },
+        },
+      ],
     };
     expect(detectCompoundType(raci)).toBe("raci_matrix");
   });
@@ -60,7 +66,7 @@ describe("detectCompoundType", () => {
   it("detects raci_matrix from JSON string", () => {
     const raciJson = JSON.stringify({
       roles: ["PM"],
-      entries: [{ activity: "Planung", assignments: { PM: "R" } }]
+      entries: [{ activity: "Planung", assignments: { PM: "R" } }],
     });
     expect(detectCompoundType(raciJson)).toBe("raci_matrix");
   });
@@ -68,7 +74,10 @@ describe("detectCompoundType", () => {
   it("detects qa_repeater from QaRepeater shape", () => {
     const qa = [
       { question: "Was ist SIPOC?", answer: "Ein Prozessmodell." },
-      { question: "Wofür steht RACI?", answer: "Responsible, Accountable, Consulted, Informed" }
+      {
+        question: "Wofür steht RACI?",
+        answer: "Responsible, Accountable, Consulted, Informed",
+      },
     ];
     expect(detectCompoundType(qa)).toBe("qa_repeater");
   });
@@ -80,8 +89,12 @@ describe("detectCompoundType", () => {
 
   it("detects term_repeater from TermRepeater shape", () => {
     const terms = [
-      { term: "SIPOC", definition: "Supplier-Input-Process-Output-Customer", synonyms: "Prozessübersicht" },
-      { term: "RACI", definition: "Verantwortlichkeitsmatrix" }
+      {
+        term: "SIPOC",
+        definition: "Supplier-Input-Process-Output-Customer",
+        synonyms: "Prozessübersicht",
+      },
+      { term: "RACI", definition: "Verantwortlichkeitsmatrix" },
     ];
     expect(detectCompoundType(terms)).toBe("term_repeater");
   });
@@ -95,20 +108,26 @@ describe("detectCompoundType", () => {
     const items = [
       { text: "Dokument geprüft", category: "Qualität", note: "siehe Anhang" },
       { text: "Freigabe erteilt" },
-      { text: "Archiviert", category: "", note: "" }
+      { text: "Archiviert", category: "", note: "" },
     ];
     expect(detectCompoundType(items)).toBe("check_items");
   });
 
   it("detects check_items from JSON string", () => {
-    const itemsJson = JSON.stringify([{ text: "Punkt 1" }, { text: "Punkt 2", note: "Hinweis" }]);
+    const itemsJson = JSON.stringify([
+      { text: "Punkt 1" },
+      { text: "Punkt 2", note: "Hinweis" },
+    ]);
     expect(detectCompoundType(itemsJson)).toBe("check_items");
   });
 
   it("detects competency_areas from CompetencyAreas shape", () => {
     const areas = [
       { area: "Projektmanagement", tasks: "Planung, Steuerung, Kontrolle" },
-      { area: "Qualitätssicherung", tasks: "Reviews durchführen, Audits begleiten" }
+      {
+        area: "Qualitätssicherung",
+        tasks: "Reviews durchführen, Audits begleiten",
+      },
     ];
     expect(detectCompoundType(areas)).toBe("competency_areas");
   });
@@ -135,7 +154,7 @@ describe("formatCompoundForDisplay", () => {
       inputs: "Rohmaterial",
       process: "Verarbeitung",
       outputs: "Fertigprodukt",
-      customers: "Endkunde"
+      customers: "Endkunde",
     };
     const result = formatCompoundForDisplay(sipoc, "sipoc_cards");
     expect(result).toContain("S: Lieferant A, Lieferant B");
@@ -151,7 +170,7 @@ describe("formatCompoundForDisplay", () => {
       inputs: "",
       process: "Y",
       outputs: "",
-      customers: ""
+      customers: "",
     });
     const result = formatCompoundForDisplay(sipocJson, "sipoc_cards");
     expect(result).toContain("S: X");
@@ -167,8 +186,8 @@ describe("formatCompoundForDisplay", () => {
     const raci = {
       roles: ["Manager", "Dev"],
       entries: [
-        { activity: "Code Review", assignments: { Manager: "A", Dev: "R" } }
-      ]
+        { activity: "Code Review", assignments: { Manager: "A", Dev: "R" } },
+      ],
     };
     const result = formatCompoundForDisplay(raci, "raci_matrix");
     expect(result).toContain("Rollen: Manager, Dev");
@@ -176,13 +195,13 @@ describe("formatCompoundForDisplay", () => {
   });
 
   it("formats empty raci_matrix as (leer)", () => {
-    expect(formatCompoundForDisplay({ roles: [], entries: [] }, "raci_matrix")).toBe("(leer)");
+    expect(
+      formatCompoundForDisplay({ roles: [], entries: [] }, "raci_matrix"),
+    ).toBe("(leer)");
   });
 
   it("formats qa_repeater (QaRepeater)", () => {
-    const qa = [
-      { question: "Was ist SIPOC?", answer: "Ein Prozessmodell." }
-    ];
+    const qa = [{ question: "Was ist SIPOC?", answer: "Ein Prozessmodell." }];
     const result = formatCompoundForDisplay(qa, "qa_repeater");
     expect(result).toContain("1. F: Was ist SIPOC?");
     expect(result).toContain("A: Ein Prozessmodell.");
@@ -190,7 +209,11 @@ describe("formatCompoundForDisplay", () => {
 
   it("formats term_repeater with string synonyms (TermRepeater)", () => {
     const terms = [
-      { term: "SIPOC", definition: "Prozessübersicht", synonyms: "Lieferantenmatrix" }
+      {
+        term: "SIPOC",
+        definition: "Prozessübersicht",
+        synonyms: "Lieferantenmatrix",
+      },
     ];
     const result = formatCompoundForDisplay(terms, "term_repeater");
     expect(result).toContain("SIPOC: Prozessübersicht");
@@ -207,7 +230,7 @@ describe("formatCompoundForDisplay", () => {
   it("formats check_items with text/category/note (CheckItemsEditor)", () => {
     const items = [
       { text: "Dokument geprüft", category: "Qualität", note: "siehe Anhang" },
-      { text: "Freigabe erteilt" }
+      { text: "Freigabe erteilt" },
     ];
     const result = formatCompoundForDisplay(items, "check_items");
     expect(result).toContain("1. Dokument geprüft [Qualität] – siehe Anhang");
@@ -224,7 +247,7 @@ describe("formatCompoundForDisplay", () => {
   it("formats competency_areas with area/tasks (CompetencyAreas)", () => {
     const areas = [
       { area: "Projektmanagement", tasks: "Planung, Steuerung" },
-      { area: "QA", tasks: "Reviews, Audits" }
+      { area: "QA", tasks: "Reviews, Audits" },
     ];
     const result = formatCompoundForDisplay(areas, "competency_areas");
     expect(result).toContain("Projektmanagement: Planung, Steuerung");

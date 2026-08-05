@@ -60,7 +60,9 @@ export function SearchPage() {
       "reviewer",
       "editor",
     ];
-    return roles.some((r: string | undefined) => r && privilegedRoles.includes(r));
+    return roles.some(
+      (r: string | undefined) => r && privilegedRoles.includes(r),
+    );
   }, [authData]);
 
   const allowedStatusKeys = useMemo(() => {
@@ -87,7 +89,16 @@ export function SearchPage() {
 
   useEffect(() => {
     setOffset(0);
-  }, [debouncedQuery, templateType, status, tagId, ownerId, dateFrom, dateTo, includeUnpublished]);
+  }, [
+    debouncedQuery,
+    templateType,
+    status,
+    tagId,
+    ownerId,
+    dateFrom,
+    dateTo,
+    includeUnpublished,
+  ]);
 
   const { data: searchData, isLoading } = useSearchContent({
     q: debouncedQuery || undefined,
@@ -131,7 +142,13 @@ export function SearchPage() {
   );
 
   const hasFilters =
-    templateType || status || tagId || ownerId || dateFrom || dateTo || includeUnpublished;
+    templateType ||
+    status ||
+    tagId ||
+    ownerId ||
+    dateFrom ||
+    dateTo ||
+    includeUnpublished;
   const totalPages = searchData ? Math.ceil(searchData.total / limit) : 0;
   const currentPage = Math.floor(offset / limit) + 1;
 
@@ -228,7 +245,10 @@ export function SearchPage() {
               checked={includeUnpublished}
               onCheckedChange={setIncludeUnpublished}
             />
-            <Label htmlFor="include-unpublished" className="text-xs flex items-center gap-1 cursor-pointer">
+            <Label
+              htmlFor="include-unpublished"
+              className="text-xs flex items-center gap-1 cursor-pointer"
+            >
               <Eye className="h-3 w-3" />
               Unveröffentlichte zeigen
             </Label>

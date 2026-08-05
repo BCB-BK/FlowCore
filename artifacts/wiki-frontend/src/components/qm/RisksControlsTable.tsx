@@ -36,7 +36,14 @@ interface RisksControlsTableProps {
 }
 
 function emptyEntry(): RiskControlEntry {
-  return { risk: "", impact: "", control: "", evidence: "", owner: "", severity: "" };
+  return {
+    risk: "",
+    impact: "",
+    control: "",
+    evidence: "",
+    owner: "",
+    severity: "",
+  };
 }
 
 function normalize(raw: unknown): RiskControlEntry[] | null {
@@ -47,7 +54,8 @@ function normalize(raw: unknown): RiskControlEntry[] | null {
   if (!Array.isArray(raw)) return null;
   if (raw.length === 0) return null;
   return raw.map((item: unknown) => {
-    if (typeof item !== "object" || item === null) return { ...emptyEntry(), risk: String(item ?? "") };
+    if (typeof item !== "object" || item === null)
+      return { ...emptyEntry(), risk: String(item ?? "") };
     const obj = item as Record<string, unknown>;
     const sev = String(obj.severity ?? "");
     return {
@@ -56,7 +64,9 @@ function normalize(raw: unknown): RiskControlEntry[] | null {
       control: String(obj.control ?? ""),
       evidence: String(obj.evidence ?? ""),
       owner: String(obj.owner ?? ""),
-      severity: (["low", "medium", "high", "critical"].includes(sev) ? sev : "") as RiskControlEntry["severity"],
+      severity: (["low", "medium", "high", "critical"].includes(sev)
+        ? sev
+        : "") as RiskControlEntry["severity"],
     };
   });
 }
@@ -75,7 +85,11 @@ const SEVERITY_LABELS: Record<string, string> = {
   critical: "Kritisch",
 };
 
-const COLUMNS: { key: keyof Omit<RiskControlEntry, "severity">; label: string; width: string }[] = [
+const COLUMNS: {
+  key: keyof Omit<RiskControlEntry, "severity">;
+  label: string;
+  width: string;
+}[] = [
   { key: "risk", label: "Risiko", width: "min-w-[150px]" },
   { key: "impact", label: "Auswirkung", width: "min-w-[130px]" },
   { key: "control", label: "Kontrolle/Maßnahme", width: "min-w-[150px]" },
@@ -83,7 +97,11 @@ const COLUMNS: { key: keyof Omit<RiskControlEntry, "severity">; label: string; w
   { key: "owner", label: "Owner", width: "min-w-[100px]" },
 ];
 
-export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTableProps) {
+export function RisksControlsTable({
+  data,
+  onSave,
+  readOnly,
+}: RisksControlsTableProps) {
   const parsed = normalize(data);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<RiskControlEntry[]>(parsed ?? []);
@@ -105,11 +123,18 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
 
   const addRow = () => setDraft((prev) => [...prev, emptyEntry()]);
 
-  const removeRow = (index: number) => setDraft((prev) => prev.filter((_, i) => i !== index));
+  const removeRow = (index: number) =>
+    setDraft((prev) => prev.filter((_, i) => i !== index));
 
-  const updateField = (index: number, field: keyof RiskControlEntry, value: string) => {
+  const updateField = (
+    index: number,
+    field: keyof RiskControlEntry,
+    value: string,
+  ) => {
     setDraft((prev) =>
-      prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry))
+      prev.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry,
+      ),
     );
   };
 
@@ -124,18 +149,32 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
             Risiken & Kontrollen
           </CardTitle>
           {onSave && !readOnly && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={startEdit}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground"
+              onClick={startEdit}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
@@ -146,7 +185,9 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
       <CardContent>
         {!current || current.length === 0 ? (
           <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground mb-2">Keine Risiken dokumentiert</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Keine Risiken dokumentiert
+            </p>
             {onSave && !readOnly && (
               <Button variant="outline" size="sm" onClick={startEdit}>
                 <Plus className="h-3 w-3 mr-1" />
@@ -161,7 +202,9 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
                 <TableHeader>
                   <TableRow>
                     {COLUMNS.map((col) => (
-                      <TableHead key={col.key} className={col.width}>{col.label}</TableHead>
+                      <TableHead key={col.key} className={col.width}>
+                        {col.label}
+                      </TableHead>
                     ))}
                     <TableHead className="min-w-[90px]">Severity</TableHead>
                     {editing && <TableHead className="w-10" />}
@@ -175,12 +218,16 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
                           {editing ? (
                             <Input
                               value={entry[col.key]}
-                              onChange={(e) => updateField(idx, col.key, e.target.value)}
+                              onChange={(e) =>
+                                updateField(idx, col.key, e.target.value)
+                              }
                               className="h-7 text-xs"
                               placeholder={col.label}
                             />
                           ) : (
-                            <span className="text-xs">{entry[col.key] || "—"}</span>
+                            <span className="text-xs">
+                              {entry[col.key] || "—"}
+                            </span>
                           )}
                         </TableCell>
                       ))}
@@ -188,7 +235,13 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
                         {editing ? (
                           <Select
                             value={entry.severity || "_empty"}
-                            onValueChange={(v) => updateField(idx, "severity", v === "_empty" ? "" : v)}
+                            onValueChange={(v) =>
+                              updateField(
+                                idx,
+                                "severity",
+                                v === "_empty" ? "" : v,
+                              )
+                            }
                           >
                             <SelectTrigger className="h-7 text-xs w-24">
                               <SelectValue />
@@ -196,21 +249,32 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
                             <SelectContent>
                               <SelectItem value="_empty">—</SelectItem>
                               {Object.entries(SEVERITY_LABELS).map(([k, v]) => (
-                                <SelectItem key={k} value={k}>{v}</SelectItem>
+                                <SelectItem key={k} value={k}>
+                                  {v}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         ) : entry.severity ? (
-                          <Badge className={`text-[10px] ${SEVERITY_COLORS[entry.severity]}`}>
+                          <Badge
+                            className={`text-[10px] ${SEVERITY_COLORS[entry.severity]}`}
+                          >
                             {SEVERITY_LABELS[entry.severity] ?? entry.severity}
                           </Badge>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </TableCell>
                       {editing && (
                         <TableCell>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeRow(idx)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeRow(idx)}
+                          >
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </TableCell>
@@ -221,7 +285,12 @@ export function RisksControlsTable({ data, onSave, readOnly }: RisksControlsTabl
               </Table>
             </div>
             {editing && (
-              <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={addRow}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 text-xs"
+                onClick={addRow}
+              >
                 <Plus className="h-3 w-3 mr-1" />
                 Risiko hinzufügen
               </Button>

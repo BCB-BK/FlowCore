@@ -1,4 +1,10 @@
-import { pgTable, varchar, integer, timestamp, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  varchar,
+  integer,
+  timestamp,
+  index,
+} from "drizzle-orm/pg-core";
 
 export const rateLimitHitsTable = pgTable(
   "rate_limit_hits",

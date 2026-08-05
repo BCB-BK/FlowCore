@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { randomUUID } from "crypto";
 import { appConfig } from "../lib/config";
 import { authRateLimit } from "../middlewares/rate-limit";
 import {
@@ -22,36 +22,12 @@ import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
+import {
+  signOAuthState,
+  verifyOAuthState,
+  nonceAusState,
+} from "../lib/oauth-state";
 import { setGraphToken } from "../lib/session-crypto";
-
-const STATE_MAX_AGE_MS = 10 * 60 * 1000;
-
-function signOAuthState(nonce: string): string {
-  const ts = Date.now().toString(36);
-  const payload = `${nonce}.${ts}`;
-  const sig = createHmac("sha256", appConfig.sessionSecret)
-    .update(payload)
-    .digest("base64url");
-  return `${payload}.${sig}`;
-}
-
-function verifyOAuthState(state: string): boolean {
-  const parts = state.split(".");
-  if (parts.length !== 3) return false;
-  const [nonce, ts, sig] = parts;
-  const payload = `${nonce}.${ts}`;
-  const expected = createHmac("sha256", appConfig.sessionSecret)
-    .update(payload)
-    .digest("base64url");
-  // Zeitkonstanter Vergleich: ein byteweise abbrechender Vergleich verraet
-  // ueber die Laufzeit, wie viele Zeichen stimmen (Audit-Befund C1).
-  const a = Buffer.from(sig ?? "", "utf8");
-  const b = Buffer.from(expected, "utf8");
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
-  const created = parseInt(ts, 36);
-  if (isNaN(created) || Date.now() - created > STATE_MAX_AGE_MS) return false;
-  return true;
-}
 
 const router = Router();
 
@@ -80,7 +56,7 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
 
   try {
     const nonce = randomUUID();
-    const state = signOAuthState(nonce);
+    const state = signOAuthState(nonce, appConfig.sessionSecret);
     // Nonce an die Browser-Session binden — der Callback akzeptiert nur den
     // State, der aus DIESER Session heraus erzeugt wurde (Schutz vor
     // Login-CSRF mit fremdem, aber gültig signiertem State).
@@ -106,7 +82,7 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
     return;
   }
 
-  if (!state || !verifyOAuthState(state)) {
+  if (!state || !verifyOAuthState(state, appConfig.sessionSecret)) {
     logger.warn(
       {
         hasState: !!state,
@@ -120,7 +96,7 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
 
   // Session-Bindung prüfen: Der Nonce im State muss dem in dieser Session
   // beim Login-Start hinterlegten Nonce entsprechen.
-  const stateNonce = state.split(".")[0];
+  const stateNonce = nonceAusState(state);
   const sessionNonce = req.session.oauthState;
   delete req.session.oauthState;
   if (!sessionNonce || sessionNonce !== stateNonce) {
@@ -128,7 +104,9 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
       { sessionId: req.sessionID, hasSessionNonce: !!sessionNonce },
       "OAuth state not bound to this session (possible login CSRF)",
     );
-    res.status(400).json({ error: "State parameter not bound to this session" });
+    res
+      .status(400)
+      .json({ error: "State parameter not bound to this session" });
     return;
   }
 
@@ -156,7 +134,10 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
 
       if (!isMember) {
         logger.warn(
-          { externalId: tokenResult.externalId, groupId: appConfig.entraRequiredGroupId },
+          {
+            externalId: tokenResult.externalId,
+            groupId: appConfig.entraRequiredGroupId,
+          },
           "Login rejected: user not in required Entra group",
         );
         await db.insert(auditEventsTable).values({
@@ -215,7 +196,10 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
     // (Session-Fixation-Schutz), erst danach Benutzerdaten setzen.
     req.session.regenerate((regenErr) => {
       if (regenErr) {
-        logger.error({ err: regenErr }, "Failed to regenerate session after login");
+        logger.error(
+          { err: regenErr },
+          "Failed to regenerate session after login",
+        );
         res.redirect("/?auth_error=1");
         return;
       }

@@ -5,11 +5,18 @@ import { eq } from "drizzle-orm";
 import { getAppAccessToken } from "./auth.service";
 import { getGraphConnectorConfig } from "./graph-connector-config.service";
 import { getSchemaRegisteredAt } from "./graph-schema.service";
-import { listGroupMappings, GRAPH_ACL_TIERS } from "./graph-external-group-mapping.service";
+import {
+  listGroupMappings,
+  GRAPH_ACL_TIERS,
+} from "./graph-external-group-mapping.service";
 import { isGraphSyncMockMode } from "./system-settings.service";
 import { logger } from "../lib/logger";
 
-export type ReadinessCheckStatus = "ok" | "warning" | "failed" | "not_checkable";
+export type ReadinessCheckStatus =
+  | "ok"
+  | "warning"
+  | "failed"
+  | "not_checkable";
 
 export interface ReadinessCheckItem {
   key: string;
@@ -56,18 +63,22 @@ export async function runReadinessCheck(): Promise<ReadinessCheckResult> {
         key: "connection",
         label: "Graph Connection vorhanden",
         status: "failed",
-        message: "Connection ID gesetzt, aber es konnte kein Access Token bezogen werden.",
+        message:
+          "Connection ID gesetzt, aber es konnte kein Access Token bezogen werden.",
       });
     } else if (mockMode) {
       checks.push({
         key: "connection",
         label: "Graph Connection vorhanden",
         status: "warning",
-        message: "Mock-Modus aktiv — Connection ID konfiguriert, Live-Prüfung übersprungen.",
+        message:
+          "Mock-Modus aktiv — Connection ID konfiguriert, Live-Prüfung übersprungen.",
       });
     } else {
       try {
-        const client = Client.init({ authProvider: (done) => done(null, token) });
+        const client = Client.init({
+          authProvider: (done) => done(null, token),
+        });
         await client.api(`/external/connections/${connectionId}`).get();
         checks.push({
           key: "connection",
@@ -157,7 +168,9 @@ export async function runReadinessCheck(): Promise<ReadinessCheckResult> {
     key: "tenant_license_blocker",
     label: "Tenant-/Lizenzblocker",
     status: tenantBlocker ? "failed" : "ok",
-    message: tenantBlocker ?? "Keine Tenant- oder Lizenzblocker während der Prüfung erkannt.",
+    message:
+      tenantBlocker ??
+      "Keine Tenant- oder Lizenzblocker während der Prüfung erkannt.",
   });
 
   const hasFailed = checks.some((c) => c.status === "failed");
@@ -168,7 +181,10 @@ export async function runReadinessCheck(): Promise<ReadinessCheckResult> {
       ? "partial"
       : "ready";
 
-  logger.info({ overall, checks: checks.map((c) => `${c.key}:${c.status}`) }, "Graph readiness check completed");
+  logger.info(
+    { overall, checks: checks.map((c) => `${c.key}:${c.status}`) },
+    "Graph readiness check completed",
+  );
 
   return { overall, checks };
 }

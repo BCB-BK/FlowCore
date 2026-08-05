@@ -11,10 +11,7 @@ import {
   HardDrive,
   Loader2,
 } from "lucide-react";
-import {
-  getSharePointFileIcon,
-  formatFileSize,
-} from "@/lib/sharepoint-ui";
+import { getSharePointFileIcon, formatFileSize } from "@/lib/sharepoint-ui";
 import {
   useListSharePointSites,
   useListSharePointDrives,
@@ -159,7 +156,9 @@ export function SharePointMediaBrowser({
         });
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({ error: "Import fehlgeschlagen" }));
+          const err = await res
+            .json()
+            .catch(() => ({ error: "Import fehlgeschlagen" }));
           throw new Error(err.error || "Import fehlgeschlagen");
         }
 
@@ -170,7 +169,8 @@ export function SharePointMediaBrowser({
         toast({
           variant: "destructive",
           title: "SharePoint-Import fehlgeschlagen",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       } finally {
         setIsImporting(false);

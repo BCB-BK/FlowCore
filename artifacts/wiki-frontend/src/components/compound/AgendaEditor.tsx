@@ -2,7 +2,16 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
-import { List, Plus, Trash2, Pencil, Check, X, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  List,
+  Plus,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRowKeys } from "./useRowKeys";
 
@@ -107,11 +116,16 @@ export function AgendaEditor({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            {Icon ? <Icon className={`h-4 w-4 ${iconColor}`} /> : <List className={`h-4 w-4 ${iconColor}`} />}
+            {Icon ? (
+              <Icon className={`h-4 w-4 ${iconColor}`} />
+            ) : (
+              <List className={`h-4 w-4 ${iconColor}`} />
+            )}
             {label}
             {displayItems.length > 0 && (
               <span className="text-xs font-normal text-muted-foreground">
-                ({displayItems.length} {displayItems.length === 1 ? "Punkt" : "Punkte"})
+                ({displayItems.length}{" "}
+                {displayItems.length === 1 ? "Punkt" : "Punkte"})
               </span>
             )}
           </CardTitle>
@@ -131,11 +145,20 @@ export function AgendaEditor({
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
@@ -152,7 +175,9 @@ export function AgendaEditor({
                   {i + 1}.
                 </span>
                 <Input
-                  ref={(el) => { inputRefs.current[i] = el; }}
+                  ref={(el) => {
+                    inputRefs.current[i] = el;
+                  }}
                   value={item}
                   onChange={(e) => updateItem(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(e, i)}
@@ -187,7 +212,12 @@ export function AgendaEditor({
                 </Button>
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full mt-2 text-xs" onClick={addItem}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 text-xs"
+              onClick={addItem}
+            >
               <Plus className="h-3.5 w-3.5 mr-1" />
               Punkt hinzufügen
             </Button>

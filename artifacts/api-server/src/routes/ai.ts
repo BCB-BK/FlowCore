@@ -166,8 +166,10 @@ aiRouter.get(
   requirePermission("manage_settings"),
   async (req, res) => {
     try {
-      const pageType = typeof req.query.pageType === "string" ? req.query.pageType : undefined;
-      const fieldKey = typeof req.query.fieldKey === "string" ? req.query.fieldKey : undefined;
+      const pageType =
+        typeof req.query.pageType === "string" ? req.query.pageType : undefined;
+      const fieldKey =
+        typeof req.query.fieldKey === "string" ? req.query.fieldKey : undefined;
       const profiles = await listFieldProfiles(pageType, fieldKey);
       res.json(profiles);
     } catch (err) {
@@ -213,7 +215,10 @@ aiRouter.put(
     }
 
     try {
-      const id = typeof req.params.id === "string" ? req.params.id : String(req.params.id);
+      const id =
+        typeof req.params.id === "string"
+          ? req.params.id
+          : String(req.params.id);
       const profile = await updateFieldProfile(
         id,
         parsed.data,
@@ -237,7 +242,10 @@ aiRouter.delete(
   requirePermission("manage_settings"),
   async (req, res) => {
     try {
-      const id = typeof req.params.id === "string" ? req.params.id : String(req.params.id);
+      const id =
+        typeof req.params.id === "string"
+          ? req.params.id
+          : String(req.params.id);
       await deleteFieldProfile(id);
       res.status(204).send();
     } catch (err) {

@@ -17,7 +17,9 @@ router.post("/tokens", requireAuth, async (req, res) => {
       return;
     }
     if (name.length > 100) {
-      res.status(400).json({ error: "Token name must be 100 characters or less" });
+      res
+        .status(400)
+        .json({ error: "Token name must be 100 characters or less" });
       return;
     }
 
@@ -29,7 +31,9 @@ router.post("/tokens", requireAuth, async (req, res) => {
         return;
       }
       if (parsedExpiresAt <= new Date()) {
-        res.status(400).json({ error: "Expiration date must be in the future" });
+        res
+          .status(400)
+          .json({ error: "Expiration date must be in the future" });
         return;
       }
     }

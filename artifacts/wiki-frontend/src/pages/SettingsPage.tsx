@@ -67,22 +67,102 @@ interface SettingsTabDefinition {
 }
 
 const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
-  { value: "general", label: "Allgemein", icon: Server, requiredPermissions: ["manage_settings"] },
-  { value: "users", label: "Benutzer & Rollen", icon: Users, requiredPermissions: ["manage_permissions"] },
-  { value: "connections", label: "Verbindungen", icon: Link2, requiredPermissions: ["manage_settings"] },
-  { value: "graph-connector", label: "Copilot Studio / Graph (Vorschau)", icon: Cpu, requiredPermissions: ["manage_graph_connector"] },
-  { value: "copilot-connector-keys", label: "Copilot Connector-Keys", icon: KeyRound, requiredPermissions: ["manage_copilot_connector_keys"] },
-  { value: "integration-keys", label: "Content-API", icon: Plug, requiredPermissions: ["manage_integration_keys"] },
-  { value: "ai", label: "FlowCore-Assistent", icon: Bot, requiredPermissions: ["manage_settings"] },
-  { value: "templates", label: "Seitentemplates", icon: FileText, requiredPermissions: ["manage_templates"] },
-  { value: "connectors", label: "Konnektoren", icon: Database, requiredPermissions: ["manage_connectors"] },
-  { value: "backups", label: "Backup", icon: HardDrive, requiredPermissions: ["view_backups", "manage_backup"] },
-  { value: "audit", label: "Audit-Trail", icon: Eye, requiredPermissions: ["view_audit_log"] },
-  { value: "workflows", label: "Workflows", icon: GitBranch, requiredPermissions: ["manage_workflows"] },
-  { value: "consistency", label: "Konsistenz", icon: ShieldCheck, requiredPermissions: ["manage_settings"] },
-  { value: "releases", label: "Releases", icon: Tag, requiredPermissions: ["manage_settings"] },
-  { value: "glossary", label: "Glossar", icon: BookOpen, requiredPermissions: ["manage_settings"] },
-  { value: "sessions", label: "Sitzungen", icon: LogOut, requiredPermissions: ["manage_settings"] },
+  {
+    value: "general",
+    label: "Allgemein",
+    icon: Server,
+    requiredPermissions: ["manage_settings"],
+  },
+  {
+    value: "users",
+    label: "Benutzer & Rollen",
+    icon: Users,
+    requiredPermissions: ["manage_permissions"],
+  },
+  {
+    value: "connections",
+    label: "Verbindungen",
+    icon: Link2,
+    requiredPermissions: ["manage_settings"],
+  },
+  {
+    value: "graph-connector",
+    label: "Copilot Studio / Graph (Vorschau)",
+    icon: Cpu,
+    requiredPermissions: ["manage_graph_connector"],
+  },
+  {
+    value: "copilot-connector-keys",
+    label: "Copilot Connector-Keys",
+    icon: KeyRound,
+    requiredPermissions: ["manage_copilot_connector_keys"],
+  },
+  {
+    value: "integration-keys",
+    label: "Content-API",
+    icon: Plug,
+    requiredPermissions: ["manage_integration_keys"],
+  },
+  {
+    value: "ai",
+    label: "FlowCore-Assistent",
+    icon: Bot,
+    requiredPermissions: ["manage_settings"],
+  },
+  {
+    value: "templates",
+    label: "Seitentemplates",
+    icon: FileText,
+    requiredPermissions: ["manage_templates"],
+  },
+  {
+    value: "connectors",
+    label: "Konnektoren",
+    icon: Database,
+    requiredPermissions: ["manage_connectors"],
+  },
+  {
+    value: "backups",
+    label: "Backup",
+    icon: HardDrive,
+    requiredPermissions: ["view_backups", "manage_backup"],
+  },
+  {
+    value: "audit",
+    label: "Audit-Trail",
+    icon: Eye,
+    requiredPermissions: ["view_audit_log"],
+  },
+  {
+    value: "workflows",
+    label: "Workflows",
+    icon: GitBranch,
+    requiredPermissions: ["manage_workflows"],
+  },
+  {
+    value: "consistency",
+    label: "Konsistenz",
+    icon: ShieldCheck,
+    requiredPermissions: ["manage_settings"],
+  },
+  {
+    value: "releases",
+    label: "Releases",
+    icon: Tag,
+    requiredPermissions: ["manage_settings"],
+  },
+  {
+    value: "glossary",
+    label: "Glossar",
+    icon: BookOpen,
+    requiredPermissions: ["manage_settings"],
+  },
+  {
+    value: "sessions",
+    label: "Sitzungen",
+    icon: LogOut,
+    requiredPermissions: ["manage_settings"],
+  },
 ];
 
 function hasTabAccess(perms: Set<string>, tab: SettingsTabDefinition): boolean {
@@ -90,7 +170,12 @@ function hasTabAccess(perms: Set<string>, tab: SettingsTabDefinition): boolean {
 }
 
 interface SystemInfo {
-  system: { version: string; environment: string; uptime: number; setupMode?: boolean };
+  system: {
+    version: string;
+    environment: string;
+    uptime: number;
+    setupMode?: boolean;
+  };
   database: { status: string; version: string };
   auth: {
     devMode: boolean;
@@ -159,12 +244,19 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="overflow-x-auto -mx-4 px-4 pb-1" style={{ scrollbarWidth: "thin" }}>
+        <div
+          className="overflow-x-auto -mx-4 px-4 pb-1"
+          style={{ scrollbarWidth: "thin" }}
+        >
           <TabsList className="inline-flex w-max">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
-                <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-1.5 whitespace-nowrap">
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="flex items-center gap-1.5 whitespace-nowrap"
+                >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
@@ -323,7 +415,9 @@ function GeneralTab() {
             Betriebsmodus
           </CardTitle>
           <CardDescription>
-            Im Anlage-Modus werden alle Validierungsblocker beim Einreichen und Ver{"ö"}ffentlichen von Seiten deaktiviert. Ideal f{"ü"}r die initiale Bef{"ü"}llung des Wikis.
+            Im Anlage-Modus werden alle Validierungsblocker beim Einreichen und
+            Ver{"ö"}ffentlichen von Seiten deaktiviert. Ideal f{"ü"}r die
+            initiale Bef{"ü"}llung des Wikis.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -331,7 +425,8 @@ function GeneralTab() {
             <div>
               <p className="text-sm font-medium">Anlage-Modus</p>
               <p className="text-xs text-muted-foreground">
-                Seiten k{"ö"}nnen ohne Pflichtfeld-Pr{"ü"}fung eingereicht und ver{"ö"}ffentlicht werden
+                Seiten k{"ö"}nnen ohne Pflichtfeld-Pr{"ü"}fung eingereicht und
+                ver{"ö"}ffentlicht werden
               </p>
             </div>
             <Switch
@@ -346,8 +441,7 @@ function GeneralTab() {
                     body: JSON.stringify({ value: checked ? "true" : "false" }),
                   });
                   setSetupMode(checked);
-                } catch {
-                }
+                } catch {}
                 setSetupModeLoading(false);
               }}
             />
@@ -355,7 +449,10 @@ function GeneralTab() {
           {setupMode && (
             <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950 p-3">
               <p className="text-xs text-amber-700 dark:text-amber-400">
-                <strong>Anlage-Modus ist aktiv.</strong> Alle Ver{"ö"}ffentlichungsanforderungen (Pflichtfelder, Mindestl{"ä"}ngen, Review-Regeln) sind deaktiviert. Deaktivieren Sie diesen Modus, sobald die initiale Bef{"ü"}llung abgeschlossen ist.
+                <strong>Anlage-Modus ist aktiv.</strong> Alle Ver{"ö"}
+                ffentlichungsanforderungen (Pflichtfelder, Mindestl{"ä"}ngen,
+                Review-Regeln) sind deaktiviert. Deaktivieren Sie diesen Modus,
+                sobald die initiale Bef{"ü"}llung abgeschlossen ist.
               </p>
             </div>
           )}
@@ -419,7 +516,10 @@ function ConnectionsTab() {
   const [flowcoreUpnEdit, setFlowcoreUpnEdit] = useState("");
   const [flowcoreSaving, setFlowcoreSaving] = useState(false);
   const [flowcoreTesting, setFlowcoreTesting] = useState(false);
-  const [flowcoreTestResult, setFlowcoreTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [flowcoreTestResult, setFlowcoreTestResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -454,14 +554,15 @@ function ConnectionsTab() {
     setFlowcoreTesting(true);
     setFlowcoreTestResult(null);
     try {
-      const result = await customFetch<{ success: boolean; message?: string; error?: string }>(
-        "/api/admin/flowcore-account/test",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ upn: flowcoreUpnEdit }),
-        },
-      );
+      const result = await customFetch<{
+        success: boolean;
+        message?: string;
+        error?: string;
+      }>("/api/admin/flowcore-account/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ upn: flowcoreUpnEdit }),
+      });
       setFlowcoreTestResult({
         success: result.success ?? false,
         message: result.message ?? result.error ?? "Unbekanntes Ergebnis",
@@ -469,7 +570,8 @@ function ConnectionsTab() {
     } catch (err) {
       setFlowcoreTestResult({
         success: false,
-        message: err instanceof Error ? err.message : "Verbindungstest fehlgeschlagen",
+        message:
+          err instanceof Error ? err.message : "Verbindungstest fehlgeschlagen",
       });
     } finally {
       setFlowcoreTesting(false);
@@ -634,7 +736,9 @@ function ConnectionsTab() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CardTitle className="text-lg">FlowCore-Kommunikationskonto</CardTitle>
+              <CardTitle className="text-lg">
+                FlowCore-Kommunikationskonto
+              </CardTitle>
               <Badge variant={flowcoreUpn ? "default" : "secondary"}>
                 {flowcoreUpn ? (
                   <span className="flex items-center gap-1">
@@ -649,7 +753,8 @@ function ConnectionsTab() {
             </div>
           </div>
           <CardDescription>
-            Teams-Chat-Benachrichtigungen werden über dieses Konto als Absender verschickt
+            Teams-Chat-Benachrichtigungen werden über dieses Konto als Absender
+            verschickt
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -683,7 +788,9 @@ function ConnectionsTab() {
               onClick={handleTestFlowcoreAccount}
               disabled={flowcoreTesting || !flowcoreUpnEdit}
             >
-              {flowcoreTesting ? "Verbindung wird getestet..." : "Verbindung testen"}
+              {flowcoreTesting
+                ? "Verbindung wird getestet..."
+                : "Verbindung testen"}
             </Button>
             {flowcoreTestResult && (
               <span
@@ -701,7 +808,8 @@ function ConnectionsTab() {
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            Der Test prüft, ob das Konto über die Microsoft Graph API erreichbar ist und Chat-Nachrichten senden darf.
+            Der Test prüft, ob das Konto über die Microsoft Graph API erreichbar
+            ist und Chat-Nachrichten senden darf.
           </p>
         </CardContent>
       </Card>

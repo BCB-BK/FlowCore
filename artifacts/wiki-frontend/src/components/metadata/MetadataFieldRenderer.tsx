@@ -35,15 +35,44 @@ interface MetadataFieldRendererProps {
   showAiAssist?: boolean;
 }
 
-function RequirementBadge({ requirement, publishRequired, conditionDescription }: { requirement?: string; publishRequired?: boolean; conditionDescription?: string }) {
+function RequirementBadge({
+  requirement,
+  publishRequired,
+  conditionDescription,
+}: {
+  requirement?: string;
+  publishRequired?: boolean;
+  conditionDescription?: string;
+}) {
   if (requirement === "required" || publishRequired) {
-    return <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>;
+    return (
+      <Badge
+        variant="destructive"
+        className="text-[9px] px-1 py-0 h-4 leading-none"
+      >
+        Pflicht
+      </Badge>
+    );
   }
   if (requirement === "recommended") {
-    return <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 leading-none bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Empfohlen</Badge>;
+    return (
+      <Badge
+        variant="secondary"
+        className="text-[9px] px-1 py-0 h-4 leading-none bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+      >
+        Empfohlen
+      </Badge>
+    );
   }
   if (requirement === "conditional" && conditionDescription) {
-    return <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 leading-none">Bedingt</Badge>;
+    return (
+      <Badge
+        variant="outline"
+        className="text-[9px] px-1 py-0 h-4 leading-none"
+      >
+        Bedingt
+      </Badge>
+    );
   }
   return null;
 }
@@ -91,7 +120,11 @@ export function MetadataFieldRenderer({
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
       </Label>
-      <RequirementBadge requirement={requirement} publishRequired={publishRequired} conditionDescription={conditionDescription} />
+      <RequirementBadge
+        requirement={requirement}
+        publishRequired={publishRequired}
+        conditionDescription={conditionDescription}
+      />
       <FieldHelpTooltip
         fillHelp={help?.fillHelp}
         example={help?.example}
@@ -104,7 +137,11 @@ export function MetadataFieldRenderer({
     return (
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <RequirementBadge requirement={requirement} publishRequired={publishRequired} conditionDescription={conditionDescription} />
+          <RequirementBadge
+            requirement={requirement}
+            publishRequired={publishRequired}
+            conditionDescription={conditionDescription}
+          />
           <FieldHelpTooltip
             fillHelp={help?.fillHelp}
             example={help?.example}

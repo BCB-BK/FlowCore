@@ -2,11 +2,7 @@ import { useState } from "react";
 import { Bell, Check, CheckCheck, ExternalLink } from "lucide-react";
 import { Button } from "@workspace/ui/button";
 import { ScrollArea } from "@workspace/ui/scroll-area";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/popover";
 import {
   useGetNotifications,
   useGetUnreadNotificationCount,
@@ -95,7 +91,11 @@ export function NotificationBell() {
     markAllRead.mutate(undefined, { onSuccess: invalidateAll });
   };
 
-  const handleClick = (link: string | null | undefined, id: string, status: string) => {
+  const handleClick = (
+    link: string | null | undefined,
+    id: string,
+    status: string,
+  ) => {
     if (status === "unread") {
       handleMarkRead(id);
     }
@@ -108,7 +108,12 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Benachrichtigungen öffnen">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9"
+          aria-label="Benachrichtigungen öffnen"
+        >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
@@ -150,7 +155,10 @@ export function NotificationBell() {
                   }`}
                   onClick={() => handleClick(n.link, n.id, n.status)}
                   onKeyDown={(e) => {
-                    if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                    if (
+                      (e.key === "Enter" || e.key === " ") &&
+                      e.target === e.currentTarget
+                    ) {
                       e.preventDefault();
                       handleClick(n.link, n.id, n.status);
                     }
@@ -172,7 +180,9 @@ export function NotificationBell() {
                         <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm font-medium leading-tight">{n.title}</p>
+                    <p className="text-sm font-medium leading-tight">
+                      {n.title}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                       {n.body}
                     </p>

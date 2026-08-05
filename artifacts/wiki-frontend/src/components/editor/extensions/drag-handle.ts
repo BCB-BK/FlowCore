@@ -182,7 +182,8 @@ export const DragHandle = Extension.create({
               const block = getTopLevelBlockAtPos(view, pos.pos);
               if (!block) return false;
 
-              const parentRect = view.dom.parentElement?.getBoundingClientRect();
+              const parentRect =
+                view.dom.parentElement?.getBoundingClientRect();
               const blockRect = block.domNode.getBoundingClientRect();
               if (!parentRect) return false;
 

@@ -266,7 +266,9 @@ export function GlobalAssistant() {
                 <div className="space-y-2">
                   <div className="bg-muted rounded-lg px-3 py-2 text-sm prose prose-sm max-w-none">
                     {msg.content ? (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.content}
+                      </ReactMarkdown>
                     ) : (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     )}
@@ -351,18 +353,19 @@ export function GlobalAssistant() {
                                 ? src.sourceSystemName || "Extern"
                                 : src.templateType.replace(/_/g, " ")}
                           </Badge>
-                          {src.contentStatus && src.contentStatus !== "published" && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[10px] shrink-0"
-                            >
-                              {src.contentStatus === "draft"
-                                ? "Entwurf"
-                                : src.contentStatus === "in_review"
-                                  ? "In Prüfung"
-                                  : src.contentStatus}
-                            </Badge>
-                          )}
+                          {src.contentStatus &&
+                            src.contentStatus !== "published" && (
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] shrink-0"
+                              >
+                                {src.contentStatus === "draft"
+                                  ? "Entwurf"
+                                  : src.contentStatus === "in_review"
+                                    ? "In Prüfung"
+                                    : src.contentStatus}
+                              </Badge>
+                            )}
                         </button>
                       ))}
                     </div>

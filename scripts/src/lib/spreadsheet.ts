@@ -23,7 +23,8 @@ function cellToString(value: unknown): string {
   if (typeof value === "object") {
     const v = value as Record<string, unknown>;
     if ("result" in v) return cellToString(v["result"]);
-    if ("text" in v && typeof v["text"] === "string") return v["text"] as string;
+    if ("text" in v && typeof v["text"] === "string")
+      return v["text"] as string;
     if (Array.isArray(v["richText"])) {
       return (v["richText"] as Array<{ text?: string }>)
         .map((f) => f.text ?? "")

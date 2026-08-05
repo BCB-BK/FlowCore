@@ -38,7 +38,10 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
                 },
               },
             },
-            "400": { description: "Ungültige Anfrage oder Scope außerhalb der Berechtigung des API-Keys" },
+            "400": {
+              description:
+                "Ungültige Anfrage oder Scope außerhalb der Berechtigung des API-Keys",
+            },
             "401": { description: "Fehlender oder ungültiger API-Key" },
           },
         },
@@ -65,7 +68,9 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
                 },
               },
             },
-            "403": { description: "API-Key ist für diese Seite nicht berechtigt" },
+            "403": {
+              description: "API-Key ist für diese Seite nicht berechtigt",
+            },
             "404": { description: "Nicht gefunden oder nicht veröffentlicht" },
           },
         },
@@ -88,12 +93,14 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
             brandScope: {
               type: "array",
               items: { type: "string" },
-              description: "Optionaler Filter auf Marken (muss innerhalb der Berechtigung des API-Keys liegen)",
+              description:
+                "Optionaler Filter auf Marken (muss innerhalb der Berechtigung des API-Keys liegen)",
             },
             agentScope: {
               type: "array",
               items: { type: "string" },
-              description: "Optionaler Filter auf Themenbereiche (muss innerhalb der Berechtigung des API-Keys liegen)",
+              description:
+                "Optionaler Filter auf Themenbereiche (muss innerhalb der Berechtigung des API-Keys liegen)",
             },
             limit: { type: "integer", minimum: 1, maximum: 25, default: 10 },
           },
@@ -109,7 +116,8 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
         },
         SearchResultItem: {
           type: "object",
-          description: "Quellenblock-Metadaten für eine Antwort: displayCode/title/url/version/ownerName führend zitieren, nicht technical.nodeId oder technical.sourcePriority.",
+          description:
+            "Quellenblock-Metadaten für eine Antwort: displayCode/title/url/version/ownerName führend zitieren, nicht technical.nodeId oder technical.sourcePriority.",
           properties: {
             displayCode: { type: "string" },
             title: { type: "string" },
@@ -122,7 +130,8 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
             agentScope: { type: "array", items: { type: "string" } },
             technical: {
               type: "object",
-              description: "Nur für Folgeaufrufe (GetFlowCoreNode) oder Konfliktauflösung/Debug — kein Standard-Zitierfeld.",
+              description:
+                "Nur für Folgeaufrufe (GetFlowCoreNode) oder Konfliktauflösung/Debug — kein Standard-Zitierfeld.",
               properties: {
                 nodeId: { type: "string" },
                 sourcePriority: { type: "integer" },
@@ -132,14 +141,16 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
         },
         NodeResponse: {
           type: "object",
-          description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort. Enthält außerdem hasChildren/childPageCount/childPages (oder bei sehr vielen Kindern topChildPages + childPagesSearchHint) sowie childPagesGuidance — ein einsatzbereiter Hinweissatz zur fachlichen Relevanz der Unterseiten (z.B. Prozessübersicht vs. Dokumentationsregister).",
+          description:
+            "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort. Enthält außerdem hasChildren/childPageCount/childPages (oder bei sehr vielen Kindern topChildPages + childPagesSearchHint) sowie childPagesGuidance — ein einsatzbereiter Hinweissatz zur fachlichen Relevanz der Unterseiten (z.B. Prozessübersicht vs. Dokumentationsregister).",
           properties: {
             hasChildren: { type: "boolean" },
             childPageCount: { type: "integer" },
             childPages: {
               type: "array",
               nullable: true,
-              description: "Vollständige Liste, sofern nicht zu groß (siehe childPagesSearchHint).",
+              description:
+                "Vollständige Liste, sofern nicht zu groß (siehe childPagesSearchHint).",
               items: {
                 type: "object",
                 properties: {
@@ -154,7 +165,8 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
             topChildPages: {
               type: "array",
               nullable: true,
-              description: "Repräsentative Auswahl, wenn childPages null ist, weil die vollständige Liste zu groß war.",
+              description:
+                "Repräsentative Auswahl, wenn childPages null ist, weil die vollständige Liste zu groß war.",
               items: {
                 type: "object",
                 properties: {
@@ -169,12 +181,14 @@ export function buildConnectorOpenApiSpec(baseUrl: string) {
             childPagesSearchHint: {
               type: "string",
               nullable: true,
-              description: "Nur gesetzt, wenn childPages null ist: Hinweis, per SearchFlowCore weitere Unterseiten zu finden.",
+              description:
+                "Nur gesetzt, wenn childPages null ist: Hinweis, per SearchFlowCore weitere Unterseiten zu finden.",
             },
             childPagesGuidance: {
               type: "string",
               nullable: true,
-              description: "Einsatzbereiter deutscher Hinweissatz zur fachlichen Relevanz der Unterseiten, z.B. \"Die Detailseiten behandeln die konkrete Ausarbeitung.\" Null, wenn die Seite keine Unterseiten hat.",
+              description:
+                'Einsatzbereiter deutscher Hinweissatz zur fachlichen Relevanz der Unterseiten, z.B. "Die Detailseiten behandeln die konkrete Ausarbeitung." Null, wenn die Seite keine Unterseiten hat.',
             },
           },
         },
@@ -232,14 +246,21 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                   brandScope: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Optionaler Filter auf Marken (muss innerhalb der Berechtigung des API-Keys liegen)",
+                    description:
+                      "Optionaler Filter auf Marken (muss innerhalb der Berechtigung des API-Keys liegen)",
                   },
                   agentScope: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Optionaler Filter auf Themenbereiche (muss innerhalb der Berechtigung des API-Keys liegen)",
+                    description:
+                      "Optionaler Filter auf Themenbereiche (muss innerhalb der Berechtigung des API-Keys liegen)",
                   },
-                  limit: { type: "integer", minimum: 1, maximum: 25, default: 10 },
+                  limit: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 25,
+                    default: 10,
+                  },
                 },
               },
             },
@@ -254,7 +275,8 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                     type: "array",
                     items: {
                       type: "object",
-                      description: "Quellenblock-Metadaten: displayCode/title/url/version/ownerName führend zitieren, nicht technical.nodeId oder technical.sourcePriority.",
+                      description:
+                        "Quellenblock-Metadaten: displayCode/title/url/version/ownerName führend zitieren, nicht technical.nodeId oder technical.sourcePriority.",
                       properties: {
                         displayCode: { type: "string" },
                         title: { type: "string" },
@@ -263,11 +285,18 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                         version: { type: "string" },
                         ownerName: { type: "string" },
                         authorityLevel: { type: "string" },
-                        brandScope: { type: "array", items: { type: "string" } },
-                        agentScope: { type: "array", items: { type: "string" } },
+                        brandScope: {
+                          type: "array",
+                          items: { type: "string" },
+                        },
+                        agentScope: {
+                          type: "array",
+                          items: { type: "string" },
+                        },
                         technical: {
                           type: "object",
-                          description: "Nur für Folgeaufrufe (GetFlowCoreNode) oder Konfliktauflösung/Debug.",
+                          description:
+                            "Nur für Folgeaufrufe (GetFlowCoreNode) oder Konfliktauflösung/Debug.",
                           properties: {
                             nodeId: { type: "string" },
                             sourcePriority: { type: "integer" },
@@ -279,7 +308,10 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                 },
               },
             },
-            "400": { description: "Ungültige Anfrage oder Scope außerhalb der Berechtigung des API-Keys" },
+            "400": {
+              description:
+                "Ungültige Anfrage oder Scope außerhalb der Berechtigung des API-Keys",
+            },
             "401": { description: "Fehlender oder ungültiger API-Key" },
           },
         },
@@ -301,13 +333,15 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
               description: "Seite",
               schema: {
                 type: "object",
-                description: "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort. Enthält außerdem hasChildren/childPageCount/childPages (oder bei sehr vielen Kindern topChildPages + childPagesSearchHint) sowie childPagesGuidance — ein einsatzbereiter Hinweissatz zur fachlichen Relevanz der Unterseiten (z.B. Prozessübersicht vs. Dokumentationsregister).",
+                description:
+                  "Copilot-freundliche Seitenprojektion: Quellenblock (displayCode/title/sourceUrl/version/ownerName) führend; technische Felder (nodeId, revision, status, sourcePriority) sind unter `technical` verschachtelt und nicht Teil der Standardantwort. Enthält außerdem hasChildren/childPageCount/childPages (oder bei sehr vielen Kindern topChildPages + childPagesSearchHint) sowie childPagesGuidance — ein einsatzbereiter Hinweissatz zur fachlichen Relevanz der Unterseiten (z.B. Prozessübersicht vs. Dokumentationsregister).",
                 properties: {
                   hasChildren: { type: "boolean" },
                   childPageCount: { type: "integer" },
                   childPages: {
                     type: "array",
-                    description: "Vollständige Liste, sofern nicht zu groß (siehe childPagesSearchHint).",
+                    description:
+                      "Vollständige Liste, sofern nicht zu groß (siehe childPagesSearchHint).",
                     items: {
                       type: "object",
                       properties: {
@@ -321,7 +355,8 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                   },
                   topChildPages: {
                     type: "array",
-                    description: "Repräsentative Auswahl, wenn childPages null ist, weil die vollständige Liste zu groß war.",
+                    description:
+                      "Repräsentative Auswahl, wenn childPages null ist, weil die vollständige Liste zu groß war.",
                     items: {
                       type: "object",
                       properties: {
@@ -335,16 +370,20 @@ export function buildConnectorSwagger2Spec(baseUrl: string) {
                   },
                   childPagesSearchHint: {
                     type: "string",
-                    description: "Nur gesetzt, wenn childPages null ist: Hinweis, per SearchFlowCore weitere Unterseiten zu finden.",
+                    description:
+                      "Nur gesetzt, wenn childPages null ist: Hinweis, per SearchFlowCore weitere Unterseiten zu finden.",
                   },
                   childPagesGuidance: {
                     type: "string",
-                    description: "Einsatzbereiter deutscher Hinweissatz zur fachlichen Relevanz der Unterseiten, z.B. \"Die Detailseiten behandeln die konkrete Ausarbeitung.\" Null, wenn die Seite keine Unterseiten hat.",
+                    description:
+                      'Einsatzbereiter deutscher Hinweissatz zur fachlichen Relevanz der Unterseiten, z.B. "Die Detailseiten behandeln die konkrete Ausarbeitung." Null, wenn die Seite keine Unterseiten hat.',
                   },
                 },
               },
             },
-            "403": { description: "API-Key ist für diese Seite nicht berechtigt" },
+            "403": {
+              description: "API-Key ist für diese Seite nicht berechtigt",
+            },
             "404": { description: "Nicht gefunden oder nicht veröffentlicht" },
           },
         },

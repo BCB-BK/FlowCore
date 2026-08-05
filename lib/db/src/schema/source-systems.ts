@@ -10,7 +10,12 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
-import { syncStatusEnum, connectorPurposeEnum, accessModeEnum, assetOriginEnum } from "./enums";
+import {
+  syncStatusEnum,
+  connectorPurposeEnum,
+  accessModeEnum,
+  assetOriginEnum,
+} from "./enums";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 

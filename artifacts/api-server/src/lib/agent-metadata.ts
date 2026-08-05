@@ -171,7 +171,9 @@ export function validateAgentMetadataPatch(
       priority < 1 ||
       priority > 5
     ) {
-      throw new Error("source_priority muss eine ganze Zahl zwischen 1 und 5 sein.");
+      throw new Error(
+        "source_priority muss eine ganze Zahl zwischen 1 und 5 sein.",
+      );
     }
   }
 

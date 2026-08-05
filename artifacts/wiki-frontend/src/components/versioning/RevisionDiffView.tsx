@@ -22,7 +22,12 @@ import {
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { InlineTextDiff } from "./InlineTextDiff";
-import { formatFieldLabel, formatValueForDisplay, detectCompoundType, formatCompoundForDisplay } from "@/lib/text-diff";
+import {
+  formatFieldLabel,
+  formatValueForDisplay,
+  detectCompoundType,
+  formatCompoundForDisplay,
+} from "@/lib/text-diff";
 
 interface RevisionDiffViewProps {
   revisionIdA: string;
@@ -91,7 +96,11 @@ function DiffFieldRow({
 
   const isAdded = oldVal === null || oldVal === undefined;
   const isRemoved = newVal === null || newVal === undefined;
-  const isTextual = typeof oldStr === "string" && typeof newStr === "string" && !isAdded && !isRemoved;
+  const isTextual =
+    typeof oldStr === "string" &&
+    typeof newStr === "string" &&
+    !isAdded &&
+    !isRemoved;
 
   const compoundLabels: Record<string, string> = {
     sipoc_cards: "SIPOC-Tabelle",
@@ -107,17 +116,26 @@ function DiffFieldRow({
       <div className="px-3 py-1.5 bg-muted/50 border-b flex items-center gap-2">
         <span className="text-sm font-medium">{formatFieldLabel(label)}</span>
         {compoundType && (
-          <Badge variant="outline" className="text-[10px] h-4 text-blue-600 border-blue-300">
+          <Badge
+            variant="outline"
+            className="text-[10px] h-4 text-blue-600 border-blue-300"
+          >
             {compoundLabels[compoundType] || compoundType}
           </Badge>
         )}
         {isAdded && (
-          <Badge variant="outline" className="text-[10px] h-4 text-green-600 border-green-300">
+          <Badge
+            variant="outline"
+            className="text-[10px] h-4 text-green-600 border-green-300"
+          >
             Hinzugefügt
           </Badge>
         )}
         {isRemoved && (
-          <Badge variant="outline" className="text-[10px] h-4 text-red-600 border-red-300">
+          <Badge
+            variant="outline"
+            className="text-[10px] h-4 text-red-600 border-red-300"
+          >
             Entfernt
           </Badge>
         )}
@@ -211,7 +229,8 @@ export function RevisionDiffView({
                   Rev. {diff.revisionB.revisionNo}
                 </span>
                 <Badge variant="secondary" className="text-xs">
-                  {totalChanges} {totalChanges === 1 ? "Änderung" : "Änderungen"}
+                  {totalChanges}{" "}
+                  {totalChanges === 1 ? "Änderung" : "Änderungen"}
                 </Badge>
               </>
             )}
@@ -237,15 +256,20 @@ export function RevisionDiffView({
                       {diff.revisionA.status}
                     </Badge>
                   </div>
-                  <p className="text-sm font-medium truncate">{diff.revisionA.title}</p>
+                  <p className="text-sm font-medium truncate">
+                    {diff.revisionA.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(diff.revisionA.createdAt).toLocaleString("de-DE", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(diff.revisionA.createdAt).toLocaleString(
+                      "de-DE",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
                   </p>
                 </div>
                 <div className="rounded-lg border p-3 bg-green-50/30 dark:bg-green-950/10">
@@ -257,15 +281,20 @@ export function RevisionDiffView({
                       {diff.revisionB.status}
                     </Badge>
                   </div>
-                  <p className="text-sm font-medium truncate">{diff.revisionB.title}</p>
+                  <p className="text-sm font-medium truncate">
+                    {diff.revisionB.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(diff.revisionB.createdAt).toLocaleString("de-DE", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(diff.revisionB.createdAt).toLocaleString(
+                      "de-DE",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
                   </p>
                 </div>
               </div>
@@ -280,14 +309,16 @@ export function RevisionDiffView({
                     count={Object.keys(diff.metadataChanges).length}
                   />
                   <div className="space-y-2">
-                    {Object.entries(diff.metadataChanges).map(([field, change]) => (
-                      <DiffFieldRow
-                        key={field}
-                        label={field}
-                        oldVal={change.old}
-                        newVal={change.new}
-                      />
-                    ))}
+                    {Object.entries(diff.metadataChanges).map(
+                      ([field, change]) => (
+                        <DiffFieldRow
+                          key={field}
+                          label={field}
+                          oldVal={change.old}
+                          newVal={change.new}
+                        />
+                      ),
+                    )}
                   </div>
                 </div>
               )}
@@ -300,14 +331,16 @@ export function RevisionDiffView({
                     count={Object.keys(diff.structuredFieldChanges).length}
                   />
                   <div className="space-y-2">
-                    {Object.entries(diff.structuredFieldChanges).map(([field, change]) => (
-                      <DiffFieldRow
-                        key={field}
-                        label={field}
-                        oldVal={change.old}
-                        newVal={change.new}
-                      />
-                    ))}
+                    {Object.entries(diff.structuredFieldChanges).map(
+                      ([field, change]) => (
+                        <DiffFieldRow
+                          key={field}
+                          label={field}
+                          oldVal={change.old}
+                          newVal={change.new}
+                        />
+                      ),
+                    )}
                   </div>
                 </div>
               )}
@@ -320,7 +353,10 @@ export function RevisionDiffView({
                       <span className="text-sm font-medium">
                         Block-Inhalt geändert
                       </span>
-                      <Badge variant="outline" className="text-[10px] h-4 text-amber-600 border-amber-300">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-4 text-amber-600 border-amber-300"
+                      >
                         Geändert
                       </Badge>
                     </>
@@ -363,7 +399,11 @@ export function RevisionDiffView({
                     {diff.nodeContext.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {diff.nodeContext.tags.map((tag) => (
-                          <Badge key={tag.tagId} variant="secondary" className="text-xs">
+                          <Badge
+                            key={tag.tagId}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             <Tag className="h-3 w-3 mr-1" />
                             {tag.tagName}
                           </Badge>

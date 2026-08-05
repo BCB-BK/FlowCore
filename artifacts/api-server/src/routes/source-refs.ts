@@ -47,7 +47,10 @@ async function filterBySharePointAccess<
     metadata: unknown;
     systemType: string;
   },
->(refs: T[], userGraphToken: string): Promise<(T & { accessCheck?: string })[]> {
+>(
+  refs: T[],
+  userGraphToken: string,
+): Promise<(T & { accessCheck?: string })[]> {
   const spRefs = refs.filter((r) => r.systemType === "sharepoint");
   if (spRefs.length === 0) return refs;
 

@@ -139,11 +139,18 @@ export async function createNotification(input: NotifyInput): Promise<number> {
   await db.insert(notificationsTable).values(rows);
 
   sendTeamsNotifications(recipients, input).catch((err) => {
-    logger.error({ err, eventType: input.eventType }, "Teams notification delivery failed");
+    logger.error(
+      { err, eventType: input.eventType },
+      "Teams notification delivery failed",
+    );
   });
 
   logger.info(
-    { eventType: input.eventType, nodeId: input.nodeId, recipientCount: recipients.length },
+    {
+      eventType: input.eventType,
+      nodeId: input.nodeId,
+      recipientCount: recipients.length,
+    },
     "Notifications created",
   );
 
@@ -202,7 +209,9 @@ async function sendTeamsChatMessage(
   body: string,
   link: string,
 ): Promise<void> {
-  const appUrl = process.env["APP_PUBLIC_URL"] || `https://${process.env["REPLIT_DEV_DOMAIN"] || "localhost"}`;
+  const appUrl =
+    process.env["APP_PUBLIC_URL"] ||
+    `https://${process.env["REPLIT_DEV_DOMAIN"] || "localhost"}`;
   const fullLink = link.startsWith("http") ? link : `${appUrl}${link}`;
 
   const teamsAppId = process.env["TEAMS_APP_ID"];
@@ -245,7 +254,10 @@ async function sendTeamsChatMessage(
 
   if (!chatRes.ok) {
     const errorText = await chatRes.text();
-    logger.debug({ status: chatRes.status, errorText, userAadId }, "Failed to create/get Teams chat – falling back to in-app only");
+    logger.debug(
+      { status: chatRes.status, errorText, userAadId },
+      "Failed to create/get Teams chat – falling back to in-app only",
+    );
     return;
   }
 
@@ -270,7 +282,10 @@ async function sendTeamsChatMessage(
 
   if (!msgRes.ok) {
     const errorText = await msgRes.text();
-    logger.debug({ status: msgRes.status, errorText }, "Failed to send Teams chat message");
+    logger.debug(
+      { status: msgRes.status, errorText },
+      "Failed to send Teams chat message",
+    );
   } else {
     logger.info({ userAadId }, "Teams chat message sent");
   }
@@ -363,7 +378,10 @@ export async function getUnreadCount(principalId: string): Promise<number> {
   return result?.count ?? 0;
 }
 
-export async function markAsRead(notificationId: string, principalId: string): Promise<boolean> {
+export async function markAsRead(
+  notificationId: string,
+  principalId: string,
+): Promise<boolean> {
   const result = await db
     .update(notificationsTable)
     .set({ status: "read", readAt: new Date() })
@@ -463,7 +481,10 @@ export async function notifyWorkingCopyReturned(
       link: rows[0].link,
       metadata: rows[0].metadata,
     }).catch((err) => {
-      logger.error({ err }, "Teams notification delivery failed for returned WC");
+      logger.error(
+        { err },
+        "Teams notification delivery failed for returned WC",
+      );
     });
   }
 }
@@ -494,7 +515,9 @@ export async function notifyReviewOverdue(
   escalation: boolean,
 ): Promise<void> {
   const eventType = escalation ? "review_overdue_escalation" : "review_overdue";
-  const title = escalation ? "Überfälliges Review – Eskalation" : "Review überfällig";
+  const title = escalation
+    ? "Überfälliges Review – Eskalation"
+    : "Review überfällig";
   const body = `Die Seite „${nodeTitle}" ist seit ${daysOverdue} Tagen überfällig für ein Review.`;
   const link = `/node/${nodeId}`;
 
@@ -525,7 +548,10 @@ export async function notifyReviewOverdue(
       link,
       metadata: { daysOverdue, escalation },
     }).catch((err) => {
-      logger.error({ err }, "Teams notification delivery failed for overdue review");
+      logger.error(
+        { err },
+        "Teams notification delivery failed for overdue review",
+      );
     });
   }
 }

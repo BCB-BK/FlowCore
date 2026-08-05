@@ -109,10 +109,7 @@ async function graphGet<T>(
       return resp.json() as Promise<T>;
     }
 
-    if (
-      (resp.status === 429 || resp.status >= 500) &&
-      attempt < maxRetries
-    ) {
+    if ((resp.status === 429 || resp.status >= 500) && attempt < maxRetries) {
       const retryAfter = resp.headers.get("Retry-After");
       const waitMs = retryAfter
         ? parseInt(retryAfter, 10) * 1000
@@ -147,7 +144,10 @@ async function listAllPages(
     `https://graph.microsoft.com/v1.0/sites/${siteId}/pages?$select=id,title,name,webUrl,description,createdDateTime,lastModifiedDateTime&$top=50`;
 
   while (nextUrl) {
-    const result: PageCollection = await graphGet<PageCollection>(token, nextUrl);
+    const result: PageCollection = await graphGet<PageCollection>(
+      token,
+      nextUrl,
+    );
     pages.push(...result.value);
     nextUrl = result["@odata.nextLink"];
   }
@@ -210,11 +210,16 @@ function buildHtml(page: SitePageDetail): string {
       : "<p><em>No canvas content available for this page.</em></p>";
 
   const meta: string[] = [];
-  if (page.description) meta.push(`<p><em>${escapeHtml(page.description)}</em></p>`);
-  if (page.createdDateTime) meta.push(`<p>Created: ${page.createdDateTime}</p>`);
+  if (page.description)
+    meta.push(`<p><em>${escapeHtml(page.description)}</em></p>`);
+  if (page.createdDateTime)
+    meta.push(`<p>Created: ${page.createdDateTime}</p>`);
   if (page.lastModifiedDateTime)
     meta.push(`<p>Last modified: ${page.lastModifiedDateTime}</p>`);
-  if (page.webUrl) meta.push(`<p>Source: <a href="${escapeHtml(page.webUrl)}">${escapeHtml(page.webUrl)}</a></p>`);
+  if (page.webUrl)
+    meta.push(
+      `<p>Source: <a href="${escapeHtml(page.webUrl)}">${escapeHtml(page.webUrl)}</a></p>`,
+    );
 
   return `<!DOCTYPE html>
 <html lang="de">
@@ -316,7 +321,9 @@ async function main() {
     console.log(
       "has the following Microsoft Graph application permissions granted with admin consent:",
     );
-    console.log("  - Sites.Read.All (required for /sites and /pages endpoints)");
+    console.log(
+      "  - Sites.Read.All (required for /sites and /pages endpoints)",
+    );
   }
 }
 

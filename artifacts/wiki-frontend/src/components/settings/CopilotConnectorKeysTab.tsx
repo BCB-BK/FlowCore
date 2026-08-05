@@ -92,7 +92,10 @@ function ScopeCheckboxGrid({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {options.map((opt) => (
-        <label key={opt} className="flex items-center gap-2 text-sm cursor-pointer">
+        <label
+          key={opt}
+          className="flex items-center gap-2 text-sm cursor-pointer"
+        >
           <Checkbox
             checked={selected.includes(opt)}
             onCheckedChange={() => onToggle(opt)}
@@ -144,9 +147,12 @@ export function CopilotConnectorKeysTab() {
   const [name, setName] = useState("");
   const [agentScopes, setAgentScopes] = useState<string[]>([]);
   const [brandScopes, setBrandScopes] = useState<string[]>([]);
-  const [maxConfidentiality, setMaxConfidentiality] = useState<string>("internal");
+  const [maxConfidentiality, setMaxConfidentiality] =
+    useState<string>("internal");
   const [creating, setCreating] = useState(false);
-  const [newKey, setNewKey] = useState<{ id: string; apiKey: string } | null>(null);
+  const [newKey, setNewKey] = useState<{ id: string; apiKey: string } | null>(
+    null,
+  );
   const [copied, setCopied] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
 
@@ -154,15 +160,26 @@ export function CopilotConnectorKeysTab() {
   const [testQuery, setTestQuery] = useState("");
   const [testing, setTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
-  const [testResults, setTestResults] = useState<ConnectorSearchResult[] | null>(null);
-  const [sessionKeys, setSessionKeys] = useState<SessionKey[]>(() => loadSessionKeys());
-  const [selectedSessionKeyId, setSelectedSessionKeyId] = useState<string>("__manual__");
+  const [testResults, setTestResults] = useState<
+    ConnectorSearchResult[] | null
+  >(null);
+  const [sessionKeys, setSessionKeys] = useState<SessionKey[]>(() =>
+    loadSessionKeys(),
+  );
+  const [selectedSessionKeyId, setSelectedSessionKeyId] =
+    useState<string>("__manual__");
 
   const loadKeys = () => {
     setLoading(true);
     customFetch<{ keys: ConnectorKey[] }>("/api/copilot/admin/keys")
       .then((data) => setKeys(data.keys))
-      .catch((err) => setError(err instanceof Error ? err.message : "Keys konnten nicht geladen werden"))
+      .catch((err) =>
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Keys konnten nicht geladen werden",
+        ),
+      )
       .finally(() => setLoading(false));
   };
 
@@ -170,8 +187,14 @@ export function CopilotConnectorKeysTab() {
     loadKeys();
   }, []);
 
-  const toggleScope = (list: string[], setList: (v: string[]) => void, value: string) => {
-    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+  const toggleScope = (
+    list: string[],
+    setList: (v: string[]) => void,
+    value: string,
+  ) => {
+    setList(
+      list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+    );
   };
 
   const handleCreate = async () => {
@@ -180,16 +203,19 @@ export function CopilotConnectorKeysTab() {
     setError(null);
     setNewKey(null);
     try {
-      const result = await customFetch<{ id: string; apiKey: string }>("/api/copilot/admin/keys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          agentScopes,
-          brandScopes,
-          maxConfidentialityLevel: maxConfidentiality,
-        }),
-      });
+      const result = await customFetch<{ id: string; apiKey: string }>(
+        "/api/copilot/admin/keys",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            agentScopes,
+            brandScopes,
+            maxConfidentialityLevel: maxConfidentiality,
+          }),
+        },
+      );
       setNewKey(result);
       const updatedSessionKeys = [
         ...sessionKeys,
@@ -205,7 +231,9 @@ export function CopilotConnectorKeysTab() {
       setMaxConfidentiality("internal");
       loadKeys();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Key konnte nicht erstellt werden");
+      setError(
+        err instanceof Error ? err.message : "Key konnte nicht erstellt werden",
+      );
     } finally {
       setCreating(false);
     }
@@ -223,7 +251,11 @@ export function CopilotConnectorKeysTab() {
       }
       loadKeys();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Key konnte nicht widerrufen werden");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Key konnte nicht widerrufen werden",
+      );
     } finally {
       setRevoking(null);
     }
@@ -277,15 +309,19 @@ export function CopilotConnectorKeysTab() {
             FlowCore Custom Connector – API-Keys
           </CardTitle>
           <CardDescription>
-            Diese Keys erlauben Copilot-Studio-Spezialagenten den direkten Live-Zugriff auf
-            FlowCore-Inhalte über den Custom Connector (nicht die Microsoft-Graph-Knowledge-Source,
-            siehe Tab „Copilot Studio / Graph"). Jeder Key ist fest auf einen Agenten/Themenbereich,
-            eine oder mehrere Marken und eine maximale Vertraulichkeitsstufe beschränkt.
+            Diese Keys erlauben Copilot-Studio-Spezialagenten den direkten
+            Live-Zugriff auf FlowCore-Inhalte über den Custom Connector (nicht
+            die Microsoft-Graph-Knowledge-Source, siehe Tab „Copilot Studio /
+            Graph"). Jeder Key ist fest auf einen Agenten/Themenbereich, eine
+            oder mehrere Marken und eine maximale Vertraulichkeitsstufe
+            beschränkt.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="connector-key-name">Name (z.B. „Spezialagent QM")</Label>
+            <Label htmlFor="connector-key-name">
+              Name (z.B. „Spezialagent QM")
+            </Label>
             <Input
               id="connector-key-name"
               value={name}
@@ -314,7 +350,10 @@ export function CopilotConnectorKeysTab() {
 
           <div className="grid gap-2 max-w-xs">
             <Label>Maximale Vertraulichkeitsstufe</Label>
-            <Select value={maxConfidentiality} onValueChange={setMaxConfidentiality}>
+            <Select
+              value={maxConfidentiality}
+              onValueChange={setMaxConfidentiality}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -328,7 +367,11 @@ export function CopilotConnectorKeysTab() {
             </Select>
           </div>
 
-          <Button onClick={handleCreate} disabled={creating || !name.trim()} className="gap-2">
+          <Button
+            onClick={handleCreate}
+            disabled={creating || !name.trim()}
+            className="gap-2"
+          >
             <PlusCircle className="h-4 w-4" />
             {creating ? "Wird erstellt…" : "Key erstellen"}
           </Button>
@@ -338,20 +381,30 @@ export function CopilotConnectorKeysTab() {
           {newKey && (
             <div className="rounded-md border bg-muted/50 p-4 space-y-2">
               <p className="text-sm font-medium">
-                Key erstellt — dieses Secret wird nur jetzt einmalig angezeigt. Bitte sicher
-                hinterlegen, bevor Sie diese Seite verlassen.
+                Key erstellt — dieses Secret wird nur jetzt einmalig angezeigt.
+                Bitte sicher hinterlegen, bevor Sie diese Seite verlassen.
               </p>
               <div className="flex items-center gap-2">
                 <code className="text-sm bg-background rounded px-2 py-1 break-all flex-1">
                   {newKey.apiKey}
                 </code>
-                <Button size="sm" variant="outline" onClick={handleCopy} className="gap-1 shrink-0">
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopy}
+                  className="gap-1 shrink-0"
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                   {copied ? "Kopiert" : "Kopieren"}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Header-Name für Copilot Studio / Power Apps: <code>X-FlowCore-Api-Key</code>
+                Header-Name für Copilot Studio / Power Apps:{" "}
+                <code>X-FlowCore-Api-Key</code>
               </p>
             </div>
           )}
@@ -360,17 +413,24 @@ export function CopilotConnectorKeysTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">Verbindung testen</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Verbindung testen
+          </CardTitle>
           <CardDescription>
-            Testet den Custom Connector direkt hier — unabhängig von Power Apps/Copilot Studio und
-            unabhängig vom Tab „Copilot Studio / Graph". Füge einen erstellten API-Key ein (das
-            Secret wird nur einmalig angezeigt, ggf. vorher sicher notiert) und stelle eine Test-Suchanfrage.
+            Testet den Custom Connector direkt hier — unabhängig von Power
+            Apps/Copilot Studio und unabhängig vom Tab „Copilot Studio / Graph".
+            Füge einen erstellten API-Key ein (das Secret wird nur einmalig
+            angezeigt, ggf. vorher sicher notiert) und stelle eine
+            Test-Suchanfrage.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label>Key-Quelle</Label>
-            <Select value={selectedSessionKeyId} onValueChange={handleSelectSessionKey}>
+            <Select
+              value={selectedSessionKeyId}
+              onValueChange={handleSelectSessionKey}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -385,9 +445,10 @@ export function CopilotConnectorKeysTab() {
             </Select>
             {sessionKeys.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                Noch kein Key in dieser Sitzung erstellt — oben einen Key anlegen, dann erscheint er
-                hier automatisch zur Auswahl. Ältere Keys müssen manuell eingefügt werden, da das
-                Secret aus Sicherheitsgründen nach der Erstellung nicht mehr abrufbar ist.
+                Noch kein Key in dieser Sitzung erstellt — oben einen Key
+                anlegen, dann erscheint er hier automatisch zur Auswahl. Ältere
+                Keys müssen manuell eingefügt werden, da das Secret aus
+                Sicherheitsgründen nach der Erstellung nicht mehr abrufbar ist.
               </p>
             )}
           </div>
@@ -426,8 +487,8 @@ export function CopilotConnectorKeysTab() {
             <div className="rounded-md border p-4 space-y-2">
               {testResults.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Verbindung erfolgreich — aber keine passenden Treffer für diese Anfrage
-                  (ggf. Scopes des Keys prüfen).
+                  Verbindung erfolgreich — aber keine passenden Treffer für
+                  diese Anfrage (ggf. Scopes des Keys prüfen).
                 </p>
               ) : (
                 <>
@@ -436,11 +497,19 @@ export function CopilotConnectorKeysTab() {
                   </p>
                   <ul className="space-y-2">
                     {testResults.map((r) => (
-                      <li key={r.nodeId} className="text-sm border-b pb-2 last:border-b-0">
+                      <li
+                        key={r.nodeId}
+                        className="text-sm border-b pb-2 last:border-b-0"
+                      >
                         <div className="font-medium">
-                          {r.title} <span className="text-muted-foreground">({r.displayCode})</span>
+                          {r.title}{" "}
+                          <span className="text-muted-foreground">
+                            ({r.displayCode})
+                          </span>
                         </div>
-                        <div className="text-muted-foreground text-xs">{r.summary}</div>
+                        <div className="text-muted-foreground text-xs">
+                          {r.summary}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -454,13 +523,17 @@ export function CopilotConnectorKeysTab() {
       <Card>
         <CardHeader>
           <CardTitle>Bestehende Keys</CardTitle>
-          <CardDescription>Das Secret selbst wird nach der Erstellung nie wieder angezeigt.</CardDescription>
+          <CardDescription>
+            Das Secret selbst wird nach der Erstellung nie wieder angezeigt.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p className="text-sm text-muted-foreground">Lädt…</p>
           ) : keys.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Noch keine Keys erstellt.</p>
+            <p className="text-sm text-muted-foreground">
+              Noch keine Keys erstellt.
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -482,13 +555,18 @@ export function CopilotConnectorKeysTab() {
                       <code className="text-xs">{k.keyPrefix}…</code>
                     </TableCell>
                     <TableCell className="text-xs">
-                      {k.agentScopes.length === 0 ? "alle" : k.agentScopes.join(", ")}
+                      {k.agentScopes.length === 0
+                        ? "alle"
+                        : k.agentScopes.join(", ")}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {k.brandScopes.length === 0 ? "alle" : k.brandScopes.join(", ")}
+                      {k.brandScopes.length === 0
+                        ? "alle"
+                        : k.brandScopes.join(", ")}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {CONFIDENTIALITY_LABELS[k.maxConfidentialityLevel] ?? k.maxConfidentialityLevel}
+                      {CONFIDENTIALITY_LABELS[k.maxConfidentialityLevel] ??
+                        k.maxConfidentialityLevel}
                     </TableCell>
                     <TableCell>
                       <Badge variant={k.revoked ? "destructive" : "default"}>

@@ -118,7 +118,11 @@ export function ReviewWorkflowPanel({
           }),
         },
       );
-      toast({ title: "Zur Prüfung eingereicht", description: "Die Revision wurde in den Freigabe-Pool der Prozessmanager übermittelt." });
+      toast({
+        title: "Zur Prüfung eingereicht",
+        description:
+          "Die Revision wurde in den Freigabe-Pool der Prozessmanager übermittelt.",
+      });
       setSubmitDialogOpen(false);
       setComment("");
       fetchWorkflow();
@@ -131,14 +135,7 @@ export function ReviewWorkflowPanel({
     } finally {
       setSubmitting(false);
     }
-  }, [
-    apiBase,
-    revisionId,
-    comment,
-    toast,
-    fetchWorkflow,
-    invalidate,
-  ]);
+  }, [apiBase, revisionId, comment, toast, fetchWorkflow, invalidate]);
 
   const handleApprove = useCallback(async () => {
     setSubmitting(true);
@@ -328,7 +325,8 @@ export function ReviewWorkflowPanel({
             <DialogTitle>Zur Prüfung einreichen</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Die Revision wird automatisch in den Freigabe-Pool aller zuständigen Prozessmanager übermittelt.
+            Die Revision wird automatisch in den Freigabe-Pool aller zuständigen
+            Prozessmanager übermittelt.
           </p>
           <div className="space-y-3">
             <div className="space-y-1">

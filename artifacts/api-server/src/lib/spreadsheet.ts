@@ -27,7 +27,8 @@ export function cellToString(value: unknown): string {
     // Formelzelle: { formula, result }
     if ("result" in v) return cellToString(v["result"]);
     // Hyperlink-Zelle: { text, hyperlink }
-    if ("text" in v && typeof v["text"] === "string") return v["text"] as string;
+    if ("text" in v && typeof v["text"] === "string")
+      return v["text"] as string;
     // Rich Text: { richText: [{ text }, ...] }
     if (Array.isArray(v["richText"])) {
       return (v["richText"] as Array<{ text?: string }>)

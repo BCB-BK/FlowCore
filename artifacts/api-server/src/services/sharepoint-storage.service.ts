@@ -43,7 +43,10 @@ async function getAppToken(config: SharePointStorageConfig): Promise<string> {
 
   if (!resp.ok) {
     const body = await resp.text().catch(() => "");
-    logger.error({ status: resp.status, body, tenantId, clientId }, "SharePoint app token request failed");
+    logger.error(
+      { status: resp.status, body, tenantId, clientId },
+      "SharePoint app token request failed",
+    );
     throw new Error(`Failed to acquire app token: ${resp.status} – ${body}`);
   }
 
@@ -121,7 +124,9 @@ export class SharePointStorageProvider implements IStorageProvider {
 
     const meta = await client.api(itemPath).select("size,file,name").get();
     const webStream = await client.api(`${itemPath}/content`).getStream();
-    const nodeStream = Readable.fromWeb(webStream as Parameters<typeof Readable.fromWeb>[0]);
+    const nodeStream = Readable.fromWeb(
+      webStream as Parameters<typeof Readable.fromWeb>[0],
+    );
 
     return {
       stream: nodeStream,

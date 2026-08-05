@@ -15,7 +15,13 @@ import type { WorkingCopy } from "@workspace/api-client-react";
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; bgColor: string; borderColor: string; icon: React.ElementType }
+  {
+    label: string;
+    color: string;
+    bgColor: string;
+    borderColor: string;
+    icon: React.ElementType;
+  }
 > = {
   draft: {
     label: "Entwurf",
@@ -90,9 +96,12 @@ export function WorkingCopyBanner({
 }: WorkingCopyBannerProps) {
   const config = STATUS_CONFIG[workingCopy.status] || STATUS_CONFIG.draft;
   const Icon = config.icon;
-  const canEdit = workingCopy.status === "draft" || workingCopy.status === "changes_requested";
+  const canEdit =
+    workingCopy.status === "draft" ||
+    workingCopy.status === "changes_requested";
   const isOwnWc = !currentUserId || workingCopy.authorId === currentUserId;
-  const showReturnComment = workingCopy.status === "changes_requested" && lastReturnComment;
+  const showReturnComment =
+    workingCopy.status === "changes_requested" && lastReturnComment;
 
   const createdDate = workingCopy.createdAt
     ? new Date(workingCopy.createdAt).toLocaleDateString("de-DE", {
@@ -125,7 +134,9 @@ export function WorkingCopyBanner({
                 <span>Geöffnet von {authorName || "anderem Benutzer"} </span>
               )}
               {createdDate && (
-                <span>{isOwnWc ? `Erstellt am ${createdDate}` : `am ${createdDate}`}</span>
+                <span>
+                  {isOwnWc ? `Erstellt am ${createdDate}` : `am ${createdDate}`}
+                </span>
               )}
             </p>
             {workingCopy.changeSummary && (

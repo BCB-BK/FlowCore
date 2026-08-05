@@ -108,11 +108,7 @@ export function DocsPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={handleExport}
-          disabled={isExporting}
-          className="gap-2"
-        >
+        <Button onClick={handleExport} disabled={isExporting} className="gap-2">
           {isExporting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -224,7 +220,9 @@ export function DocsPage() {
             {activeEntry && (
               <div className="border-b px-4 py-2 flex items-center gap-2 shrink-0 bg-muted/30 min-w-0">
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium truncate">{activeEntry.title}</span>
+                <span className="text-sm font-medium truncate">
+                  {activeEntry.title}
+                </span>
                 <span className="text-muted-foreground text-xs opacity-60 truncate hidden sm:block">
                   {activeEntry.filename}
                 </span>

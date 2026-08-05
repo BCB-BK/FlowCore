@@ -102,7 +102,9 @@ async function importGlossary() {
       });
     upserted++;
   }
-  console.log(`Upserted ${upserted} new terms (new added, duplicates overwritten)`);
+  console.log(
+    `Upserted ${upserted} new terms (new added, duplicates overwritten)`,
+  );
 
   const total = await db
     .select({ count: sql<number>`count(*)` })

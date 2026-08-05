@@ -23,7 +23,10 @@ import { eq, and, desc } from "drizzle-orm";
 import type { Request } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
-import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
+import {
+  checkSeparationOfDuties,
+  type WikiPermission,
+} from "../services/rbac.service";
 
 const router: IRouter = Router();
 
@@ -215,7 +218,8 @@ router.post(
             },
           });
           res.status(403).json({
-            error: "Vier-Augen-Prinzip: Sie können Ihre eigene Einreichung nicht genehmigen.",
+            error:
+              "Vier-Augen-Prinzip: Sie können Ihre eigene Einreichung nicht genehmigen.",
             sodRule: sodResult.rule,
           });
           return;

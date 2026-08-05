@@ -342,15 +342,18 @@ export async function listDrives(
     options.allowAppFallback ?? false,
     "Bibliotheken lesen",
     (client) =>
-      client.api(`/sites/${siteId}/drives`).select("id,name,driveType,webUrl").get(),
+      client
+        .api(`/sites/${siteId}/drives`)
+        .select("id,name,driveType,webUrl")
+        .get(),
   );
   return (result.value ?? []).map((d: Record<string, string>) => ({
-      id: d.id,
-      name: d.name,
-      driveType: d.driveType,
-      webUrl: d.webUrl,
-      siteId,
-    }));
+    id: d.id,
+    name: d.name,
+    driveType: d.driveType,
+    webUrl: d.webUrl,
+    siteId,
+  }));
 }
 
 export async function listDriveItems(

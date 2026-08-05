@@ -103,7 +103,10 @@ export function LoginPage() {
       <footer className="absolute bottom-6 text-center text-xs text-gray-400 space-y-0.5">
         <p>FlowCore</p>
         <p>OneCampus Group</p>
-        <p className="font-mono text-[11px] select-all" title={formatBuildTooltip()}>
+        <p
+          className="font-mono text-[11px] select-all"
+          title={formatBuildTooltip()}
+        >
           {formatBuildLabel()}
         </p>
       </footer>

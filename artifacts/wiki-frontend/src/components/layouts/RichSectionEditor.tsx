@@ -23,11 +23,7 @@ import {
 } from "lucide-react";
 import { Toggle } from "@workspace/ui/toggle";
 import { Separator } from "@workspace/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
 
 /** Tab / Shift+Tab rückt Listenpunkte ein bzw. aus. */
 const ListIndentKeymap = Extension.create({
@@ -175,14 +171,18 @@ export function RichSectionEditor({
         <Separator orientation="vertical" className="mx-1 h-5" />
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
           isActive={editor.isActive("heading", { level: 2 })}
           title="Überschrift"
         >
           <Heading2 className="h-3.5 w-3.5" />
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
           isActive={editor.isActive("heading", { level: 3 })}
           title="Unterüberschrift"
         >

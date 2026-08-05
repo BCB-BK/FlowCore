@@ -1,11 +1,24 @@
-import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
+import {
+  Router,
+  type IRouter,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import { z } from "zod";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
-import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
+import {
+  checkSeparationOfDuties,
+  type WikiPermission,
+} from "../services/rbac.service";
 import type { WorkingCopy } from "@workspace/db/schema";
-import { auditEventsTable, contentWorkingCopiesTable, principalsTable } from "@workspace/db/schema";
+import {
+  auditEventsTable,
+  contentWorkingCopiesTable,
+  principalsTable,
+} from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
@@ -82,7 +95,11 @@ function mapServiceError(err: unknown): Error {
   return err instanceof Error ? err : new Error(message);
 }
 
-async function loadWorkingCopy(req: Request, res: Response, next: NextFunction) {
+async function loadWorkingCopy(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   const wc = await getWorkingCopyById(req.params.id as string);
   if (!wc) {
     res.status(404).json({ error: "Working copy not found" });
@@ -176,7 +193,8 @@ router.patch(
       res.status(404).json({ error: "Working copy not found" });
       return;
     }
-    const isReviewPhase = wc.status === "submitted" || wc.status === "in_review";
+    const isReviewPhase =
+      wc.status === "submitted" || wc.status === "in_review";
     if (isReviewPhase) {
       const guard = requireWcPermission("amend_working_copy_in_review");
       await guard(req, res, next);
@@ -226,7 +244,9 @@ router.post(
           actorId,
           req.user!.displayName,
           id,
-        ).catch((e) => logger.warn({ err: e }, "Notification failed after auto-publish"));
+        ).catch((e) =>
+          logger.warn({ err: e }, "Notification failed after auto-publish"),
+        );
       } else {
         notifyWorkingCopySubmitted(
           updated.nodeId,
@@ -234,7 +254,9 @@ router.post(
           actorId,
           req.user!.displayName,
           id,
-        ).catch((e) => logger.warn({ err: e }, "Notification failed after submit"));
+        ).catch((e) =>
+          logger.warn({ err: e }, "Notification failed after submit"),
+        );
       }
       res.json(updated);
     } catch (err) {
@@ -267,7 +289,9 @@ router.post(
         id,
         wc.authorId,
         req.body.comment,
-      ).catch((e) => logger.warn({ err: e }, "Notification failed after return"));
+      ).catch((e) =>
+        logger.warn({ err: e }, "Notification failed after return"),
+      );
       res.json(updated);
     } catch (err) {
       throw mapServiceError(err);
@@ -306,9 +330,13 @@ router.post(
           authorId: wc.authorId,
         },
       });
-      throw new AppError(403, "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.", {
-        details: { sodRule: sodResult.rule, reason: sodResult.reason },
-      });
+      throw new AppError(
+        403,
+        "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.",
+        {
+          details: { sodRule: sodResult.rule, reason: sodResult.reason },
+        },
+      );
     }
 
     try {
@@ -319,7 +347,9 @@ router.post(
         actorId,
         req.user!.displayName,
         id,
-      ).catch((e) => logger.warn({ err: e }, "Notification failed after approve"));
+      ).catch((e) =>
+        logger.warn({ err: e }, "Notification failed after approve"),
+      );
       res.json(updated);
     } catch (err) {
       throw mapServiceError(err);
@@ -340,7 +370,12 @@ router.post(
     const { versionLabel } = req.body;
     if (!versionLabel || versionLabel.trim().length === 0) {
       throw new AppError(400, "Validierungsfehler", {
-        details: [{ field: "versionLabel", message: "Versionsbezeichnung darf nicht leer sein" }],
+        details: [
+          {
+            field: "versionLabel",
+            message: "Versionsbezeichnung darf nicht leer sein",
+          },
+        ],
       });
     }
 
@@ -364,9 +399,13 @@ router.post(
           authorId: wc.authorId,
         },
       });
-      throw new AppError(403, "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.", {
-        details: { sodRule: sodResult.rule, reason: sodResult.reason },
-      });
+      throw new AppError(
+        403,
+        "Vier-Augen-Prinzip: Einreicher und Genehmiger müssen unterschiedliche Personen sein.",
+        {
+          details: { sodRule: sodResult.rule, reason: sodResult.reason },
+        },
+      );
     }
 
     try {
@@ -377,7 +416,9 @@ router.post(
         actorId,
         req.user!.displayName,
         versionLabel,
-      ).catch((e) => logger.warn({ err: e }, "Notification failed after publish"));
+      ).catch((e) =>
+        logger.warn({ err: e }, "Notification failed after publish"),
+      );
       res.json(result);
     } catch (err) {
       throw mapServiceError(err);
@@ -431,7 +472,10 @@ router.put(
     const wc = (req as WorkingCopyRequest).workingCopy;
     const reviewStatuses = ["submitted", "in_review", "approved_for_publish"];
     if (!reviewStatuses.includes(wc.status)) {
-      throw new AppError(409, "Zusammenfassung kann nur während der Prüfphase bearbeitet werden.");
+      throw new AppError(
+        409,
+        "Zusammenfassung kann nur während der Prüfphase bearbeitet werden.",
+      );
     }
     const { summary } = req.body;
 
@@ -465,9 +509,13 @@ router.post(
       const message = err instanceof Error ? err.message : "Unknown error";
       const isDisabled = message.includes("deaktiviert");
       logger.warn({ err }, "Failed to generate AI summary");
-      throw new AppError(isDisabled ? 400 : 500, isDisabled ? message : "KI-Zusammenfassung fehlgeschlagen", {
-        code: isDisabled ? "AI_DISABLED" : "AI_ERROR",
-      });
+      throw new AppError(
+        isDisabled ? 400 : 500,
+        isDisabled ? message : "KI-Zusammenfassung fehlgeschlagen",
+        {
+          code: isDisabled ? "AI_DISABLED" : "AI_ERROR",
+        },
+      );
     }
   },
 );

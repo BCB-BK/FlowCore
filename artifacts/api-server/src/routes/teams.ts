@@ -63,7 +63,10 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
 
       if (!isMember) {
         logger.warn(
-          { externalId: tokenResult.externalId, groupId: appConfig.entraRequiredGroupId },
+          {
+            externalId: tokenResult.externalId,
+            groupId: appConfig.entraRequiredGroupId,
+          },
           "Teams SSO rejected: user not in required Entra group",
         );
         await db.insert(auditEventsTable).values({
@@ -101,14 +104,22 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
     const existingRoles = await getRolesForPrincipal(principalId);
     if (existingRoles.length === 0) {
       await assignRole({ principalId, role: "viewer", scope: "global" });
-      logger.info({ principalId }, "Auto-assigned Viewer role on first Teams SSO login");
+      logger.info(
+        { principalId },
+        "Auto-assigned Viewer role on first Teams SSO login",
+      );
       await db.insert(auditEventsTable).values({
         eventType: "auth",
         action: "auto_role_assigned",
         actorId: principalId,
         resourceType: "principal",
         resourceId: principalId,
-        details: { role: "viewer", scope: "global", reason: "first_login", provider: "teams_sso" },
+        details: {
+          role: "viewer",
+          scope: "global",
+          reason: "first_login",
+          provider: "teams_sso",
+        },
         ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
       });
     }

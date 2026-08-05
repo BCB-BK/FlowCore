@@ -95,7 +95,9 @@ export interface CopilotPageProjection {
   scopeContext: string | null;
 }
 
-async function resolvePrincipalName(id: string | null | undefined): Promise<string | null> {
+async function resolvePrincipalName(
+  id: string | null | undefined,
+): Promise<string | null> {
   if (!id) return null;
   const principal = await getPrincipalById(id);
   return principal?.displayName ?? null;
@@ -188,19 +190,24 @@ export function deriveBrandScope(tags: string[]): string[] {
   return scope;
 }
 
-async function findGlossaryTermsInText(
-  plaintext: string,
-): Promise<string[]> {
+async function findGlossaryTermsInText(plaintext: string): Promise<string[]> {
   if (!plaintext) return [];
   const terms = await db
-    .select({ term: glossaryTermsTable.term, synonyms: glossaryTermsTable.synonyms })
+    .select({
+      term: glossaryTermsTable.term,
+      synonyms: glossaryTermsTable.synonyms,
+    })
     .from(glossaryTermsTable);
   const lowerText = plaintext.toLowerCase();
   const found = new Set<string>();
   for (const t of terms) {
-    const candidates = [t.term, ...(t.synonyms ?? [])].filter(Boolean) as string[];
+    const candidates = [t.term, ...(t.synonyms ?? [])].filter(
+      Boolean,
+    ) as string[];
     for (const candidate of candidates) {
-      const pattern = new RegExp(`\\b${escapeRegExp(candidate.toLowerCase())}\\b`);
+      const pattern = new RegExp(
+        `\\b${escapeRegExp(candidate.toLowerCase())}\\b`,
+      );
       if (pattern.test(lowerText)) {
         found.add(t.term);
         break;
@@ -256,7 +263,9 @@ export async function getAncestorTitles(nodeId: string): Promise<string[]> {
  * and non-deleted (a child that is still a draft must not leak into the
  * exported content or metadata of its parent).
  */
-export async function getPublishedChildTitles(nodeId: string): Promise<string[]> {
+export async function getPublishedChildTitles(
+  nodeId: string,
+): Promise<string[]> {
   const rows = await db
     .select({ title: contentNodesTable.title })
     .from(contentNodesTable)
@@ -322,7 +331,8 @@ export async function getPublishedChildPages(
   return rows.map((r) => {
     const sf = (r.structuredFields ?? {}) as Record<string, unknown>;
     const shortDescription =
-      typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
+      typeof sf.kurzbeschreibung === "string" &&
+      sf.kurzbeschreibung.trim().length > 0
         ? sf.kurzbeschreibung
         : typeof sf.summary === "string"
           ? sf.summary
@@ -466,7 +476,10 @@ export async function projectPublishedPage(
   const tagRows = await db
     .select({ name: contentTagsTable.name })
     .from(contentNodeTagsTable)
-    .innerJoin(contentTagsTable, eq(contentNodeTagsTable.tagId, contentTagsTable.id))
+    .innerJoin(
+      contentTagsTable,
+      eq(contentNodeTagsTable.tagId, contentTagsTable.id),
+    )
     .where(eq(contentNodeTagsTable.nodeId, node.id));
   const tags = tagRows.map((t) => t.name);
 
@@ -519,7 +532,8 @@ export async function projectPublishedPage(
       getAncestorTitles(node.id),
       getPublishedChildPages(node.id),
     ]);
-  const parentPath = ancestorTitles.length > 0 ? ancestorTitles.join(" > ") : null;
+  const parentPath =
+    ancestorTitles.length > 0 ? ancestorTitles.join(" > ") : null;
   const childPageTitles = childPages.map((c) => c.title);
   const childPagesExport = deriveChildPagesExport(node.displayCode, childPages);
   const { hasChildren, childPageCount } = childPagesExport;
@@ -543,7 +557,8 @@ export async function projectPublishedPage(
       ? htmlToPlainText(sf.summary)
       : plaintext.slice(0, 400);
   const shortDescription =
-    typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
+    typeof sf.kurzbeschreibung === "string" &&
+    sf.kurzbeschreibung.trim().length > 0
       ? htmlToPlainText(sf.kurzbeschreibung)
       : summary;
   const scopeContext =
@@ -626,7 +641,10 @@ export async function projectPublishedPage(
     childPages: childPagesExport.childPages,
     topChildPages: childPagesExport.topChildPages,
     childPagesSearchHint: childPagesExport.childPagesSearchHint,
-    childPagesGuidance: deriveChildPagesGuidance(node.templateType, hasChildren),
+    childPagesGuidance: deriveChildPagesGuidance(
+      node.templateType,
+      hasChildren,
+    ),
     scopeContext,
   };
 }

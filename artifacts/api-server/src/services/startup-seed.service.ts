@@ -75,7 +75,11 @@ async function seedWorkflowTemplates(): Promise<void> {
       }
 
       logger.info(
-        { templateId: inserted.id, name: wf.template.name, steps: wf.steps.length },
+        {
+          templateId: inserted.id,
+          name: wf.template.name,
+          steps: wf.steps.length,
+        },
         "Seeded workflow template",
       );
     });
@@ -112,10 +116,7 @@ async function seedAiFieldProfiles(): Promise<void> {
     );
   }
 
-  logger.info(
-    { count: profiles.length },
-    "Seeded AI field profiles",
-  );
+  logger.info({ count: profiles.length }, "Seeded AI field profiles");
 }
 
 interface GlossaryTermSeed {
@@ -164,7 +165,9 @@ async function seedGlossaryTerms(): Promise<void> {
   logger.info({ count: terms.length }, "Glossary terms seeded");
 }
 
-export async function reimportGlossarySeedTerms(): Promise<{ upserted: number }> {
+export async function reimportGlossarySeedTerms(): Promise<{
+  upserted: number;
+}> {
   const terms = glossarySeedData as GlossaryTermSeed[];
 
   for (const t of terms) {
@@ -187,12 +190,15 @@ export async function reimportGlossarySeedTerms(): Promise<{ upserted: number }>
   return { upserted: terms.length };
 }
 
-
 async function deduplicatePrincipals(): Promise<void> {
   const { principalsTable } = await import("@workspace/db/schema");
   const { eq, sql: dsql } = await import("drizzle-orm");
 
-  const dupes: { dup_id: string; canonical_id: string; display_name: string }[] = await db.execute(dsql`
+  const dupes: {
+    dup_id: string;
+    canonical_id: string;
+    display_name: string;
+  }[] = (await db.execute(dsql`
     SELECT p1.id AS dup_id, p2.id AS canonical_id, p1.display_name
     FROM principals p1
     JOIN principals p2
@@ -202,16 +208,20 @@ async function deduplicatePrincipals(): Promise<void> {
     WHERE p1.external_provider = 'entra_id'
       AND p1.status = 'active'
       AND p1.id <> p2.id
-  `) as any;
+  `)) as any;
 
-  const rows = Array.isArray(dupes) ? dupes : (dupes as any).rows ?? [];
+  const rows = Array.isArray(dupes) ? dupes : ((dupes as any).rows ?? []);
   for (const row of rows) {
     await db
       .update(principalsTable)
       .set({ status: "inactive", updatedAt: new Date() })
       .where(eq(principalsTable.id, String(row.dup_id)));
     logger.info(
-      { duplicateId: row.dup_id, canonicalId: row.canonical_id, name: row.display_name },
+      {
+        duplicateId: row.dup_id,
+        canonicalId: row.canonical_id,
+        name: row.display_name,
+      },
       "Deactivated duplicate entra_id principal",
     );
   }
@@ -236,12 +246,14 @@ async function migrateExternalMediaUrls(): Promise<void> {
   // Build a set of known storage_keys (the SharePoint URL ends with the storage_key
   // as its filename, e.g. ".../FlowCore%20Ablage/07607f99-...uuid....png").
   // original_filename ("Screenshot 2026-06-24.png") is NOT in the URL path.
-  const assets = await db.execute(
+  const assets = (await db.execute(
     sql`SELECT storage_key FROM media_assets WHERE is_deleted = false`,
-  ) as unknown as { rows: { storage_key: string }[] };
+  )) as unknown as { rows: { storage_key: string }[] };
 
   if ((assets.rows ?? []).length === 0) {
-    logger.info("No media assets found — marking media URL migration as complete");
+    logger.info(
+      "No media assets found — marking media URL migration as complete",
+    );
     await setSystemSetting(MIGRATION_KEY, MIGRATION_VERSION);
     return;
   }
@@ -270,7 +282,10 @@ async function migrateExternalMediaUrls(): Promise<void> {
         const oldSrc = obj.src;
         obj.src = `/api/media/files/${key}`;
         changed = true;
-        logger.info({ oldSrc, newSrc: obj.src, key }, "Replaced SharePoint src in TipTap node");
+        logger.info(
+          { oldSrc, newSrc: obj.src, key },
+          "Replaced SharePoint src in TipTap node",
+        );
       }
     }
 
@@ -278,7 +293,9 @@ async function migrateExternalMediaUrls(): Promise<void> {
       if (k === "src") continue;
       const val = obj[k];
       if (Array.isArray(val)) {
-        for (const item of val) { if (fixNode(item)) changed = true; }
+        for (const item of val) {
+          if (fixNode(item)) changed = true;
+        }
       } else if (val && typeof val === "object") {
         if (fixNode(val)) changed = true;
       }
@@ -289,25 +306,38 @@ async function migrateExternalMediaUrls(): Promise<void> {
   // Scan structured_fields (contains _editorContent with TipTap image nodes).
   // PostgreSQL's jsonb::text adds spaces after colons/commas; LIKE '%"src"%' is
   // still safe because the key name itself is not spaced.
-  const wcs = await db.execute(
+  const wcs = (await db.execute(
     sql`SELECT id, structured_fields FROM content_working_copies WHERE structured_fields IS NOT NULL AND structured_fields::text LIKE '%"src"%'`,
-  ) as unknown as { rows: { id: string; structured_fields: unknown }[] };
+  )) as unknown as { rows: { id: string; structured_fields: unknown }[] };
 
-  const revs = await db.execute(
+  const revs = (await db.execute(
     sql`SELECT id, structured_fields FROM content_revisions WHERE structured_fields IS NOT NULL AND structured_fields::text LIKE '%"src"%'`,
-  ) as unknown as { rows: { id: string; structured_fields: unknown }[] };
+  )) as unknown as { rows: { id: string; structured_fields: unknown }[] };
 
   const allDocs = [
-    ...(wcs.rows ?? []).map(r => ({ id: r.id, data: r.structured_fields, table: "content_working_copies" as const })),
-    ...(revs.rows ?? []).map(r => ({ id: r.id, data: r.structured_fields, table: "content_revisions" as const })),
+    ...(wcs.rows ?? []).map((r) => ({
+      id: r.id,
+      data: r.structured_fields,
+      table: "content_working_copies" as const,
+    })),
+    ...(revs.rows ?? []).map((r) => ({
+      id: r.id,
+      data: r.structured_fields,
+      table: "content_revisions" as const,
+    })),
   ];
 
   if (allDocs.length === 0) {
-    logger.info("No docs with external src found — marking media URL migration as complete");
+    logger.info(
+      "No docs with external src found — marking media URL migration as complete",
+    );
     await setSystemSetting(MIGRATION_KEY, MIGRATION_VERSION);
     return;
   }
-  logger.info({ count: allDocs.length }, "Starting media URL migration — docs with external src found");
+  logger.info(
+    { count: allDocs.length },
+    "Starting media URL migration — docs with external src found",
+  );
 
   let totalFixed = 0;
   for (const doc of allDocs) {
@@ -316,18 +346,31 @@ async function migrateExternalMediaUrls(): Promise<void> {
     if (changed) {
       const json = JSON.stringify(data);
       if (doc.table === "content_working_copies") {
-        await db.execute(sql`UPDATE content_working_copies SET structured_fields = ${json}::jsonb WHERE id = ${doc.id}`);
+        await db.execute(
+          sql`UPDATE content_working_copies SET structured_fields = ${json}::jsonb WHERE id = ${doc.id}`,
+        );
       } else {
-        await db.execute(sql`UPDATE content_revisions SET structured_fields = ${json}::jsonb WHERE id = ${doc.id}`);
+        await db.execute(
+          sql`UPDATE content_revisions SET structured_fields = ${json}::jsonb WHERE id = ${doc.id}`,
+        );
       }
       totalFixed++;
-      logger.info({ id: doc.id, table: doc.table }, "Fixed SharePoint image URLs in doc");
+      logger.info(
+        { id: doc.id, table: doc.table },
+        "Fixed SharePoint image URLs in doc",
+      );
     }
   }
 
-  logger.info({ totalFixed, docsScanned: allDocs.length }, "Media URL migration complete");
+  logger.info(
+    { totalFixed, docsScanned: allDocs.length },
+    "Media URL migration complete",
+  );
   await setSystemSetting(MIGRATION_KEY, MIGRATION_VERSION);
-  logger.info({ key: MIGRATION_KEY }, "Media URL migration flag set — will skip on next startup");
+  logger.info(
+    { key: MIGRATION_KEY },
+    "Media URL migration flag set — will skip on next startup",
+  );
 }
 
 export async function runStartupSeed(): Promise<void> {

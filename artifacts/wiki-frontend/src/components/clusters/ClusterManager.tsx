@@ -118,7 +118,11 @@ export function ClusterManager({
   const handleRename = useCallback(
     (clusterId: string) => {
       if (!editingTitle.trim()) return;
-      onChange(clusters.map((c) => c.id === clusterId ? { ...c, title: editingTitle.trim() } : c));
+      onChange(
+        clusters.map((c) =>
+          c.id === clusterId ? { ...c, title: editingTitle.trim() } : c,
+        ),
+      );
       setEditingId(null);
       setEditingTitle("");
     },
@@ -131,7 +135,10 @@ export function ClusterManager({
       const removedLinkedIds = deletedCluster
         ? deletedCluster.childNodeIds.filter((id) => linkedNodeIdSet.has(id))
         : [];
-      onChange(clusters.filter((c) => c.id !== clusterId), removedLinkedIds);
+      onChange(
+        clusters.filter((c) => c.id !== clusterId),
+        removedLinkedIds,
+      );
     },
     [clusters, linkedNodeIdSet, onChange],
   );
@@ -140,7 +147,10 @@ export function ClusterManager({
     (idx: number) => {
       if (idx <= 0) return;
       const reordered = [...clusters];
-      [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
+      [reordered[idx - 1], reordered[idx]] = [
+        reordered[idx],
+        reordered[idx - 1],
+      ];
       onChange(reordered.map((c, i) => ({ ...c, sortOrder: i })));
     },
     [clusters, onChange],
@@ -150,7 +160,10 @@ export function ClusterManager({
     (idx: number) => {
       if (idx >= clusters.length - 1) return;
       const reordered = [...clusters];
-      [reordered[idx], reordered[idx + 1]] = [reordered[idx + 1], reordered[idx]];
+      [reordered[idx], reordered[idx + 1]] = [
+        reordered[idx + 1],
+        reordered[idx],
+      ];
       onChange(reordered.map((c, i) => ({ ...c, sortOrder: i })));
     },
     [clusters, onChange],
@@ -175,7 +188,10 @@ export function ClusterManager({
     (childId: string, clusterId: string) => {
       const updated = clusters.map((c) =>
         c.id === clusterId
-          ? { ...c, childNodeIds: c.childNodeIds.filter((id) => id !== childId) }
+          ? {
+              ...c,
+              childNodeIds: c.childNodeIds.filter((id) => id !== childId),
+            }
           : c,
       );
       const removedLinkedIds = linkedNodeIdSet.has(childId) ? [childId] : [];
@@ -217,7 +233,10 @@ export function ClusterManager({
     if (!targetContainerId || sourceContainerId === targetContainerId) return;
 
     setLocalClusters((prev) => {
-      const next = prev.map((c) => ({ ...c, childNodeIds: [...c.childNodeIds] }));
+      const next = prev.map((c) => ({
+        ...c,
+        childNodeIds: [...c.childNodeIds],
+      }));
       const src = next.find((c) => c.id === sourceContainerId);
       const tgt = next.find((c) => c.id === targetContainerId);
       if (!src || !tgt) return prev;
@@ -230,7 +249,11 @@ export function ClusterManager({
         tgt.childNodeIds = [...tgt.childNodeIds, draggedId];
       } else {
         const overIdx = tgt.childNodeIds.indexOf(overId);
-        tgt.childNodeIds.splice(overIdx >= 0 ? overIdx : tgt.childNodeIds.length, 0, draggedId);
+        tgt.childNodeIds.splice(
+          overIdx >= 0 ? overIdx : tgt.childNodeIds.length,
+          0,
+          draggedId,
+        );
       }
 
       return next;
@@ -265,7 +288,10 @@ export function ClusterManager({
               const oldIdx = c.childNodeIds.indexOf(draggedId);
               const newIdx = c.childNodeIds.indexOf(overId);
               if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return c;
-              return { ...c, childNodeIds: arrayMove(c.childNodeIds, oldIdx, newIdx) };
+              return {
+                ...c,
+                childNodeIds: arrayMove(c.childNodeIds, oldIdx, newIdx),
+              };
             });
           }
         }
@@ -294,11 +320,18 @@ export function ClusterManager({
             <Layers className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-semibold">Cluster-Gruppen</h3>
             {localClusters.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{localClusters.length}</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {localClusters.length}
+              </Badge>
             )}
           </div>
           {!addingNew && (
-            <Button variant="outline" size="sm" onClick={() => setAddingNew(true)} className="gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAddingNew(true)}
+              className="gap-1.5"
+            >
               <Plus className="h-3.5 w-3.5" />
               Cluster
             </Button>
@@ -307,7 +340,8 @@ export function ClusterManager({
 
         {localClusters.length === 0 && !addingNew && (
           <p className="text-xs text-muted-foreground py-2">
-            Keine Cluster angelegt. Erstellen Sie Cluster, um Unterseiten thematisch zu gruppieren.
+            Keine Cluster angelegt. Erstellen Sie Cluster, um Unterseiten
+            thematisch zu gruppieren.
           </p>
         )}
 
@@ -321,13 +355,30 @@ export function ClusterManager({
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleAddCluster();
-                if (e.key === "Escape") { setAddingNew(false); setNewTitle(""); }
+                if (e.key === "Escape") {
+                  setAddingNew(false);
+                  setNewTitle("");
+                }
               }}
             />
-            <Button variant="default" size="sm" className="h-8 w-8 p-0" onClick={handleAddCluster} disabled={!newTitle.trim()}>
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={handleAddCluster}
+              disabled={!newTitle.trim()}
+            >
               <Check className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => { setAddingNew(false); setNewTitle(""); }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => {
+                setAddingNew(false);
+                setNewTitle("");
+              }}
+            >
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -358,28 +409,70 @@ export function ClusterManager({
                           if (e.key === "Escape") setEditingId(null);
                         }}
                       />
-                      <Button variant="default" size="sm" className="h-7 w-7 p-0" onClick={() => handleRename(cluster.id)}>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => handleRename(cluster.id)}
+                      >
                         <Check className="h-3 w-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditingId(null)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setEditingId(null)}
+                      >
                         <X className="h-3 w-3" />
                       </Button>
                     </div>
                   ) : (
                     <>
-                      <CardTitle className="text-sm font-medium flex-1">{cluster.title}</CardTitle>
-                      <Badge variant="secondary" className="text-[10px] h-4 px-1">{clusterChildren.length}</Badge>
+                      <CardTitle className="text-sm font-medium flex-1">
+                        {cluster.title}
+                      </CardTitle>
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] h-4 px-1"
+                      >
+                        {clusterChildren.length}
+                      </Badge>
                       <div className="flex items-center gap-0.5">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleMoveUp(idx)} disabled={idx === 0}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => handleMoveUp(idx)}
+                          disabled={idx === 0}
+                        >
                           <ChevronUp className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleMoveDown(idx)} disabled={idx === localClusters.length - 1}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => handleMoveDown(idx)}
+                          disabled={idx === localClusters.length - 1}
+                        >
                           <ChevronDown className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => { setEditingId(cluster.id); setEditingTitle(cluster.title); }}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => {
+                            setEditingId(cluster.id);
+                            setEditingTitle(cluster.title);
+                          }}
+                        >
                           <Pencil className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive hover:text-destructive" onClick={() => handleDeleteCluster(cluster.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteCluster(cluster.id)}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -387,7 +480,10 @@ export function ClusterManager({
                   )}
                 </div>
               </CardHeader>
-              <DroppableClusterBody clusterId={cluster.id} isDragging={!!activeId}>
+              <DroppableClusterBody
+                clusterId={cluster.id}
+                isDragging={!!activeId}
+              >
                 <SortableContext
                   id={cluster.id}
                   items={cluster.childNodeIds}
@@ -395,7 +491,9 @@ export function ClusterManager({
                 >
                   {clusterChildren.length === 0 ? (
                     <p className="text-xs text-muted-foreground py-1 px-1 select-none">
-                      {activeId ? "Hierher ziehen …" : "Noch keine Unterseiten zugeordnet"}
+                      {activeId
+                        ? "Hierher ziehen …"
+                        : "Noch keine Unterseiten zugeordnet"}
                     </p>
                   ) : (
                     clusterChildren.map((child) => (
@@ -444,8 +542,12 @@ export function ClusterManager({
         {unassigned.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-medium text-muted-foreground">Nicht zugeordnet</h4>
-              <Badge variant="secondary" className="text-[10px] h-4 px-1">{unassigned.length}</Badge>
+              <h4 className="text-xs font-medium text-muted-foreground">
+                Nicht zugeordnet
+              </h4>
+              <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                {unassigned.length}
+              </Badge>
             </div>
             <div className="space-y-1">
               {unassigned.map((child) => (
@@ -490,7 +592,9 @@ function DroppableClusterBody({
     <div
       ref={setNodeRef}
       className={`p-2 space-y-1 min-h-[40px] rounded transition-colors ${
-        isOver && isDragging ? "bg-primary/5 ring-1 ring-inset ring-primary/30" : ""
+        isOver && isDragging
+          ? "bg-primary/5 ring-1 ring-inset ring-primary/30"
+          : ""
       }`}
     >
       {children}
@@ -513,7 +617,14 @@ function SortableChildRow({
   onAssign: (childId: string, clusterId: string | null) => void;
   onRemove: (childId: string, clusterId: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: child.id,
   });
   const style = {
@@ -539,19 +650,32 @@ function SortableChildRow({
         <GripVertical className="h-3.5 w-3.5" />
       </button>
       {typeDef && (
-        <div className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0" style={{ backgroundColor: typeDef.color }}>
+        <div
+          className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0"
+          style={{ backgroundColor: typeDef.color }}
+        >
           <PageTypeIcon iconName={typeDef.icon} className="h-2.5 w-2.5" />
         </div>
       )}
-      {isLinked && <Link2 className="h-3 w-3 text-muted-foreground shrink-0" aria-label="Verlinkte Seite" />}
+      {isLinked && (
+        <Link2
+          className="h-3 w-3 text-muted-foreground shrink-0"
+          aria-label="Verlinkte Seite"
+        />
+      )}
       <span className="text-xs flex-1 min-w-0 truncate">{child.title}</span>
       {child.displayCode && (
-        <span className="text-[10px] text-muted-foreground shrink-0">{child.displayCode}</span>
+        <span className="text-[10px] text-muted-foreground shrink-0">
+          {child.displayCode}
+        </span>
       )}
       <button
         className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-0.5 rounded"
         aria-label={isLinked ? "Verlinkung entfernen" : "Aus Cluster entfernen"}
-        onClick={(e) => { e.stopPropagation(); onRemove(child.id, currentClusterId); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(child.id, currentClusterId);
+        }}
       >
         <X className="h-3 w-3" />
       </button>
@@ -574,24 +698,41 @@ function UnassignedChildRow({
   return (
     <div className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-muted/50 group">
       {typeDef && (
-        <div className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0" style={{ backgroundColor: typeDef.color }}>
+        <div
+          className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0"
+          style={{ backgroundColor: typeDef.color }}
+        >
           <PageTypeIcon iconName={typeDef.icon} className="h-2.5 w-2.5" />
         </div>
       )}
-      {isLinked && <Link2 className="h-3 w-3 text-muted-foreground shrink-0" aria-label="Verlinkte Seite" />}
+      {isLinked && (
+        <Link2
+          className="h-3 w-3 text-muted-foreground shrink-0"
+          aria-label="Verlinkte Seite"
+        />
+      )}
       <span className="text-xs flex-1 min-w-0 truncate">{child.title}</span>
       {child.displayCode && (
-        <span className="text-[10px] text-muted-foreground shrink-0">{child.displayCode}</span>
+        <span className="text-[10px] text-muted-foreground shrink-0">
+          {child.displayCode}
+        </span>
       )}
       {clusters.length > 0 && (
         <select
           className="h-6 text-[10px] bg-background border rounded px-1 shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
           value={NOT_ASSIGNED_SENTINEL}
-          onChange={(e) => onAssign(child.id, e.target.value === NOT_ASSIGNED_SENTINEL ? null : e.target.value)}
+          onChange={(e) =>
+            onAssign(
+              child.id,
+              e.target.value === NOT_ASSIGNED_SENTINEL ? null : e.target.value,
+            )
+          }
         >
           <option value={NOT_ASSIGNED_SENTINEL}>Nicht zugeordnet</option>
           {clusters.map((cl) => (
-            <option key={cl.id} value={cl.id}>{cl.title}</option>
+            <option key={cl.id} value={cl.id}>
+              {cl.title}
+            </option>
           ))}
         </select>
       )}
@@ -599,13 +740,22 @@ function UnassignedChildRow({
   );
 }
 
-function DragOverlayItem({ child, isLinked }: { child: ChildNode; isLinked: boolean }) {
+function DragOverlayItem({
+  child,
+  isLinked,
+}: {
+  child: ChildNode;
+  isLinked: boolean;
+}) {
   const typeDef = getPageType(child.templateType);
   return (
     <div className="flex items-center gap-2 px-1.5 py-1 rounded bg-background border shadow-lg opacity-95">
       <GripVertical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
       {typeDef && (
-        <div className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0" style={{ backgroundColor: typeDef.color }}>
+        <div
+          className="flex h-5 w-5 items-center justify-center rounded text-white shrink-0"
+          style={{ backgroundColor: typeDef.color }}
+        >
           <PageTypeIcon iconName={typeDef.icon} className="h-2.5 w-2.5" />
         </div>
       )}

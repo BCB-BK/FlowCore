@@ -74,21 +74,31 @@ function normalize(raw: unknown): SwimlaneData | null {
     description: String(obj.description ?? ""),
     lanes: Array.isArray(obj.lanes)
       ? obj.lanes.map((l: unknown) => {
-          if (!l || typeof l !== "object") return { role: String(l ?? ""), steps: [] };
+          if (!l || typeof l !== "object")
+            return { role: String(l ?? ""), steps: [] };
           const lane = l as Record<string, unknown>;
           return {
             role: String(lane.role ?? ""),
-            steps: Array.isArray(lane.steps) ? lane.steps.map((s: unknown) => String(s ?? "")) : [],
+            steps: Array.isArray(lane.steps)
+              ? lane.steps.map((s: unknown) => String(s ?? ""))
+              : [],
           };
         })
       : [],
     mediaRef: typeof obj.mediaRef === "string" ? obj.mediaRef : undefined,
-    mediaRefName: typeof obj.mediaRefName === "string" ? obj.mediaRefName : undefined,
-    mediaRefType: typeof obj.mediaRefType === "string" ? obj.mediaRefType : undefined,
+    mediaRefName:
+      typeof obj.mediaRefName === "string" ? obj.mediaRefName : undefined,
+    mediaRefType:
+      typeof obj.mediaRefType === "string" ? obj.mediaRefType : undefined,
     detailLink: typeof obj.detailLink === "string" ? obj.detailLink : undefined,
-    detailNodeId: typeof obj.detailNodeId === "string" ? obj.detailNodeId : undefined,
-    detailNodeTitle: typeof obj.detailNodeTitle === "string" ? obj.detailNodeTitle : undefined,
-    detailNodeStatus: typeof obj.detailNodeStatus === "string" ? obj.detailNodeStatus : undefined,
+    detailNodeId:
+      typeof obj.detailNodeId === "string" ? obj.detailNodeId : undefined,
+    detailNodeTitle:
+      typeof obj.detailNodeTitle === "string" ? obj.detailNodeTitle : undefined,
+    detailNodeStatus:
+      typeof obj.detailNodeStatus === "string"
+        ? obj.detailNodeStatus
+        : undefined,
     showLegend: typeof obj.showLegend === "boolean" ? obj.showLegend : false,
   };
 }
@@ -119,16 +129,26 @@ interface MediaRefPickerProps {
   onClear: () => void;
 }
 
-function MediaRefPicker({ value, valueName, valueType, onChange, onClear }: MediaRefPickerProps) {
+function MediaRefPicker({
+  value,
+  valueName,
+  valueType,
+  onChange,
+  onClear,
+}: MediaRefPickerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [defaultTab, setDefaultTab] = useState<"upload" | "browse" | "sharepoint">("upload");
+  const [defaultTab, setDefaultTab] = useState<
+    "upload" | "browse" | "sharepoint"
+  >("upload");
 
   const openDialog = (tab: "upload" | "sharepoint") => {
     setDefaultTab(tab);
     setDialogOpen(true);
   };
 
-  const isImage = valueType?.startsWith("image/") || (value && /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(value));
+  const isImage =
+    valueType?.startsWith("image/") ||
+    (value && /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(value));
 
   const handleSelect = (asset: MediaAsset) => {
     onChange(asset.url, asset.originalFilename, asset.mimeType);
@@ -223,11 +243,22 @@ interface NodeRefPickerProps {
   nodeId?: string;
   nodeTitle?: string;
   nodeStatus?: string;
-  onChange: (nodeId: string, title: string, link: string, status?: string) => void;
+  onChange: (
+    nodeId: string,
+    title: string,
+    link: string,
+    status?: string,
+  ) => void;
   onClear: () => void;
 }
 
-function NodeRefPicker({ nodeId, nodeTitle, nodeStatus, onChange, onClear }: NodeRefPickerProps) {
+function NodeRefPicker({
+  nodeId,
+  nodeTitle,
+  nodeStatus,
+  onChange,
+  onClear,
+}: NodeRefPickerProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -258,7 +289,10 @@ function NodeRefPicker({ nodeId, nodeTitle, nodeStatus, onChange, onClear }: Nod
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -333,7 +367,9 @@ function NodeRefPicker({ nodeId, nodeTitle, nodeStatus, onChange, onClear }: Nod
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium truncate">{r.title}</span>
+                      <span className="text-xs font-medium truncate">
+                        {r.title}
+                      </span>
                       {r.status === "draft" && (
                         <span className="shrink-0 text-[9px] font-medium px-1 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 leading-none">
                           Entwurf
@@ -362,7 +398,11 @@ function NodeRefPicker({ nodeId, nodeTitle, nodeStatus, onChange, onClear }: Nod
   );
 }
 
-export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps) {
+export function SwimlaneDiagram({
+  data,
+  onSave,
+  readOnly,
+}: SwimlaneDiagramProps) {
   const parsed = normalize(data);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<SwimlaneData>(parsed ?? emptyData());
@@ -385,7 +425,10 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
   const addLane = () => {
     setDraft((prev) => ({
       ...prev,
-      lanes: [...prev.lanes, { role: `Rolle ${prev.lanes.length + 1}`, steps: [] }],
+      lanes: [
+        ...prev.lanes,
+        { role: `Rolle ${prev.lanes.length + 1}`, steps: [] },
+      ],
     }));
   };
 
@@ -407,7 +450,7 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
     setDraft((prev) => ({
       ...prev,
       lanes: prev.lanes.map((l, i) =>
-        i === laneIndex ? { ...l, steps: [...l.steps, ""] } : l
+        i === laneIndex ? { ...l, steps: [...l.steps, ""] } : l,
       ),
     }));
   };
@@ -416,7 +459,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
     setDraft((prev) => ({
       ...prev,
       lanes: prev.lanes.map((l, i) =>
-        i === laneIndex ? { ...l, steps: l.steps.filter((_, si) => si !== stepIndex) } : l
+        i === laneIndex
+          ? { ...l, steps: l.steps.filter((_, si) => si !== stepIndex) }
+          : l,
       ),
     }));
   };
@@ -426,8 +471,11 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
       ...prev,
       lanes: prev.lanes.map((l, i) =>
         i === laneIndex
-          ? { ...l, steps: l.steps.map((s, si) => (si === stepIndex ? value : s)) }
-          : l
+          ? {
+              ...l,
+              steps: l.steps.map((s, si) => (si === stepIndex ? value : s)),
+            }
+          : l,
       ),
     }));
   };
@@ -462,11 +510,20 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
             )}
             {editing && (
               <>
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleCancel}
+                >
                   <X className="h-3 w-3 mr-1" />
                   Abbrechen
                 </Button>
-                <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+                <Button
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleSave}
+                >
                   <Check className="h-3 w-3 mr-1" />
                   Speichern
                 </Button>
@@ -478,7 +535,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
       <CardContent>
         {!current || current.lanes.length === 0 ? (
           <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground mb-2">Kein Swimlane-Diagramm definiert</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Kein Swimlane-Diagramm definiert
+            </p>
             {onSave && !readOnly && (
               <Button variant="outline" size="sm" onClick={startEdit}>
                 <Plus className="h-3 w-3 mr-1" />
@@ -494,7 +553,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                   <Label className="text-xs">Titel</Label>
                   <Input
                     value={draft.title}
-                    onChange={(e) => setDraft((prev) => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) =>
+                      setDraft((prev) => ({ ...prev, title: e.target.value }))
+                    }
                     className="h-8 text-xs"
                     placeholder="Diagrammtitel..."
                   />
@@ -504,7 +565,10 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                   <Textarea
                     value={draft.description}
                     onChange={(e) =>
-                      setDraft((prev) => ({ ...prev, description: e.target.value }))
+                      setDraft((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
                     }
                     className="text-xs min-h-[40px]"
                     placeholder="Kurzbeschreibung..."
@@ -565,7 +629,10 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                   <button
                     type="button"
                     onClick={() =>
-                      setDraft((prev) => ({ ...prev, showLegend: !prev.showLegend }))
+                      setDraft((prev) => ({
+                        ...prev,
+                        showLegend: !prev.showLegend,
+                      }))
                     }
                     className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -574,7 +641,8 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                     ) : (
                       <EyeOff className="h-3.5 w-3.5" />
                     )}
-                    Legende f\u00FCr Leser {draft.showLegend ? "sichtbar" : "ausblenden"}
+                    Legende f\u00FCr Leser{" "}
+                    {draft.showLegend ? "sichtbar" : "ausblenden"}
                   </button>
                 </div>
               </div>
@@ -584,14 +652,22 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
               <h4 className="text-sm font-medium">{current.title}</h4>
             )}
             {!editing && current.description && (
-              <p className="text-xs text-muted-foreground">{current.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {current.description}
+              </p>
             )}
 
             {current.mediaRef && !editing && (
               <div className="rounded border overflow-hidden">
                 {current.mediaRefType?.startsWith("image/") ||
-                /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(current.mediaRef) ? (
-                  <a href={current.mediaRef} target="_blank" rel="noopener noreferrer">
+                /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(
+                  current.mediaRef,
+                ) ? (
+                  <a
+                    href={current.mediaRef}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <img
                       src={current.mediaRef}
                       alt={current.mediaRefName || "Diagramm"}
@@ -625,7 +701,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                       <div className="flex items-center gap-1 flex-1 mr-2">
                         <Input
                           value={lane.role}
-                          onChange={(e) => updateLaneRole(laneIdx, e.target.value)}
+                          onChange={(e) =>
+                            updateLaneRole(laneIdx, e.target.value)
+                          }
                           className="h-7 text-xs font-medium bg-white dark:bg-gray-900 max-w-[200px]"
                         />
                         <Button
@@ -648,7 +726,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                           <div className="flex items-center gap-0.5">
                             <Input
                               value={step}
-                              onChange={(e) => updateStep(laneIdx, stepIdx, e.target.value)}
+                              onChange={(e) =>
+                                updateStep(laneIdx, stepIdx, e.target.value)
+                              }
                               className="h-7 text-xs bg-white dark:bg-gray-900 w-32"
                             />
                             <button
@@ -664,7 +744,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                               {step || "\u2014"}
                             </div>
                             {stepIdx < lane.steps.length - 1 && (
-                              <span className="text-muted-foreground text-xs">\u2192</span>
+                              <span className="text-muted-foreground text-xs">
+                                \u2192
+                              </span>
                             )}
                           </>
                         )}
@@ -682,7 +764,9 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
                       </Button>
                     )}
                     {!editing && lane.steps.length === 0 && (
-                      <span className="text-xs text-muted-foreground italic">Keine Schritte</span>
+                      <span className="text-xs text-muted-foreground italic">
+                        Keine Schritte
+                      </span>
                     )}
                   </div>
                 </div>
@@ -690,7 +774,12 @@ export function SwimlaneDiagram({ data, onSave, readOnly }: SwimlaneDiagramProps
             </div>
 
             {editing && (
-              <Button variant="outline" size="sm" className="text-xs" onClick={addLane}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={addLane}
+              >
                 <Plus className="h-3 w-3 mr-1" />
                 Lane hinzuf\u00FCgen
               </Button>

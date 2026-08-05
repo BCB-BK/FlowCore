@@ -142,7 +142,8 @@ export function AISettingsPage() {
             <div>
               <Label htmlFor="ai-enabled">FlowCore-Assistent aktivieren</Label>
               <p className="text-sm text-muted-foreground">
-                Aktiviert den FlowCore-Assistenten und den FlowCore-Schreibassistenten
+                Aktiviert den FlowCore-Assistenten und den
+                FlowCore-Schreibassistenten
               </p>
             </div>
             <Switch

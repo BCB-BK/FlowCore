@@ -1,6 +1,13 @@
 import { getPageType } from "@/lib/types";
 import type { DisplayProfile } from "@/lib/types";
-import { FileText, LayoutDashboard, Shield, Server, BookOpen, Workflow } from "lucide-react";
+import {
+  FileText,
+  LayoutDashboard,
+  Shield,
+  Server,
+  BookOpen,
+  Workflow,
+} from "lucide-react";
 import { EditableSectionCard } from "./EditableSectionCard";
 import { isFieldEmpty } from "@/lib/field-empty";
 
@@ -52,9 +59,11 @@ export function GenericSectionLayout({
     return null;
   }
 
-  const sectionIcon = displayProfile
-    ? PROFILE_ICON_MAP[displayProfile]
-    : <FileText className="h-4 w-4 text-muted-foreground" />;
+  const sectionIcon = displayProfile ? (
+    PROFILE_ICON_MAP[displayProfile]
+  ) : (
+    <FileText className="h-4 w-4 text-muted-foreground" />
+  );
 
   return (
     <div className="space-y-4">

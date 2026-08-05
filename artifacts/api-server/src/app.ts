@@ -1,4 +1,9 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express";
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -90,7 +95,9 @@ const strictCors = cors({
         if (!origin || origin === PROD_ORIGIN) {
           callback(null, true);
         } else {
-          const err = Object.assign(new Error(`CORS: origin not allowed`), { status: 403 });
+          const err = Object.assign(new Error(`CORS: origin not allowed`), {
+            status: 403,
+          });
           callback(err);
         }
       }
@@ -145,21 +152,39 @@ const PUBLIC_PATH_PREFIXES = ["/healthz", "/auth"];
 // calls always 401'd here, even with a correct key). The per-route
 // requireConnectorKey middleware still fully validates the key's presence
 // and validity — this bypass only lets the request reach that check.
-const COPILOT_CONNECTOR_API_KEY_PATH_PREFIXES = ["/copilot/search", "/copilot/nodes/"];
+const COPILOT_CONNECTOR_API_KEY_PATH_PREFIXES = [
+  "/copilot/search",
+  "/copilot/nodes/",
+];
 app.use("/api", (req: Request, res: Response, next: NextFunction) => {
   const isPublic = PUBLIC_PATH_PREFIXES.some(
     (p) => req.path === p || req.path.startsWith(p + "/"),
   );
-  if (isPublic) { next(); return; }
+  if (isPublic) {
+    next();
+    return;
+  }
 
   const isConnectorKeyRoute = COPILOT_CONNECTOR_API_KEY_PATH_PREFIXES.some(
     (p) => req.path.startsWith(p),
   );
-  if (isConnectorKeyRoute) { next(); return; }
+  if (isConnectorKeyRoute) {
+    next();
+    return;
+  }
 
-  if (req.headers.authorization?.startsWith("Bearer ")) { next(); return; }
-  if (appConfig.authDevMode) { next(); return; }
-  if (req.session?.user) { next(); return; }
+  if (req.headers.authorization?.startsWith("Bearer ")) {
+    next();
+    return;
+  }
+  if (appConfig.authDevMode) {
+    next();
+    return;
+  }
+  if (req.session?.user) {
+    next();
+    return;
+  }
 
   res.status(401).json({ error: "Authentication required" });
 });

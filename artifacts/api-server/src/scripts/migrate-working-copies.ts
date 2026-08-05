@@ -65,7 +65,10 @@ export async function migrateToWorkingCopyModel() {
     let draftsConverted = 0;
     for (const row of draftRevsResult.rows) {
       const r = row as Record<string, unknown>;
-      const baseRevId = (r.based_on_revision_id as string) || (r.published_revision_id as string) || null;
+      const baseRevId =
+        (r.based_on_revision_id as string) ||
+        (r.published_revision_id as string) ||
+        null;
 
       const contentJson = JSON.stringify(r.content || {});
       const structuredJson = JSON.stringify(r.structured_fields || {});
@@ -79,12 +82,12 @@ export async function migrateToWorkingCopyModel() {
           ${r.node_id as string},
           ${baseRevId},
           'draft',
-          ${(r.title as string) || 'Unbenannt'},
+          ${(r.title as string) || "Unbenannt"},
           ${contentJson}::jsonb,
           ${structuredJson}::jsonb,
-          ${(r.change_type as string) || 'editorial'},
+          ${(r.change_type as string) || "editorial"},
           ${(r.change_summary as string) || null},
-          ${(r.author_id as string) || 'system'},
+          ${(r.author_id as string) || "system"},
           ${(r.created_at as string) || sql`NOW()`},
           NOW()
         )

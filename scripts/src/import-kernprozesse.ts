@@ -97,8 +97,8 @@ function detectLayout(data: unknown[][]): TabLayout | null {
       levelCols.push(c);
     }
 
-    const hasLevel0 = firstLevelCol > 0 &&
-      String(row[firstLevelCol - 1] ?? "").trim() === "#0";
+    const hasLevel0 =
+      firstLevelCol > 0 && String(row[firstLevelCol - 1] ?? "").trim() === "#0";
     if (hasLevel0) {
       levelCols.unshift(firstLevelCol - 1);
     }
@@ -119,11 +119,16 @@ function detectLayout(data: unknown[][]): TabLayout | null {
     let rollenCol = bezeichnungCol + 2;
     let erwartetesErgebnisCol = bezeichnungCol + 3;
 
-    for (let c = bezeichnungCol + 1; c < Math.min(row.length, bezeichnungCol + 6); c++) {
+    for (
+      let c = bezeichnungCol + 1;
+      c < Math.min(row.length, bezeichnungCol + 6);
+      c++
+    ) {
       const val = String(row[c]).toLowerCase().trim();
       if (val.includes("beschreibung")) beschreibungCol = c;
       if (val.includes("rolle")) rollenCol = c;
-      if (val.includes("ergebnis") || val.includes("erwartetes")) erwartetesErgebnisCol = c;
+      if (val.includes("ergebnis") || val.includes("erwartetes"))
+        erwartetesErgebnisCol = c;
     }
 
     return {
@@ -140,14 +145,22 @@ function detectLayout(data: unknown[][]): TabLayout | null {
 }
 
 function parseTab(tabName: string, data: string[][]): ParsedRow[] {
-
   const layout = detectLayout(data);
   if (!layout) {
-    console.warn(`  WARNING: No header row found in tab "${tabName}", skipping`);
+    console.warn(
+      `  WARNING: No header row found in tab "${tabName}", skipping`,
+    );
     return [];
   }
 
-  const { headerRow, levelCols, bezeichnungCol, beschreibungCol, rollenCol, erwartetesErgebnisCol } = layout;
+  const {
+    headerRow,
+    levelCols,
+    bezeichnungCol,
+    beschreibungCol,
+    rollenCol,
+    erwartetesErgebnisCol,
+  } = layout;
   const rows: ParsedRow[] = [];
 
   for (let i = headerRow + 1; i < data.length; i++) {
@@ -163,10 +176,7 @@ function parseTab(tabName: string, data: string[][]): ParsedRow[] {
 
       const level = lvlIdx + 1;
 
-      if (
-        cellVal.toLowerCase() === "x" ||
-        /^\d+$/.test(cellVal)
-      ) {
+      if (cellVal.toLowerCase() === "x" || /^\d+$/.test(cellVal)) {
         detectedLevel = level;
         for (let nextIdx = lvlIdx + 1; nextIdx < levelCols.length; nextIdx++) {
           const nextVal = String(row[levelCols[nextIdx]] ?? "").trim();
@@ -192,9 +202,7 @@ function parseTab(tabName: string, data: string[][]): ParsedRow[] {
 
     const beschreibung = String(row[beschreibungCol] ?? "").trim();
     const rollen = String(row[rollenCol] ?? "").trim();
-    const erwartetesErgebnis = String(
-      row[erwartetesErgebnisCol] ?? "",
-    ).trim();
+    const erwartetesErgebnis = String(row[erwartetesErgebnisCol] ?? "").trim();
 
     rows.push({
       level: detectedLevel,
@@ -208,7 +216,9 @@ function parseTab(tabName: string, data: string[][]): ParsedRow[] {
   return rows;
 }
 
-function getTemplateType(level: number): "core_process_overview" | "process_page_text" | "use_case" {
+function getTemplateType(
+  level: number,
+): "core_process_overview" | "process_page_text" | "use_case" {
   if (level === 1) return "core_process_overview";
   if (level === 2) return "process_page_text";
   return "use_case";
@@ -222,13 +232,20 @@ function buildTitle(
   return `${bezeichnung} (${tabShortName})`;
 }
 
-function buildEditorContent(row: ParsedRow, tabName: string): Record<string, unknown> {
+function buildEditorContent(
+  row: ParsedRow,
+  tabName: string,
+): Record<string, unknown> {
   const nodes: Record<string, unknown>[] = [];
 
   nodes.push({
     type: "paragraph",
     content: [
-      { type: "text", marks: [{ type: "bold" }], text: "Quelle (Arbeitsmappe): " },
+      {
+        type: "text",
+        marks: [{ type: "bold" }],
+        text: "Quelle (Arbeitsmappe): ",
+      },
       { type: "text", text: tabName },
     ],
   });
@@ -265,7 +282,11 @@ function buildEditorContent(row: ParsedRow, tabName: string): Record<string, unk
     nodes.push({
       type: "paragraph",
       content: [
-        { type: "text", marks: [{ type: "bold" }], text: "Erwartetes Ergebnis: " },
+        {
+          type: "text",
+          marks: [{ type: "bold" }],
+          text: "Erwartetes Ergebnis: ",
+        },
         { type: "text", text: row.erwartetesErgebnis },
       ],
     });
@@ -318,7 +339,11 @@ async function createNodeWithRevision(
   const immutableId = `import-kp-${randomUUID()}`;
 
   const nodeId = await db.transaction(async (tx) => {
-    const displayCode = await generateDisplayCode(tx, templateType, parentNodeId);
+    const displayCode = await generateDisplayCode(
+      tx,
+      templateType,
+      parentNodeId,
+    );
 
     const [node] = await tx
       .insert(contentNodesTable)
@@ -419,7 +444,10 @@ async function generateDisplayCode(
   return `${prefix}-${String(nextNum).padStart(3, "0")}`;
 }
 
-async function importTab(tabName: string, data: string[][]): Promise<{ created: number; skipped: number }> {
+async function importTab(
+  tabName: string,
+  data: string[][],
+): Promise<{ created: number; skipped: number }> {
   const rows = parseTab(tabName, data);
   const tabShort = getTabShortName(tabName);
 
@@ -461,7 +489,14 @@ async function importTab(tabName: string, data: string[][]): Promise<{ created: 
 
     const content = buildRevisionContent(row);
     const editor = buildEditorContent(row, tabName);
-    const nodeId = await createNodeWithRevision(title, templateType, parentNodeId, i + 1, content, editor);
+    const nodeId = await createNodeWithRevision(
+      title,
+      templateType,
+      parentNodeId,
+      i + 1,
+      content,
+      editor,
+    );
 
     parentStack.push({ level: row.level, nodeId });
     created++;
@@ -497,14 +532,15 @@ async function main() {
       continue;
     }
 
-    const { created, skipped } = await importTab(tabName, workbook.rows(matchedTab));
+    const { created, skipped } = await importTab(
+      tabName,
+      workbook.rows(matchedTab),
+    );
 
     totalCreated += created;
     totalSkipped += skipped;
 
-    console.log(
-      `  → ${tabName}: ${created} created, ${skipped} skipped`,
-    );
+    console.log(`  → ${tabName}: ${created} created, ${skipped} skipped`);
   }
 
   console.log("\n=== Import Summary ===");

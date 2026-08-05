@@ -27,7 +27,12 @@ import { useRowKeys } from "./useRowKeys";
 
 type ReferenceType = "url" | "sharepoint" | "upload" | "node";
 
-const VALID_TYPES = new Set<ReferenceType>(["url", "sharepoint", "upload", "node"]);
+const VALID_TYPES = new Set<ReferenceType>([
+  "url",
+  "sharepoint",
+  "upload",
+  "node",
+]);
 
 interface Reference {
   type: ReferenceType;
@@ -67,7 +72,8 @@ function normalizeRef(item: unknown): Reference {
     title: typeof r.title === "string" ? r.title : "",
     url: typeof r.url === "string" ? r.url : "",
     nodeId: typeof r.nodeId === "string" ? r.nodeId : undefined,
-    templateType: typeof r.templateType === "string" ? r.templateType : undefined,
+    templateType:
+      typeof r.templateType === "string" ? r.templateType : undefined,
   };
 }
 
@@ -150,7 +156,9 @@ export function ReferencesEditor({
     setRefs(refs.map((r, i) => (i === index ? { ...r, [field]: val } : r)));
   };
 
-  const handleSharePointSelect = (files: Array<{ name: string; webUrl: string }>) => {
+  const handleSharePointSelect = (
+    files: Array<{ name: string; webUrl: string }>,
+  ) => {
     const newRefs: Reference[] = files.map((f) => ({
       type: "sharepoint",
       title: f.name,
@@ -160,7 +168,12 @@ export function ReferencesEditor({
     rowKeys.add(newRefs.length);
   };
 
-  const handleNodeSelect = (pickedNodeId: string, title: string, url: string, templateType?: string) => {
+  const handleNodeSelect = (
+    pickedNodeId: string,
+    title: string,
+    url: string,
+    templateType?: string,
+  ) => {
     const newRef: Reference = {
       type: "node",
       title,
@@ -190,7 +203,9 @@ export function ReferencesEditor({
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Upload fehlgeschlagen" }));
+        const err = await res
+          .json()
+          .catch(() => ({ error: "Upload fehlgeschlagen" }));
         throw new Error(err.error || "Upload fehlgeschlagen");
       }
 
@@ -253,11 +268,20 @@ export function ReferencesEditor({
             )}
             {editing && (
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleCancel}
+                >
                   <X className="h-3 w-3 mr-1" />
                   Abbrechen
                 </Button>
-                <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+                <Button
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleSave}
+                >
                   <Check className="h-3 w-3 mr-1" />
                   Speichern
                 </Button>
@@ -270,10 +294,17 @@ export function ReferencesEditor({
             <div className="space-y-3">
               {refs.map((ref, i) => {
                 const TypeIcon = TYPE_ICONS[ref.type] ?? Globe;
-                const colorClass = TYPE_COLORS[ref.type] ?? "text-blue-600 bg-blue-50";
-                const isReadOnlyUrl = ref.type === "sharepoint" || ref.type === "upload" || ref.type === "node";
+                const colorClass =
+                  TYPE_COLORS[ref.type] ?? "text-blue-600 bg-blue-50";
+                const isReadOnlyUrl =
+                  ref.type === "sharepoint" ||
+                  ref.type === "upload" ||
+                  ref.type === "node";
                 return (
-                  <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+                  <div
+                    key={rowKeys.keys[i]}
+                    className="border rounded-lg p-3 space-y-2 bg-muted/20"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <GripVertical className="h-3 w-3" />
@@ -284,7 +315,9 @@ export function ReferencesEditor({
                           {TYPE_LABELS[ref.type]}
                         </span>
                         {ref.type === "node" && ref.templateType && (
-                          <span className="text-[10px] text-muted-foreground">{ref.templateType}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {ref.templateType}
+                          </span>
                         )}
                         <span>Referenz {i + 1}</span>
                       </div>
@@ -306,7 +339,9 @@ export function ReferencesEditor({
                     {isReadOnlyUrl ? (
                       <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40 border text-xs text-muted-foreground">
                         <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate font-mono">{ref.url || "—"}</span>
+                        <span className="truncate font-mono">
+                          {ref.url || "—"}
+                        </span>
                       </div>
                     ) : (
                       <Input
@@ -376,7 +411,8 @@ export function ReferencesEditor({
             <div className="space-y-2">
               {displayRefs.map((ref, i) => {
                 const TypeIcon = TYPE_ICONS[ref.type] ?? Globe;
-                const colorClass = TYPE_COLORS[ref.type] ?? "text-blue-600 bg-blue-50";
+                const colorClass =
+                  TYPE_COLORS[ref.type] ?? "text-blue-600 bg-blue-50";
 
                 if (ref.type === "node" && ref.url) {
                   return (
@@ -385,7 +421,9 @@ export function ReferencesEditor({
                       href={ref.url}
                       className="flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-muted/40 transition-colors group cursor-pointer"
                     >
-                      <div className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${colorClass}`}>
+                      <div
+                        className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${colorClass}`}
+                      >
                         <TypeIcon className="h-3.5 w-3.5" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -393,11 +431,16 @@ export function ReferencesEditor({
                           {ref.title || ref.url || "—"}
                         </p>
                         {ref.templateType && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{ref.templateType}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            {ref.templateType}
+                          </p>
                         )}
                       </div>
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0 text-amber-700 border-amber-200">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-4 px-1 shrink-0 text-amber-700 border-amber-200"
+                      >
                         Wiki-Seite
                       </Badge>
                     </Link>
@@ -425,7 +468,9 @@ export function ReferencesEditor({
                       ref.url ? "cursor-pointer" : ""
                     }`}
                   >
-                    <div className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${colorClass}`}>
+                    <div
+                      className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${colorClass}`}
+                    >
                       <TypeIcon className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -449,7 +494,10 @@ export function ReferencesEditor({
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     )}
-                    <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-4 px-1 shrink-0"
+                    >
                       {TYPE_LABELS[ref.type] ?? "Link"}
                     </Badge>
                   </RowTag>

@@ -60,15 +60,42 @@ function countItems(value: string): number {
   return value.split("\n").filter((line) => line.trim().length > 0).length;
 }
 
-function RequirementBadge({ requirement, publishRequired }: { requirement?: string; publishRequired?: boolean }) {
+function RequirementBadge({
+  requirement,
+  publishRequired,
+}: {
+  requirement?: string;
+  publishRequired?: boolean;
+}) {
   if (requirement === "required" || publishRequired) {
-    return <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>;
+    return (
+      <Badge
+        variant="destructive"
+        className="text-[9px] px-1 py-0 h-4 leading-none"
+      >
+        Pflicht
+      </Badge>
+    );
   }
   if (requirement === "recommended") {
-    return <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 leading-none bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">Empfohlen</Badge>;
+    return (
+      <Badge
+        variant="secondary"
+        className="text-[9px] px-1 py-0 h-4 leading-none bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+      >
+        Empfohlen
+      </Badge>
+    );
   }
   if (requirement === "conditional") {
-    return <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 leading-none">Bedingt</Badge>;
+    return (
+      <Badge
+        variant="outline"
+        className="text-[9px] px-1 py-0 h-4 leading-none"
+      >
+        Bedingt
+      </Badge>
+    );
   }
   return null;
 }
@@ -331,7 +358,9 @@ export function EditableSectionCard({
         {editing && softLimit && (
           <p
             className={`mt-1.5 text-[11px] ${
-              softLimit.over ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+              softLimit.over
+                ? "text-amber-600 dark:text-amber-400"
+                : "text-muted-foreground"
             }`}
           >
             {softLimit.text}

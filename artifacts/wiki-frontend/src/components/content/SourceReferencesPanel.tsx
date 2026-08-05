@@ -87,7 +87,9 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
         {isEmpty && (
           <div className="rounded-lg border border-dashed py-8 text-center">
             <FileText className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
-            <p className="text-sm font-medium">Noch keine externe Quelle verknüpft</p>
+            <p className="text-sm font-medium">
+              Noch keine externe Quelle verknüpft
+            </p>
             <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
               Verknüpfen Sie ein Dokument aus SharePoint, damit auf dieser Seite
               erkennbar ist, worauf sie sich stützt — und FlowCore melden kann,

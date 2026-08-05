@@ -41,8 +41,17 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { PAGE_TYPE_LABELS, getPageType, getAllowedChildTypes, getDisplayProfile } from "@/lib/types";
-import { parseClusters, groupChildrenByClusters, generateClusterId } from "@/lib/clusters";
+import {
+  PAGE_TYPE_LABELS,
+  getPageType,
+  getAllowedChildTypes,
+  getDisplayProfile,
+} from "@/lib/types";
+import {
+  parseClusters,
+  groupChildrenByClusters,
+  generateClusterId,
+} from "@/lib/clusters";
 import type { UpdateNodeInput } from "@workspace/api-client-react";
 import {
   useGetActiveWorkingCopy,
@@ -60,7 +69,11 @@ import { DocRegistryView } from "@/components/registry/DocRegistryView";
 import { MoveNodeDialog } from "@/components/MoveNodeDialog";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
-import { GenericLayout, meetingProtocolTopConfig, meetingProtocolBottomConfig } from "@/components/layouts/layout-engine";
+import {
+  GenericLayout,
+  meetingProtocolTopConfig,
+  meetingProtocolBottomConfig,
+} from "@/components/layouts/layout-engine";
 import { PageHeader } from "@/components/layouts/PageHeader";
 import { QuickFactsStrip } from "@/components/layouts/QuickFactsStrip";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
@@ -73,7 +86,12 @@ import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { CompletenessIndicator } from "@/components/metadata/CompletenessIndicator";
 import { BlockEditorWithBoundary as BlockEditor } from "@/components/editor";
 import { StatusBadge } from "@/components/versioning/StatusBadge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@workspace/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/tooltip";
 import { WatchButton } from "@/components/versioning/WatchButton";
 import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
@@ -85,7 +103,6 @@ import { ShareToTeams } from "@/components/teams/ShareToTeams";
 import { useAuth } from "@/hooks/use-auth";
 import { isFieldEmpty } from "@/lib/field-empty";
 
-
 const REFERENCES_KEY_MAP: Record<string, string> = {
   policy: "references",
   procedure_instruction: "documents",
@@ -96,7 +113,10 @@ function getReferencesKey(templateType: string): string {
   return REFERENCES_KEY_MAP[templateType] ?? "references";
 }
 
-function getReferencesValue(structuredFields: Record<string, unknown>, templateType: string): string {
+function getReferencesValue(
+  structuredFields: Record<string, unknown>,
+  templateType: string,
+): string {
   const key = getReferencesKey(templateType);
   const val = structuredFields[key];
   if (val === null || val === undefined) return "";
@@ -134,16 +154,26 @@ export function NodeDetail() {
   type ValidTab = (typeof VALID_TABS)[number];
   const activeTab = useMemo<ValidTab>(() => {
     const t = new URLSearchParams(search).get("tab");
-    return (VALID_TABS as readonly string[]).includes(t ?? "") ? (t as ValidTab) : "content";
+    return (VALID_TABS as readonly string[]).includes(t ?? "")
+      ? (t as ValidTab)
+      : "content";
   }, [search]);
   const handleTabChange = useCallback(
-    (value: string) => { navigate(`/node/${nodeId}?tab=${value}`, { replace: true }); },
+    (value: string) => {
+      navigate(`/node/${nodeId}?tab=${value}`, { replace: true });
+    },
     [navigate, nodeId],
   );
   const [showCreate, setShowCreate] = useState(false);
-  const [createPresetType, setCreatePresetType] = useState<string | undefined>(undefined);
-  const [createInClusterId, setCreateInClusterId] = useState<string | null>(null);
-  const [createDialogInitialMode, setCreateDialogInitialMode] = useState<"create" | "link">("create");
+  const [createPresetType, setCreatePresetType] = useState<string | undefined>(
+    undefined,
+  );
+  const [createInClusterId, setCreateInClusterId] = useState<string | null>(
+    null,
+  );
+  const [createDialogInitialMode, setCreateDialogInitialMode] = useState<
+    "create" | "link"
+  >("create");
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
   const [showMoveNode, setShowMoveNode] = useState(false);
@@ -158,7 +188,8 @@ export function NodeDetail() {
     return getPageType(node.templateType);
   }, [node]);
 
-  const isOverviewPage = getDisplayProfile(node?.templateType ?? "") === "overview_container";
+  const isOverviewPage =
+    getDisplayProfile(node?.templateType ?? "") === "overview_container";
   const showsClusterArea = pageDef?.supportsClusterGroups === true;
   const showQuickFacts = !isOverviewPage && !showsClusterArea && !!pageDef;
 
@@ -172,7 +203,10 @@ export function NodeDetail() {
       [...items].sort((a, b) => {
         const codeA = a.displayCode ?? "";
         const codeB = b.displayCode ?? "";
-        return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: "base" });
+        return codeA.localeCompare(codeB, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        });
       }),
     [],
   );
@@ -195,9 +229,12 @@ export function NodeDetail() {
     return groups;
   }, [publishedChildren]);
 
-  const isPublished = useCallback((c: { status: string; publishedRevisionId?: string | null }) => {
-    return c.status === "published" || !!c.publishedRevisionId;
-  }, []);
+  const isPublished = useCallback(
+    (c: { status: string; publishedRevisionId?: string | null }) => {
+      return c.status === "published" || !!c.publishedRevisionId;
+    },
+    [],
+  );
 
   const userPerms = currentUser?.permissions ?? [];
   const canCreate = userPerms.includes("create_page");
@@ -207,28 +244,43 @@ export function NodeDetail() {
   const canReview = userPerms.includes("review_page");
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
-    query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
+    query: {
+      queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`],
+      enabled: !!nodeId,
+      retry: false,
+    },
   });
   const activeWC = activeWCQuery.data;
   const wcLoading = activeWCQuery.isLoading;
 
   const pendingDeletionQuery = useGetNodeDeletionRequest(nodeId || "", {
-    query: { queryKey: getGetNodeDeletionRequestQueryKey(nodeId || ""), enabled: !!nodeId },
+    query: {
+      queryKey: getGetNodeDeletionRequestQueryKey(nodeId || ""),
+      enabled: !!nodeId,
+    },
   });
 
   const wcAuthorId = activeWC?.authorId;
   const isOwnWc = !currentUser || wcAuthorId === currentUser?.principalId;
   const { data: wcAuthor } = useGetPrincipal(wcAuthorId || "", {
-    query: { queryKey: [`/api/principals/${wcAuthorId || ""}`], enabled: !!wcAuthorId && !isOwnWc },
+    query: {
+      queryKey: [`/api/principals/${wcAuthorId || ""}`],
+      enabled: !!wcAuthorId && !isOwnWc,
+    },
   });
 
   const latestRevision =
     revisions && revisions.length > 0 ? revisions[0] : null;
 
   const nodeOwnerId = node?.ownerId ?? undefined;
-  const revisionHasOwner = !!(latestRevision?.content as Record<string, unknown> | undefined)?.owner;
+  const revisionHasOwner = !!(
+    latestRevision?.content as Record<string, unknown> | undefined
+  )?.owner;
   const { data: ownerPrincipal } = useGetPrincipal(nodeOwnerId || "", {
-    query: { queryKey: [`/api/principals/${nodeOwnerId || ""}`], enabled: !!nodeOwnerId && !revisionHasOwner },
+    query: {
+      queryKey: [`/api/principals/${nodeOwnerId || ""}`],
+      enabled: !!nodeOwnerId && !revisionHasOwner,
+    },
   });
 
   const [editTitle, setEditTitle] = useState("");
@@ -260,7 +312,10 @@ export function NodeDetail() {
     // Prefer working copy's _clusters once loaded — so cluster assignments
     // made via handleNodeCreatedInCluster are immediately visible without publish
     if (!wcLoading) {
-      const wcSF = activeWC?.structuredFields as Record<string, unknown> | null | undefined;
+      const wcSF = activeWC?.structuredFields as
+        | Record<string, unknown>
+        | null
+        | undefined;
       if (wcSF?._clusters) return parseClusters(wcSF._clusters);
     }
     return parseClusters(structuredFields._clusters);
@@ -269,8 +324,12 @@ export function NodeDetail() {
   // Verlinkte Nodes (Cross-References): im Working-Copy als _linkedNodeIds gespeichert
   const linkedNodeIds = useMemo(() => {
     if (!wcLoading && activeWC) {
-      const wcSF = activeWC.structuredFields as Record<string, unknown> | null | undefined;
-      if (Array.isArray(wcSF?._linkedNodeIds)) return wcSF!._linkedNodeIds as string[];
+      const wcSF = activeWC.structuredFields as
+        | Record<string, unknown>
+        | null
+        | undefined;
+      if (Array.isArray(wcSF?._linkedNodeIds))
+        return wcSF!._linkedNodeIds as string[];
     }
     const ids = structuredFields._linkedNodeIds;
     return Array.isArray(ids) ? (ids as string[]) : [];
@@ -279,35 +338,47 @@ export function NodeDetail() {
   const linkedNodeQueries = useQueries({
     queries: linkedNodeIds.map((id) => ({
       queryKey: [`/api/content/nodes/${id}`],
-      queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${id}`),
+      queryFn: () =>
+        customFetch<Record<string, unknown>>(`/api/content/nodes/${id}`),
     })),
   });
 
   const linkedNodes = useMemo(
-    () => linkedNodeQueries.filter((q) => q.data != null).map((q) => q.data as unknown as NonNullable<typeof children>[number]),
+    () =>
+      linkedNodeQueries
+        .filter((q) => q.data != null)
+        .map((q) => q.data as unknown as NonNullable<typeof children>[number]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [linkedNodeQueries.map((q) => q.dataUpdatedAt).join(",")],
   );
 
-  const linkedNodeIdSet = useMemo(() => new Set(linkedNodeIds), [linkedNodeIds]);
+  const linkedNodeIdSet = useMemo(
+    () => new Set(linkedNodeIds),
+    [linkedNodeIds],
+  );
 
   const clusterGroups = useMemo(() => {
     if (clusters.length === 0) return [];
     const childrenArr = children ?? [];
     const childIdSet = new Set(childrenArr.map((c) => c.id));
     // Echte Kinder + verlinkte Nodes zusammenführen (ohne Duplikate)
-    const allNodes = [...childrenArr, ...linkedNodes.filter((ln) => !childIdSet.has(ln.id))];
+    const allNodes = [
+      ...childrenArr,
+      ...linkedNodes.filter((ln) => !childIdSet.has(ln.id)),
+    ];
     // Auch bei leerem allNodes Cluster-Boxen rendern (verlinkte Nodes könnten noch laden)
     const raw = groupChildrenByClusters(allNodes, clusters);
-    return raw.map((group) => {
-      // Cluster-Kinder: childNodeIds-Reihenfolge beibehalten (vom Editor gesetzt)
-      // Nicht-zugeordnete Kinder: nach displayCode sortieren
-      const processedChildren =
-        group.cluster === null
-          ? sortByDisplayCode(group.children)
-          : group.children;
-      return { ...group, children: processedChildren };
-    }).filter((g) => g.children.length > 0 || g.cluster !== null);
+    return raw
+      .map((group) => {
+        // Cluster-Kinder: childNodeIds-Reihenfolge beibehalten (vom Editor gesetzt)
+        // Nicht-zugeordnete Kinder: nach displayCode sortieren
+        const processedChildren =
+          group.cluster === null
+            ? sortByDisplayCode(group.children)
+            : group.children;
+        return { ...group, children: processedChildren };
+      })
+      .filter((g) => g.children.length > 0 || g.cluster !== null);
   }, [children, clusters, linkedNodes, sortByDisplayCode]);
 
   const editorContent = useMemo(() => {
@@ -319,7 +390,11 @@ export function NodeDetail() {
   }, [structuredFields]);
 
   const governanceFields = useMemo(() => {
-    if (!structuredFields.governance || typeof structuredFields.governance !== "object") return {};
+    if (
+      !structuredFields.governance ||
+      typeof structuredFields.governance !== "object"
+    )
+      return {};
     return structuredFields.governance as Record<string, string>;
   }, [structuredFields]);
 
@@ -395,7 +470,15 @@ export function NodeDetail() {
         });
       }
     },
-    [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+    [
+      nodeId,
+      createInClusterId,
+      activeWC,
+      createWorkingCopy,
+      updateWorkingCopy,
+      queryClient,
+      toast,
+    ],
   );
 
   // Verlinkt eine bestehende Seite im Cluster, ohne ihren parentNodeId zu ändern
@@ -424,14 +507,21 @@ export function NodeDetail() {
         await updateWorkingCopy.mutateAsync({
           workingCopyId: wc.id,
           data: {
-            structuredFields: { ...sfNow, _clusters: updatedClusters, _linkedNodeIds: updatedLinked },
+            structuredFields: {
+              ...sfNow,
+              _clusters: updatedClusters,
+              _linkedNodeIds: updatedLinked,
+            },
           },
         });
         // Pre-fetch linked node und dann WC invalidieren – Reihenfolge kritisch:
         // Daten müssen im Cache sein BEVOR der WC-Re-render linkedNodeQueries triggert
         await queryClient.prefetchQuery({
           queryKey: [`/api/content/nodes/${linkedNodeId}`],
-          queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${linkedNodeId}`),
+          queryFn: () =>
+            customFetch<Record<string, unknown>>(
+              `/api/content/nodes/${linkedNodeId}`,
+            ),
         });
         await queryClient.invalidateQueries({
           queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
@@ -440,11 +530,20 @@ export function NodeDetail() {
         toast({
           variant: "destructive",
           title: "Verlinkung fehlgeschlagen",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },
-    [nodeId, createInClusterId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+    [
+      nodeId,
+      createInClusterId,
+      activeWC,
+      createWorkingCopy,
+      updateWorkingCopy,
+      queryClient,
+      toast,
+    ],
   );
 
   // Verlinkt eine bestehende Seite ohne Cluster-Kontext (allgemeine Verlinkung)
@@ -462,12 +561,18 @@ export function NodeDetail() {
         await updateWorkingCopy.mutateAsync({
           workingCopyId: wc.id,
           data: {
-            structuredFields: { ...sfNow, _linkedNodeIds: [...currentLinked, linkedNodeId] },
+            structuredFields: {
+              ...sfNow,
+              _linkedNodeIds: [...currentLinked, linkedNodeId],
+            },
           },
         });
         await queryClient.prefetchQuery({
           queryKey: [`/api/content/nodes/${linkedNodeId}`],
-          queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${linkedNodeId}`),
+          queryFn: () =>
+            customFetch<Record<string, unknown>>(
+              `/api/content/nodes/${linkedNodeId}`,
+            ),
         });
         await queryClient.invalidateQueries({
           queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
@@ -476,11 +581,19 @@ export function NodeDetail() {
         toast({
           variant: "destructive",
           title: "Verlinkung fehlgeschlagen",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },
-    [nodeId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+    [
+      nodeId,
+      activeWC,
+      createWorkingCopy,
+      updateWorkingCopy,
+      queryClient,
+      toast,
+    ],
   );
 
   const handleAssignToCluster = useCallback(
@@ -518,11 +631,19 @@ export function NodeDetail() {
         toast({
           variant: "destructive",
           title: "Zuordnung fehlgeschlagen",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },
-    [nodeId, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+    [
+      nodeId,
+      activeWC,
+      createWorkingCopy,
+      updateWorkingCopy,
+      queryClient,
+      toast,
+    ],
   );
 
   const handleRemoveFromCluster = useCallback(
@@ -537,7 +658,10 @@ export function NodeDetail() {
         const currentClusters = parseClusters(sfNow._clusters);
         const updatedClusters = currentClusters.map((c) =>
           c.id === clusterId
-            ? { ...c, childNodeIds: c.childNodeIds.filter((id) => id !== childId) }
+            ? {
+                ...c,
+                childNodeIds: c.childNodeIds.filter((id) => id !== childId),
+              }
             : c,
         );
         const currentLinked = Array.isArray(sfNow._linkedNodeIds)
@@ -563,11 +687,20 @@ export function NodeDetail() {
         toast({
           variant: "destructive",
           title: "Entfernen fehlgeschlagen",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },
-    [nodeId, activeWC, linkedNodeIdSet, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+    [
+      nodeId,
+      activeWC,
+      linkedNodeIdSet,
+      createWorkingCopy,
+      updateWorkingCopy,
+      queryClient,
+      toast,
+    ],
   );
 
   const handleDeleteCluster = useCallback(
@@ -581,14 +714,18 @@ export function NodeDetail() {
         const sfNow = (wc.structuredFields as Record<string, unknown>) ?? {};
         const currentClusters = parseClusters(sfNow._clusters);
         const clusterToDelete = currentClusters.find((c) => c.id === clusterId);
-        const updatedClusters = currentClusters.filter((c) => c.id !== clusterId);
+        const updatedClusters = currentClusters.filter(
+          (c) => c.id !== clusterId,
+        );
         const currentLinked = Array.isArray(sfNow._linkedNodeIds)
           ? (sfNow._linkedNodeIds as string[])
           : [];
         const removedLinkedIds = clusterToDelete
           ? clusterToDelete.childNodeIds.filter((id) => linkedNodeIdSet.has(id))
           : [];
-        const updatedLinked = currentLinked.filter((id) => !removedLinkedIds.includes(id));
+        const updatedLinked = currentLinked.filter(
+          (id) => !removedLinkedIds.includes(id),
+        );
         await updateWorkingCopy.mutateAsync({
           workingCopyId: wc.id,
           data: {
@@ -606,11 +743,20 @@ export function NodeDetail() {
         toast({
           variant: "destructive",
           title: "Cluster löschen fehlgeschlagen",
-          description: err instanceof Error ? err.message : "Unbekannter Fehler",
+          description:
+            err instanceof Error ? err.message : "Unbekannter Fehler",
         });
       }
     },
-    [nodeId, activeWC, linkedNodeIdSet, createWorkingCopy, updateWorkingCopy, queryClient, toast],
+    [
+      nodeId,
+      activeWC,
+      linkedNodeIdSet,
+      createWorkingCopy,
+      updateWorkingCopy,
+      queryClient,
+      toast,
+    ],
   );
 
   const handleAddCluster = useCallback(async () => {
@@ -653,7 +799,15 @@ export function NodeDetail() {
     } finally {
       setIsAddingCluster(false);
     }
-  }, [nodeId, newClusterTitle, activeWC, createWorkingCopy, updateWorkingCopy, queryClient, toast]);
+  }, [
+    nodeId,
+    newClusterTitle,
+    activeWC,
+    createWorkingCopy,
+    updateWorkingCopy,
+    queryClient,
+    toast,
+  ]);
 
   if (isLoading) {
     return (
@@ -692,9 +846,9 @@ export function NodeDetail() {
         </div>
         <h2 className="text-xl font-semibold mb-3">Kein Zugang</h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Du hast leider keine Freigabe, diese Seite zu {"\u00F6"}ffnen.
-          Liegt deines Erachtens ein Fehler in der Freigabe vor, wende dich
-          bitte an deine*n Vorgesetzte*n.
+          Du hast leider keine Freigabe, diese Seite zu {"\u00F6"}ffnen. Liegt
+          deines Erachtens ein Fehler in der Freigabe vor, wende dich bitte an
+          deine*n Vorgesetzte*n.
         </p>
         <Button
           variant="outline"
@@ -791,7 +945,9 @@ export function NodeDetail() {
 
   const ownerDisplayName =
     metadataDisplayValues.owner ||
-    (revisionContent.owner_display ? String(revisionContent.owner_display) : undefined) ||
+    (revisionContent.owner_display
+      ? String(revisionContent.owner_display)
+      : undefined) ||
     ownerPrincipal?.displayName ||
     (revisionContent.owner ? String(revisionContent.owner) : undefined) ||
     undefined;
@@ -810,84 +966,104 @@ export function NodeDetail() {
         )}
         {nodeId && <WatchButton nodeId={nodeId} />}
         {wcLoading ? (
-          <Button variant="outline" size="sm" disabled className="min-w-[180px]">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="min-w-[180px]"
+          >
             <Loader2 className="mr-1 h-4 w-4 animate-spin" />
             Laden…
           </Button>
-        ) : (() => {
-          const isOwnWc = !activeWC || activeWC.authorId === currentUser?.principalId;
-          const wcEditable = activeWC && (activeWC.status === "draft" || activeWC.status === "changes_requested");
-          const wcReviewable = activeWC && (activeWC.status === "submitted" || activeWC.status === "in_review");
-          if (activeWC && wcReviewable && canReview) {
+        ) : (
+          (() => {
+            const isOwnWc =
+              !activeWC || activeWC.authorId === currentUser?.principalId;
+            const wcEditable =
+              activeWC &&
+              (activeWC.status === "draft" ||
+                activeWC.status === "changes_requested");
+            const wcReviewable =
+              activeWC &&
+              (activeWC.status === "submitted" ||
+                activeWC.status === "in_review");
+            if (activeWC && wcReviewable && canReview) {
+              return (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate(`/nodes/${nodeId}/review`)}
+                >
+                  <Eye className="mr-1 h-4 w-4" />
+                  Prüfen
+                </Button>
+              );
+            }
+            if (!canEdit) return null;
+            if (activeWC && !isOwnWc && !wcReviewable) {
+              return (
+                <Button variant="outline" size="sm" disabled>
+                  <FileEdit className="mr-1 h-4 w-4" />
+                  Arbeitskopie gesperrt
+                </Button>
+              );
+            }
+            if (activeWC && !wcEditable) {
+              return null;
+            }
             return (
               <Button
-                variant="default"
+                variant={activeWC ? "default" : "outline"}
                 size="sm"
-                onClick={() => navigate(`/nodes/${nodeId}/review`)}
+                onClick={
+                  activeWC
+                    ? () => navigate(`/nodes/${nodeId}/edit`)
+                    : handleCreateOrResumeWC
+                }
+                disabled={createWorkingCopy.isPending}
               >
-                <Eye className="mr-1 h-4 w-4" />
-                Prüfen
+                {createWorkingCopy.isPending ? (
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileEdit className="mr-1 h-4 w-4" />
+                )}
+                {activeWC
+                  ? "Arbeitskopie fortsetzen"
+                  : "Arbeitskopie erstellen"}
               </Button>
             );
-          }
-          if (!canEdit) return null;
-          if (activeWC && !isOwnWc && !wcReviewable) {
-            return (
-              <Button variant="outline" size="sm" disabled>
-                <FileEdit className="mr-1 h-4 w-4" />
-                Arbeitskopie gesperrt
-              </Button>
-            );
-          }
-          if (activeWC && !wcEditable) {
-            return null;
-          }
-          return (
-            <Button
-              variant={activeWC ? "default" : "outline"}
-              size="sm"
-              onClick={activeWC ? () => navigate(`/nodes/${nodeId}/edit`) : handleCreateOrResumeWC}
-              disabled={createWorkingCopy.isPending}
-            >
-              {createWorkingCopy.isPending ? (
-                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-              ) : (
-                <FileEdit className="mr-1 h-4 w-4" />
-              )}
-              {activeWC ? "Arbeitskopie fortsetzen" : "Arbeitskopie erstellen"}
-            </Button>
-          );
-        })()}
+          })()
+        )}
         {canCreate && activeWC && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowCreate(true)}
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          Unterseite
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCreate(true)}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Unterseite
+          </Button>
         )}
         {canEditStructure && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowMoveNode(true)}
-        >
-          <ArrowRightLeft className="h-4 w-4 mr-1" />
-          Verschieben
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMoveNode(true)}
+          >
+            <ArrowRightLeft className="h-4 w-4 mr-1" />
+            Verschieben
+          </Button>
         )}
         {canArchive && !pendingDeletionQuery.data && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-destructive"
-          onClick={() => setShowDeleteRequest(true)}
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          {"L\u00F6schanfrage"}
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive"
+            onClick={() => setShowDeleteRequest(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            {"L\u00F6schanfrage"}
+          </Button>
         )}
       </div>
 
@@ -913,7 +1089,11 @@ export function NodeDetail() {
         />
       )}
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-h-[300px]">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full min-h-[300px]"
+      >
         <TabsList>
           <TabsTrigger value="content">Inhalt</TabsTrigger>
           <TabsTrigger value="metadata">Metadaten</TabsTrigger>
@@ -935,18 +1115,27 @@ export function NodeDetail() {
                 <div className="flex items-center gap-2">
                   <Trash2 className="h-4 w-4 text-destructive" />
                   <div>
-                    <p className="text-sm font-medium text-destructive">{"L\u00F6schanfrage ausstehend"}</p>
+                    <p className="text-sm font-medium text-destructive">
+                      {"L\u00F6schanfrage ausstehend"}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {"Begr\u00FCndung: "}{pendingDeletionQuery.data.reason}
-                      {" \u2014 Erstellt am "}{new Date(pendingDeletionQuery.data.createdAt).toLocaleDateString("de-DE")}
+                      {"Begr\u00FCndung: "}
+                      {pendingDeletionQuery.data.reason}
+                      {" \u2014 Erstellt am "}
+                      {new Date(
+                        pendingDeletionQuery.data.createdAt,
+                      ).toLocaleDateString("de-DE")}
                     </p>
                   </div>
                 </div>
-                {pendingDeletionQuery.data.requestedBy === currentUser?.principalId && (
+                {pendingDeletionQuery.data.requestedBy ===
+                  currentUser?.principalId && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleCancelDeletion(pendingDeletionQuery.data!.id)}
+                    onClick={() =>
+                      handleCancelDeletion(pendingDeletionQuery.data!.id)
+                    }
                     disabled={cancelDeletionRequest.isPending}
                   >
                     {"Zur\u00FCckziehen"}
@@ -960,12 +1149,26 @@ export function NodeDetail() {
               <WorkingCopyBanner
                 workingCopy={activeWC}
                 currentUserId={currentUser?.principalId}
-                authorName={activeWC.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
-                canEditOthers={currentUser?.permissions?.includes("edit_working_copy") ?? false}
+                authorName={
+                  activeWC.authorDisplayName ??
+                  wcAuthor?.displayName ??
+                  undefined
+                }
+                canEditOthers={
+                  currentUser?.permissions?.includes("edit_working_copy") ??
+                  false
+                }
                 onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 isCreating={createWorkingCopy.isPending}
               />
-              <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
+              <WorkingCopyActions
+                workingCopy={activeWC}
+                nodeId={nodeId}
+                templateType={node?.templateType}
+                currentUserId={currentUser?.principalId}
+                userPermissions={currentUser?.permissions}
+                sodRules={currentUser?.sodRules}
+              />
             </div>
           )}
 
@@ -983,8 +1186,12 @@ export function NodeDetail() {
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-base font-semibold shrink-0">
                   {isOverviewPage
-                    ? (node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten")
-                    : (pageDef?.labelDe ? `${pageDef.labelDe}-Inhalte` : "Inhalte")}
+                    ? node.templateType === "core_process_overview"
+                      ? "Bereiche & Prozesse"
+                      : "Zugehörige Seiten"
+                    : pageDef?.labelDe
+                      ? `${pageDef.labelDe}-Inhalte`
+                      : "Inhalte"}
                 </h3>
                 {canCreate && (
                   <div className="flex items-center gap-2 flex-1 justify-end">
@@ -1049,10 +1256,18 @@ export function NodeDetail() {
                 canCreate={canCreate}
                 canEdit={isOverviewPage ? canEdit : undefined}
                 clusters={clusters}
-                onAssignToCluster={clusters.length > 0 ? handleAssignToCluster : undefined}
+                onAssignToCluster={
+                  clusters.length > 0 ? handleAssignToCluster : undefined
+                }
                 linkedNodeIds={isOverviewPage ? linkedNodeIdSet : undefined}
-                onRemoveFromCluster={isOverviewPage && activeWC ? handleRemoveFromCluster : undefined}
-                onDeleteCluster={isOverviewPage ? handleDeleteCluster : undefined}
+                onRemoveFromCluster={
+                  isOverviewPage && activeWC
+                    ? handleRemoveFromCluster
+                    : undefined
+                }
+                onDeleteCluster={
+                  isOverviewPage ? handleDeleteCluster : undefined
+                }
                 parentTemplateType={node.templateType}
                 onCreateInCluster={(clusterId, presetType) => {
                   setCreateInClusterId(clusterId);
@@ -1071,27 +1286,35 @@ export function NodeDetail() {
           )}
 
           {isOverviewPage && !isFieldEmpty(editorContent) && (
-          <div className="mb-6">
-            <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-            <BlockEditor
-              content={editorContent}
-              onSave={async () => {}}
-              editable={false}
-              nodeId={nodeId}
-              parentTemplateType={node?.templateType}
-            />
-          </div>
-          )}
-
-          {isOverviewPage && !isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
             <div className="mb-6">
-              <ReferencesEditor
-                value={getReferencesValue(structuredFields, node.templateType)}
-                sectionKey={getReferencesKey(node.templateType)}
+              <h3 className="text-base font-semibold mb-3">
+                {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+              </h3>
+              <BlockEditor
+                content={editorContent}
+                onSave={async () => {}}
+                editable={false}
                 nodeId={nodeId}
+                parentTemplateType={node?.templateType}
               />
             </div>
           )}
+
+          {isOverviewPage &&
+            !isFieldEmpty(
+              getReferencesValue(structuredFields, node.templateType),
+            ) && (
+              <div className="mb-6">
+                <ReferencesEditor
+                  value={getReferencesValue(
+                    structuredFields,
+                    node.templateType,
+                  )}
+                  sectionKey={getReferencesKey(node.templateType)}
+                  nodeId={nodeId}
+                />
+              </div>
+            )}
 
           {!isOverviewPage && node.templateType === "meeting_protocol" ? (
             <div className="mb-6 space-y-4">
@@ -1099,16 +1322,23 @@ export function NodeDetail() {
                 config={meetingProtocolTopConfig}
                 structuredFields={structuredFields}
               />
-              {!isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
+              {!isFieldEmpty(
+                getReferencesValue(structuredFields, node.templateType),
+              ) && (
                 <ReferencesEditor
-                  value={getReferencesValue(structuredFields, node.templateType)}
+                  value={getReferencesValue(
+                    structuredFields,
+                    node.templateType,
+                  )}
                   sectionKey={getReferencesKey(node.templateType)}
                   nodeId={nodeId}
                 />
               )}
               {!isFieldEmpty(editorContent) && (
                 <div>
-                  <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                  <h3 className="text-base font-semibold mb-3">
+                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                  </h3>
                   <BlockEditor
                     content={editorContent}
                     onSave={async () => {}}
@@ -1143,22 +1373,29 @@ export function NodeDetail() {
               </div>
 
               {!isFieldEmpty(editorContent) && (
-              <div className="mt-6">
-                <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
-                <BlockEditor
-                  content={editorContent}
-                  onSave={async () => {}}
-                  editable={false}
-                  nodeId={nodeId}
-                  parentTemplateType={node?.templateType}
-                />
-              </div>
+                <div className="mt-6">
+                  <h3 className="text-base font-semibold mb-3">
+                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                  </h3>
+                  <BlockEditor
+                    content={editorContent}
+                    onSave={async () => {}}
+                    editable={false}
+                    nodeId={nodeId}
+                    parentTemplateType={node?.templateType}
+                  />
+                </div>
               )}
 
-              {!isFieldEmpty(getReferencesValue(structuredFields, node.templateType)) && (
+              {!isFieldEmpty(
+                getReferencesValue(structuredFields, node.templateType),
+              ) && (
                 <div className="mt-6">
                   <ReferencesEditor
-                    value={getReferencesValue(structuredFields, node.templateType)}
+                    value={getReferencesValue(
+                      structuredFields,
+                      node.templateType,
+                    )}
                     sectionKey={getReferencesKey(node.templateType)}
                     nodeId={nodeId}
                   />
@@ -1169,9 +1406,15 @@ export function NodeDetail() {
 
           {!isOverviewPage && nodeId && (
             <>
-              <div className="mt-4"><RelatedContentSidebar nodeId={nodeId} /></div>
-              <div className="mt-4"><GlossaryTermsPanel nodeId={nodeId} /></div>
-              <div className="mt-4"><BacklinksPanel nodeId={nodeId} /></div>
+              <div className="mt-4">
+                <RelatedContentSidebar nodeId={nodeId} />
+              </div>
+              <div className="mt-4">
+                <GlossaryTermsPanel nodeId={nodeId} />
+              </div>
+              <div className="mt-4">
+                <BacklinksPanel nodeId={nodeId} />
+              </div>
             </>
           )}
 
@@ -1211,29 +1454,64 @@ export function NodeDetail() {
                 <WorkingCopyBanner
                   workingCopy={activeWC}
                   currentUserId={currentUser?.principalId}
-                  authorName={activeWC.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
-                  canEditOthers={currentUser?.permissions?.includes("edit_working_copy") ?? false}
+                  authorName={
+                    activeWC.authorDisplayName ??
+                    wcAuthor?.displayName ??
+                    undefined
+                  }
+                  canEditOthers={
+                    currentUser?.permissions?.includes("edit_working_copy") ??
+                    false
+                  }
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
-                <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
+                <WorkingCopyActions
+                  workingCopy={activeWC}
+                  nodeId={nodeId}
+                  templateType={node?.templateType}
+                  currentUserId={currentUser?.principalId}
+                  userPermissions={currentUser?.permissions}
+                  sodRules={currentUser?.sodRules}
+                />
               </CardContent>
             </Card>
           )}
-          {nodeId && <VersionHistoryPanel nodeId={nodeId} activeWorkingCopy={activeWC ? { id: activeWC.id, status: activeWC.status, title: activeWC.title ?? "", authorId: activeWC.authorId, authorDisplayName: activeWC.authorDisplayName ?? wcAuthor?.displayName ?? null, createdAt: activeWC.createdAt, updatedAt: activeWC.updatedAt, changeSummary: activeWC.changeSummary } : null} />}
+          {nodeId && (
+            <VersionHistoryPanel
+              nodeId={nodeId}
+              activeWorkingCopy={
+                activeWC
+                  ? {
+                      id: activeWC.id,
+                      status: activeWC.status,
+                      title: activeWC.title ?? "",
+                      authorId: activeWC.authorId,
+                      authorDisplayName:
+                        activeWC.authorDisplayName ??
+                        wcAuthor?.displayName ??
+                        null,
+                      createdAt: activeWC.createdAt,
+                      updatedAt: activeWC.updatedAt,
+                      changeSummary: activeWC.changeSummary,
+                    }
+                  : null
+              }
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="children" className="mt-4 w-full min-w-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Unterseiten</h2>
             {canCreate && activeWC && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCreate(true)}
-            >
-              <Plus className="mr-1 h-4 w-4" />
-              Hinzufügen
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreate(true)}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Hinzufügen
+              </Button>
             )}
           </div>
 
@@ -1241,7 +1519,11 @@ export function NodeDetail() {
             <div className="space-y-2">
               {sortByDisplayCode(children).map((child) => {
                 const childDef = getPageType(child.templateType);
-                const wcAuthorName = (child as unknown as { activeWorkingCopyAuthorName?: string | null }).activeWorkingCopyAuthorName;
+                const wcAuthorName = (
+                  child as unknown as {
+                    activeWorkingCopyAuthorName?: string | null;
+                  }
+                ).activeWorkingCopyAuthorName;
                 return (
                   <Card
                     key={child.id}
@@ -1281,7 +1563,10 @@ export function NodeDetail() {
                                 <span
                                   role="status"
                                   className="shrink-0 text-amber-500 dark:text-amber-400 cursor-default"
-                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
                                 >
                                   <FileEdit className="h-4 w-4" />
                                 </span>
@@ -1313,24 +1598,26 @@ export function NodeDetail() {
                 <p className="text-sm text-muted-foreground">
                   Keine Unterseiten vorhanden
                 </p>
-                {activeWC && pageDef && pageDef.allowedChildTypes.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Erlaubte Typen:{" "}
-                    {pageDef.allowedChildTypes
-                      .map((t) => PAGE_TYPE_LABELS[t] ?? t)
-                      .join(", ")}
-                  </p>
-                )}
+                {activeWC &&
+                  pageDef &&
+                  pageDef.allowedChildTypes.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Erlaubte Typen:{" "}
+                      {pageDef.allowedChildTypes
+                        .map((t) => PAGE_TYPE_LABELS[t] ?? t)
+                        .join(", ")}
+                    </p>
+                  )}
                 {canCreate && activeWC && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => setShowCreate(true)}
-                >
-                  <Plus className="mr-1 h-4 w-4" />
-                  Erste Unterseite anlegen
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => setShowCreate(true)}
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    Erste Unterseite anlegen
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -1351,8 +1638,14 @@ export function NodeDetail() {
         parentTemplateType={node.templateType}
         presetType={createPresetType}
         initialMode={createDialogInitialMode}
-        onNodeCreated={createInClusterId ? handleNodeCreatedInCluster : undefined}
-        onLinkExistingNode={createInClusterId ? handleLinkExistingInCluster : handleLinkExistingNode}
+        onNodeCreated={
+          createInClusterId ? handleNodeCreatedInCluster : undefined
+        }
+        onLinkExistingNode={
+          createInClusterId
+            ? handleLinkExistingInCluster
+            : handleLinkExistingNode
+        }
       />
 
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
@@ -1412,14 +1705,24 @@ export function NodeDetail() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showDeleteRequest} onOpenChange={(open) => { setShowDeleteRequest(open); if (!open) setDeleteReason(""); }}>
+      <Dialog
+        open={showDeleteRequest}
+        onOpenChange={(open) => {
+          setShowDeleteRequest(open);
+          if (!open) setDeleteReason("");
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{"L\u00F6schanfrage stellen"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              {"Die Seite \u201E"}{node.title}{"\u201C wird zur L\u00F6schung vorgeschlagen. Ein Administrator muss die Anfrage genehmigen."}
+              {"Die Seite \u201E"}
+              {node.title}
+              {
+                "\u201C wird zur L\u00F6schung vorgeschlagen. Ein Administrator muss die Anfrage genehmigen."
+              }
             </p>
             <div className="space-y-2">
               <Label htmlFor="delete-reason">{"Begr\u00FCndung"}</Label>
@@ -1429,13 +1732,20 @@ export function NodeDetail() {
                 onChange={(e) => setDeleteReason(e.target.value)}
                 placeholder={"Warum soll die Seite gel\u00F6scht werden?"}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && deleteReason.trim()) handleDeletionRequest();
+                  if (e.key === "Enter" && deleteReason.trim())
+                    handleDeletionRequest();
                 }}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowDeleteRequest(false); setDeleteReason(""); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteRequest(false);
+                setDeleteReason("");
+              }}
+            >
               Abbrechen
             </Button>
             <Button
@@ -1443,7 +1753,9 @@ export function NodeDetail() {
               onClick={handleDeletionRequest}
               disabled={!deleteReason.trim() || createDeletionRequest.isPending}
             >
-              {createDeletionRequest.isPending ? "Wird eingereicht..." : "Anfrage einreichen"}
+              {createDeletionRequest.isPending
+                ? "Wird eingereicht..."
+                : "Anfrage einreichen"}
             </Button>
           </DialogFooter>
         </DialogContent>

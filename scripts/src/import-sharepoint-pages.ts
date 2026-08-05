@@ -50,18 +50,27 @@ function parseHtmlFile(html: string, filename: string): ParsedPage {
   }
   const sectionHtml = sections.join("\n");
 
-  const sectionHeadingMatch = sectionHtml.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
-  let sectionTitle = sectionHeadingMatch ? stripTags(sectionHeadingMatch[1]).trim() : "";
+  const sectionHeadingMatch = sectionHtml.match(
+    /<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i,
+  );
+  let sectionTitle = sectionHeadingMatch
+    ? stripTags(sectionHeadingMatch[1]).trim()
+    : "";
   if (!sectionTitle) {
-    const boldTitleMatch = sectionHtml.match(/<p[^>]*>\s*<strong>([^<]+)<\/strong>\s*<\/p>/i);
+    const boldTitleMatch = sectionHtml.match(
+      /<p[^>]*>\s*<strong>([^<]+)<\/strong>\s*<\/p>/i,
+    );
     if (boldTitleMatch) sectionTitle = boldTitleMatch[1].trim();
   }
 
   const titleTagMatch = html.match(/<title>([^<]*)<\/title>/);
-  const titleText = titleTagMatch ? decodeEntities(titleTagMatch[1]).trim() : "";
-  const title = (sectionTitle && sectionTitle !== titleText)
-    ? decodeEntities(sectionTitle)
-    : (titleText || "Untitled");
+  const titleText = titleTagMatch
+    ? decodeEntities(titleTagMatch[1]).trim()
+    : "";
+  const title =
+    sectionTitle && sectionTitle !== titleText
+      ? decodeEntities(sectionTitle)
+      : titleText || "Untitled";
 
   const bodyHtml = sectionHtml;
 
@@ -95,7 +104,16 @@ function parseHtmlFile(html: string, filename: string): ParsedPage {
     }
   }
 
-  return { filename, title, description, bodyHtml, createdAt, modifiedAt, sourceUrl, urlSlug };
+  return {
+    filename,
+    title,
+    description,
+    bodyHtml,
+    createdAt,
+    modifiedAt,
+    sourceUrl,
+    urlSlug,
+  };
 }
 
 function decodeEntities(text: string): string {
@@ -112,10 +130,10 @@ function stripTags(html: string): string {
   return html.replace(/<[^>]+>/g, "");
 }
 
-
 function parseInlineContent(html: string): TiptapNode[] {
   const nodes: TiptapNode[] = [];
-  const inlineRegex = /(<(?:strong|b|em|i|u|a|span|br|code)[^>]*>[\s\S]*?<\/(?:strong|b|em|i|u|a|span|code)>|<br\s*\/?>|[^<]+|<[^>]+>)/gi;
+  const inlineRegex =
+    /(<(?:strong|b|em|i|u|a|span|br|code)[^>]*>[\s\S]*?<\/(?:strong|b|em|i|u|a|span|code)>|<br\s*\/?>|[^<]+|<[^>]+>)/gi;
   let inlineMatch: RegExpExecArray | null;
   let buffer = "";
 
@@ -132,12 +150,18 @@ function parseInlineContent(html: string): TiptapNode[] {
   while ((inlineMatch = inlineRegex.exec(html)) !== null) {
     const chunk = inlineMatch[1];
 
-    const strongMatch = chunk.match(/^<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/i);
+    const strongMatch = chunk.match(
+      /^<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/i,
+    );
     if (strongMatch) {
       flushBuffer();
       const innerText = stripTags(strongMatch[1]).trim();
       if (innerText) {
-        nodes.push({ type: "text", text: decodeEntities(innerText), marks: [{ type: "bold" }] });
+        nodes.push({
+          type: "text",
+          text: decodeEntities(innerText),
+          marks: [{ type: "bold" }],
+        });
       }
       continue;
     }
@@ -147,7 +171,11 @@ function parseInlineContent(html: string): TiptapNode[] {
       flushBuffer();
       const innerText = stripTags(emMatch[1]).trim();
       if (innerText) {
-        nodes.push({ type: "text", text: decodeEntities(innerText), marks: [{ type: "italic" }] });
+        nodes.push({
+          type: "text",
+          text: decodeEntities(innerText),
+          marks: [{ type: "italic" }],
+        });
       }
       continue;
     }
@@ -157,18 +185,28 @@ function parseInlineContent(html: string): TiptapNode[] {
       flushBuffer();
       const innerText = stripTags(uMatch[1]).trim();
       if (innerText) {
-        nodes.push({ type: "text", text: decodeEntities(innerText), marks: [{ type: "underline" }] });
+        nodes.push({
+          type: "text",
+          text: decodeEntities(innerText),
+          marks: [{ type: "underline" }],
+        });
       }
       continue;
     }
 
-    const linkMatch = chunk.match(/^<a\s[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/i);
+    const linkMatch = chunk.match(
+      /^<a\s[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/i,
+    );
     if (linkMatch) {
       flushBuffer();
       const href = decodeEntities(linkMatch[1]);
       const linkText = stripTags(linkMatch[2]).trim();
       if (linkText) {
-        nodes.push({ type: "text", text: decodeEntities(linkText), marks: [{ type: "link", attrs: { href, target: "_blank" } }] });
+        nodes.push({
+          type: "text",
+          text: decodeEntities(linkText),
+          marks: [{ type: "link", attrs: { href, target: "_blank" } }],
+        });
       }
       continue;
     }
@@ -178,7 +216,11 @@ function parseInlineContent(html: string): TiptapNode[] {
       flushBuffer();
       const codeText = stripTags(codeMatch[1]).trim();
       if (codeText) {
-        nodes.push({ type: "text", text: decodeEntities(codeText), marks: [{ type: "code" }] });
+        nodes.push({
+          type: "text",
+          text: decodeEntities(codeText),
+          marks: [{ type: "code" }],
+        });
       }
       continue;
     }
@@ -200,16 +242,25 @@ function parseInlineContent(html: string): TiptapNode[] {
   return nodes;
 }
 
-function htmlToTiptapJson(html: string): { type: string; content: TiptapNode[] } {
+function htmlToTiptapJson(html: string): {
+  type: string;
+  content: TiptapNode[];
+} {
   if (!html.trim()) {
     return {
       type: "doc",
-      content: [{ type: "paragraph", content: [{ type: "text", text: "Kein Inhalt verfügbar." }] }],
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Kein Inhalt verfügbar." }],
+        },
+      ],
     };
   }
 
   const nodes: TiptapNode[] = [];
-  const blockRegex = /<(h[1-6]|p|table|ul|ol|blockquote|pre|div|figure)[^>]*>([\s\S]*?)<\/\1>/gi;
+  const blockRegex =
+    /<(h[1-6]|p|table|ul|ol|blockquote|pre|div|figure)[^>]*>([\s\S]*?)<\/\1>/gi;
   let lastIndex = 0;
   let blockMatch: RegExpExecArray | null;
 
@@ -240,7 +291,11 @@ function htmlToTiptapJson(html: string): { type: string; content: TiptapNode[] }
     if (/^h[4-6]$/.test(tag)) {
       const inlineNodes = parseInlineContent(inner);
       if (inlineNodes.length > 0) {
-        nodes.push({ type: "heading", attrs: { level: 3 }, content: inlineNodes });
+        nodes.push({
+          type: "heading",
+          attrs: { level: 3 },
+          content: inlineNodes,
+        });
       }
       continue;
     }
@@ -281,7 +336,10 @@ function htmlToTiptapJson(html: string): { type: string; content: TiptapNode[] }
     if (tag === "blockquote") {
       const inlineNodes = parseInlineContent(inner);
       if (inlineNodes.length > 0) {
-        nodes.push({ type: "blockquote", content: [{ type: "paragraph", content: inlineNodes }] });
+        nodes.push({
+          type: "blockquote",
+          content: [{ type: "paragraph", content: inlineNodes }],
+        });
       }
       continue;
     }
@@ -289,7 +347,10 @@ function htmlToTiptapJson(html: string): { type: string; content: TiptapNode[] }
     if (tag === "pre") {
       const codeText = stripTags(inner).trim();
       if (codeText) {
-        nodes.push({ type: "codeBlock", content: [{ type: "text", text: decodeEntities(codeText) }] });
+        nodes.push({
+          type: "codeBlock",
+          content: [{ type: "text", text: decodeEntities(codeText) }],
+        });
       }
       continue;
     }
@@ -316,9 +377,15 @@ function htmlToTiptapJson(html: string): { type: string; content: TiptapNode[] }
   if (nodes.length === 0) {
     const fallbackText = stripTags(html).trim();
     if (fallbackText) {
-      nodes.push({ type: "paragraph", content: [{ type: "text", text: decodeEntities(fallbackText) }] });
+      nodes.push({
+        type: "paragraph",
+        content: [{ type: "text", text: decodeEntities(fallbackText) }],
+      });
     } else {
-      nodes.push({ type: "paragraph", content: [{ type: "text", text: "Importierter SharePoint-Inhalt." }] });
+      nodes.push({
+        type: "paragraph",
+        content: [{ type: "text", text: "Importierter SharePoint-Inhalt." }],
+      });
     }
   }
 
@@ -332,7 +399,10 @@ function parseListItems(html: string): TiptapNode[] {
   while ((liMatch = liRegex.exec(html)) !== null) {
     const inlineNodes = parseInlineContent(liMatch[1]);
     if (inlineNodes.length > 0) {
-      items.push({ type: "listItem", content: [{ type: "paragraph", content: inlineNodes }] });
+      items.push({
+        type: "listItem",
+        content: [{ type: "paragraph", content: inlineNodes }],
+      });
     }
   }
   return items;
@@ -351,7 +421,15 @@ function parseHtmlTable(html: string): TiptapNode | null {
       const inlineNodes = parseInlineContent(cellMatch[2]);
       cells.push({
         type: isHeader ? "tableHeader" : "tableCell",
-        content: [{ type: "paragraph", content: inlineNodes.length > 0 ? inlineNodes : [{ type: "text", text: " " }] }],
+        content: [
+          {
+            type: "paragraph",
+            content:
+              inlineNodes.length > 0
+                ? inlineNodes
+                : [{ type: "text", text: " " }],
+          },
+        ],
       });
     }
     if (cells.length > 0) {
@@ -379,14 +457,24 @@ async function generateDisplayCode(
     const siblings = await tx
       .select({ displayCode: contentNodesTable.displayCode })
       .from(contentNodesTable)
-      .where(and(eq(contentNodesTable.parentNodeId, parentNodeId), eq(contentNodesTable.isDeleted, false)));
+      .where(
+        and(
+          eq(contentNodesTable.parentNodeId, parentNodeId),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      );
     const nextNum = siblings.length + 1;
     return `${parentCode}.${prefix}-${String(nextNum).padStart(3, "0")}`;
   }
   const topLevel = await tx
     .select({ id: contentNodesTable.id })
     .from(contentNodesTable)
-    .where(and(isNull(contentNodesTable.parentNodeId), eq(contentNodesTable.isDeleted, false)));
+    .where(
+      and(
+        isNull(contentNodesTable.parentNodeId),
+        eq(contentNodesTable.isDeleted, false),
+      ),
+    );
   const nextNum = topLevel.length + 1;
   return `${prefix}-${String(nextNum).padStart(3, "0")}`;
 }
@@ -407,7 +495,11 @@ async function createNodeWithRevision(
   };
 
   const nodeId = await db.transaction(async (tx) => {
-    const displayCode = await generateDisplayCode(tx, prefixMap[templateType] || "DOC", parentNodeId);
+    const displayCode = await generateDisplayCode(
+      tx,
+      prefixMap[templateType] || "DOC",
+      parentNodeId,
+    );
 
     const [node] = await tx
       .insert(contentNodesTable)
@@ -457,7 +549,10 @@ async function createNodeWithRevision(
   return nodeId;
 }
 
-function buildStructuredFields(page: ParsedPage, tiptapContent: TiptapNode): Record<string, unknown> {
+function buildStructuredFields(
+  page: ParsedPage,
+  tiptapContent: TiptapNode,
+): Record<string, unknown> {
   const fields: Record<string, unknown> = {
     sourceType: "sharepoint_import",
     sourceUrl: page.sourceUrl,
@@ -479,13 +574,22 @@ async function importPage(
 ): Promise<string> {
   const tiptapContent = htmlToTiptapJson(page.bodyHtml);
   const structuredFields = buildStructuredFields(page, tiptapContent);
-  return createNodeWithRevision(displayTitle, "process_page_text", parentNodeId, sortOrder, tiptapContent, structuredFields);
+  return createNodeWithRevision(
+    displayTitle,
+    "process_page_text",
+    parentNodeId,
+    sortOrder,
+    tiptapContent,
+    structuredFields,
+  );
 }
 
 async function main() {
   console.log("=== SharePoint Pages Import (Link-basierte Hierarchie) ===\n");
 
-  const htmlFiles = (await readdir(EXPORT_DIR)).filter((f) => f.endsWith(".html")).sort();
+  const htmlFiles = (await readdir(EXPORT_DIR))
+    .filter((f) => f.endsWith(".html"))
+    .sort();
   console.log(`${htmlFiles.length} HTML-Dateien gefunden\n`);
 
   const pages = new Map<string, ParsedPage>();
@@ -504,9 +608,11 @@ async function main() {
 
   const linkDisplayNames = new Map<string, string>();
   function extractDisplayNames(sourceFile: string, html: string) {
-    const sectionContent = html.match(/<section>([\s\S]*?)<\/section>/)?.[1] || "";
+    const sectionContent =
+      html.match(/<section>([\s\S]*?)<\/section>/)?.[1] || "";
     if (!sectionContent) return;
-    const re = /href="(?:\/SitePages\/|https?:\/\/[^/]*\/SitePages\/)([^"#]*?)(?:\.aspx)(?:#[^"]*)?"[^>]*>([\s\S]*?)<\/a>/gi;
+    const re =
+      /href="(?:\/SitePages\/|https?:\/\/[^/]*\/SitePages\/)([^"#]*?)(?:\.aspx)(?:#[^"]*)?"[^>]*>([\s\S]*?)<\/a>/gi;
     let m: RegExpExecArray | null;
     while ((m = re.exec(sectionContent)) !== null) {
       if (m[1] && m[2]) {
@@ -548,10 +654,13 @@ async function main() {
     const linkName = linkDisplayNames.get(file);
     if (!linkName) continue;
 
-    const isFilenameTitle = page.title === page.urlSlug ||
-      page.title.replace(/[-_]/g, " ").toLowerCase() === page.urlSlug.replace(/[-_]/g, " ").toLowerCase();
+    const isFilenameTitle =
+      page.title === page.urlSlug ||
+      page.title.replace(/[-_]/g, " ").toLowerCase() ===
+        page.urlSlug.replace(/[-_]/g, " ").toLowerCase();
     const isTooLong = page.title.length > 80;
-    const isBoldFallback = !page.title.includes("(BCB-") && !page.title.includes("(b2g");
+    const isBoldFallback =
+      !page.title.includes("(BCB-") && !page.title.includes("(b2g");
     const linkNameDiffers = linkName !== page.title;
 
     if (isFilenameTitle || isTooLong || (isBoldFallback && linkNameDiffers)) {
@@ -597,7 +706,8 @@ async function main() {
   const kp1Id = await createNodeWithRevision(
     "Allgemeine Prozesse und Informationen",
     "core_process_overview",
-    null, 1,
+    null,
+    1,
     allgTiptap,
     buildStructuredFields(allgPage, allgTiptap),
   );
@@ -608,7 +718,8 @@ async function main() {
   const kp2Id = await createNodeWithRevision(
     "HR",
     "core_process_overview",
-    null, 2,
+    null,
+    2,
     hrTiptap,
     buildStructuredFields(hrPage, hrTiptap),
   );
@@ -619,7 +730,8 @@ async function main() {
   const kp3Id = await createNodeWithRevision(
     "Qualitätsmanagement-Handbuch",
     "core_process_overview",
-    null, 3,
+    null,
+    3,
     qmTiptap,
     buildStructuredFields(qmPage, qmTiptap),
   );
@@ -663,32 +775,69 @@ async function main() {
 
   for (let i = 0; i < allgBereiche.length; i++) {
     const bereich = allgBereiche[i];
-    const areaContent: TiptapNode = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `Bereich: ${bereich.name}` }] }] };
+    const areaContent: TiptapNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: `Bereich: ${bereich.name}` }],
+        },
+      ],
+    };
     const areaId = await createNodeWithRevision(
       bereich.name,
       "area_overview",
-      kp1Id, i + 1,
+      kp1Id,
+      i + 1,
       areaContent,
-      { sourceType: "sharepoint_import", kuerzel: bereich.kuerzel, _editorContent: areaContent },
+      {
+        sourceType: "sharepoint_import",
+        kuerzel: bereich.kuerzel,
+        _editorContent: areaContent,
+      },
     );
     console.log(`  Bereich: "${bereich.name}" (${areaId})`);
 
     for (let j = 0; j < bereich.pages.length; j++) {
       const pg = bereich.pages[j];
-      const placeholderContent: TiptapNode = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `${pg.title} — Inhalt wird aus dem alten Wiki übernommen.` }] }] };
+      const placeholderContent: TiptapNode = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: `${pg.title} — Inhalt wird aus dem alten Wiki übernommen.`,
+              },
+            ],
+          },
+        ],
+      };
       const pageId = await createNodeWithRevision(
         pg.title,
         "process_page_text",
-        areaId, j + 1,
+        areaId,
+        j + 1,
         placeholderContent,
-        { sourceType: "sharepoint_import", originalCode: pg.code, _editorContent: placeholderContent },
+        {
+          sourceType: "sharepoint_import",
+          originalCode: pg.code,
+          _editorContent: placeholderContent,
+        },
       );
       totalPages++;
-      console.log(`    [${totalPages}] "${pg.title}" (${pg.code}) -> ${pageId}`);
+      console.log(
+        `    [${totalPages}] "${pg.title}" (${pg.code}) -> ${pageId}`,
+      );
     }
   }
 
-  const excludedPatterns = ["BCB_-_Wiki.html", "Homepage.html", "Review_-_Town_Hall_am_16.02.2024.html"];
+  const excludedPatterns = [
+    "BCB_-_Wiki.html",
+    "Homepage.html",
+    "Review_-_Town_Hall_am_16.02.2024.html",
+  ];
   const excludedFiles = new Set<string>();
   for (const f of htmlFiles) {
     if (excludedPatterns.includes(f) || f.startsWith("Musterprozess_")) {
@@ -709,16 +858,25 @@ async function main() {
     {
       name: "Personalplanung und -beschaffung",
       kuerzel: "Ppb",
-      linkedFiles: ["gehaltsstufen-ppb.html", "stellenprofile-allg-ppb.html", "stellenausschreibung-intern-ppb.html"],
+      linkedFiles: [
+        "gehaltsstufen-ppb.html",
+        "stellenprofile-allg-ppb.html",
+        "stellenausschreibung-intern-ppb.html",
+      ],
     },
     {
       name: "Bewerbermanagement",
       kuerzel: "BCB-Bmm",
       linkedFiles: [
-        "bewerbungseingang-BCB-Bmm.html", "vorauswahl-bmm.html", "absage-vorauswahl-bbm.html",
-        "persoenliches-kennenlernen-bmm.html", "bewerberabsage-n-meet-bmm.html",
-        "probeaufgaben-bbm.html", "auswahlverfahren-bmm.html",
-        "zusage-arbeitsvertrag-bmm.html", "absage-n-probearbeit-bmm.html",
+        "bewerbungseingang-BCB-Bmm.html",
+        "vorauswahl-bmm.html",
+        "absage-vorauswahl-bbm.html",
+        "persoenliches-kennenlernen-bmm.html",
+        "bewerberabsage-n-meet-bmm.html",
+        "probeaufgaben-bbm.html",
+        "auswahlverfahren-bmm.html",
+        "zusage-arbeitsvertrag-bmm.html",
+        "absage-n-probearbeit-bmm.html",
       ],
     },
     {
@@ -726,30 +884,38 @@ async function main() {
       kuerzel: "OBo",
       linkedFiles: [
         "onboarding-ob-uebersicht.html",
-        "kollegen-informieren-bcb-ob1.html", "lebenslauf-ablegen-bcb-ob1.html", "personalordner-anlegen-bcb-ob.html",
+        "kollegen-informieren-bcb-ob1.html",
+        "lebenslauf-ablegen-bcb-ob1.html",
+        "personalordner-anlegen-bcb-ob.html",
       ],
     },
     {
       name: "Personalbetreuung",
       kuerzel: "Pbe",
       linkedFiles: [
-        "arbeitsplatzrichtlinien-bcb-ap2.html", "arbeitsformenbcb-ap2.html",
-        "verletzungen_arbeitsunfall-bcb-pbe.html", "persoenliche-zugaenge-bcb-pbe.html",
+        "arbeitsplatzrichtlinien-bcb-ap2.html",
+        "arbeitsformenbcb-ap2.html",
+        "verletzungen_arbeitsunfall-bcb-pbe.html",
+        "persoenliche-zugaenge-bcb-pbe.html",
       ],
     },
     {
       name: "Personalverwaltung",
       kuerzel: "Pve",
       linkedFiles: [
-        "arbeitszeitmanagement-BCB-Pve.html", "urlaub-ueberstunden-BCB-Pve.html",
-        "ueberstunden-BCB-Pve.html", "krank-abwesenheit-bcb-pve.html",
+        "arbeitszeitmanagement-BCB-Pve.html",
+        "urlaub-ueberstunden-BCB-Pve.html",
+        "ueberstunden-BCB-Pve.html",
+        "krank-abwesenheit-bcb-pve.html",
       ],
     },
     {
       name: "Personalentwicklung",
       kuerzel: "Pen",
       linkedFiles: [
-        "weiterbildung-bcb-pen.html", "mitarbeitergespraeche-bcb-pen.html", "ma-gespraech-vorgesetzter-bcb-pen.html",
+        "weiterbildung-bcb-pen.html",
+        "mitarbeitergespraeche-bcb-pen.html",
+        "ma-gespraech-vorgesetzter-bcb-pen.html",
       ],
     },
     {
@@ -761,13 +927,26 @@ async function main() {
 
   for (let i = 0; i < hrBereiche.length; i++) {
     const bereich = hrBereiche[i];
-    const hrAreaContent: TiptapNode = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `Bereich: ${bereich.name}` }] }] };
+    const hrAreaContent: TiptapNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: `Bereich: ${bereich.name}` }],
+        },
+      ],
+    };
     const areaId = await createNodeWithRevision(
       bereich.name,
       "area_overview",
-      kp2Id, i + 1,
+      kp2Id,
+      i + 1,
       hrAreaContent,
-      { sourceType: "sharepoint_import", kuerzel: bereich.kuerzel, _editorContent: hrAreaContent },
+      {
+        sourceType: "sharepoint_import",
+        kuerzel: bereich.kuerzel,
+        _editorContent: hrAreaContent,
+      },
     );
     console.log(`  Bereich: "${bereich.name}" (${areaId})`);
 
@@ -800,8 +979,12 @@ async function main() {
       name: "Die Bildungseinrichtung",
       kuerzel: "b2g1",
       linkedFiles: [
-        "b2g-unternehmensprofile.html", "b2g-personalstruktur.html", "b2g-geschaeftsstelle.html",
-        "b2g-externe-mitarbeiter.html", "b2g-prozessuebersicht.html", "b2g-leitbilder.html",
+        "b2g-unternehmensprofile.html",
+        "b2g-personalstruktur.html",
+        "b2g-geschaeftsstelle.html",
+        "b2g-externe-mitarbeiter.html",
+        "b2g-prozessuebersicht.html",
+        "b2g-leitbilder.html",
       ],
       subPages: new Map(),
     },
@@ -809,7 +992,10 @@ async function main() {
       name: "Qualitätsmanagementsystem",
       kuerzel: "b2g2",
       linkedFiles: [
-        "qms-einleitung-b2g2.html", "qms-qmh-b2g2.html", "qualitaetsstandards-b2g2.html", "verpflichtung-leitung-b2b2.html",
+        "qms-einleitung-b2g2.html",
+        "qms-qmh-b2g2.html",
+        "qualitaetsstandards-b2g2.html",
+        "verpflichtung-leitung-b2b2.html",
       ],
       subPages: new Map(),
     },
@@ -822,7 +1008,11 @@ async function main() {
     {
       name: "Kundenmanagement",
       kuerzel: "b2g4",
-      linkedFiles: ["kundenmanagement-b2g4.html", "kundenzufriedenheit-b2g4.html", "b2g-qualitaetspolitik.html"],
+      linkedFiles: [
+        "kundenmanagement-b2g4.html",
+        "kundenzufriedenheit-b2g4.html",
+        "b2g-qualitaetspolitik.html",
+      ],
       subPages: new Map([
         ["kundenzufriedenheit-b2g4.html", ["b2g-lehrgangsabschluss.html"]],
       ]),
@@ -830,43 +1020,63 @@ async function main() {
     {
       name: "Dienstleistungsangebot",
       kuerzel: "b2g5",
-      linkedFiles: ["b2g5-einleitung.html", "b2g5-akquisition.html", "b2g-konzeptionundueberarbeitungvondienstleistungen.html", "b2g-ausbildungsstätten.html"],
+      linkedFiles: [
+        "b2g5-einleitung.html",
+        "b2g5-akquisition.html",
+        "b2g-konzeptionundueberarbeitungvondienstleistungen.html",
+        "b2g-ausbildungsstätten.html",
+      ],
       subPages: new Map([
-        ["b2g5-akquisition.html", [
-          "b2g-anforderungbildungskatalog,interessentenanfrage.html",
-          "b2g-angebotserstellung.html",
-          "b2g-allgemeineranmeldevorgang.html",
-          "b2g-umgangmitbildungsgutscheinen-maßnahmenteilnehmerzielundzweck.html",
-          "b2g-absageeinerausbildung-präsenzphase-online-seminaraufgrundgeringerteilnehmerzahlallgemein.html",
-          "b2g-unterrichtsmaterialfürausbildungenerstellenundversenden.html",
-          "b2g-unfallversicherung-vbg-einhaltungdervorschriften.html",
-        ]],
-        ["b2g-konzeptionundueberarbeitungvondienstleistungen.html", [
-          "b2g-arbeitsmarktbeobachtung.html",
-          "b2g-erfassungderarbeitsmarktrelevanz.html",
-          "b2g-dienstleistungskonzeption.html",
-          "b2g-maßnahmenzulassung.html",
-        ]],
-        ["b2g-ausbildungsstätten.html", [
-          "b2g-anforderungenaanausbildungsstätten.html",
-          "b2g-reservierungsanfrageanausbildungsstätten.html",
-        ]],
+        [
+          "b2g5-akquisition.html",
+          [
+            "b2g-anforderungbildungskatalog,interessentenanfrage.html",
+            "b2g-angebotserstellung.html",
+            "b2g-allgemeineranmeldevorgang.html",
+            "b2g-umgangmitbildungsgutscheinen-maßnahmenteilnehmerzielundzweck.html",
+            "b2g-absageeinerausbildung-präsenzphase-online-seminaraufgrundgeringerteilnehmerzahlallgemein.html",
+            "b2g-unterrichtsmaterialfürausbildungenerstellenundversenden.html",
+            "b2g-unfallversicherung-vbg-einhaltungdervorschriften.html",
+          ],
+        ],
+        [
+          "b2g-konzeptionundueberarbeitungvondienstleistungen.html",
+          [
+            "b2g-arbeitsmarktbeobachtung.html",
+            "b2g-erfassungderarbeitsmarktrelevanz.html",
+            "b2g-dienstleistungskonzeption.html",
+            "b2g-maßnahmenzulassung.html",
+          ],
+        ],
+        [
+          "b2g-ausbildungsstätten.html",
+          [
+            "b2g-anforderungenaanausbildungsstätten.html",
+            "b2g-reservierungsanfrageanausbildungsstätten.html",
+          ],
+        ],
       ]),
     },
     {
       name: "Kontrolle, Analyse und Verbesserung",
       kuerzel: "b2g6",
       linkedFiles: [
-        "b2g-kontrolledesqualitätsmanagementsystems.html", "b2g-fehlerhafteleistungen.html",
-        "b2g-datenanalyse_undverbesserung.html", "b2g-korrekturmaßnahmen.html", "b2g-qualitätsverbesserung.html",
+        "b2g-kontrolledesqualitätsmanagementsystems.html",
+        "b2g-fehlerhafteleistungen.html",
+        "b2g-datenanalyse_undverbesserung.html",
+        "b2g-korrekturmaßnahmen.html",
+        "b2g-qualitätsverbesserung.html",
       ],
       subPages: new Map([
-        ["b2g-kontrolledesqualitätsmanagementsystems.html", [
-          "b2g-interneaudits.html",
-          "b2g-aenderungenimqms.html",
-          "b2g-vorbeugungs-undkorrekturmaßnahmen.html",
-          "b2g-meldungzulassungsrelevanteraenderungen.html",
-        ]],
+        [
+          "b2g-kontrolledesqualitätsmanagementsystems.html",
+          [
+            "b2g-interneaudits.html",
+            "b2g-aenderungenimqms.html",
+            "b2g-vorbeugungs-undkorrekturmaßnahmen.html",
+            "b2g-meldungzulassungsrelevanteraenderungen.html",
+          ],
+        ],
       ]),
     },
     {
@@ -879,13 +1089,26 @@ async function main() {
 
   for (let i = 0; i < qmBereiche.length; i++) {
     const bereich = qmBereiche[i];
-    const qmAreaContent: TiptapNode = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `Bereich: ${bereich.name}` }] }] };
+    const qmAreaContent: TiptapNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: `Bereich: ${bereich.name}` }],
+        },
+      ],
+    };
     const areaId = await createNodeWithRevision(
       bereich.name,
       "area_overview",
-      kp3Id, i + 1,
+      kp3Id,
+      i + 1,
       qmAreaContent,
-      { sourceType: "sharepoint_import", kuerzel: bereich.kuerzel, _editorContent: qmAreaContent },
+      {
+        sourceType: "sharepoint_import",
+        kuerzel: bereich.kuerzel,
+        _editorContent: qmAreaContent,
+      },
     );
     console.log(`  Bereich: "${bereich.name}" (${areaId})`);
 
@@ -912,10 +1135,17 @@ async function main() {
             continue;
           }
           subSortIdx++;
-          const subNodeId = await importPage(subPage, nodeId, subSortIdx, subPage.title);
+          const subNodeId = await importPage(
+            subPage,
+            nodeId,
+            subSortIdx,
+            subPage.title,
+          );
           importedFiles.add(subFile);
           totalPages++;
-          console.log(`      [${totalPages}] "${subPage.title}" -> ${subNodeId} (unter "${page.title}")`);
+          console.log(
+            `      [${totalPages}] "${subPage.title}" -> ${subNodeId} (unter "${page.title}")`,
+          );
         }
       }
     }
@@ -923,7 +1153,9 @@ async function main() {
 
   const unimportedFiles = htmlFiles.filter((f) => !importedFiles.has(f));
   if (unimportedFiles.length > 0) {
-    console.log(`\n=== WARNUNG: ${unimportedFiles.length} nicht importierte Dateien ===`);
+    console.log(
+      `\n=== WARNUNG: ${unimportedFiles.length} nicht importierte Dateien ===`,
+    );
     for (const f of unimportedFiles) {
       console.log(`  - ${f}`);
     }
@@ -931,15 +1163,21 @@ async function main() {
 
   console.log("\n=== Verifizierung ===");
 
-  const nodeCount = await db.execute(sql`SELECT count(*) AS cnt FROM content_nodes WHERE is_deleted = false`);
+  const nodeCount = await db.execute(
+    sql`SELECT count(*) AS cnt FROM content_nodes WHERE is_deleted = false`,
+  );
   const nodeRow = nodeCount.rows[0] as { cnt: string } | undefined;
   console.log(`Gesamt content_nodes: ${nodeRow?.cnt ?? 0}`);
 
-  const publishedCount = await db.execute(sql`SELECT count(*) AS cnt FROM content_nodes WHERE status = 'published' AND is_deleted = false`);
+  const publishedCount = await db.execute(
+    sql`SELECT count(*) AS cnt FROM content_nodes WHERE status = 'published' AND is_deleted = false`,
+  );
   const pubRow = publishedCount.rows[0] as { cnt: string } | undefined;
   console.log(`Veröffentlichte Nodes: ${pubRow?.cnt ?? 0}`);
 
-  const revCount = await db.execute(sql`SELECT count(*) AS cnt FROM content_revisions WHERE status = 'published'`);
+  const revCount = await db.execute(
+    sql`SELECT count(*) AS cnt FROM content_revisions WHERE status = 'published'`,
+  );
   const revRow = revCount.rows[0] as { cnt: string } | undefined;
   console.log(`Veröffentlichte Revisionen: ${revRow?.cnt ?? 0}`);
 
@@ -950,7 +1188,9 @@ async function main() {
   const orphanRow = orphanCheck.rows[0] as { cnt: string } | undefined;
   const orphanCount = parseInt(orphanRow?.cnt ?? "0");
   if (orphanCount > 0) {
-    console.error(`FEHLER: ${orphanCount} Nodes ohne veröffentlichte Revision!`);
+    console.error(
+      `FEHLER: ${orphanCount} Nodes ohne veröffentlichte Revision!`,
+    );
   } else {
     console.log("Alle Nodes haben veröffentlichte Revisionen: OK");
   }
@@ -969,11 +1209,20 @@ async function main() {
   `);
   console.log("\nHierarchie-Tiefenverteilung:");
   for (const row of treeQuery.rows as { depth: number; cnt: string }[]) {
-    const label = row.depth === 0 ? "Kernprozesse" : row.depth === 1 ? "Bereiche / direkte Seiten" : row.depth === 2 ? "Seiten" : "Unter-Seiten";
+    const label =
+      row.depth === 0
+        ? "Kernprozesse"
+        : row.depth === 1
+          ? "Bereiche / direkte Seiten"
+          : row.depth === 2
+            ? "Seiten"
+            : "Unter-Seiten";
     console.log(`  Tiefe ${row.depth} (${label}): ${row.cnt} Nodes`);
   }
 
-  const glossaryCheck = await db.execute(sql`SELECT count(*) AS cnt FROM glossary_terms`);
+  const glossaryCheck = await db.execute(
+    sql`SELECT count(*) AS cnt FROM glossary_terms`,
+  );
   const glossaryRow = glossaryCheck.rows[0] as { cnt: string } | undefined;
   console.log(`\nGlossar-Einträge erhalten: ${glossaryRow?.cnt ?? 0}`);
 
@@ -981,13 +1230,18 @@ async function main() {
   const errors: string[] = [];
   const totalNodes = parseInt(nodeRow?.cnt ?? "0");
 
-  if (orphanCount > 0) errors.push(`${orphanCount} Nodes ohne veröffentlichte Revision`);
+  if (orphanCount > 0)
+    errors.push(`${orphanCount} Nodes ohne veröffentlichte Revision`);
   const overviewAndExcludedCount = importedFiles.size - totalPages;
   if (importedFiles.size !== htmlFiles.length) {
-    errors.push(`Import-Zählung inkonsistent: ${importedFiles.size} Dateien verarbeitet, ${htmlFiles.length} HTML-Dateien vorhanden`);
+    errors.push(
+      `Import-Zählung inkonsistent: ${importedFiles.size} Dateien verarbeitet, ${htmlFiles.length} HTML-Dateien vorhanden`,
+    );
   }
   if (unimportedFiles.length > 0) {
-    errors.push(`${unimportedFiles.length} Dateien nicht importiert: ${unimportedFiles.join(", ")}`);
+    errors.push(
+      `${unimportedFiles.length} Dateien nicht importiert: ${unimportedFiles.join(", ")}`,
+    );
   }
 
   if (errors.length > 0) {

@@ -6,10 +6,7 @@ const ROOT = resolve(import.meta.dirname, "../..");
 const SPEC_PATH = join(ROOT, "lib/api-spec/openapi.yaml");
 const ROUTES_DIR = join(ROOT, "artifacts/api-server/src/routes");
 const INDEX_PATH = join(ROUTES_DIR, "index.ts");
-const API_CLIENT_PATH = join(
-  ROOT,
-  "lib/api-client-react/src/generated/api.ts",
-);
+const API_CLIENT_PATH = join(ROOT, "lib/api-client-react/src/generated/api.ts");
 
 function normalizePath(path: string): string {
   return path
@@ -79,9 +76,7 @@ function extractMounts(): MountInfo[] {
 
   const useLines = indexContent.split("\n");
   for (const line of useLines) {
-    const withPath = line.match(
-      /router\.use\(\s*["']([^"']+)["']\s*,\s*(\w+)/,
-    );
+    const withPath = line.match(/router\.use\(\s*["']([^"']+)["']\s*,\s*(\w+)/);
     if (withPath) {
       const name = withPath[2];
       mounts.push({
@@ -146,7 +141,9 @@ function extractClientPaths(): Map<string, Set<string>> {
   const clientPaths = new Map<string, Set<string>>();
 
   if (!existsSync(API_CLIENT_PATH)) {
-    console.warn("WARNING: Generated API client not found at " + API_CLIENT_PATH);
+    console.warn(
+      "WARNING: Generated API client not found at " + API_CLIENT_PATH,
+    );
     return clientPaths;
   }
 
@@ -301,7 +298,9 @@ for (const [normPath, methods] of normalizedClient) {
   for (const method of methods) {
     const specMethods = normalizedSpec.get(normPath);
     if (!specMethods || !specMethods.has(method)) {
-      clientDriftList.push(`  ${method} ${normPath} (client has, spec missing)`);
+      clientDriftList.push(
+        `  ${method} ${normPath} (client has, spec missing)`,
+      );
       clientDrift++;
     }
   }
@@ -311,7 +310,9 @@ for (const [normPath, methods] of normalizedSpec) {
   for (const method of methods) {
     const clientMethods = normalizedClient.get(normPath);
     if (!clientMethods || !clientMethods.has(method)) {
-      clientDriftList.push(`  ${method} ${normPath} (spec has, client missing)`);
+      clientDriftList.push(
+        `  ${method} ${normPath} (spec has, client missing)`,
+      );
       clientDrift++;
     }
   }
@@ -353,4 +354,3 @@ if (totalIssues > 0) {
 } else {
   console.log("\n✔ All routes match across spec, backend, and client.");
 }
-
