@@ -21,7 +21,8 @@ declare module "express-session" {
       displayName: string;
       email: string;
     };
-    graphAccessToken?: string;
+    /** AES-256-GCM-verschluesselt, siehe lib/session-crypto (Audit A3). */
+    graphAccessTokenEnc?: string;
     oauthState?: string;
   }
 }

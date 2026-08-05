@@ -21,6 +21,7 @@ import {
 } from "../services/sharepoint.service";
 import { invalidateProviderCache } from "../services/storage.service";
 import { logger } from "../lib/logger";
+import { getGraphToken, type TokenSitzung } from "../lib/session-crypto";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -29,12 +30,12 @@ export const connectorsRouter: IRouter = Router();
 
 function resolveGraphToken(req: {
   headers: Record<string, string | string[] | undefined>;
-  session?: { graphAccessToken?: string };
+  session?: TokenSitzung;
 }): string {
+  // Sitzungstoken liegt verschluesselt (Audit A3); der Header-Weg bleibt fuer
+  // Aufrufer, die ihr eigenes Graph-Token mitbringen.
   return (
-    (req.headers["x-graph-token"] as string) ||
-    req.session?.graphAccessToken ||
-    ""
+    (req.headers["x-graph-token"] as string) || getGraphToken(req.session) || ""
   );
 }
 

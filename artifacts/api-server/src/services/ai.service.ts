@@ -466,7 +466,7 @@ async function searchConnectorSources(
       AND ss.is_active = true
       AND cn.is_deleted = false
       AND (lower(sr.external_title) LIKE ${queryLower} OR lower(cn.title) LIKE ${queryLower})
-    LIMIT ${sql.raw(String(limit * overFetchFactor))}
+    LIMIT ${limit * overFetchFactor}
   `);
 
   const rows = results.rows;

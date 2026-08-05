@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { setGraphToken } from "../lib/session-crypto";
 import { appConfig } from "../lib/config";
 import { authRateLimit } from "../middlewares/rate-limit";
 import {
@@ -118,7 +119,7 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
       displayName: tokenResult.displayName,
       email: tokenResult.email,
     };
-    req.session.graphAccessToken = tokenResult.accessToken;
+    setGraphToken(req.session, tokenResult.accessToken);
 
     await db.insert(auditEventsTable).values({
       eventType: "auth",

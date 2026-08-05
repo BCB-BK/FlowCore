@@ -38,6 +38,7 @@ import {
 import { db } from "@workspace/db";
 import { auditEventsTable, roleAssignmentsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { getGraphToken } from "../lib/session-crypto";
 
 const router = Router();
 
@@ -314,7 +315,7 @@ router.get("/graph/photo/:userId", requireAuth, async (req, res) => {
   const userId = req.params.userId as string;
   const sizeParam = req.query.size;
   const size = typeof sizeParam === "string" ? sizeParam : "48x48";
-  const accessToken = (req.session?.graphAccessToken as string) ?? "";
+  const accessToken = getGraphToken(req.session);
   const photo = await getPersonPhoto(accessToken, userId, size);
   if (!photo) {
     res.status(404).json({ error: "Photo not found" });
@@ -331,7 +332,7 @@ router.get(
   requirePermission("edit_content"),
   async (req, res) => {
     const q = (req.query.q as string) ?? "";
-    const accessToken = req.session?.graphAccessToken ?? "";
+    const accessToken = getGraphToken(req.session);
     const graphResults = await searchPeople(accessToken, q);
     if (graphResults.length > 0) {
       res.json(graphResults);
@@ -358,7 +359,7 @@ router.get(
   requirePermission("edit_content"),
   async (req, res) => {
     const q = (req.query.q as string) ?? "";
-    const accessToken = req.session?.graphAccessToken ?? "";
+    const accessToken = getGraphToken(req.session);
     const graphResults = await searchGroups(accessToken, q);
     if (graphResults.length > 0) {
       res.json(graphResults);

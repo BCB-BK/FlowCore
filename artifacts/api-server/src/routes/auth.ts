@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createHmac, randomUUID } from "crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "crypto";
 import { appConfig } from "../lib/config";
 import { authRateLimit } from "../middlewares/rate-limit";
 import {
@@ -22,6 +22,7 @@ import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
+import { setGraphToken } from "../lib/session-crypto";
 
 const STATE_MAX_AGE_MS = 10 * 60 * 1000;
 
@@ -42,7 +43,11 @@ function verifyOAuthState(state: string): boolean {
   const expected = createHmac("sha256", appConfig.sessionSecret)
     .update(payload)
     .digest("base64url");
-  if (sig !== expected) return false;
+  // Zeitkonstanter Vergleich: ein byteweise abbrechender Vergleich verraet
+  // ueber die Laufzeit, wie viele Zeichen stimmen (Audit-Befund C1).
+  const a = Buffer.from(sig ?? "", "utf8");
+  const b = Buffer.from(expected, "utf8");
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
   const created = parseInt(ts, 36);
   if (isNaN(created) || Date.now() - created > STATE_MAX_AGE_MS) return false;
   return true;
@@ -221,7 +226,7 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
         displayName: tokenResult.displayName,
         email: tokenResult.email,
       };
-      req.session.graphAccessToken = tokenResult.accessToken;
+      setGraphToken(req.session, tokenResult.accessToken);
 
       req.session.save((saveErr) => {
         if (saveErr) {
@@ -271,11 +276,23 @@ router.post("/auth/logout", requireAuth, async (req, res) => {
     ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
   });
 
+  // Zusaetzlich die Abmelde-Adresse von Entra mitgeben. Ohne sie bleibt der
+  // Benutzer bei Microsoft angemeldet und wird beim naechsten Aufruf wortlos
+  // wieder eingeloggt (Audit-Befund C2). Ob die Oberflaeche dorthin
+  // weiterleitet, entscheidet sie selbst — an Geraeten mit einem Konto ist
+  // die lokale Abmeldung oft das gewuenschte Verhalten.
+  const entraLogoutUrl = appConfig.entraTenantId
+    ? `https://login.microsoftonline.com/${appConfig.entraTenantId}/oauth2/v2.0/logout` +
+      (appConfig.appPublicUrl
+        ? `?post_logout_redirect_uri=${encodeURIComponent(appConfig.appPublicUrl)}`
+        : "")
+    : null;
+
   req.session.destroy((err) => {
     if (err) {
       logger.warn({ err }, "Session destroy failed");
     }
-    res.json({ message: "Logged out" });
+    res.json({ message: "Logged out", entraLogoutUrl });
   });
 });
 

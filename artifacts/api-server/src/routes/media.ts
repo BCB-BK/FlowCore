@@ -29,6 +29,7 @@ import { getDriveItemContent } from "../services/sharepoint.service";
 import { logger } from "../lib/logger";
 import { envInt } from "../lib/env";
 import busboy from "busboy";
+import { getGraphToken, type TokenSitzung } from "../lib/session-crypto";
 
 const router: IRouter = Router();
 
@@ -195,12 +196,12 @@ router.post(
 
 function resolveGraphToken(req: {
   headers: Record<string, string | string[] | undefined>;
-  session?: { graphAccessToken?: string };
+  session?: TokenSitzung;
 }): string {
+  // Sitzungstoken liegt verschluesselt (Audit A3); der Header-Weg bleibt fuer
+  // Aufrufer, die ihr eigenes Graph-Token mitbringen.
   return (
-    (req.headers["x-graph-token"] as string) ||
-    req.session?.graphAccessToken ||
-    ""
+    (req.headers["x-graph-token"] as string) || getGraphToken(req.session) || ""
   );
 }
 
