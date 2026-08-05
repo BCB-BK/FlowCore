@@ -76,6 +76,10 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
   try {
     const nonce = randomUUID();
     const state = signOAuthState(nonce);
+    // Nonce an die Browser-Session binden — der Callback akzeptiert nur den
+    // State, der aus DIESER Session heraus erzeugt wurde (Schutz vor
+    // Login-CSRF mit fremdem, aber gültig signiertem State).
+    req.session.oauthState = nonce;
     const url = await getAuthUrl(state);
     res.json({ loginUrl: url });
   } catch (err) {
@@ -106,6 +110,20 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
       "OAuth state invalid, expired, or tampered",
     );
     res.status(400).json({ error: "Invalid or missing state parameter" });
+    return;
+  }
+
+  // Session-Bindung prüfen: Der Nonce im State muss dem in dieser Session
+  // beim Login-Start hinterlegten Nonce entsprechen.
+  const stateNonce = state.split(".")[0];
+  const sessionNonce = req.session.oauthState;
+  delete req.session.oauthState;
+  if (!sessionNonce || sessionNonce !== stateNonce) {
+    logger.warn(
+      { sessionId: req.sessionID, hasSessionNonce: !!sessionNonce },
+      "OAuth state not bound to this session (possible login CSRF)",
+    );
+    res.status(400).json({ error: "State parameter not bound to this session" });
     return;
   }
 
@@ -178,14 +196,6 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
       });
     }
 
-    req.session.user = {
-      principalId,
-      externalId: tokenResult.externalId,
-      displayName: tokenResult.displayName,
-      email: tokenResult.email,
-    };
-    req.session.graphAccessToken = tokenResult.accessToken;
-
     await db.insert(auditEventsTable).values({
       eventType: "auth",
       action: "login",
@@ -196,11 +206,29 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
       ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
     });
 
-    req.session.save((saveErr) => {
-      if (saveErr) {
-        logger.error({ err: saveErr }, "Failed to save session after login");
+    // Session-ID nach erfolgreicher Authentifizierung erneuern
+    // (Session-Fixation-Schutz), erst danach Benutzerdaten setzen.
+    req.session.regenerate((regenErr) => {
+      if (regenErr) {
+        logger.error({ err: regenErr }, "Failed to regenerate session after login");
+        res.redirect("/?auth_error=1");
+        return;
       }
-      res.redirect("/");
+
+      req.session.user = {
+        principalId,
+        externalId: tokenResult.externalId,
+        displayName: tokenResult.displayName,
+        email: tokenResult.email,
+      };
+      req.session.graphAccessToken = tokenResult.accessToken;
+
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          logger.error({ err: saveErr }, "Failed to save session after login");
+        }
+        res.redirect("/");
+      });
     });
   } catch (err) {
     logger.error({ err }, "Auth callback failed");

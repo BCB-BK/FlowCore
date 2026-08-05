@@ -14,6 +14,7 @@ import {
   getHighestRole,
   getSearchVisibilityForRole,
 } from "./rbac.service";
+import { checkConfidentialityAccessBatch } from "./confidentiality.service";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
 
 let _openaiClient: OpenAI | null = null;
@@ -295,7 +296,8 @@ export async function getAiSettings() {
     return {
       id: null,
       enabled: false,
-      model: "gpt-5.2",
+      // Per AI_DEFAULT_MODEL übersteuerbar (zentraler Modell-Default)
+      model: process.env["AI_DEFAULT_MODEL"]?.trim() || "gpt-5.2",
       sourceMode: "wiki_only" as const,
       webSearchEnabled: false,
       maxCompletionTokens: 8192,
@@ -400,7 +402,15 @@ async function searchWikiContent(
   const permChecks = await Promise.all(
     results.map((r) => hasPermission(principalId, "read_page", r.id)),
   );
-  const filtered = results.filter((_, i) => permChecks[i]).slice(0, limit);
+  // Zusätzlich Vertraulichkeit prüfen — sonst könnten Inhalte vertraulicher
+  // Seiten in KI-Antworten von Nutzern ohne Freigabe landen.
+  const confidentialityMap = await checkConfidentialityAccessBatch(
+    principalId,
+    results.map((r) => r.id),
+  );
+  const filtered = results
+    .filter((r, i) => permChecks[i] && confidentialityMap.get(r.id) !== false)
+    .slice(0, limit);
 
   return filtered.map((r) => {
     let snippet = "";
@@ -464,7 +474,13 @@ async function searchConnectorSources(
   const permChecks = await Promise.all(
     rows.map((r) => hasPermission(principalId, "read_page", r.node_id)),
   );
-  const filtered = rows.filter((_, i) => permChecks[i]).slice(0, limit);
+  const confidentialityMap = await checkConfidentialityAccessBatch(
+    principalId,
+    rows.map((r) => r.node_id),
+  );
+  const filtered = rows
+    .filter((r, i) => permChecks[i] && confidentialityMap.get(r.node_id) !== false)
+    .slice(0, limit);
 
   return filtered.map((r) => ({
     nodeId: r.node_id,
@@ -946,7 +962,33 @@ const DEFAULT_FIELD_GUARDRAILS: Record<string, string> = {
   sipoc: "Du darfst die SIPOC-Struktur sprachlich verbessern, aber KEINE neuen Supplier, Inputs, Outputs oder Customers erfinden.",
 };
 
-function getDefaultGuardrailForField(fieldKey: string): string | undefined {
+/**
+ * Seitentyp-spezifische Leitplanken. Sie haben Vorrang vor den
+ * feldnamen-basierten Regeln, weil derselbe Feldname je Seitentyp eine
+ * andere fachliche Bedeutung haben kann.
+ */
+const PAGE_TYPE_GUARDRAILS: Record<string, string> = {
+  brand_profile: [
+    "Dies ist ein Markenprofil — eine verbindliche, dauerhafte Markenbeschreibung.",
+    "Du DARFST: vorhandenen Inhalt verdichten, sprachlich vereinheitlichen, Dopplungen benennen und operative Details als solche kennzeichnen.",
+    "Du DARFST NICHT: neue strategische Entscheidungen erfinden, Markenversprechen ergänzen, die nicht im Ausgangstext stehen, oder Richtlinienkompetenz und Mandate unterstellen, die nicht belegt sind.",
+    "Entferne keine Inhalte eigenmächtig und verschiebe keine Inhalte auf andere Seiten — weise stattdessen darauf hin, wenn Inhalte operativ sind und auf eine eigene Seite gehören (Website-, KI-, Kampagnen-, Kanal- oder Go-to-Market-Standards).",
+    "Bleibe strikt beim Informationsgehalt des Ausgangstextes.",
+  ].join(" "),
+};
+
+function getDefaultGuardrailForField(
+  fieldKey: string,
+  pageType?: string,
+): string | undefined {
+  if (pageType && PAGE_TYPE_GUARDRAILS[pageType]) {
+    const fieldRule = Object.entries(DEFAULT_FIELD_GUARDRAILS).find(([pattern]) =>
+      fieldKey.toLowerCase().includes(pattern),
+    );
+    return fieldRule
+      ? `${PAGE_TYPE_GUARDRAILS[pageType]} ${fieldRule[1]}`
+      : PAGE_TYPE_GUARDRAILS[pageType];
+  }
   const key = fieldKey.toLowerCase();
   for (const [pattern, guardrail] of Object.entries(DEFAULT_FIELD_GUARDRAILS)) {
     if (key.includes(pattern)) return guardrail;
@@ -1006,11 +1048,14 @@ export async function streamFieldAssist(
     if (profile.style) {
       systemInstruction += `\n\nGewünschter Stil: ${profile.style}`;
     }
-    if (profile.guardrails) {
-      systemInstruction += `\n\nGUARDRAILS (UNBEDINGT BEACHTEN): ${profile.guardrails}`;
+    const combined = [PAGE_TYPE_GUARDRAILS[pageType], profile.guardrails]
+      .filter(Boolean)
+      .join(" ");
+    if (combined) {
+      systemInstruction += `\n\nGUARDRAILS (UNBEDINGT BEACHTEN): ${combined}`;
     }
   } else {
-    const defaultGuardrail = getDefaultGuardrailForField(fieldKey);
+    const defaultGuardrail = getDefaultGuardrailForField(fieldKey, pageType);
     if (defaultGuardrail) {
       systemInstruction += `\n\nGUARDRAILS (UNBEDINGT BEACHTEN): ${defaultGuardrail}`;
     }

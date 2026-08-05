@@ -24,6 +24,8 @@ import { confidentialityRouter } from "./confidentiality";
 import { docsRouter } from "./docs";
 import { copilotRouter } from "./copilot";
 import { copilotConnectorRouter } from "./copilot-connector";
+import { contentApiRouter } from "./content-api";
+import { integrationKeysRouter } from "./integration-keys";
 import { graphConnectorRouter } from "./graph-connector";
 
 const router: IRouter = Router();
@@ -53,6 +55,9 @@ router.use("/confidentiality-config", confidentialityRouter);
 router.use(docsRouter);
 router.use("/copilot", copilotRouter);
 router.use("/copilot", copilotConnectorRouter);
+// Content-API für Fremdsysteme (Integrationsschlüssel) und ihre Verwaltung
+router.use("/content", contentApiRouter);
+router.use("/integration-keys", integrationKeysRouter);
 router.use("/graph-connector", graphConnectorRouter);
 
 export default router;

@@ -4,17 +4,17 @@ import { Input } from "@workspace/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
   Folder,
-  FileText,
   ArrowLeft,
   Search,
   RefreshCw,
   Globe,
   HardDrive,
-  File,
-  Image,
-  Video,
   Loader2,
 } from "lucide-react";
+import {
+  getSharePointFileIcon,
+  formatFileSize,
+} from "@/lib/sharepoint-ui";
 import {
   useListSharePointSites,
   useListSharePointDrives,
@@ -39,26 +39,10 @@ interface BreadcrumbItem {
   name: string;
 }
 
-function formatSize(bytes: number): string {
-  if (bytes === 0) return "-";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-}
-
 function classifyMimeType(mimeType: string): "image" | "video" | "file" {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   return "file";
-}
-
-function getFileIcon(mimeType: string, isFolder: boolean) {
-  if (isFolder) return Folder;
-  if (mimeType.startsWith("image/")) return Image;
-  if (mimeType.startsWith("video/")) return Video;
-  if (mimeType.includes("pdf")) return FileText;
-  return File;
 }
 
 interface SharePointMediaBrowserProps {
@@ -345,7 +329,7 @@ export function SharePointMediaBrowser({
               </div>
             )}
             {filteredItems?.map((item) => {
-              const ItemIcon = getFileIcon(
+              const ItemIcon = getSharePointFileIcon(
                 item.mimeType ?? "",
                 item.isFolder ?? false,
               );
@@ -391,7 +375,7 @@ export function SharePointMediaBrowser({
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{item.name}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{formatSize(item.size ?? 0)}</span>
+                      <span>{formatFileSize(item.size ?? 0)}</span>
                       {item.lastModifiedAt && (
                         <span>
                           {new Date(item.lastModifiedAt).toLocaleDateString(

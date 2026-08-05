@@ -28,7 +28,7 @@ import {
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
-import { hasPermissionBatch } from "../services/rbac.service";
+import { hasPermission, hasPermissionBatch } from "../services/rbac.service";
 import { checkConfidentialityAccess, checkConfidentialityAccessBatch } from "../services/confidentiality.service";
 import { AppError } from "../lib/app-error";
 import { recordEvent } from "../services/graph-change-feed.service";
@@ -81,13 +81,20 @@ router.get(
   "/nodes",
   requireAuth,
   requirePermission("read_page"),
-  async (_req, res) => {
+  async (req, res) => {
     const nodes = await db
       .select()
       .from(contentNodesTable)
       .where(eq(contentNodesTable.isDeleted, false))
       .orderBy(contentNodesTable.sortOrder);
-    res.json(nodes);
+
+    // Vertraulichkeitsfilter wie bei /nodes/roots und /nodes/:id/children —
+    // ohne ihn waren Metadaten vertraulicher Seiten für alle Leser sichtbar.
+    const confidentialityMap = await checkConfidentialityAccessBatch(
+      req.user!.principalId,
+      nodes.map((n) => n.id),
+    );
+    res.json(nodes.filter((n) => confidentialityMap.get(n.id) !== false));
   },
 );
 
@@ -282,6 +289,24 @@ router.post(
   async (req, res) => {
     try {
       const id = req.params.id as string;
+
+      // edit_structure auch am Zielknoten prüfen — sonst ließe sich eine
+      // Seite unter einen fremden Teilbaum hängen.
+      const newParentId = req.body.newParentNodeId as string | null | undefined;
+      if (newParentId) {
+        const canEditTarget = await hasPermission(
+          req.user!.principalId,
+          "edit_structure",
+          newParentId,
+        );
+        if (!canEditTarget) {
+          res.status(403).json({
+            error: "Keine Berechtigung, Seiten unter dem Zielknoten einzuordnen",
+          });
+          return;
+        }
+      }
+
       await moveNode(
         id,
         req.body.newParentNodeId ?? null,
@@ -313,6 +338,37 @@ router.delete(
   requirePermission("archive_page", (req) => req.params.id),
   async (req, res) => {
     const id = req.params.id as string;
+
+    const [node] = await db
+      .select({ id: contentNodesTable.id, isDeleted: contentNodesTable.isDeleted })
+      .from(contentNodesTable)
+      .where(eq(contentNodesTable.id, id));
+    if (!node || node.isDeleted) {
+      res.status(404).json({ error: "Seite nicht gefunden" });
+      return;
+    }
+
+    // Entscheidung N4 (Audit 22.07.2026): Seiten mit aktiven Unterseiten
+    // dürfen nicht gelöscht werden — sonst entstehen verwaiste Seiten ohne
+    // Ankerpunkt im Prozessbaum. Unterseiten müssen zuerst verschoben werden.
+    const [childCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(contentNodesTable)
+      .where(
+        and(
+          eq(contentNodesTable.parentNodeId, id),
+          eq(contentNodesTable.isDeleted, false),
+        ),
+      );
+    if ((childCount?.count ?? 0) > 0) {
+      res.status(409).json({
+        error: `Diese Seite hat ${childCount.count} aktive Unterseite(n). Bitte verschieben Sie die Unterseiten zuerst an eine andere Stelle, bevor Sie die Seite löschen.`,
+        code: "NODE_HAS_CHILDREN",
+        childCount: childCount.count,
+      });
+      return;
+    }
+
     await db.transaction(async (tx) => {
       await tx
         .update(contentNodesTable)

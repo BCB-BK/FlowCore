@@ -114,7 +114,7 @@ const MOCK_METADATA: Record<string, Record<string, string>> = {
 const MOCK_SECTION_CONTENT: Record<string, Record<string, string>> = {
   core_process_overview: {
     purpose:
-      "Dieser Kernprozess beschreibt die übergreifende Steuerung des Qualitätsmanagements am BildungsCampus Backnang. Er umfasst die Planung, Durchführung und Bewertung aller qualitätsrelevanten Aktivitäten.",
+      "Dieser Kernprozess beschreibt die übergreifende Steuerung des Qualitätsmanagements bei der OneCampus Group. Er umfasst die Planung, Durchführung und Bewertung aller qualitätsrelevanten Aktivitäten.",
     sipoc:
       "Supplier: Fachbereiche, Externe Auditoren | Input: Audit-Berichte, Kundenfeedback, Prozessdaten | Process: QM-Planung → Durchführung → Bewertung → Verbesserung | Output: Maßnahmenpläne, Berichte | Customer: Geschäftsführung, Fachbereiche",
     kpis: "• Kundenzufriedenheit: Ziel ≥ 85% (aktuell: 88%)\n• Audit-Abweichungen: Ziel ≤ 5 (aktuell: 3)\n• Prozessreifegrad: Ziel ≥ 3.5 (aktuell: 3.2)",
@@ -133,7 +133,7 @@ const MOCK_SECTION_CONTENT: Record<string, Record<string, string>> = {
   },
   procedure_instruction: {
     purpose:
-      "Diese Verfahrensanweisung regelt den Ablauf bei der Einrichtung neuer Benutzerkonten in allen IT-Systemen des BildungsCampus.",
+      "Diese Verfahrensanweisung regelt den Ablauf bei der Einrichtung neuer Benutzerkonten in allen IT-Systemen der OneCampus Group.",
     scope: "Gilt für alle IT-Systeme inkl. Active Directory, SAP, SharePoint.",
     procedure:
       "1. Antrag über HR-Portal einreichen\n2. Genehmigung durch Vorgesetzten\n3. IT erstellt Konten (SLA: 2 Arbeitstage)\n4. Zugangsdaten an Nutzer übergeben\n5. Erstanmeldung und Passwortänderung",
@@ -142,7 +142,7 @@ const MOCK_SECTION_CONTENT: Record<string, Record<string, string>> = {
   },
   policy: {
     purpose:
-      "Diese Richtlinie definiert die Grundsätze und Regeln für den Umgang mit personenbezogenen Daten am BildungsCampus Backnang gemäß DSGVO.",
+      "Diese Richtlinie definiert die Grundsätze und Regeln für den Umgang mit personenbezogenen Daten bei der OneCampus Group gemäß DSGVO.",
     scope:
       "Alle Mitarbeiter, Lehrkräfte und externe Dienstleister die personenbezogene Daten verarbeiten.",
     principles:

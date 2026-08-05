@@ -23,6 +23,7 @@ import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import { SharePointFilePicker } from "./SharePointFilePicker";
 import { WikiNodePickerDialog } from "./WikiNodePickerDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useRowKeys } from "./useRowKeys";
 
 type ReferenceType = "url" | "sharepoint" | "upload" | "node";
 
@@ -116,6 +117,7 @@ export function ReferencesEditor({
 }: ReferencesEditorProps) {
   const [editing, setEditing] = useState(false);
   const [refs, setRefs] = useState<Reference[]>(() => parseReferences(value));
+  const rowKeys = useRowKeys(refs.length);
   const [showSharePointPicker, setShowSharePointPicker] = useState(false);
   const [showNodePicker, setShowNodePicker] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -136,10 +138,12 @@ export function ReferencesEditor({
 
   const addRef = (type: ReferenceType = "url") => {
     setRefs([...refs, { type, title: "", url: "" }]);
+    rowKeys.add();
   };
 
   const removeRef = (index: number) => {
     setRefs(refs.filter((_, i) => i !== index));
+    rowKeys.remove(index);
   };
 
   const updateRef = (index: number, field: keyof Reference, val: string) => {
@@ -153,6 +157,7 @@ export function ReferencesEditor({
       url: f.webUrl,
     }));
     setRefs((prev) => [...prev, ...newRefs]);
+    rowKeys.add(newRefs.length);
   };
 
   const handleNodeSelect = (pickedNodeId: string, title: string, url: string, templateType?: string) => {
@@ -164,6 +169,7 @@ export function ReferencesEditor({
       templateType,
     };
     setRefs((prev) => [...prev, newRef]);
+    rowKeys.add();
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,6 +199,7 @@ export function ReferencesEditor({
         ...prev,
         { type: "upload", title: file.name, url: asset.url },
       ]);
+      rowKeys.add();
       toast({ title: "Datei hochgeladen", description: file.name });
     } catch (err) {
       toast({
@@ -266,7 +273,7 @@ export function ReferencesEditor({
                 const colorClass = TYPE_COLORS[ref.type] ?? "text-blue-600 bg-blue-50";
                 const isReadOnlyUrl = ref.type === "sharepoint" || ref.type === "upload" || ref.type === "node";
                 return (
-                  <div key={i} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+                  <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <GripVertical className="h-3 w-3" />
@@ -397,10 +404,26 @@ export function ReferencesEditor({
                   );
                 }
 
+                // Externe Verweise (SharePoint, URL) öffnen direkt am
+                // Ablageort in einem neuen Tab. FlowCore reicht die Datei
+                // nicht durch — es gelten die Rechte der jeweiligen Person
+                // im Zielsystem.
+                const RowTag = ref.url ? "a" : "div";
+                const rowProps = ref.url
+                  ? {
+                      href: ref.url,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                    }
+                  : {};
+
                 return (
-                  <div
+                  <RowTag
                     key={i}
-                    className="flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-muted/40 transition-colors group"
+                    {...rowProps}
+                    className={`flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-muted/40 transition-colors group ${
+                      ref.url ? "cursor-pointer" : ""
+                    }`}
                   >
                     <div className={`flex h-7 w-7 items-center justify-center rounded-md shrink-0 ${colorClass}`}>
                       <TypeIcon className="h-3.5 w-3.5" />
@@ -429,7 +452,7 @@ export function ReferencesEditor({
                     <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">
                       {TYPE_LABELS[ref.type] ?? "Link"}
                     </Badge>
-                  </div>
+                  </RowTag>
                 );
               })}
             </div>

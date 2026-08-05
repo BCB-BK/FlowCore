@@ -32,6 +32,12 @@ export interface LayoutField {
   requirement?: "required" | "recommended" | "conditional";
   required?: boolean;
   colSpan?: number;
+  /**
+   * Optionale Gruppenüberschrift für eine zweistufige Gliederung.
+   * Aufeinanderfolgende Felder mit derselben Gruppe werden unter einer
+   * gemeinsamen Überschrift zusammengefasst.
+   */
+  group?: string;
 }
 
 export type LayoutRow = LayoutField | LayoutField[];

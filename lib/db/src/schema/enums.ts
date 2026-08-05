@@ -49,6 +49,7 @@ export const templateTypeEnum = pgEnum("template_type", [
   "training_resource",
   "audit_object",
   "doc_registry",
+  "brand_profile",
 ]);
 
 export const reviewStatusEnum = pgEnum("review_status", [

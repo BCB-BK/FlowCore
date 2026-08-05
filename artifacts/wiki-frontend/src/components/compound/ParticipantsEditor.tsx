@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@workspace/ui/select";
 import { Users, Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { useRowKeys } from "./useRowKeys";
 
 interface Participant {
   name: string;
@@ -88,6 +89,7 @@ export function ParticipantsEditor({
 }: ParticipantsEditorProps) {
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<Participant[]>(() => parseParticipants(value));
+  const rowKeys = useRowKeys(rows.length);
 
   const displayRows = parseParticipants(value);
   const isEditable = !readOnly && !!onSave;
@@ -104,10 +106,12 @@ export function ParticipantsEditor({
 
   const addRow = () => {
     setRows([...rows, { name: "", role: "", status: "anwesend" }]);
+    rowKeys.add();
   };
 
   const removeRow = (i: number) => {
     setRows(rows.filter((_, idx) => idx !== i));
+    rowKeys.remove(i);
   };
 
   const updateRow = (i: number, field: keyof Participant, val: string) => {
@@ -159,7 +163,7 @@ export function ParticipantsEditor({
         {editing ? (
           <div className="space-y-2">
             {rows.map((row, i) => (
-              <div key={i} className="rounded-md border bg-muted/30 p-2 space-y-1.5">
+              <div key={rowKeys.keys[i]} className="rounded-md border bg-muted/30 p-2 space-y-1.5">
                 <div className="flex items-center gap-1.5">
                   <Input
                     value={row.name}

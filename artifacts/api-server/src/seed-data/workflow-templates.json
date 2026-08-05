@@ -5,7 +5,7 @@
       "description": "Aktualisierter Freigabeprozess",
       "is_default": true,
       "enforce_so_d": true,
-      "created_by": "Tobias Wenninger"
+      "created_by": "System"
     },
     "steps": [
       {

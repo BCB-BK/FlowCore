@@ -19,6 +19,23 @@ const configSchema = z.object({
     .transform((v) => v === "true"),
   teamsAppId: z.string().optional().default(""),
   entraRequiredGroupId: z.string().optional().default(""),
+  /**
+   * Delegierte Graph-Berechtigungen, die beim Anmelden angefordert werden.
+   * Ohne "Sites.Read.All" trägt das Benutzertoken keine SharePoint-Rechte —
+   * dann können benutzerbezogene SharePoint-Funktionen (Quellverweise,
+   * Dateiimport) nicht auf Graph zugreifen. Kommagetrennt überschreibbar,
+   * falls ein Mandant die Berechtigung nicht erteilt hat.
+   */
+  entraScopes: z
+    .string()
+    .optional()
+    .default("openid,profile,email,User.Read,Sites.Read.All")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -39,6 +56,7 @@ function loadConfig(): AppConfig {
       (process.env["NODE_ENV"] === "development" ? "true" : "false"),
     teamsAppId: process.env["TEAMS_APP_ID"],
     entraRequiredGroupId: process.env["ENTRA_REQUIRED_GROUP_ID"],
+    entraScopes: process.env["ENTRA_SCOPES"],
   });
 
   if (!result.success) {
@@ -59,9 +77,13 @@ function loadConfig(): AppConfig {
     );
   }
 
-  if (config.nodeEnv === "production" && config.authDevMode) {
+  // Fail-closed: Der Dev-Auth-Bypass ist ausschließlich in einer explizit als
+  // "development" deklarierten Umgebung zulässig — nicht nur "nicht production".
+  // Damit kann AUTH_DEV_MODE=true in Staging-/Test-Umgebungen den SSO-Zwang
+  // nicht aushebeln.
+  if (config.nodeEnv !== "development" && config.authDevMode) {
     throw new Error(
-      "AUTH_DEV_MODE must not be enabled in production (dev-auth-bypass is forbidden in production)",
+      "AUTH_DEV_MODE must not be enabled outside development (dev-auth-bypass is forbidden in non-development environments)",
     );
   }
 

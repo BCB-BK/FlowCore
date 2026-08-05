@@ -268,7 +268,9 @@ export function SlashCommandMenu({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+      // filtered.length === 0: Menü rendert null — Tasten nicht abfangen,
+      // sonst sind Enter/Pfeiltasten im Editor blockiert.
+      if (!isOpen || filtered.length === 0) return;
 
       if (e.key === "ArrowDown") {
         e.preventDefault();

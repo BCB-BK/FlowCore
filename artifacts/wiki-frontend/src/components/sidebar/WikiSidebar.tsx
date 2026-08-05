@@ -25,6 +25,7 @@ import { SidebarMenuButton, SidebarMenuItem } from "@workspace/ui/sidebar";
 import { useLocation } from "wouter";
 import { Skeleton } from "@workspace/ui/skeleton";
 import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
+import { formatBuildLabel, formatBuildTooltip } from "@/lib/build-info";
 
 export function WikiSidebar() {
   const { data: roots, isLoading } = useRootNodes();
@@ -35,16 +36,17 @@ export function WikiSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3">
+      <SidebarHeader className="border-b bg-white px-5 py-4">
         <a
           {...getLinkProps("/")}
           className="flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Zur Startseite"
         >
+          {/* OneCampus Group Logo — 1:1, unverändert (Brand Manual 5.2) */}
           <img
-            src={`${import.meta.env.BASE_URL}bildungscampus-logo.png`}
-            alt="BildungsCampus"
-            className="h-7 w-auto shrink-0"
+            src={`${import.meta.env.BASE_URL}onecampus-group-logo.png`}
+            alt="OneCampus Group"
+            className="h-11 w-auto shrink-0"
           />
         </a>
       </SidebarHeader>
@@ -160,7 +162,15 @@ export function WikiSidebar() {
 
       <SidebarFooter className="border-t p-3">
         <p className="text-xs text-muted-foreground text-center">
-          FlowCore v0.4
+          FlowCore · OneCampus Group
+        </p>
+        {/* Build-Stand statt manuell gepflegter Versionsnummer: zeigt
+            eindeutig, welcher Codestand ausgeliefert ist. */}
+        <p
+          className="text-[11px] text-muted-foreground/80 text-center font-mono select-all"
+          title={formatBuildTooltip()}
+        >
+          {formatBuildLabel()}
         </p>
       </SidebarFooter>
     </Sidebar>

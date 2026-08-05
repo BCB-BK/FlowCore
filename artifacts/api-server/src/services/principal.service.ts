@@ -5,7 +5,7 @@ import {
   confidentialityPrincipalAccessTable,
   type InsertPrincipal,
 } from "@workspace/db/schema";
-import { eq, and, ilike, or, inArray } from "drizzle-orm";
+import { eq, and, ilike, or, inArray, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
 export async function upsertPrincipal(input: {
@@ -50,12 +50,14 @@ export async function upsertPrincipal(input: {
     for (const dup of duplicates) {
       // Merge confidentiality access grants from the duplicate to the canonical
       // before deactivating — prevents loss of access when principals are merged.
-      const dupGrants = await db
+      // txOrDb statt db: Läuft der Aufruf in einer äußeren Transaktion, muss
+      // der Grant-Merge bei einem Rollback mit zurückgerollt werden.
+      const dupGrants = await txOrDb
         .select({ level: confidentialityPrincipalAccessTable.level })
         .from(confidentialityPrincipalAccessTable)
         .where(eq(confidentialityPrincipalAccessTable.principalId, dup.id));
       for (const grant of dupGrants) {
-        await db
+        await txOrDb
           .insert(confidentialityPrincipalAccessTable)
           .values({ level: grant.level, principalId: existing.id })
           .onConflictDoNothing();
@@ -225,6 +227,36 @@ export async function assignRole(input: {
     "Role assigned",
   );
   return assignment.id;
+}
+
+/** Prüft, ob ein Principal eine aktive, nicht abgelaufene Rolle besitzt. */
+export async function principalHasActiveRole(
+  principalId: string,
+  role:
+    | "system_admin"
+    | "process_manager"
+    | "editor"
+    | "reviewer"
+    | "approver"
+    | "viewer"
+    | "compliance_manager",
+): Promise<boolean> {
+  const rows = await db
+    .select({ id: roleAssignmentsTable.id })
+    .from(roleAssignmentsTable)
+    .where(
+      and(
+        eq(roleAssignmentsTable.principalId, principalId),
+        eq(roleAssignmentsTable.role, role),
+        eq(roleAssignmentsTable.isActive, true),
+        or(
+          sql`${roleAssignmentsTable.expiresAt} IS NULL`,
+          sql`${roleAssignmentsTable.expiresAt} > NOW()`,
+        ),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
 }
 
 export async function revokeRole(assignmentId: string, txOrDb: Pick<typeof db, "update"> = db) {

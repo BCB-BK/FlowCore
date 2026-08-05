@@ -184,6 +184,9 @@ importers:
       '@workspace/shared':
         specifier: workspace:*
         version: link:../../lib/shared
+      busboy:
+        specifier: ^1.6.0
+        version: 1.6.0
       connect-pg-simple:
         specifier: ^10.0.0
         version: 10.0.0
@@ -218,6 +221,9 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
+      '@types/busboy':
+        specifier: ^1.5.4
+        version: 1.5.4
       '@types/connect-pg-simple':
         specifier: ^7.0.3
         version: 7.0.3
@@ -2193,6 +2199,9 @@ packages:
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
+
+  '@types/busboy@1.5.4':
+    resolution: {integrity: sha512-kG7WrUuAKK0NoyxfQHsVE6j1m01s6kMma64E+OZenQABMQyTJop1DumUWcLwAQ2JzpefU7PDYoRDKl8uZosFjw==}
 
   '@types/connect-pg-simple@7.0.3':
     resolution: {integrity: sha512-NGCy9WBlW2bw+J/QlLnFZ9WjoGs6tMo3LAut6mY4kK+XHzue//lpNVpAvYRpIwM969vBRAM2Re0izUvV6kt+NA==}
@@ -5913,6 +5922,10 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
+      '@types/node': 25.3.5
+
+  '@types/busboy@1.5.4':
+    dependencies:
       '@types/node': 25.3.5
 
   '@types/connect-pg-simple@7.0.3':

@@ -54,13 +54,32 @@ Vollständige Dokumentation: [05-CONFIG-ENV.md](./05-CONFIG-ENV.md)
 
 ### Berechtigungen
 
-Das System verwendet 13+ feingranulare Berechtigungen:
-- `read_page`, `create_page`, `edit_page`, `delete_page`
-- `publish_page`, `archive_page`
-- `create_revision`, `approve_revision`
-- `manage_tags`, `manage_glossary`
-- `manage_permissions`, `manage_connectors`
-- `view_quality_dashboard`, `manage_ai_settings`
+Das System verwendet feingranulare Berechtigungen (definiert in `rbac.service.ts`):
+
+**Inhalte**
+- `read_page`, `create_page`, `edit_content`, `edit_structure`, `manage_relations`, `archive_page`
+
+**Arbeitskopien (Working Copies)**
+- `create_working_copy`, `edit_working_copy`, `submit_working_copy`
+- `review_working_copy`, `amend_working_copy_in_review`, `publish_working_copy`
+- `cancel_working_copy`, `force_unlock_working_copy`
+
+**Prüfung & Freigabe**
+- `submit_for_review`, `review_page`, `approve_page`
+
+**Administration**
+- `manage_permissions`, `manage_templates`, `manage_settings`, `manage_workflows`
+- `view_audit_log`, `manage_connectors`, `manage_media`
+
+**Backup**
+- `manage_backup`, `manage_backups`, `run_backup`, `restore_backup`, `view_backups`
+
+**Navigation & Ansichten**
+- `view_home`, `view_search`, `view_glossary`, `view_dashboard`, `view_tasks`, `view_settings`
+
+**Copilot / Graph Connector**
+- `export_copilot_content`, `manage_agent_metadata`, `manage_copilot_index_status`
+- `manage_graph_connector`, `manage_copilot_connector_keys`
 
 ### Rollenzuweisung
 
@@ -83,6 +102,41 @@ Konnektoren verbinden FlowCore mit externen Diensten. Die Verwaltung erfolgt unt
 Speicheranbieter definieren, wohin Dateien hochgeladen werden und wo Backups gespeichert werden.
 
 **Tabs**: Speicheranbieter | Sync-Status | SharePoint-Bibliotheken
+
+#### SharePoint-Ablagen durchsuchen
+
+Der Reiter „SharePoint-Bibliotheken" beginnt bei den **Teams** der
+Organisation: Team auswählen → Dokumentbibliotheken des Teams → Ordner und
+Dateien. Technisch ist ein Team eine Microsoft-365-Gruppe mit Teamsite; die
+Auswahl fragt daher Gruppen mit aktivierter Team-Bereitstellung ab
+(Berechtigung `Group.Read.All`) und löst die zugehörige Teamsite auf.
+
+Über „Alle SharePoint-Sites" lässt sich auf die Site-Suche umschalten — für
+Ablagen ohne zugehöriges Team, etwa ältere Projektsites. Persönliche
+OneDrive-Ablagen erscheinen in keiner der beiden Ansichten.
+
+Dieselbe Navigation greift überall, wo SharePoint ausgewählt wird: beim
+Anlegen eines Quellsystems, beim Einrichten eines Ablageziels und beim
+Verknüpfen eines Dokuments auf einer Wiki-Seite.
+
+#### Ein SharePoint-Dokument mit einer Seite verknüpfen
+
+Voraussetzung ist ein aktives SharePoint-**Quellsystem** (Einstellungen →
+Konnektoren → Quellsysteme). Danach auf der gewünschten Wiki-Seite:
+
+1. Reiter „Inhalt" → Abschnitt **Externe Quellen** → „Dokument verknüpfen"
+2. Team auswählen → Bibliothek öffnen → Datei anklicken (mehrere möglich)
+3. „Verknüpfen"
+
+Die Datei bleibt in SharePoint; FlowCore speichert die Verknüpfung samt
+Ablageort. Über „Prüfen" lässt sich jederzeit feststellen, ob die Datei noch
+existiert und ob sie seit der Verknüpfung geändert wurde — der Status wechselt
+dann auf „Veraltet" bzw. „Nicht gefunden".
+
+Verweise auf Dateien, die die anmeldende Person nicht öffnen darf, werden ihr
+nicht angezeigt. Lässt sich der Zugriff gerade nicht prüfen (etwa weil Graph
+nicht erreichbar ist), bleibt der Verweis sichtbar und wird mit „Zugriff
+ungeprüft" gekennzeichnet — er verschwindet nicht stillschweigend.
 
 #### Speicheranbieter anlegen
 
@@ -172,6 +226,33 @@ Unter **Einstellungen → KI** (bzw. **KI-Einstellungen**) können Administrator
 
 ---
 
+## Vertraulichkeitsstufen
+
+FlowCore unterstützt vier Vertraulichkeitsstufen für Seiten. Die Stufen folgen einem Clearance-Modell: Zugriff auf eine höhere Stufe impliziert automatisch Zugriff auf alle niedrigeren Stufen.
+
+### Stufen (von niedrig nach hoch)
+
+| Stufe | Beschreibung | Zugriff |
+|---|---|---|
+| `public` | Öffentlich sichtbar | Alle (kein Login erforderlich) |
+| `internal` | Intern (Standard) | Alle eingeloggten Benutzer — kein expliziter Grant erforderlich |
+| `confidential` | Vertraulich | Nur Benutzer mit explizitem `confidential`-Grant |
+| `strictly_confidential` | Streng vertraulich | Nur Benutzer mit explizitem `strictly_confidential`-Grant |
+
+### Wichtig: Hierarchie-Logik
+
+- **`internal`** ist der Standard-Level für alle neuen Seiten. Jeder authentifizierte Benutzer kann `internal`-Seiten lesen — kein Grant erforderlich.
+- **`confidential`-Grant** gewährt automatisch auch Zugriff auf `internal` und `public`.
+- **`strictly_confidential`-Grant** gewährt Zugriff auf alle Stufen.
+
+### Grants verwalten
+
+Grants werden in der Tabelle `confidentiality_principal_access` gespeichert (`level`, `principal_id`). Die Verwaltung erfolgt derzeit direkt über die Datenbank oder die Admin-API.
+
+Beim Zusammenführen doppelter Principals (automatisch bei erneutem Login) werden alle Grants des Duplikats auf den kanonischen Principal übertragen.
+
+---
+
 ## Sicherheit
 
 ### HTTP-Sicherheitsheader
@@ -214,12 +295,15 @@ pnpm --filter @workspace/db run push-force
 | `content_nodes` | Wiki-Seiten (Identität) |
 | `content_revisions` | Revisionshistorie (unveränderlich) |
 | `principals` | Benutzer und Gruppen |
+| `role_assignments` | Rollenzuweisungen pro Principal |
+| `confidentiality_principal_access` | Vertraulichkeits-Grants pro Principal (`internal`, `confidential`, `strictly_confidential`) |
 | `audit_events` | Audit-Trail |
 | `storage_providers` | Speicheranbieter-Konfiguration |
 | `source_systems` | Quellsysteme |
 | `backup_configs` | Backup-Konfiguration |
 | `media_assets` | Medien-Asset-Metadaten |
 | `notifications` | In-App-Benachrichtigungen |
+| `user_sessions` | Datenbankgestützte Session-Speicherung |
 
 ---
 

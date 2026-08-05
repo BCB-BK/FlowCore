@@ -1,3 +1,4 @@
+import { sanitizeInternalError } from "../lib/safe-error";
 import {
   Router,
   type IRouter,
@@ -17,6 +18,7 @@ import { eq, and, desc, ilike } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
+import { checkConfidentialityAccess } from "../services/confidentiality.service";
 import {
   getDefaultStorageProvider,
   getDefaultProviderId,
@@ -25,108 +27,93 @@ import {
 } from "../services/storage.service";
 import { getDriveItemContent } from "../services/sharepoint.service";
 import { logger } from "../lib/logger";
+import { envInt } from "../lib/env";
+import busboy from "busboy";
 
 const router: IRouter = Router();
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+// Per MAX_UPLOAD_MB übersteuerbar (Default 50 MB)
+const MAX_UPLOAD_MB = envInt("MAX_UPLOAD_MB", 50);
+const MAX_FILE_SIZE = MAX_UPLOAD_MB * 1024 * 1024;
 
-function parseMultipart(req: Request, _res: Response, next: NextFunction) {
+/**
+ * Multipart-Parsing über busboy (Streaming, mit hartem Größenlimit) statt der
+ * früheren Eigenimplementierung, die den gesamten Request puffer­te und per
+ * Binary-String-Splitting parste.
+ */
+function parseMultipart(req: Request, res: Response, next: NextFunction) {
   const contentType = req.headers["content-type"] || "";
   if (!contentType.includes("multipart/form-data")) {
     next();
     return;
   }
 
-  const boundaryMatch = contentType.match(/boundary=(.+)/);
-  if (!boundaryMatch) {
-    next();
+  let bb: ReturnType<typeof busboy>;
+  try {
+    bb = busboy({
+      headers: req.headers,
+      limits: { fileSize: MAX_FILE_SIZE, files: 1 },
+    });
+  } catch (err) {
+    next(err);
     return;
   }
 
-  const chunks: Buffer[] = [];
-  let totalSize = 0;
+  const formFields: Record<string, string> = {};
+  let uploadedFile:
+    | { originalname: string; mimetype: string; buffer: Buffer; size: number }
+    | undefined;
+  let fileTooLarge = false;
+  let finished = false;
 
-  req.on("data", (chunk: Buffer) => {
-    totalSize += chunk.length;
-    if (totalSize <= MAX_FILE_SIZE) {
+  bb.on("file", (_name, fileStream, info) => {
+    const chunks: Buffer[] = [];
+    fileStream.on("data", (chunk: Buffer) => {
       chunks.push(chunk);
-    }
+    });
+    fileStream.on("limit", () => {
+      fileTooLarge = true;
+      fileStream.resume();
+    });
+    fileStream.on("close", () => {
+      if (fileTooLarge) return;
+      const buffer = Buffer.concat(chunks);
+      uploadedFile = {
+        originalname: info.filename,
+        mimetype: info.mimeType || "application/octet-stream",
+        buffer,
+        size: buffer.length,
+      };
+    });
   });
 
-  req.on("end", () => {
-    if (totalSize > MAX_FILE_SIZE) {
-      next(new Error("File too large"));
+  bb.on("field", (name, value) => {
+    formFields[name] = value;
+  });
+
+  bb.on("error", (err: unknown) => {
+    if (finished) return;
+    finished = true;
+    next(err instanceof Error ? err : new Error("Multipart parsing failed"));
+  });
+
+  bb.on("close", () => {
+    if (finished) return;
+    finished = true;
+    if (fileTooLarge) {
+      res.status(413).json({
+        error: `Datei zu groß (maximal ${MAX_UPLOAD_MB} MB)`,
+      });
       return;
     }
-
-    const body = Buffer.concat(chunks);
-    const boundary = boundaryMatch[1];
-    const parts = parseMultipartBody(body, boundary);
-
-    const filePart = parts.find((p) => p.filename);
-    if (filePart) {
-      (req as unknown as Record<string, unknown>)._uploadedFile = {
-        originalname: filePart.filename,
-        mimetype: filePart.contentType || "application/octet-stream",
-        buffer: filePart.data,
-        size: filePart.data.length,
-      };
-    }
-
-    const formFields: Record<string, string> = {};
-    for (const part of parts) {
-      if (!part.filename && part.name) {
-        formFields[part.name] = part.data.toString("utf-8");
-      }
+    if (uploadedFile) {
+      (req as unknown as Record<string, unknown>)._uploadedFile = uploadedFile;
     }
     req.body = { ...req.body, ...formFields };
-
     next();
   });
 
-  req.on("error", next);
-}
-
-interface MultipartPart {
-  name?: string;
-  filename?: string;
-  contentType?: string;
-  data: Buffer;
-}
-
-function parseMultipartBody(body: Buffer, boundary: string): MultipartPart[] {
-  const parts: MultipartPart[] = [];
-  const boundaryBuf = Buffer.from(`--${boundary}`);
-  const bodyStr = body.toString("binary");
-  const segments = bodyStr.split(boundaryBuf.toString("binary"));
-
-  for (let i = 1; i < segments.length; i++) {
-    const segment = segments[i];
-    if (segment.startsWith("--")) break;
-
-    const headerEnd = segment.indexOf("\r\n\r\n");
-    if (headerEnd === -1) continue;
-
-    const headers = segment.substring(0, headerEnd);
-    const dataStr = segment.substring(headerEnd + 4);
-    const data = Buffer.from(
-      dataStr.endsWith("\r\n") ? dataStr.slice(0, -2) : dataStr,
-      "binary",
-    );
-
-    const nameMatch = headers.match(/name="([^"]+)"/);
-    const filenameMatch = headers.match(/filename="([^"]+)"/);
-    const ctMatch = headers.match(/Content-Type:\s*(.+)/i);
-
-    parts.push({
-      name: nameMatch?.[1],
-      filename: filenameMatch?.[1],
-      contentType: ctMatch?.[1]?.trim(),
-      data,
-    });
-  }
-
-  return parts;
+  req.pipe(bb);
 }
 
 router.post(
@@ -201,7 +188,7 @@ router.post(
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       logger.error({ err }, `Media upload failed: ${message}`);
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: sanitizeInternalError(message) });
     }
   },
 );
@@ -302,12 +289,15 @@ router.post(
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       logger.error({ err }, `SharePoint import failed: ${message}`);
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: sanitizeInternalError(message) });
     }
   },
 );
 
-router.get("/assets", requireAuth, async (req, res) => {
+// Medienbibliothek: nur für Benutzer mit Bearbeitungsrechten (die Dialoge
+// existieren ausschließlich im Editor-Kontext). Ohne Gate konnte jeder
+// Authentifizierte Metadaten und URLs aller Assets auflisten.
+router.get("/assets", requireAuth, requirePermission("edit_content"), async (req, res) => {
   const q = req.query.q as string | undefined;
   const classification = req.query.classification as string | undefined;
   const limit = Math.min(
@@ -357,7 +347,7 @@ router.get("/assets", requireAuth, async (req, res) => {
   res.json(assetsWithUrls);
 });
 
-router.get("/assets/:id", requireAuth, async (req, res) => {
+router.get("/assets/:id", requireAuth, requirePermission("edit_content"), async (req, res) => {
   const id = req.params.id as string;
   const [asset] = await db
     .select()
@@ -426,8 +416,53 @@ router.get("/files/:key", requireAuth, async (req, res) => {
       let canRead = false;
       try {
         canRead = await hasPermission(req.user!.principalId, "read_page", asset.nodeId);
+        // Medien vertraulicher Seiten unterliegen derselben
+        // Vertraulichkeitsprüfung wie die Seite selbst.
+        if (canRead) {
+          const confidentiality = await checkConfidentialityAccess(
+            req.user!.principalId,
+            asset.nodeId,
+          );
+          canRead = confidentiality.allowed;
+        }
       } catch (permErr) {
         logger.error({ permErr, principalId: req.user?.principalId, nodeId: asset.nodeId }, "hasPermission failed for media file");
+        res.status(500).json({ error: "Permission check failed" });
+        return;
+      }
+      if (!canRead) {
+        res.status(403).json({ error: "Keine Berechtigung" });
+        return;
+      }
+    } else {
+      // Asset ohne Seitenbezug: Zugriff, wenn der Benutzer eine der Seiten
+      // lesen darf, auf denen das Asset verwendet wird — sonst nur mit
+      // Bearbeitungsrechten (Medienbibliothek).
+      let canRead = false;
+      try {
+        const usages = await db
+          .selectDistinct({ nodeId: mediaAssetUsagesTable.nodeId })
+          .from(mediaAssetUsagesTable)
+          .where(eq(mediaAssetUsagesTable.assetId, asset.id))
+          .limit(20);
+        for (const usage of usages) {
+          if (!usage.nodeId) continue;
+          if (await hasPermission(req.user!.principalId, "read_page", usage.nodeId)) {
+            const confidentiality = await checkConfidentialityAccess(
+              req.user!.principalId,
+              usage.nodeId,
+            );
+            if (confidentiality.allowed) {
+              canRead = true;
+              break;
+            }
+          }
+        }
+        if (!canRead) {
+          canRead = await hasPermission(req.user!.principalId, "edit_content");
+        }
+      } catch (permErr) {
+        logger.error({ permErr, principalId: req.user?.principalId, assetId: asset.id }, "Permission check failed for node-less media file");
         res.status(500).json({ error: "Permission check failed" });
         return;
       }
@@ -451,17 +486,53 @@ router.get("/files/:key", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/assets/:id/usages", requireAuth, async (req, res) => {
-  const assetId = req.params.id as string;
-  const { nodeId, revisionId, usageContext } = req.body;
+router.post(
+  "/assets/:id/usages",
+  requireAuth,
+  requirePermission("edit_content"),
+  async (req, res) => {
+    const assetId = req.params.id as string;
+    const { nodeId, revisionId, usageContext } = req.body as {
+      nodeId?: unknown;
+      revisionId?: unknown;
+      usageContext?: unknown;
+    };
 
-  const [usage] = await db
-    .insert(mediaAssetUsagesTable)
-    .values({ assetId, nodeId, revisionId, usageContext })
-    .returning();
+    const isOptionalString = (v: unknown) => v == null || typeof v === "string";
+    if (
+      typeof nodeId !== "string" ||
+      nodeId.length === 0 ||
+      !isOptionalString(revisionId) ||
+      !isOptionalString(usageContext)
+    ) {
+      res.status(400).json({ error: "Ungültige Nutzungsdaten" });
+      return;
+    }
 
-  res.status(201).json(usage);
-});
+    const [asset] = await db
+      .select({ id: mediaAssetsTable.id })
+      .from(mediaAssetsTable)
+      .where(
+        and(eq(mediaAssetsTable.id, assetId), eq(mediaAssetsTable.isDeleted, false)),
+      );
+    if (!asset) {
+      res.status(404).json({ error: "Asset not found" });
+      return;
+    }
+
+    const [usage] = await db
+      .insert(mediaAssetUsagesTable)
+      .values({
+        assetId,
+        nodeId,
+        revisionId: (revisionId as string | undefined) ?? null,
+        usageContext: (usageContext as string | undefined) ?? null,
+      })
+      .returning();
+
+    res.status(201).json(usage);
+  },
+);
 
 router.get("/assets/:id/usages", requireAuth, async (req, res) => {
   const assetId = req.params.id as string;

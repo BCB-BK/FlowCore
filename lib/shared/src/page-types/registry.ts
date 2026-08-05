@@ -17,7 +17,8 @@ export type TemplateType =
   | "meeting_protocol"
   | "training_resource"
   | "audit_object"
-  | "doc_registry";
+  | "doc_registry"
+  | "brand_profile";
 
 export type MetadataGroupKey =
   | "identity"
@@ -49,6 +50,8 @@ export interface MetadataFieldDef {
   publishRequired?: boolean;
   errorMessage?: string;
   help?: FieldHelp;
+  /** Vorbelegung beim Anlegen, sofern das Feld noch leer ist. */
+  defaultValue?: string;
 }
 
 export interface PageTypeSection {
@@ -66,6 +69,23 @@ export interface PageTypeSection {
   errorMessage?: string;
   help?: FieldHelp;
   compoundType?: "sipoc_cards" | "raci_matrix" | "qa_repeater" | "term_repeater" | "check_items" | "competency_areas";
+  /**
+   * Optionale Gruppenüberschrift. Abschnitte mit identischem Gruppennamen
+   * werden im Layout unter einer gemeinsamen Überschrift zusammengefasst
+   * (zweistufige Gliederung). Abschnitte ohne Gruppe stehen für sich.
+   */
+  group?: string;
+  /**
+   * Redaktionelle Orientierung: empfohlene Höchstlänge in Zeichen.
+   * Eine Überschreitung blockiert die Veröffentlichung NICHT, erzeugt aber
+   * im Bearbeitungsmodus einen Hinweis.
+   */
+  softLimitChars?: number;
+  /**
+   * Redaktionelle Orientierung: empfohlene Höchstzahl an Aufzählungspunkten.
+   * Ebenfalls nicht veröffentlichungsblockierend.
+   */
+  softLimitItems?: number;
 }
 
 export type VariantCategory = "schlank" | "standard" | "qm_detail" | "grafisch" | "container";
@@ -411,7 +431,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Übersicht eines Kernprozesses mit SIPOC, KPIs und Schnittstellen",
     icon: "Workflow",
-    color: "hsl(145, 76%, 38%)",
+    color: "hsl(117, 45%, 32%)",
     category: "process",
     displayProfile: "overview_container",
     displayIdPrefix: "KP",
@@ -432,6 +452,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "training_resource",
       "audit_object",
       "doc_registry",
+      "brand_profile",
     ],
     recommendedChildTypes: [
       "process_page_text",
@@ -686,7 +707,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     description: "Overview of an organizational area or department",
     descriptionDe: "Übersicht eines Organisationsbereichs oder einer Abteilung",
     icon: "Building2",
-    color: "hsl(200, 70%, 45%)",
+    color: "hsl(205, 45%, 38%)",
     category: "documentation",
     displayProfile: "overview_container",
     displayIdPrefix: "BER",
@@ -710,6 +731,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "training_resource",
       "audit_object",
       "doc_registry",
+      "brand_profile",
     ],
     recommendedChildTypes: [
       "core_process_overview",
@@ -843,7 +865,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     description: "Text-based process documentation with procedure steps",
     descriptionDe: "Textbasierte Prozessdokumentation mit Verfahrensschritten",
     icon: "FileText",
-    color: "hsl(220, 60%, 50%)",
+    color: "hsl(205, 50%, 32%)",
     category: "process",
     displayProfile: "process_document",
     displayIdPrefix: "PRZ",
@@ -984,7 +1006,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     description: "Graphic BPMN 2.0 process documentation",
     descriptionDe: "Grafische Prozessdokumentation mit BPMN 2.0-Diagramm",
     icon: "GitBranchPlus",
-    color: "hsl(260, 50%, 55%)",
+    color: "hsl(210, 12%, 38%)",
     category: "process",
     displayProfile: "process_document",
     displayIdPrefix: "PRZ",
@@ -1081,7 +1103,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Detaillierte Verfahrensanweisung mit Geltungsbereich, Auslösern, Verantwortlichkeiten, Risiken und mitgeltenden Unterlagen",
     icon: "ListChecks",
-    color: "hsl(30, 80%, 50%)",
+    color: "hsl(39, 55%, 38%)",
     category: "process",
     displayProfile: "process_document",
     displayIdPrefix: "VA",
@@ -1462,7 +1484,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Use-Case-Dokumentation mit Akteuren, Abläufen und Bedingungen",
     icon: "Users",
-    color: "hsl(180, 50%, 45%)",
+    color: "hsl(160, 30%, 36%)",
     category: "documentation",
     displayProfile: "reference_article",
     displayIdPrefix: "UC",
@@ -1551,7 +1573,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Richtliniendokument mit Zweck, Geltungsbereich und Durchsetzung",
     icon: "Shield",
-    color: "hsl(0, 60%, 50%)",
+    color: "hsl(4, 55%, 42%)",
     category: "governance",
     displayProfile: "governance_document",
     displayIdPrefix: "RL",
@@ -1727,7 +1749,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Umfassendes Rollen-/Stellenprofil nach HR-Stellenbeschreibung mit Kompetenzen, Messerfolg und organisatorischer Einordnung",
     icon: "UserCog",
-    color: "hsl(320, 50%, 50%)",
+    color: "hsl(210, 10%, 45%)",
     category: "governance",
     displayProfile: "reference_article",
     displayIdPrefix: "ROL",
@@ -2097,7 +2119,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     description: "Dashboard with configurable widgets and KPI overview – modular, not part of core process tree",
     descriptionDe: "Dashboard mit konfigurierbaren Widgets und KPI-Übersicht – modularer Seitentyp",
     icon: "LayoutDashboard",
-    color: "hsl(280, 50%, 55%)",
+    color: "hsl(214, 15%, 40%)",
     category: "system",
     displayProfile: "module_page",
     displayIdPrefix: "DSH",
@@ -2154,7 +2176,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Glossarseite mit Begriffsdefinitionen, Synonymen und Abkürzungen",
     icon: "BookOpen",
-    color: "hsl(280, 50%, 55%)",
+    color: "hsl(214, 15%, 40%)",
     category: "documentation",
     displayProfile: "reference_article",
     displayIdPrefix: "GLO",
@@ -2212,7 +2234,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "IT-Systemdokumentation mit Schnittstellen, Datenobjekten und Zugriffsrechten",
     icon: "Server",
-    color: "hsl(200, 40%, 50%)",
+    color: "hsl(205, 30%, 45%)",
     category: "system",
     displayProfile: "system_document",
     displayIdPrefix: "SYS",
@@ -2347,7 +2369,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Detaillierte Schritt-für-Schritt-Arbeitsanweisung für konkrete Tätigkeiten am Arbeitsplatz",
     icon: "ClipboardCheck",
-    color: "hsl(35, 85%, 48%)",
+    color: "hsl(39, 55%, 38%)",
     category: "process",
     displayProfile: "process_document",
     displayIdPrefix: "AA",
@@ -2488,7 +2510,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Strukturierte Checkliste oder Formularvorlage mit Prüfpunkten und Abschnitten",
     icon: "CheckSquare",
-    color: "hsl(160, 60%, 40%)",
+    color: "hsl(140, 35%, 34%)",
     category: "quality",
     displayProfile: "module_page",
     displayIdPrefix: "CKL",
@@ -2607,7 +2629,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Häufig gestellte Fragen oder Wissensartikel zur Selbsthilfe",
     icon: "HelpCircle",
-    color: "hsl(45, 80%, 48%)",
+    color: "hsl(42, 50%, 40%)",
     category: "knowledge",
     displayProfile: "reference_article",
     displayIdPrefix: "FAQ",
@@ -2706,7 +2728,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Technische oder organisatorische Schnittstellenbeschreibung zwischen Systemen oder Bereichen",
     icon: "ArrowLeftRight",
-    color: "hsl(210, 55%, 52%)",
+    color: "hsl(205, 40%, 42%)",
     category: "system",
     displayProfile: "system_document",
     displayIdPrefix: "SST",
@@ -2845,7 +2867,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Strukturiertes Besprechungsprotokoll mit Agenda, Entscheidungen und Maßnahmen – modularer Seitentyp",
     icon: "MessageSquare",
-    color: "hsl(270, 50%, 55%)",
+    color: "hsl(215, 15%, 42%)",
     category: "documentation",
     displayProfile: "module_page",
     displayIdPrefix: "MPR",
@@ -2998,7 +3020,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Schulungsmaterial, Lernressource oder Einarbeitungsunterlage",
     icon: "GraduationCap",
-    color: "hsl(190, 60%, 45%)",
+    color: "hsl(195, 35%, 38%)",
     category: "knowledge",
     displayProfile: "module_page",
     displayIdPrefix: "SCH",
@@ -3151,7 +3173,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     descriptionDe:
       "Audit-Feststellung, Kontrollmaßnahme oder Qualitätsprüfpunkt-Dokumentation",
     icon: "SearchCheck",
-    color: "hsl(340, 55%, 50%)",
+    color: "hsl(9, 35%, 42%)",
     category: "quality",
     displayProfile: "governance_document",
     displayIdPrefix: "AUD",
@@ -3307,7 +3329,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     description: "Index page grouping child documents by cluster, sorted newest first",
     descriptionDe: "Indexseite, die untergeordnete Dokumente nach Cluster gruppiert, neueste zuerst",
     icon: "LayoutList",
-    color: "hsl(258, 65%, 55%)",
+    color: "hsl(210, 18%, 36%)",
     category: "documentation",
     displayProfile: "doc_registry",
     displayIdPrefix: "REG",
@@ -3326,7 +3348,9 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       "role_profile",
       "system_documentation",
       "interface_description",
+      "brand_profile",
     ],
+    recommendedChildTypes: ["brand_profile", "policy", "meeting_protocol"],
     supportsClusterGroups: true,
     supportsChildPages: true,
     canBeRootNode: false,
@@ -3363,6 +3387,438 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
     ],
   },
+
+  brand_profile: {
+    type: "brand_profile",
+    label: "Brand Profile",
+    labelDe: "Markenprofil",
+    description:
+      "Compact, binding description of a brand: purpose, role, mandate, audiences, promise and brand principles",
+    descriptionDe:
+      "Kompakte, verbindliche Beschreibung einer Marke: Auftrag, Rolle, Mandat, Zielgruppen, Nutzenversprechen und Markenprinzipien",
+    icon: "Gem",
+    color: "hsl(117, 45%, 32%)",
+    category: "governance",
+    displayProfile: "governance_document",
+    displayIdPrefix: "MP",
+    helpText:
+      "Ein Markenprofil beschreibt die dauerhafte Identität einer Marke: wofür sie existiert, welche Rolle und welches Mandat sie hat, wen sie adressiert und welche Prinzipien gelten. Operative Umsetzung (Website, KI, Kampagnen, Kanäle, Go-to-Market) wird auf eigenen Seiten gepflegt und hier nur verknüpft.",
+    allowedChildTypes: [
+      "policy",
+      "faq",
+      "use_case",
+      "work_instruction",
+      "checklist",
+      "doc_registry",
+    ],
+    recommendedChildTypes: ["policy", "faq"],
+    supportsClusterGroups: false,
+    supportsChildPages: true,
+    canBeRootNode: false,
+    canBeReferenceHub: false,
+    canBeGovernanceContainer: true,
+    usageHint:
+      "Dauerhafte Markenidentität einer Einzelmarke oder der Dachmarke. Keine operativen Umsetzungsdetails — diese gehören auf die verknüpften Standardseiten.",
+    metadataFields: [
+      ...COMMON_IDENTITY_FIELDS,
+      ...COMMON_GOVERNANCE_FIELDS.map((f) =>
+        f.key === "source_of_truth"
+          ? {
+              ...f,
+              // Markenprofile werden in FlowCore selbst geführt
+              defaultValue: "FlowCore",
+            }
+          : f,
+      ),
+      ...COMMON_VALIDITY_FIELDS,
+      ...COMMON_CLASSIFICATION_FIELDS,
+      {
+        key: "brand_name",
+        label: "Marke",
+        type: "text",
+        required: true,
+        requirement: "required",
+        publishRequired: true,
+        group: "identity",
+        description: "Marke bzw. Bildungsinstitution, die dieses Profil beschreibt",
+        errorMessage: "Bitte geben Sie an, für welche Marke dieses Profil gilt.",
+        help: {
+          fillHelp:
+            "Tragen Sie die Marke ein, für die dieses Profil gilt (Dachmarke oder Einzelmarke).",
+          example: "Academy of Sports",
+        },
+      },
+      {
+        key: "brand_level",
+        label: "Markenebene",
+        type: "enum",
+        required: true,
+        requirement: "required",
+        publishRequired: true,
+        group: "classification",
+        options: ["dachmarke", "einzelmarke", "submarke", "kampagnenmarke"],
+        description: "Einordnung in die Markenarchitektur der Gruppe",
+        errorMessage: "Bitte ordnen Sie die Marke einer Markenebene zu.",
+        help: {
+          fillHelp:
+            "Legen Sie fest, auf welcher Ebene der Markenarchitektur die Marke steht.",
+          example: "Einzelmarke",
+        },
+      },
+    ],
+    sections: [
+      // ---------- Feldgruppe 1: Strategischer Kern ----------
+      {
+        key: "strategic_decision",
+        label: "Strategische Leitentscheidung",
+        group: "Strategischer Kern",
+        description: "Die zentrale strategische Entscheidung für diese Marke",
+        helpText:
+          "Welche grundlegende strategische Entscheidung gilt für diese Marke? Beschreiben Sie Rolle, Ausrichtung und zentrale Abgrenzung in kompakter Form.",
+        guidingQuestions: [
+          "Welche grundsätzliche Weichenstellung gilt für diese Marke?",
+          "Welche Ausrichtung wurde bewusst gewählt — und welche verworfen?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 1,
+        softLimitChars: 1200,
+        help: {
+          fillHelp:
+            "Kompakte Festlegung der strategischen Ausrichtung, aus der sich alle weiteren Felder ableiten.",
+          example:
+            "Die Marke tritt als eigenständige Fachmarke im Sportsegment auf und adressiert Unternehmen wie Privatpersonen über berufsbegleitende Formate.",
+          badExample:
+            "Konkrete Kampagnenplanung, Kanalauswahl oder Startseiten-Aufbau — das gehört auf die Go-to-Market- bzw. Website-Seiten.",
+        },
+      },
+      {
+        key: "brand_purpose",
+        label: "Markenauftrag und Purpose",
+        group: "Strategischer Kern",
+        description: "Warum die Marke existiert und welchen dauerhaften Beitrag sie leistet",
+        helpText:
+          "Warum existiert die Marke? Welchen dauerhaften Nutzen stiftet sie für ihre Zielgruppen und innerhalb der Gruppe?",
+        guidingQuestions: [
+          "Welchen Beitrag leistet die Marke dauerhaft?",
+          "Was ginge verloren, wenn es die Marke nicht gäbe?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 2,
+        softLimitChars: 1000,
+        help: {
+          fillHelp:
+            "Der dauerhafte Daseinszweck der Marke — unabhängig von einzelnen Angeboten oder Kampagnen.",
+          example:
+            "Die Marke macht berufliche Entwicklung im Gesundheits- und Sportsektor auch für Menschen ohne klassischen Bildungsweg zugänglich.",
+          badExample:
+            "Aufzählung des aktuellen Kursportfolios oder Umsatzziele.",
+        },
+      },
+      {
+        key: "brand_role",
+        label: "Markenrolle im Gruppensystem",
+        group: "Strategischer Kern",
+        description: "Funktion der Marke innerhalb der Gruppe",
+        helpText:
+          "Welche Funktion übernimmt die Marke innerhalb der Gruppe? Wie ergänzt sie die anderen Marken?",
+        guidingQuestions: [
+          "Welche Rolle übernimmt die Marke im Portfolio?",
+          "Wie ergänzt sie die Schwestermarken?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 3,
+        softLimitChars: 1000,
+        help: {
+          fillHelp:
+            "Die Funktion im Markenportfolio — Dachmarke, Fachmarke, Hochschule, Spezialanbieter.",
+          example:
+            "Fachmarke für den Sport- und Gesundheitsbereich; ergänzt die Dachmarke um fachspezifische Tiefe.",
+          badExample:
+            "Detaillierte Abgrenzung einzelner Produkte — dafür gibt es das Feld „Abgrenzung und Zusammenspiel der Marken“.",
+        },
+      },
+      {
+        key: "brand_mandate",
+        label: "Mandat und Verantwortungsrahmen",
+        group: "Strategischer Kern",
+        description: "Richtlinienkompetenz, Steuerungsmandat, Zuständigkeiten und Grenzen",
+        helpText:
+          "Welche gruppenweiten oder markenspezifischen Entscheidungen und Standards führt die Marke? Welche Verantwortung verbleibt ausdrücklich bei anderen Marken, Gesellschaften, Fachstellen oder Organen?",
+        guidingQuestions: [
+          "Welche Standards oder Entscheidungen verantwortet die Marke verbindlich?",
+          "Wo endet ihr Mandat ausdrücklich?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 4,
+        softLimitChars: 1500,
+        help: {
+          fillHelp:
+            "Klare Aussage zu Richtlinienkompetenz und Grenzen — wichtig für Governance und Konfliktfälle.",
+          example:
+            "Die Marke verantwortet die fachlichen Curricula ihres Segments. Prüfungsrecht und Akkreditierung verbleiben bei der Hochschule.",
+          badExample:
+            "Allgemeine Absichtserklärungen ohne benannte Zuständigkeit.",
+        },
+      },
+
+      // ---------- Feldgruppe 2: Zielgruppe und Leistungsversprechen ----------
+      {
+        key: "primary_target_groups",
+        label: "Primäre Zielgruppen",
+        group: "Zielgruppe und Leistungsversprechen",
+        description: "Dauerhaft relevante Kernzielgruppen",
+        helpText:
+          "Wen adressiert die Marke primär? Beschränken Sie sich auf die dauerhaft relevanten Kernzielgruppen.",
+        guidingQuestions: [
+          "Welche Zielgruppen sind dauerhaft zentral?",
+          "Welche sind bewusst nachrangig?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 5,
+        softLimitItems: 8,
+        help: {
+          fillHelp:
+            "Zielgruppen auf hoher Ebene, als kurze Aufzählung — maximal acht.",
+          example:
+            "Personalverantwortliche in Fitness- und Gesundheitsunternehmen; Quereinsteigende mit Berufserfahrung.",
+          badExample:
+            "Personas, Kanalzuordnungen oder Landingpage-Architektur — das gehört in die Zielgruppen- und Segmentierungslogik.",
+        },
+      },
+      {
+        key: "core_promise",
+        label: "Kernversprechen",
+        group: "Zielgruppe und Leistungsversprechen",
+        description: "Der verbindlich zugesagte Nutzen",
+        helpText:
+          "Welchen verbindlichen Nutzen sagt die Marke ihren Zielgruppen zu?",
+        guidingQuestions: [
+          "Was können Zielgruppen verlässlich erwarten?",
+          "Woran ließe sich die Einlösung messen?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 6,
+        softLimitChars: 600,
+        help: {
+          fillHelp:
+            "Ein kurzes, überprüfbares Versprechen — kein Werbeslogan.",
+          example:
+            "Qualifizierung, die berufsbegleitend absolvierbar ist und auf anerkannte Abschlüsse anrechenbar bleibt.",
+          badExample:
+            "Superlative wie „das beste Angebot am Markt“ ohne belegbaren Inhalt.",
+        },
+      },
+      {
+        key: "service_logic",
+        label: "Leistungs- und Lösungslogik",
+        group: "Zielgruppe und Leistungsversprechen",
+        description: "Leistungsarten und Lösungsprinzipien",
+        helpText:
+          "Welche Arten von Leistungen, Bildungswegen und Lösungen stellt die Marke grundsätzlich bereit? Keine vollständige Produktliste einfügen.",
+        guidingQuestions: [
+          "Welche Leistungsarten bietet die Marke grundsätzlich an?",
+          "Nach welchem Prinzip bauen die Angebote aufeinander auf?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 7,
+        softLimitItems: 10,
+        help: {
+          fillHelp:
+            "Leistungsarten und Aufbaulogik, als Aufzählung — maximal zehn Punkte.",
+          example:
+            "Zertifikatslehrgänge; berufsbegleitende Studiengänge; Inhouse-Qualifizierung; geförderte Maßnahmen.",
+          badExample:
+            "Vollständiger Kurskatalog mit Preisen und Terminen.",
+        },
+      },
+
+      // ---------- Feldgruppe 3: Abgrenzung und Markenführung ----------
+      {
+        key: "brand_delimitation",
+        label: "Abgrenzung und Zusammenspiel der Marken",
+        group: "Abgrenzung und Markenführung",
+        description: "Zuständigkeit, Übergänge und Zusammenspiel",
+        helpText:
+          "Wofür ist diese Marke zuständig? Was übernehmen andere Marken? Wann erfolgt ein Übergang zu einer anderen Marke?",
+        guidingQuestions: [
+          "Wo verläuft die Grenze zu den Schwestermarken?",
+          "Bei welchem Bedarf wird an eine andere Marke übergeben?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 8,
+        help: {
+          fillHelp:
+            "Klare Zuordnung und benannte Übergabepunkte zwischen den Marken der Gruppe.",
+          example:
+            "Akademische Abschlüsse laufen über die Hochschule; berufliche Zertifikate verantwortet diese Marke. Übergang bei Anrechnungswunsch.",
+          badExample:
+            "Reine Aufzählung der anderen Marken ohne Aussage zur Abgrenzung.",
+        },
+      },
+      {
+        key: "brand_principles",
+        label: "Markenprinzipien und No-Gos",
+        group: "Abgrenzung und Markenführung",
+        description: "Dauerhafte Grundsätze und ausdrückliche Ausschlüsse",
+        helpText:
+          "Welche dauerhaften Grundsätze gelten für die Marke? Welche Darstellungen, Versprechen oder Vermischungen sind ausdrücklich ausgeschlossen?",
+        guidingQuestions: [
+          "Welche Grundsätze gelten unabhängig von Kampagne und Kanal?",
+          "Welche Aussagen oder Vermischungen sind ausgeschlossen?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 9,
+        softLimitItems: 12,
+        help: {
+          fillHelp:
+            "Grundsätze und No-Gos als Aufzählung — maximal zwölf Punkte.",
+          example:
+            "Keine Erfolgsgarantien; keine Vermischung von Hochschul- und Zertifikatsabschlüssen in der Darstellung.",
+          badExample:
+            "Formulierungsregeln und Wortlisten — diese gehören in die Kommunikations- und Sprachleitplanken.",
+        },
+      },
+
+      // ---------- Feldgruppe 4: Markenausdruck ----------
+      {
+        key: "guiding_idea",
+        label: "Leitidee",
+        group: "Markenausdruck",
+        description: "Der gedankliche Kern der Marke",
+        helpText:
+          "Welche Leitidee hält Haltung und Angebot der Marke zusammen?",
+        required: false,
+        requirement: "recommended",
+        softLimitChars: 400,
+        help: {
+          fillHelp: "Ein bis zwei Sätze, die den gedanklichen Kern fassen.",
+          example: "Entwicklung beginnt dort, wo Menschen bereits stehen.",
+          badExample: "Ausformulierte Kampagnentexte.",
+        },
+      },
+      {
+        key: "recommended_claim",
+        label: "Hauptclaim",
+        group: "Markenausdruck",
+        description: "Der verbindliche Hauptclaim der Marke",
+        helpText:
+          "Wie lautet der Hauptclaim der Marke? Weitere Claim-Varianten werden auf der Kommunikationsseite gepflegt.",
+        required: false,
+        requirement: "recommended",
+        softLimitChars: 160,
+        help: {
+          fillHelp: "Nur der Hauptclaim, wörtlich.",
+          example: "Menschen entwickeln. Zukunft möglich machen.",
+          badExample:
+            "Ein ganzes Claim-Set mit Varianten je Anlass — dieses gehört auf die Kommunikationsseite.",
+        },
+      },
+      {
+        key: "tonality",
+        label: "Tonalitätskern",
+        group: "Markenausdruck",
+        description: "Die dauerhaft geltenden Tonalitätsmerkmale",
+        helpText:
+          "Beschreiben Sie die dauerhaft geltenden vier bis sechs Tonalitätsmerkmale. Ausführliche Sprachleitplanken werden auf einer separaten Seite gepflegt.",
+        guidingQuestions: [
+          "Welche vier bis sechs Merkmale beschreiben die Ansprache dauerhaft?",
+        ],
+        required: true,
+        publishRequired: true,
+        guidedModeStep: 10,
+        softLimitItems: 6,
+        help: {
+          fillHelp:
+            "Vier bis sechs Merkmale als kurze Aufzählung — keine ausformulierten Regeln.",
+          example: "Sachlich; ermutigend; konkret; auf Augenhöhe.",
+          badExample:
+            "Bevorzugte und verbotene Begriffe, Anredeform, Satzbauregeln — das gehört in die Sprachleitplanken.",
+        },
+      },
+
+      // ---------- Feldgruppe 5: Mitgeltende Grundlagen ----------
+      {
+        key: "references",
+        label: "Mitgeltende Seiten und Standards",
+        group: "Mitgeltende Grundlagen",
+        description: "Verknüpfte Standards statt wiederholter Inhalte",
+        helpText:
+          "Verknüpfen Sie die mitgeltenden Seiten — z.B. gruppenweite Markenarchitektur, Zielgruppen- und Segmentierungslogik, Kommunikations- und Sprachleitplanken, Website- und Journey-Architektur, KI-/StudyGuide-/Handover-Standard, Go-to-Market-Leitplanken sowie Förder- und Finanzierungslogik. Inhalte nicht erneut ausformulieren.",
+        required: false,
+        requirement: "recommended",
+        help: {
+          fillHelp:
+            "Verlinken Sie bestehende Seiten über die Auswahl, statt Inhalte zu kopieren.",
+          example: "Verlinkung auf „Kommunikations- und Sprachleitplanken“.",
+          badExample:
+            "Vollständige Wiederholung der verlinkten Inhalte in diesem Feld.",
+        },
+      },
+    ],
+    publicationRules: {
+      minimumSections: [
+        "strategic_decision",
+        "brand_purpose",
+        "brand_role",
+        "brand_mandate",
+        "primary_target_groups",
+        "core_promise",
+        "service_logic",
+        "brand_delimitation",
+        "brand_principles",
+        "tonality",
+      ],
+      minimumMetadata: ["owner", "brand_name", "brand_level"],
+      minSectionContentLength: 30,
+    },
+    variants: [
+      {
+        key: "blank",
+        label: "Schlank",
+        description: "Strategischer Kern und Zielgruppen — für eine schnelle Erstfassung",
+        variantCategory: "schlank",
+        prefilledSections: [
+          "strategic_decision",
+          "brand_purpose",
+          "brand_role",
+          "primary_target_groups",
+          "core_promise",
+        ],
+      },
+      {
+        key: "full",
+        label: "Vollständiges Markenprofil",
+        description:
+          "Alle verbindlichen Felder inklusive Mandat, Abgrenzung, Markenprinzipien und Markenausdruck",
+        variantCategory: "standard",
+        prefilledSections: [
+          "strategic_decision",
+          "brand_purpose",
+          "brand_role",
+          "brand_mandate",
+          "primary_target_groups",
+          "core_promise",
+          "service_logic",
+          "brand_delimitation",
+          "brand_principles",
+          "guiding_idea",
+          "recommended_claim",
+          "tonality",
+          "references",
+        ],
+      },
+    ],
+  },
+
 };
 
 export const ALL_TEMPLATE_TYPES = Object.keys(
@@ -3404,6 +3860,29 @@ export function getMetadataGroups(
   }
 
   return groups;
+}
+
+/**
+ * Liefert die Vorbelegungen (defaultValue) eines Seitentyps für alle
+ * Metadatenfelder, die im übergebenen Datensatz noch leer sind.
+ * Bereits gesetzte Werte werden nie überschrieben.
+ */
+export function getMetadataDefaults(
+  type: string,
+  current: Record<string, unknown> | null | undefined,
+): Record<string, string> {
+  const def = getPageType(type);
+  if (!def) return {};
+
+  const defaults: Record<string, string> = {};
+  for (const field of def.metadataFields) {
+    if (!field.defaultValue) continue;
+    const val = current?.[field.key];
+    if (val === undefined || val === null || val === "") {
+      defaults[field.key] = field.defaultValue;
+    }
+  }
+  return defaults;
 }
 
 export const METADATA_GROUP_LABELS: Record<MetadataGroupKey, string> = {

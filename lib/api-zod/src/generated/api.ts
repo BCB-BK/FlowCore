@@ -368,6 +368,7 @@ export const ListNodesResponseItem = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -416,6 +417,7 @@ export const CreateNodeBody = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().optional(),
   parentNodeId: zod.string().uuid().optional(),
@@ -451,6 +453,7 @@ export const ListRootNodesResponseItem = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -506,6 +509,7 @@ export const GetNodeResponse = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -558,6 +562,7 @@ export const UpdateNodeBody = zod.object({
       "training_resource",
       "audit_object",
       "doc_registry",
+      "brand_profile",
     ])
     .optional(),
 });
@@ -587,6 +592,7 @@ export const UpdateNodeResponse = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -648,6 +654,7 @@ export const GetNodeChildrenResponseItem = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -703,6 +710,7 @@ export const GetNodeSiblingsResponseItem = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -759,6 +767,7 @@ export const GetNodeAncestorsResponseItem = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -819,6 +828,7 @@ export const MoveNodeResponse = zod.object({
     "training_resource",
     "audit_object",
     "doc_registry",
+    "brand_profile",
   ]),
   templateId: zod.string().uuid().nullish(),
   parentNodeId: zod.string().uuid().nullish(),
@@ -1303,6 +1313,12 @@ export const CreateWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1348,6 +1364,12 @@ export const GetActiveWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1393,6 +1415,12 @@ export const GetWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1449,6 +1477,12 @@ export const UpdateWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1502,6 +1536,12 @@ export const SubmitWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1551,6 +1591,12 @@ export const ReturnWorkingCopyForChangesResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1600,6 +1646,12 @@ export const ApproveWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1650,6 +1702,12 @@ export const PublishWorkingCopyResponse = zod.object({
     submittedAt: zod.string().nullish(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
+    authorDisplayName: zod
+      .string()
+      .nullish()
+      .describe(
+        "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+      ),
   }),
   revision: zod.object({
     id: zod.string().uuid().optional(),
@@ -1705,6 +1763,12 @@ export const CancelWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -1750,6 +1814,12 @@ export const UnlockWorkingCopyResponse = zod.object({
   submittedAt: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+  authorDisplayName: zod
+    .string()
+    .nullish()
+    .describe(
+      "Anzeigename des Autors der Arbeitskopie (serverseitig aufgelöst)",
+    ),
 });
 
 /**
@@ -3972,6 +4042,39 @@ export const RunConsistencyCheckResponse = zod.object({
     warnings: zod.number(),
     errors: zod.number(),
   }),
+});
+
+/**
+ * Returns all currently active (non-expired) user sessions. Requires manage_settings permission.
+ * @summary List active user sessions
+ */
+export const ListActiveSessionsResponse = zod.object({
+  sessions: zod.array(
+    zod.object({
+      sid: zod.string().optional(),
+      expire: zod.date().optional(),
+      user: zod
+        .object({
+          principalId: zod.string().nullish(),
+          externalId: zod.string().nullish(),
+          displayName: zod.string().nullish(),
+          email: zod.string().nullish(),
+        })
+        .nullish(),
+    }),
+  ),
+});
+
+/**
+ * Immediately destroys a specific session by ID. Requires manage_settings permission.
+ * @summary Terminate a user session
+ */
+export const TerminateSessionParams = zod.object({
+  sid: zod.coerce.string().describe("The session ID to terminate"),
+});
+
+export const TerminateSessionResponse = zod.object({
+  success: zod.boolean(),
 });
 
 /**

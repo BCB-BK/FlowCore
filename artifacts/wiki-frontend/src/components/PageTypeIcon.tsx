@@ -17,6 +17,8 @@ import {
   MessageSquare,
   GraduationCap,
   SearchCheck,
+  Gem,
+  LayoutList,
   File,
 } from "lucide-react";
 
@@ -39,6 +41,8 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,
   GraduationCap,
   SearchCheck,
+  Gem,
+  LayoutList,
 };
 
 interface PageTypeIconProps {

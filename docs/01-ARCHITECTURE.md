@@ -123,15 +123,20 @@ PostgreSQL (Drizzle ORM)    Microsoft Graph API
 | Seite | Route | Funktion |
 |---|---|---|
 | Hub | `/` | Startseite, Quicklinks, Aktivitäten |
-| NodeDetail | `/wiki/:id` | Seitenansicht und -bearbeitung |
+| NodeDetail | `/node/:id` | Seitenansicht |
+| WorkingCopyEditorPage | `/nodes/:id/edit` | Arbeitskopie bearbeiten |
+| WorkingCopyReviewPage | `/nodes/:id/review` | Arbeitskopie prüfen/genehmigen |
 | SearchPage | `/search` | Volltextsuche |
-| GlossaryPage | `/glossary` | Glossar |
-| QualityDashboard | `/quality` | Qualitäts-Dashboard |
-| ReviewInboxPage | `/review-inbox` | Review-Aufgaben |
-| SettingsPage | `/settings` | Systemeinstellungen (7 Tabs) |
+| GlossaryPage | `/glossary`, `/glossary/:slug` | Glossar (mit Direktanker per Slug) |
+| QualityDashboard | `/dashboard` | Qualitäts-Dashboard |
+| MyWorkPage | `/my-work` | Meine Aufgaben (eigene Arbeitskopien, Reviews) |
+| ReviewInboxPage | `/review-inbox` | Review-Posteingang |
+| SettingsPage | `/settings` | Systemeinstellungen |
 | ConnectorsPage | `/connectors` | Konnektoren-Verwaltung |
 | AISettingsPage | `/ai-settings` | KI-Konfiguration |
 | BrokenLinksPage | `/broken-links` | Defekte Verlinkungen |
+| DocsPage | `/docs` | In-App-Dokumentationsbetrachter |
+| TeamsTabConfig | `/teams/tab-config` | Microsoft Teams Tab-Konfiguration |
 
 ### Editor-Komponenten
 

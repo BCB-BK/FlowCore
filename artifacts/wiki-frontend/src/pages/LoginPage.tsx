@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { formatBuildLabel, formatBuildTooltip } from "@/lib/build-info";
 
-const BCB_GREEN = "hsl(145, 76%, 38%)";
-const BCB_GREEN_HOVER = "hsl(145, 76%, 32%)";
+// OneCampus Charcoal — Primärbutton laut Brand Manual
+const OC_CHARCOAL = "#1f2323";
+const OC_CHARCOAL_HOVER = "#343a3a";
 
 export function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,7 @@ export function LoginPage() {
   const authErrorMessage = (() => {
     if (!authErrorParam) return null;
     if (authErrorParam === "group_not_authorized") {
-      return "Sie gehören nicht zum Team BildungsCampus und haben keinen Zugang. Bitte wenden Sie sich an Ihren Administrator.";
+      return "Sie gehören nicht zum Team der OneCampus Group und haben keinen Zugang. Bitte wenden Sie sich an Ihren Administrator.";
     }
     if (authErrorParam === "session_invalidated") {
       return "Ihre Sitzung wurde beendet, weil Ihre Zugriffsberechtigung nicht mehr gültig ist. Bitte melden Sie sich erneut an.";
@@ -49,9 +51,10 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm flex flex-col items-center gap-8">
+        {/* OneCampus Group Logo — 1:1, unverändert (Brand Manual 5.2) */}
         <img
-          src={`${import.meta.env.BASE_URL}bcb-logo.png`}
-          alt="BildungsCampus Backnang"
+          src={`${import.meta.env.BASE_URL}onecampus-group-logo.png`}
+          alt="OneCampus Group"
           className="h-16 sm:h-20 object-contain"
         />
 
@@ -70,7 +73,7 @@ export function LoginPage() {
           className="w-full flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors disabled:opacity-60"
           style={{
             backgroundColor:
-              hovered && !loading ? BCB_GREEN_HOVER : BCB_GREEN,
+              hovered && !loading ? OC_CHARCOAL_HOVER : OC_CHARCOAL,
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
@@ -98,8 +101,11 @@ export function LoginPage() {
       </div>
 
       <footer className="absolute bottom-6 text-center text-xs text-gray-400 space-y-0.5">
-        <p>FlowCore v0.4</p>
-        <p>Bildungscampus Backnang</p>
+        <p>FlowCore</p>
+        <p>OneCampus Group</p>
+        <p className="font-mono text-[11px] select-all" title={formatBuildTooltip()}>
+          {formatBuildLabel()}
+        </p>
       </footer>
     </div>
   );

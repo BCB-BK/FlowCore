@@ -1,3 +1,4 @@
+import { sanitizeInternalError } from "../lib/safe-error";
 import { Router } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
@@ -30,7 +31,7 @@ workflowsAdminRouter.get("/admin/workflows", ...auth, async (_req, res) => {
     res.json({ templates });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -44,7 +45,7 @@ workflowsAdminRouter.get("/admin/workflows/:id", ...auth, async (req, res) => {
     res.json(template);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -67,7 +68,7 @@ workflowsAdminRouter.post("/admin/workflows", ...auth, async (req, res) => {
     res.status(201).json(template);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -89,7 +90,7 @@ workflowsAdminRouter.put("/admin/workflows/:id", ...auth, async (req, res) => {
     res.json(updated);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -104,7 +105,7 @@ workflowsAdminRouter.delete("/admin/workflows/:id", ...auth, async (req, res) =>
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     const status = message === "Der Standard-Workflow kann nicht gelöscht werden." ? 400 : 500;
-    res.status(status).json({ error: message });
+    res.status(status).json({ error: status === 400 ? message : sanitizeInternalError(message) });
   }
 });
 
@@ -114,7 +115,7 @@ workflowsAdminRouter.get("/admin/workflow-assignments", ...auth, async (_req, re
     res.json({ assignments });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -132,7 +133,7 @@ workflowsAdminRouter.put("/admin/workflow-assignments/:pageType", ...auth, async
     res.json(assignment);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -142,7 +143,7 @@ workflowsAdminRouter.delete("/admin/workflow-assignments/:pageType", ...auth, as
     res.json({ success: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -152,7 +153,7 @@ workflowsAdminRouter.get("/admin/notification-rules", ...auth, async (_req, res)
     res.json({ rules });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -162,7 +163,7 @@ workflowsAdminRouter.post("/admin/notification-rules/seed", ...auth, async (_req
     res.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -181,7 +182,7 @@ workflowsAdminRouter.put("/admin/notification-rules/:id", ...auth, async (req, r
     res.json(rule);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -203,7 +204,7 @@ workflowsAdminRouter.post("/admin/notification-rules", ...auth, async (req, res)
     res.status(201).json(rule);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -217,17 +218,17 @@ workflowsAdminRouter.delete("/admin/notification-rules/:id", ...auth, async (req
     res.json({ success: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
 workflowsAdminRouter.get("/admin/flowcore-account", ...auth, async (_req, res) => {
   try {
     const upn = await getSystemSetting("flowcore_account_upn");
-    res.json({ upn: upn ?? "flowcore@bildungscampus-backnang.de" });
+    res.json({ upn: upn ?? null });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -242,7 +243,7 @@ workflowsAdminRouter.put("/admin/flowcore-account", ...auth, async (req, res) =>
     res.json({ upn });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -293,6 +294,6 @@ workflowsAdminRouter.post("/admin/flowcore-account/test", ...auth, async (req, r
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });

@@ -1,3 +1,4 @@
+import { sanitizeInternalError } from "../lib/safe-error";
 import { Router, type IRouter } from "express";
 import { pool } from "@workspace/db";
 import { appConfig } from "../lib/config";
@@ -79,7 +80,7 @@ router.post("/admin/migrate-working-copies", requireAuth, requirePermission("man
     res.json({ success: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -89,7 +90,7 @@ router.get("/admin/consistency-check", requireAuth, requirePermission("manage_se
     res.json(report);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -99,7 +100,7 @@ router.get("/admin/releases", requireAuth, requirePermission("manage_settings"),
     res.json({ releases });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -114,7 +115,7 @@ router.get("/admin/releases/:id", requireAuth, requirePermission("manage_setting
     res.json(release);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -136,7 +137,7 @@ router.post("/admin/releases", requireAuth, requirePermission("manage_settings")
     res.status(201).json(release);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -157,7 +158,7 @@ router.patch("/admin/releases/:id", requireAuth, requirePermission("manage_setti
     res.json(release);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -189,7 +190,7 @@ router.post("/admin/releases/:id/transition", requireAuth, requirePermission("ma
       res.status(400).json({ error: message });
       return;
     }
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -280,7 +281,7 @@ router.get("/admin/audit-events", requireAuth, requireAnyPermission("view_audit_
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -293,7 +294,7 @@ router.get("/admin/audit-events/filters", requireAuth, requireAnyPermission("vie
     res.json({ actions, resourceTypes });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -353,7 +354,7 @@ router.get("/admin/audit-events/export", requireAuth, requireAnyPermission("view
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -363,7 +364,7 @@ router.get("/admin/setup-mode", requireAuth, async (_req, res) => {
     res.json({ setupMode: active });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -373,13 +374,28 @@ router.get("/admin/system-settings", requireAuth, requirePermission("manage_sett
     res.json({ settings });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
+
+// Allowlist der über die API setzbaren System-Settings. Verhindert, dass mit
+// manage_settings beliebige (auch zukünftig sicherheitsrelevante) Schalter
+// gesetzt werden können, die nirgends dokumentiert sind.
+const ALLOWED_SYSTEM_SETTING_KEYS = new Set([
+  "setup_mode",
+  "flowcore_account_upn",
+  "glossary_sync_enabled",
+  "graph_sync_mock_mode",
+  "graph_sync_fault_injection",
+]);
 
 router.put("/admin/system-settings/:key", requireAuth, requirePermission("manage_settings"), async (req, res) => {
   try {
     const key = req.params.key as string;
+    if (!ALLOWED_SYSTEM_SETTING_KEYS.has(key)) {
+      res.status(400).json({ error: `Unbekannter Einstellungs-Schlüssel: ${key}` });
+      return;
+    }
     const { value } = req.body;
     if (typeof value !== "string") {
       res.status(400).json({ error: "value muss ein String sein" });
@@ -390,7 +406,7 @@ router.put("/admin/system-settings/:key", requireAuth, requirePermission("manage
     res.json({ success: true, key, value });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -420,7 +436,7 @@ router.get("/admin/sessions", requireAuth, requirePermission("manage_settings"),
     res.json({ sessions });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 
@@ -457,7 +473,7 @@ router.delete("/admin/sessions/:sid", requireAuth, requirePermission("manage_set
     res.json({ success: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: sanitizeInternalError(message) });
   }
 });
 

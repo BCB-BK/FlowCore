@@ -10,6 +10,7 @@ import { securityHeaders } from "./middlewares/security-headers";
 import { apiRateLimit } from "./middlewares/rate-limit";
 import { notFoundHandler, errorHandler } from "./middlewares/error-handler";
 import { appConfig } from "./lib/config";
+import { envInt, envString } from "./lib/env";
 import { pool } from "@workspace/db";
 
 declare module "express-session" {
@@ -67,7 +68,11 @@ app.use(
     },
   }),
 );
-const PROD_ORIGIN = "https://flowcore.bildungscampus-backnang.de";
+// Konfigurierbar über APP_PUBLIC_URL; der Fallback hält bestehende
+// Deployments ohne gesetzte Variable funktionsfähig.
+const PROD_ORIGIN =
+  process.env["APP_PUBLIC_URL"]?.replace(/\/$/, "") ||
+  "https://flowcore.bildungscampus-backnang.de";
 
 // The Copilot Studio / Power Platform custom connector endpoints are
 // authenticated via a per-agent API key (no cookies), and are called
@@ -105,8 +110,9 @@ app.use((req, res, next) => {
   }
   strictCors(req, res, next);
 });
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+const jsonBodyLimit = envString("JSON_BODY_LIMIT", "2mb");
+app.use(express.json({ limit: jsonBodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: jsonBodyLimit }));
 app.use(apiRateLimit);
 app.use(
   session({
@@ -117,7 +123,7 @@ app.use(
     cookie: {
       secure: isProduction,
       httpOnly: true,
-      maxAge: 8 * 60 * 60 * 1000,
+      maxAge: envInt("SESSION_MAX_AGE_HOURS", 8) * 60 * 60 * 1000,
       sameSite: "lax",
     },
   }),

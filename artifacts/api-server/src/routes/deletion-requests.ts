@@ -6,14 +6,37 @@ import {
   auditEventsTable,
   principalsTable,
 } from "@workspace/db/schema";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { hasPermission } from "../services/rbac.service";
 
 const router: IRouter = Router();
 
+/**
+ * Entscheidung N4 (Audit 22.07.2026): Seiten mit aktiven Unterseiten dürfen
+ * nicht gelöscht werden — Unterseiten müssen zuerst an eine andere Stelle
+ * verschoben werden, damit keine verwaisten Seiten entstehen.
+ */
+async function countActiveChildren(nodeId: string): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(contentNodesTable)
+    .where(
+      and(
+        eq(contentNodesTable.parentNodeId, nodeId),
+        eq(contentNodesTable.isDeleted, false),
+      ),
+    );
+  return row?.count ?? 0;
+}
+
 router.get("/deletion-requests", requireAuth, async (req, res) => {
   const statusFilter = req.query.status as string | undefined;
+
+  // Nur Prüfer (archive_page) sehen alle Anfragen; alle anderen sehen
+  // ausschließlich ihre eigenen (vorher: vollständige Liste für jeden).
+  const canReviewAll = await hasPermission(req.user!.principalId, "archive_page");
 
   let query = db
     .select({
@@ -38,14 +61,21 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
     .orderBy(desc(deletionRequestsTable.createdAt))
     .$dynamic();
 
+  const conditions = [];
   if (statusFilter) {
     const validStatuses = ["pending", "approved", "rejected", "executed"] as const;
     type DeletionStatus = (typeof validStatuses)[number];
     if (validStatuses.includes(statusFilter as DeletionStatus)) {
-      query = query.where(
+      conditions.push(
         eq(deletionRequestsTable.status, statusFilter as DeletionStatus),
       );
     }
+  }
+  if (!canReviewAll) {
+    conditions.push(eq(deletionRequestsTable.requestedBy, req.user!.principalId));
+  }
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
   }
 
   const rows = await query;
@@ -90,6 +120,24 @@ router.post("/deletion-requests", requireAuth, async (req, res) => {
 
   if (!node) {
     res.status(404).json({ error: "Seite nicht gefunden" });
+    return;
+  }
+
+  // Löschanfragen nur für lesbare Seiten; 404 statt 403, damit die Existenz
+  // nicht lesbarer Seiten nicht enumerierbar ist.
+  const canRead = await hasPermission(requestedBy, "read_page", nodeId);
+  if (!canRead) {
+    res.status(404).json({ error: "Seite nicht gefunden" });
+    return;
+  }
+
+  const childCount = await countActiveChildren(nodeId);
+  if (childCount > 0) {
+    res.status(409).json({
+      error: `Diese Seite hat ${childCount} aktive Unterseite(n). Bitte verschieben Sie die Unterseiten zuerst an eine andere Stelle, bevor Sie eine Löschanfrage stellen.`,
+      code: "NODE_HAS_CHILDREN",
+      childCount,
+    });
     return;
   }
 
@@ -180,13 +228,26 @@ router.get("/deletion-requests/:requestId", requireAuth, async (req, res) => {
     return;
   }
 
+  // Detailansicht nur für Prüfer oder den Antragsteller selbst.
+  const isRequester = request.requestedBy === req.user!.principalId;
+  if (!isRequester) {
+    const canReview = await hasPermission(
+      req.user!.principalId,
+      "archive_page",
+      request.nodeId,
+    );
+    if (!canReview) {
+      res.status(404).json({ error: "Löschanfrage nicht gefunden" });
+      return;
+    }
+  }
+
   res.json(request);
 });
 
 router.post(
   "/deletion-requests/:requestId/review",
   requireAuth,
-  requirePermission("archive_page"),
   async (req, res) => {
     const requestId = String(req.params.requestId);
     const { decision, comment } = req.body as {
@@ -210,9 +271,31 @@ router.post(
       return;
     }
 
+    // archive_page knoten-skopiert prüfen (konsistent zu DELETE /nodes/:id) —
+    // die frühere rein globale Prüfung ignorierte Seiten-Scopes.
+    const canReview = await hasPermission(reviewerId, "archive_page", request.nodeId);
+    if (!canReview) {
+      res.status(403).json({ error: "Keine Berechtigung zur Prüfung dieser Löschanfrage" });
+      return;
+    }
+
     if (request.status !== "pending") {
       res.status(400).json({ error: "Löschanfrage ist nicht mehr offen" });
       return;
+    }
+
+    // Auch zum Ausführungszeitpunkt prüfen — zwischen Anfrage und Genehmigung
+    // können neue Unterseiten entstanden sein.
+    if (decision === "approved") {
+      const childCount = await countActiveChildren(request.nodeId);
+      if (childCount > 0) {
+        res.status(409).json({
+          error: `Diese Seite hat inzwischen ${childCount} aktive Unterseite(n). Bitte verschieben Sie die Unterseiten zuerst, bevor die Löschung genehmigt wird.`,
+          code: "NODE_HAS_CHILDREN",
+          childCount,
+        });
+        return;
+      }
     }
 
     const newStatus = decision === "approved" ? "approved" : "rejected";
@@ -348,7 +431,11 @@ router.post(
   },
 );
 
-router.get("/nodes/:nodeId/deletion-request", requireAuth, async (req, res) => {
+router.get(
+  "/nodes/:nodeId/deletion-request",
+  requireAuth,
+  requirePermission("read_page", (req) => req.params.nodeId as string),
+  async (req, res) => {
   const nodeId = String(req.params.nodeId);
 
   const [request] = await db

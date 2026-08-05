@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -60,13 +61,17 @@ function formatDate(iso: string | null): string {
 
 export function DocsPage() {
   const { data, isLoading, error } = useDocsList();
-  const [selected, setSelected] = useState<string | null>(null);
+  // Direktverlinkung aus dem Tool heraus: /docs?doc=30-CONTENT-API.md öffnet
+  // das Dokument sofort, statt den Lesenden suchen zu lassen.
+  const search = useSearch();
+  const requestedDoc = new URLSearchParams(search).get("doc");
+  const [selected, setSelected] = useState<string | null>(requestedDoc);
   const [isExporting, setIsExporting] = useState(false);
 
   const handbook = data?.docs.find((d) => d.isHandbook);
   const technicalDocs = data?.docs.filter((d) => !d.isHandbook) ?? [];
 
-  const activeFilename = selected ?? handbook?.filename ?? null;
+  const activeFilename = selected ?? requestedDoc ?? handbook?.filename ?? null;
   const { data: docContent, isLoading: contentLoading } =
     useDocContent(activeFilename);
   const activeEntry = data?.docs.find((d) => d.filename === activeFilename);

@@ -13,6 +13,9 @@ import { eq, and, desc, isNotNull } from "drizzle-orm";
 import { serializeProseMirrorContent } from "../lib/prosemirror-serializer";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
+import { htmlToPlainText } from "@workspace/shared/rich-text";
+import { getPageType } from "@workspace/shared/page-types";
+import { AGENT_METADATA_KEYS, SYNC_ONLY_KEYS } from "../lib/agent-metadata";
 import {
   getAclMappingStatus,
   DEFAULT_CONFIDENTIALITY_LEVEL,
@@ -22,7 +25,9 @@ import {
   evaluateIndexability,
 } from "../lib/agent-metadata";
 
-const SOURCE_BASE_URL = "https://flowcore.bildungscampus-backnang.de";
+const SOURCE_BASE_URL =
+  process.env["APP_PUBLIC_URL"]?.replace(/\/$/, "") ||
+  "https://flowcore.bildungscampus-backnang.de";
 
 export interface CopilotPageProjection {
   itemType: "flowcore_page";
@@ -94,6 +99,84 @@ async function resolvePrincipalName(id: string | null | undefined): Promise<stri
   if (!id) return null;
   const principal = await getPrincipalById(id);
   return principal?.displayName ?? null;
+}
+
+/**
+ * Systemfelder, die unabhängig vom Seitentemplate im Export verbleiben
+ * (Steuerungs- und Indexierungsinformationen, keine fachlichen Inhalte).
+ */
+const NON_TEMPLATE_EXPORT_KEYS = new Set<string>([
+  "confidentiality",
+  "summary",
+  "kurzbeschreibung",
+  "scope",
+  ...AGENT_METADATA_KEYS,
+  ...SYNC_ONLY_KEYS,
+]);
+
+/**
+ * Seitentypen, bei denen ausschließlich die aktuell im Template definierten
+ * Abschnitte als fachlicher Inhalt exportiert werden.
+ *
+ * Hintergrund: Beim Umbau des Markenprofils wurden operative Felder aus dem
+ * Template entfernt. Ihre Inhalte bleiben in den Revisionen erhalten (keine
+ * Datenlöschung), dürfen aber nicht mehr als aktueller Markenprofilinhalt an
+ * Graph/Copilot ausgeliefert werden.
+ */
+const TEMPLATE_SCOPED_EXPORT_TYPES = new Set<string>(["brand_profile"]);
+
+function scopeStructuredFieldsToTemplate(
+  templateType: string,
+  fields: Record<string, unknown>,
+): Record<string, unknown> {
+  if (!TEMPLATE_SCOPED_EXPORT_TYPES.has(templateType)) return fields;
+  const def = getPageType(templateType);
+  if (!def) return fields;
+
+  // Aktive Abschnitte UND Metadatenfelder bleiben erhalten — gefiltert werden
+  // nur fachliche Abschnitte, die nicht mehr Teil des Templates sind.
+  const activeKeys = new Set([
+    ...def.sections.map((section) => section.key),
+    ...def.metadataFields.map((field) => field.key),
+  ]);
+  const scoped: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    if (
+      activeKeys.has(key) ||
+      key.startsWith("_") ||
+      NON_TEMPLATE_EXPORT_KEYS.has(key)
+    ) {
+      scoped[key] = value;
+    }
+  }
+  return scoped;
+}
+
+/**
+ * Findet das Editor-Dokument einer Revision.
+ *
+ * Der Fließtext liegt heute in `structuredFields._editorContent`; das Feld
+ * `content` trägt die Metadaten der Seite. Ältere Revisionen haben das
+ * ProseMirror-Dokument dagegen direkt in `content`. Wird nur `content`
+ * serialisiert, bleibt der gesamte Fließtext aktueller Seiten im Export leer —
+ * betrifft Copilot-Index und Content-API gleichermaßen.
+ */
+function pickEditorDocument(
+  content: unknown,
+  structuredFields: unknown,
+): Record<string, unknown> | null {
+  if (isProseMirrorDoc(content)) return content;
+  const sf = (structuredFields ?? {}) as Record<string, unknown>;
+  if (isProseMirrorDoc(sf._editorContent)) return sf._editorContent;
+  return isRecord(content) ? content : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function isProseMirrorDoc(value: unknown): value is Record<string, unknown> {
+  return isRecord(value) && value.type === "doc";
 }
 
 export function deriveBrandScope(tags: string[]): string[] {
@@ -334,8 +417,22 @@ export function deriveChildPagesExport(
  * revision. Returns null if the node has no published_revision_id, is
  * deleted, or does not exist (i.e. strictly published-only export).
  */
+export interface ProjectionOptions {
+  /**
+   * Für den Graph-/Copilot-Index gilt: ohne aufgelöste Entra-ACL wird nichts
+   * ausgeliefert, weil Microsoft Search die Sichtbarkeit über Gruppen steuert.
+   *
+   * Die Content-API steuert die Sichtbarkeit dagegen über die Freigabe des
+   * Integrationsschlüssels (Vertraulichkeitsgrenze, Struktur, Seitentyp) und
+   * hängt nicht an der Graph-Konfiguration. Dort wird diese Prüfung deshalb
+   * bewusst abgeschaltet — die Zugriffskontrolle findet vorgelagert statt.
+   */
+  requireGraphAcl?: boolean;
+}
+
 export async function projectPublishedPage(
   nodeId: string,
+  options: ProjectionOptions = {},
 ): Promise<CopilotPageProjection | null> {
   const [node] = await db
     .select()
@@ -401,11 +498,14 @@ export async function projectPublishedPage(
     .limit(1);
 
   const { plaintext, markdown, media } = serializeProseMirrorContent(
-    revision.content ?? null,
+    pickEditorDocument(revision.content, revision.structuredFields),
   );
 
   const structuredFields = {
-    ...(revision.structuredFields ?? {}),
+    ...scopeStructuredFieldsToTemplate(
+      node.templateType,
+      (revision.structuredFields ?? {}) as Record<string, unknown>,
+    ),
     media,
   };
 
@@ -436,16 +536,20 @@ export async function projectPublishedPage(
   const agentScope = Array.isArray(sf.agent_scope)
     ? (sf.agent_scope as unknown[]).filter((v) => typeof v === "string")
     : [];
+  // Abschnittsfelder können formatiertes HTML enthalten — für Export, Suche
+  // und KI-Kontext wird daraus lesbarer Klartext erzeugt.
   const summary =
     typeof sf.summary === "string" && sf.summary.trim().length > 0
-      ? sf.summary
+      ? htmlToPlainText(sf.summary)
       : plaintext.slice(0, 400);
   const shortDescription =
     typeof sf.kurzbeschreibung === "string" && sf.kurzbeschreibung.trim().length > 0
-      ? sf.kurzbeschreibung
+      ? htmlToPlainText(sf.kurzbeschreibung)
       : summary;
   const scopeContext =
-    typeof sf.scope === "string" && sf.scope.trim().length > 0 ? sf.scope : null;
+    typeof sf.scope === "string" && sf.scope.trim().length > 0
+      ? htmlToPlainText(sf.scope)
+      : null;
 
   const agentMetadata = extractAgentMetadata(sf);
   const aclStatus = await getAclMappingStatus(node.id);
@@ -456,7 +560,7 @@ export async function projectPublishedPage(
     confidentialityMapsToAcl: aclStatus.confidentialityMapsToAcl,
     aclPresent: aclStatus.aclPresent,
   });
-  if (!indexable) return null;
+  if (!indexable && (options.requireGraphAcl ?? true)) return null;
 
   const contentHash = stableContentHash({
     content: revision.content ?? null,

@@ -6,6 +6,7 @@ import { Input } from "@workspace/ui/input";
 import { Textarea } from "@workspace/ui/textarea";
 import { ClipboardList, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
+import { useRowKeys } from "./useRowKeys";
 
 interface CompetencyArea {
   area: string;
@@ -33,6 +34,7 @@ function parseAreas(raw: string): CompetencyArea[] {
 export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, guidingQuestions }: CompetencyAreasProps) {
   const [editing, setEditing] = useState(false);
   const [areas, setAreas] = useState<CompetencyArea[]>(() => parseAreas(value));
+  const rowKeys = useRowKeys(areas.length);
 
   const handleSave = () => {
     const filtered = areas.filter(a => a.area.trim() || a.tasks.trim());
@@ -47,10 +49,12 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
 
   const addArea = () => {
     setAreas([...areas, { area: "", tasks: "" }]);
+    rowKeys.add();
   };
 
   const removeArea = (index: number) => {
     setAreas(areas.filter((_, i) => i !== index));
+    rowKeys.remove(index);
   };
 
   const updateArea = (index: number, field: keyof CompetencyArea, val: string) => {
@@ -102,7 +106,7 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
         {editing ? (
           <div className="space-y-3">
             {areas.map((area, i) => (
-              <div key={i} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+              <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Kompetenzbereich {i + 1}</span>
                   <Button variant="ghost" size="sm" className="h-6 px-1.5 text-destructive" onClick={() => removeArea(i)}>

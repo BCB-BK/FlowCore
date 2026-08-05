@@ -35,6 +35,7 @@ import {
   BookOpen,
   LogOut,
   KeyRound,
+  Plug,
 } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
@@ -54,6 +55,7 @@ import { GlossaryImportTab } from "@/components/settings/GlossaryImportTab";
 import { SessionsTab } from "@/components/settings/SessionsTab";
 import { GraphConnectorTab } from "@/components/settings/GraphConnectorTab";
 import { CopilotConnectorKeysTab } from "@/components/settings/CopilotConnectorKeysTab";
+import { IntegrationKeysTab } from "@/components/settings/IntegrationKeysTab";
 import { useAuth } from "@/hooks/use-auth";
 import type { LucideIcon } from "lucide-react";
 
@@ -70,6 +72,7 @@ const SETTINGS_TAB_CONFIG: SettingsTabDefinition[] = [
   { value: "connections", label: "Verbindungen", icon: Link2, requiredPermissions: ["manage_settings"] },
   { value: "graph-connector", label: "Copilot Studio / Graph (Vorschau)", icon: Cpu, requiredPermissions: ["manage_graph_connector"] },
   { value: "copilot-connector-keys", label: "Copilot Connector-Keys", icon: KeyRound, requiredPermissions: ["manage_copilot_connector_keys"] },
+  { value: "integration-keys", label: "Content-API", icon: Plug, requiredPermissions: ["manage_integration_keys"] },
   { value: "ai", label: "FlowCore-Assistent", icon: Bot, requiredPermissions: ["manage_settings"] },
   { value: "templates", label: "Seitentemplates", icon: FileText, requiredPermissions: ["manage_templates"] },
   { value: "connectors", label: "Konnektoren", icon: Database, requiredPermissions: ["manage_connectors"] },
@@ -189,6 +192,10 @@ export function SettingsPage() {
 
         <TabsContent value="copilot-connector-keys" className="mt-6">
           <CopilotConnectorKeysTab />
+        </TabsContent>
+
+        <TabsContent value="integration-keys" className="mt-6">
+          <IntegrationKeysTab />
         </TabsContent>
 
         <TabsContent value="ai" className="mt-6">
@@ -408,7 +415,7 @@ function GeneralTab() {
 function ConnectionsTab() {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [flowcoreUpn, setFlowcoreUpn] = useState("flowcore@bildungscampus-backnang.de");
+  const [flowcoreUpn, setFlowcoreUpn] = useState("");
   const [flowcoreUpnEdit, setFlowcoreUpnEdit] = useState("");
   const [flowcoreSaving, setFlowcoreSaving] = useState(false);
   const [flowcoreTesting, setFlowcoreTesting] = useState(false);
@@ -417,12 +424,12 @@ function ConnectionsTab() {
   useEffect(() => {
     Promise.all([
       customFetch<SystemInfo>("/api/admin/system-info"),
-      customFetch<{ upn: string }>("/api/admin/flowcore-account"),
+      customFetch<{ upn: string | null }>("/api/admin/flowcore-account"),
     ])
       .then(([sys, fc]) => {
         setInfo(sys);
-        setFlowcoreUpn(fc.upn);
-        setFlowcoreUpnEdit(fc.upn);
+        setFlowcoreUpn(fc.upn ?? "");
+        setFlowcoreUpnEdit(fc.upn ?? "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -658,7 +665,7 @@ function ConnectionsTab() {
                 setFlowcoreUpnEdit(e.target.value);
                 setFlowcoreTestResult(null);
               }}
-              placeholder="flowcore@bildungscampus-backnang.de"
+              placeholder="dienstkonto@ihre-domain.de"
               className="max-w-sm"
             />
           </div>

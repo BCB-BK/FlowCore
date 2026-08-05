@@ -12,6 +12,7 @@ import {
 } from "@workspace/ui/select";
 import { Users, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
+import { useRowKeys } from "./useRowKeys";
 
 interface RaciEntry {
   activity: string;
@@ -59,6 +60,8 @@ const RACI_COLORS: Record<string, string> = {
 export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQuestions }: RaciMatrixProps) {
   const [editing, setEditing] = useState(false);
   const [data, setData] = useState<RaciData>(() => parseRaci(value));
+  const roleKeys = useRowKeys(data.roles.length);
+  const entryKeys = useRowKeys(data.entries.length);
 
   const handleSave = () => {
     const cleaned: RaciData = {
@@ -74,7 +77,10 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
     setEditing(false);
   };
 
-  const addRole = () => setData({ ...data, roles: [...data.roles, ""] });
+  const addRole = () => {
+    setData({ ...data, roles: [...data.roles, ""] });
+    roleKeys.add();
+  };
   const removeRole = (index: number) => {
     const roleName = data.roles[index];
     setData({
@@ -85,10 +91,22 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
         return { ...e, assignments: newAssignments };
       }),
     });
+    roleKeys.remove(index);
   };
 
-  const addActivity = () => setData({ ...data, entries: [...data.entries, { activity: "", assignments: {} }] });
-  const removeActivity = (index: number) => setData({ ...data, entries: data.entries.filter((_, i) => i !== index) });
+  const addActivity = () => {
+    setData({ ...data, entries: [...data.entries, { activity: "", assignments: {} }] });
+    entryKeys.add();
+  };
+  const removeActivity = (index: number) => {
+    setData({ ...data, entries: data.entries.filter((_, i) => i !== index) });
+    entryKeys.remove(index);
+  };
+
+  // Nicht-leere Rollen mit ihren stabilen Keys (für Tabellen-Spalten im Edit-Modus)
+  const visibleRoles = data.roles
+    .map((role, i) => ({ role, key: roleKeys.keys[i] }))
+    .filter((r) => r.role.trim());
 
   const displayData = parseRaci(value);
   const hasContent = displayData.entries.some(e => e.activity.trim()) && displayData.roles.some(r => r.trim());
@@ -140,7 +158,7 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
               <p className="text-xs font-medium mb-2">Rollen</p>
               <div className="flex flex-wrap gap-2">
                 {data.roles.map((role, i) => (
-                  <div key={i} className="flex items-center gap-1">
+                  <div key={roleKeys.keys[i]} className="flex items-center gap-1">
                     <Input
                       value={role}
                       onChange={(e) => {
@@ -168,15 +186,15 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                 <thead>
                   <tr>
                     <th className="text-left p-1.5 border-b font-medium">Aktivität</th>
-                    {data.roles.filter(r => r.trim()).map((role, i) => (
-                      <th key={i} className="text-center p-1.5 border-b font-medium min-w-[80px]">{role}</th>
+                    {visibleRoles.map(({ role, key }) => (
+                      <th key={key} className="text-center p-1.5 border-b font-medium min-w-[80px]">{role}</th>
                     ))}
                     <th className="w-8"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.entries.map((entry, ei) => (
-                    <tr key={ei}>
+                    <tr key={entryKeys.keys[ei]}>
                       <td className="p-1.5 border-b">
                         <Input
                           value={entry.activity}
@@ -189,8 +207,8 @@ export function RaciMatrix({ value, onSave, sectionKey, help, helpText, guidingQ
                           className="text-xs h-8"
                         />
                       </td>
-                      {data.roles.filter(r => r.trim()).map((role, ri) => (
-                        <td key={ri} className="p-1.5 border-b text-center">
+                      {visibleRoles.map(({ role, key }) => (
+                        <td key={key} className="p-1.5 border-b text-center">
                           <Select
                             value={entry.assignments[role] ?? ""}
                             onValueChange={(v) => {

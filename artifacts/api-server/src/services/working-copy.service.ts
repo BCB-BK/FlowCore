@@ -10,7 +10,10 @@ import {
 } from "@workspace/db/schema";
 import { eq, and, sql, notInArray, desc, inArray } from "drizzle-orm";
 import { logger } from "../lib/logger";
-import { validateForPublication } from "@workspace/shared/page-types";
+import {
+  getMetadataDefaults,
+  validateForPublication,
+} from "@workspace/shared/page-types";
 import { isSetupMode } from "./system-settings.service";
 import { isWorkflowActiveForPageType } from "./workflow.service";
 import {
@@ -190,6 +193,7 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
       .select({
         publishedRevisionId: contentNodesTable.publishedRevisionId,
         title: contentNodesTable.title,
+        templateType: contentNodesTable.templateType,
       })
       .from(contentNodesTable)
       .where(eq(contentNodesTable.id, nodeId));
@@ -227,6 +231,20 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
         structuredFields = latestRev.structuredFields as Record<string, unknown> | null;
         baseRevisionId = latestRev.id;
       }
+    }
+
+    // Entscheidung M1 (Audit 22.07.2026): Vertraulichkeitsstufe explizit auf
+    // "internal" vorbelegen, statt sie unklassifiziert zu lassen. Bereits
+    // gesetzte Stufen (aus der Basisrevision) bleiben unangetastet.
+    if (!structuredFields?.confidentiality) {
+      structuredFields = { ...(structuredFields ?? {}), confidentiality: "internal" };
+    }
+
+    // Seitentyp-spezifische Vorbelegungen (registry: metadataFields.defaultValue),
+    // z. B. "Führende Quelle = FlowCore" beim Markenprofil. Nur leere Felder.
+    const metadataDefaults = getMetadataDefaults(node.templateType, structuredFields);
+    if (Object.keys(metadataDefaults).length > 0) {
+      structuredFields = { ...(structuredFields ?? {}), ...metadataDefaults };
     }
 
     const [wc] = await tx
@@ -618,6 +636,8 @@ export async function approveWorkingCopy(
   }
 
   const updated = await db.transaction(async (tx) => {
+    // Atomarer Status-Guard: verhindert, dass zwei parallele Approve-Requests
+    // beide durchlaufen (die Vorprüfung oben liest außerhalb der Transaktion).
     const [result] = await tx
       .update(contentWorkingCopiesTable)
       .set({
@@ -625,8 +645,19 @@ export async function approveWorkingCopy(
         approverId: actorId,
         updatedAt: new Date(),
       })
-      .where(eq(contentWorkingCopiesTable.id, id))
+      .where(
+        and(
+          eq(contentWorkingCopiesTable.id, id),
+          inArray(contentWorkingCopiesTable.status, ["submitted", "in_review"]),
+        ),
+      )
       .returning();
+
+    if (!result) {
+      throw new Error(
+        "Arbeitskopie kann im aktuellen Status nicht genehmigt werden (bereits genehmigt oder geändert).",
+      );
+    }
 
     await tx.insert(workingCopyEventsTable).values({
       workingCopyId: id,
@@ -695,6 +726,20 @@ export async function publishWorkingCopy(
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
     );
+
+    // Status nach Erhalt des Locks erneut prüfen: Die Vorprüfung oben liest
+    // außerhalb der Transaktion — ohne diesen Guard würde ein zweiter,
+    // paralleler Publish-Request eine weitere Revision erzeugen.
+    const [currentWc] = await tx
+      .select({ status: contentWorkingCopiesTable.status })
+      .from(contentWorkingCopiesTable)
+      .where(eq(contentWorkingCopiesTable.id, id))
+      .for("update");
+    if (!currentWc || currentWc.status !== "approved_for_publish") {
+      throw new Error(
+        `Arbeitskopie kann im Status '${currentWc?.status ?? "unbekannt"}' nicht veröffentlicht werden. Nur freigegebene Arbeitskopien können veröffentlicht werden.`,
+      );
+    }
 
     const maxResult = await tx
       .select({

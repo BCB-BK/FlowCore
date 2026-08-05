@@ -238,15 +238,55 @@ export function WorkingCopyEditorPage() {
   const localStructuredFieldsRef = useRef<Record<string, unknown>>({});
   const sfInitializedRef = useRef(false);
   const sfInitWcIdRef = useRef<string | null>(null);
+
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingPatchRef = useRef<Record<string, unknown>>({});
+
+  // CRITICAL: nodeId-Wechsel-Cleanup – verhindert Cross-Node-Datenverschmutzung.
+  // WorkingCopyEditorPage wird bei SPA-Navigation (Wouter) NICHT neu gemountet.
+  // Ohne diesen Reset würde ein noch laufender autosave-Timer (AUTOSAVE_DELAY_MS=2s)
+  // die structuredFields (inkl. _clusters) der alten Seite in die Working Copy
+  // der neuen Seite schreiben, sobald wcRef.current auf die neue WC wechselt.
+  //
+  // WICHTIG: Dieser Effekt MUSS im Quelltext VOR dem Init-Effekt unten stehen.
+  // Beide laufen beim Mount bzw. Seitenwechsel im selben Zyklus; React führt
+  // Effekte in Definitionsreihenfolge aus. Stand der Reset NACH dem Init-Effekt,
+  // deinitialisierte er eine soeben aus dem React-Query-Cache initialisierte
+  // Arbeitskopie wieder — und da die gecachte WC ihre Objektidentität nicht
+  // ändert (staleTime + structural sharing), feuerte der Init-Effekt nie erneut:
+  // doSave brach dann bei JEDEM Speichern still ab (Symptom: neu angelegte
+  // Cluster/Inhalte der Arbeitskopie gingen verloren).
   useEffect(() => {
-    if (activeWC && activeWC.id !== sfInitWcIdRef.current) {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    pendingPatchRef.current = {};
+    sfInitializedRef.current = false;
+    sfInitWcIdRef.current = null;
+    autoCreateAttempted.current = false;
+    wcRef.current = null;
+    localStructuredFieldsRef.current = {};
+    setValidationSFSnapshot({});
+  // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId]);
+
+  useEffect(() => {
+    // Selbstheilend (|| !sfInitializedRef.current): initialisiert auch dann,
+    // wenn dieselbe WC-Instanz nach einem Reset erneut anliegt.
+    if (activeWC && (activeWC.id !== sfInitWcIdRef.current || !sfInitializedRef.current)) {
       const sf = (activeWC.structuredFields as Record<string, unknown>) ?? {};
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       sfInitializedRef.current = true;
       sfInitWcIdRef.current = activeWC.id;
+      // wcRef ebenfalls setzen: Der Sync-Effekt oben lief bereits VOR dem
+      // nodeId-Reset und würde bei unveränderter Objektidentität der
+      // gecachten WC nicht erneut feuern — doSave bräche sonst weiter still ab.
+      wcRef.current = activeWC;
     }
-  }, [activeWC]);
+  }, [activeWC, nodeId]);
 
   const editorContent = useMemo(() => {
     const raw = wcStructuredFields._editorContent ?? wcStructuredFields.discussion;
@@ -316,30 +356,6 @@ export function WorkingCopyEditorPage() {
     }
   }, [activeWC]);
 
-  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingPatchRef = useRef<Record<string, unknown>>({});
-
-  // CRITICAL: nodeId-Wechsel-Cleanup – verhindert Cross-Node-Datenverschmutzung.
-  // WorkingCopyEditorPage wird bei SPA-Navigation (Wouter) NICHT neu gemountet.
-  // Ohne diesen Reset würde ein noch laufender autosave-Timer (AUTOSAVE_DELAY_MS=2s)
-  // die structuredFields (inkl. _clusters) der alten Seite in die Working Copy
-  // der neuen Seite schreiben, sobald wcRef.current auf die neue WC wechselt.
-  useEffect(() => {
-    if (autosaveTimerRef.current) {
-      clearTimeout(autosaveTimerRef.current);
-      autosaveTimerRef.current = null;
-    }
-    pendingPatchRef.current = {};
-    sfInitializedRef.current = false;
-    sfInitWcIdRef.current = null;
-    autoCreateAttempted.current = false;
-    wcRef.current = null;
-    localStructuredFieldsRef.current = {};
-    setValidationSFSnapshot({});
-  // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeId]);
-
   type SavePatch = {
     title?: string;
     content?: Record<string, unknown>;
@@ -348,22 +364,56 @@ export function WorkingCopyEditorPage() {
     changeType?: "editorial" | "minor" | "major" | "regulatory" | "structural";
   };
 
+  const isMountedRef = useRef(true);
+  const updateWcRef = useRef(updateWorkingCopy);
+  updateWcRef.current = updateWorkingCopy;
+
+  // Unmount-Cleanup: Timer stoppen (kein State-Update auf unmounteter
+  // Komponente) und ausstehende Änderungen noch abschicken, damit beim
+  // Verlassen der Seite innerhalb der Autosave-Frist nichts verloren geht.
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+      const pending = pendingPatchRef.current;
+      pendingPatchRef.current = {};
+      const wc = wcRef.current;
+      const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+      if (
+        Object.keys(pending).length > 0 &&
+        wc &&
+        editableStatuses.includes(wc.status) &&
+        sfInitializedRef.current
+      ) {
+        updateWcRef.current
+          .mutateAsync({ workingCopyId: wc.id, data: pending })
+          .catch(() => {});
+      }
+    };
+  }, []);
+
   const doSave = useCallback(
     async (patch: SavePatch) => {
       const wc = wcRef.current;
       const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
       if (!wc || !editableStatuses.includes(wc.status)) return;
       if (!sfInitializedRef.current) return;
-      setIsSaving(true);
+      if (isMountedRef.current) setIsSaving(true);
       try {
         await updateWorkingCopy.mutateAsync({
           workingCopyId: wc.id,
           data: patch,
         });
-        setLastSavedAt(new Date());
-        setDirty(false);
+        if (isMountedRef.current) {
+          setLastSavedAt(new Date());
+          setDirty(false);
+        }
       } finally {
-        setIsSaving(false);
+        if (isMountedRef.current) setIsSaving(false);
       }
     },
     [updateWorkingCopy, setDirty],
@@ -914,6 +964,7 @@ export function WorkingCopyEditorPage() {
           workingCopy={activeWC}
           currentUserId={currentUser?.principalId}
           authorName={activeWC?.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
+          canEditOthers={hasEditPermission}
         />
       )}
 

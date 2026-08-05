@@ -11,6 +11,8 @@ import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
 import {
   getDriveItemMeta,
+  checkDriveItemAccess,
+  type DriveItemAccess,
   acquireSystemToken,
 } from "../services/sharepoint.service";
 
@@ -30,44 +32,53 @@ function resolveGraphToken(req: {
 
 export const sourceRefsRouter: IRouter = Router();
 
+/**
+ * Blendet SharePoint-Verweise aus, die die anfragende Person nicht öffnen darf.
+ *
+ * Verweise, deren Zugriff sich nicht prüfen ließ (kein Benutzertoken, Graph
+ * nicht erreichbar), werden NICHT stillschweigend entfernt, sondern mit
+ * `accessCheck: "unavailable"` markiert. Sonst sieht ein Ausfall aus wie eine
+ * gelöschte Verknüpfung — und man sucht an der falschen Stelle.
+ */
 async function filterBySharePointAccess<
   T extends {
     externalId: string;
     metadata: unknown;
     systemType: string;
   },
->(refs: T[], userGraphToken: string): Promise<T[]> {
+>(refs: T[], userGraphToken: string): Promise<(T & { accessCheck?: string })[]> {
   const spRefs = refs.filter((r) => r.systemType === "sharepoint");
   if (spRefs.length === 0) return refs;
 
-  if (!userGraphToken) {
-    return refs.filter((r) => r.systemType !== "sharepoint");
-  }
-
-  const accessible = new Set<string>();
+  const decisions = new Map<string, DriveItemAccess>();
   await Promise.all(
     spRefs.map(async (r) => {
       const meta = r.metadata as { driveId?: string } | null;
       if (!meta?.driveId) {
-        accessible.add(r.externalId);
+        // Ohne Ablageort lässt sich nichts prüfen; solche Verweise stammen
+        // nicht aus dem Dateibrowser und bleiben sichtbar.
+        decisions.set(r.externalId, "accessible");
         return;
       }
-      try {
-        const item = await getDriveItemMeta(
-          userGraphToken,
-          meta.driveId,
-          r.externalId,
-        );
-        if (item) accessible.add(r.externalId);
-      } catch {
-        // noop
-      }
+      decisions.set(
+        r.externalId,
+        await checkDriveItemAccess(userGraphToken, meta.driveId, r.externalId),
+      );
     }),
   );
 
-  return refs.filter(
-    (r) => r.systemType !== "sharepoint" || accessible.has(r.externalId),
-  );
+  return refs
+    .filter(
+      (r) =>
+        r.systemType !== "sharepoint" ||
+        decisions.get(r.externalId) !== "denied",
+    )
+    .map((r) => {
+      const decision = decisions.get(r.externalId);
+      return decision === "unavailable"
+        ? { ...r, accessCheck: "unavailable" }
+        : r;
+    });
 }
 
 sourceRefsRouter.get(

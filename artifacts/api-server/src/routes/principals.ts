@@ -9,6 +9,7 @@ import {
   getRolesForPrincipal,
   getRolesForPrincipalsBatch,
   revokeRole,
+  principalHasActiveRole,
 } from "../services/principal.service";
 import {
   grantPagePermission,
@@ -35,7 +36,8 @@ import {
   getPersonPhoto,
 } from "../services/graph-client.service";
 import { db } from "@workspace/db";
-import { auditEventsTable } from "@workspace/db/schema";
+import { auditEventsTable, roleAssignmentsTable } from "@workspace/db/schema";
+import { eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -133,17 +135,23 @@ router.post(
 router.get("/principals/:id", requireAuth, async (req, res) => {
   const id = req.params.id as string;
   const isSelf = req.user!.principalId === id;
-  if (!isSelf) {
-    const perms = await getEffectivePermissions(req.user!.principalId);
-    if (!perms.has("manage_permissions")) {
-      res.status(403).json({ error: "Forbidden" });
-      return;
-    }
-  }
   const principal = await getPrincipalById(id);
   if (!principal) {
     res.status(404).json({ error: "Principal not found" });
     return;
+  }
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      // Angemeldete Benutzer ohne Admin-Rechte erhalten ein eingeschränktes
+      // Profil (kein 403) — z.B. um Autoren von Arbeitskopien anzuzeigen.
+      res.json({
+        id: principal.id,
+        displayName: principal.displayName,
+        principalType: principal.principalType,
+      });
+      return;
+    }
   }
   const roles = await getRolesForPrincipal(id);
   res.json({ ...principal, roles });
@@ -169,12 +177,55 @@ router.get("/principals/:id/permissions", requireAuth, async (req, res) => {
   });
 });
 
+const ASSIGNABLE_ROLES = [
+  "system_admin",
+  "process_manager",
+  "editor",
+  "reviewer",
+  "approver",
+  "viewer",
+  "compliance_manager",
+] as const;
+type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
+
 router.post(
   "/principals/:id/roles",
   requireAuth,
   requirePermission("manage_permissions"),
   async (req, res) => {
     const id = req.params.id as string;
+    const role = req.body?.role as string | undefined;
+
+    if (!role || !ASSIGNABLE_ROLES.includes(role as AssignableRole)) {
+      res.status(400).json({ error: "Ungültige Rolle" });
+      return;
+    }
+
+    // Eskalationsschutz: system_admin darf nur von einem system_admin
+    // vergeben werden — manage_permissions allein (z.B. process_manager)
+    // reicht nicht.
+    if (role === "system_admin") {
+      const actorIsAdmin = await principalHasActiveRole(
+        req.user!.principalId,
+        "system_admin",
+      );
+      if (!actorIsAdmin) {
+        await db.insert(auditEventsTable).values({
+          eventType: "rbac",
+          action: "role_escalation_blocked",
+          actorId: req.user!.principalId,
+          resourceType: "principal",
+          resourceId: id,
+          details: { role, scope: req.body?.scope },
+        });
+        res.status(403).json({
+          error:
+            "Die Rolle system_admin kann nur von einem System-Administrator vergeben werden.",
+        });
+        return;
+      }
+    }
+
     const assignmentId = await db.transaction(async (tx) => {
       const aId = await assignRole({
         principalId: id,
@@ -205,6 +256,40 @@ router.delete(
   requirePermission("manage_permissions"),
   async (req, res) => {
     const assignmentId = req.params.assignmentId as string;
+
+    const [assignment] = await db
+      .select({ role: roleAssignmentsTable.role })
+      .from(roleAssignmentsTable)
+      .where(eq(roleAssignmentsTable.id, assignmentId));
+    if (!assignment) {
+      res.status(404).json({ error: "Rollenzuweisung nicht gefunden" });
+      return;
+    }
+
+    // Spiegelbildlich zum Eskalationsschutz bei der Vergabe: system_admin
+    // kann nur von einem system_admin entzogen werden.
+    if (assignment.role === "system_admin") {
+      const actorIsAdmin = await principalHasActiveRole(
+        req.user!.principalId,
+        "system_admin",
+      );
+      if (!actorIsAdmin) {
+        await db.insert(auditEventsTable).values({
+          eventType: "rbac",
+          action: "role_escalation_blocked",
+          actorId: req.user!.principalId,
+          resourceType: "role_assignment",
+          resourceId: assignmentId,
+          details: { role: assignment.role, operation: "revoke" },
+        });
+        res.status(403).json({
+          error:
+            "Die Rolle system_admin kann nur von einem System-Administrator entzogen werden.",
+        });
+        return;
+      }
+    }
+
     await db.transaction(async (tx) => {
       await revokeRole(assignmentId, tx);
 

@@ -960,7 +960,8 @@ export function NodeDetail() {
               <WorkingCopyBanner
                 workingCopy={activeWC}
                 currentUserId={currentUser?.principalId}
-                authorName={wcAuthor?.displayName ?? undefined}
+                authorName={activeWC.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
+                canEditOthers={currentUser?.permissions?.includes("edit_working_copy") ?? false}
                 onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 isCreating={createWorkingCopy.isPending}
               />
@@ -1211,13 +1212,14 @@ export function NodeDetail() {
                   workingCopy={activeWC}
                   currentUserId={currentUser?.principalId}
                   authorName={activeWC.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
+                  canEditOthers={currentUser?.permissions?.includes("edit_working_copy") ?? false}
                   onNavigateToEditor={() => navigate(`/nodes/${nodeId}/edit`)}
                 />
                 <WorkingCopyActions workingCopy={activeWC} nodeId={nodeId} templateType={node?.templateType} currentUserId={currentUser?.principalId} userPermissions={currentUser?.permissions} sodRules={currentUser?.sodRules} />
               </CardContent>
             </Card>
           )}
-          {nodeId && <VersionHistoryPanel nodeId={nodeId} activeWorkingCopy={activeWC ? { id: activeWC.id, status: activeWC.status, title: activeWC.title ?? "", authorId: activeWC.authorId, createdAt: activeWC.createdAt, updatedAt: activeWC.updatedAt, changeSummary: activeWC.changeSummary } : null} />}
+          {nodeId && <VersionHistoryPanel nodeId={nodeId} activeWorkingCopy={activeWC ? { id: activeWC.id, status: activeWC.status, title: activeWC.title ?? "", authorId: activeWC.authorId, authorDisplayName: activeWC.authorDisplayName ?? wcAuthor?.displayName ?? null, createdAt: activeWC.createdAt, updatedAt: activeWC.updatedAt, changeSummary: activeWC.changeSummary } : null} />}
         </TabsContent>
 
         <TabsContent value="children" className="mt-4 w-full min-w-0">

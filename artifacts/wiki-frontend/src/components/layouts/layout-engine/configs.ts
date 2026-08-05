@@ -262,7 +262,34 @@ export const useCaseConfig: LayoutConfig = {
   ],
 };
 
+// Markenprofil — kompakte, verbindliche Markenidentität in fünf Feldgruppen.
+// Operative Umsetzung (Website, KI, Kampagnen, Kanäle, Go-to-Market) wird auf
+// eigenen Seiten gepflegt und im Relationsbereich am Ende nur verknüpft.
+export const brandProfileConfig: LayoutConfig = {
+  pageTypeKey: "brand_profile",
+  rows: [
+    { key: "strategic_decision", component: "editable", group: "Strategischer Kern", label: "Strategische Leitentscheidung", description: "Die zentrale strategische Entscheidung für diese Marke", icon: Flag, iconColor: "text-primary", emptyText: "Noch keine strategische Leitentscheidung erfasst" },
+    { key: "brand_purpose", component: "editable", group: "Strategischer Kern", label: "Markenauftrag und Purpose", description: "Warum die Marke existiert und welchen dauerhaften Beitrag sie leistet", icon: Target, iconColor: "text-primary", emptyText: "Noch kein Markenauftrag beschrieben" },
+    { key: "brand_role", component: "editable", group: "Strategischer Kern", label: "Markenrolle im Gruppensystem", description: "Funktion der Marke innerhalb der Gruppe", icon: Layers, iconColor: "text-primary", emptyText: "Noch keine Markenrolle beschrieben" },
+    { key: "brand_mandate", component: "editable", group: "Strategischer Kern", label: "Mandat und Verantwortungsrahmen", description: "Richtlinienkompetenz, Steuerungsmandat, Zuständigkeiten und Grenzen", icon: Gavel, iconColor: "text-primary", emptyText: "Noch kein Mandat definiert" },
+
+    { key: "primary_target_groups", component: "editable", group: "Zielgruppe und Leistungsversprechen", label: "Primäre Zielgruppen", description: "Dauerhaft relevante Kernzielgruppen", icon: Users, iconColor: "text-blue-600", emptyText: "Noch keine Zielgruppen benannt" },
+    { key: "core_promise", component: "editable", group: "Zielgruppe und Leistungsversprechen", label: "Kernversprechen", description: "Der verbindlich zugesagte Nutzen", icon: Heart, iconColor: "text-primary", emptyText: "Noch kein Kernversprechen formuliert" },
+    { key: "service_logic", component: "editable", group: "Zielgruppe und Leistungsversprechen", label: "Leistungs- und Lösungslogik", description: "Leistungsarten und Lösungsprinzipien", icon: PackageOpen, iconColor: "text-blue-600", emptyText: "Noch keine Leistungslogik beschrieben" },
+
+    { key: "brand_delimitation", component: "editable", group: "Abgrenzung und Markenführung", label: "Abgrenzung und Zusammenspiel der Marken", description: "Zuständigkeit, Übergänge und Zusammenspiel", icon: ArrowLeftRight, iconColor: "text-primary", emptyText: "Noch keine Abgrenzung dokumentiert" },
+    { key: "brand_principles", component: "editable", group: "Abgrenzung und Markenführung", label: "Markenprinzipien und No-Gos", description: "Dauerhafte Grundsätze und ausdrückliche Ausschlüsse", icon: Ban, iconColor: "text-red-600", emptyText: "Noch keine Markenprinzipien festgelegt" },
+
+    { key: "guiding_idea", component: "editable", group: "Markenausdruck", label: "Leitidee", description: "Der gedankliche Kern der Marke", icon: Brain, iconColor: "text-primary", emptyText: "Noch keine Leitidee beschrieben" },
+    { key: "recommended_claim", component: "editable", group: "Markenausdruck", label: "Hauptclaim", description: "Der verbindliche Hauptclaim der Marke", icon: MessageSquare, iconColor: "text-primary", emptyText: "Noch kein Hauptclaim hinterlegt" },
+    { key: "tonality", component: "editable", group: "Markenausdruck", label: "Tonalitätskern", description: "Die dauerhaft geltenden Tonalitätsmerkmale", icon: MessageSquare, iconColor: "text-blue-600", emptyText: "Noch kein Tonalitätskern beschrieben" },
+
+    { key: "references", component: "references_editor", group: "Mitgeltende Grundlagen" },
+  ],
+};
+
 export const LAYOUT_CONFIG_MAP: Record<string, LayoutConfig> = {
+  brand_profile: brandProfileConfig,
   area_overview: areaOverviewConfig,
   core_process_overview: processOverviewConfig,
   process_page_text: processPageTextConfig,

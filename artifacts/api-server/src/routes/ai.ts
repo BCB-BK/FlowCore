@@ -1,6 +1,15 @@
 import { Router, type IRouter } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
+import { rateLimit } from "../middlewares/rate-limit";
+
+// Eigenes, strengeres Limit für die teuren LLM-Streaming-Endpunkte
+// (das globale API-Limit von 200/min ist dafür zu großzügig).
+const aiRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  maxRequests: 20,
+  keyPrefix: "ai",
+});
 import {
   AiAskBody,
   AiPageAssistBody,
@@ -81,7 +90,7 @@ aiRouter.put(
   },
 );
 
-aiRouter.post("/ask", requireAuth, async (req, res) => {
+aiRouter.post("/ask", requireAuth, aiRateLimit, async (req, res) => {
   const parsed = AiAskBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid body", details: parsed.error });
@@ -103,7 +112,7 @@ aiRouter.post("/ask", requireAuth, async (req, res) => {
   }
 });
 
-aiRouter.post("/page-assist", requireAuth, async (req, res) => {
+aiRouter.post("/page-assist", requireAuth, aiRateLimit, async (req, res) => {
   const parsed = AiPageAssistBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid body", details: parsed.error });
@@ -126,7 +135,7 @@ aiRouter.post("/page-assist", requireAuth, async (req, res) => {
   }
 });
 
-aiRouter.post("/field-assist", requireAuth, async (req, res) => {
+aiRouter.post("/field-assist", requireAuth, aiRateLimit, async (req, res) => {
   const parsed = AiFieldAssistBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid body", details: parsed.error });
