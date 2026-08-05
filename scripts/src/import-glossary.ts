@@ -1,6 +1,6 @@
 import { db, glossaryTermsTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
-import XLSX from "xlsx";
+import { readWorkbook } from "./lib/spreadsheet";
 import path from "path";
 
 function slugify(text: string): string {
@@ -26,9 +26,8 @@ const NEW_EXCEL_PATH = path.resolve(
 
 async function importGlossary() {
   // Step 1: Load OLD terms (BCB_Glossar_v5_final) and insert without deleting
-  const oldWb = XLSX.readFile(OLD_EXCEL_PATH);
-  const oldWs = oldWb.Sheets[oldWb.SheetNames[0]];
-  const oldRows = XLSX.utils.sheet_to_json<string[]>(oldWs, { header: 1 });
+  const oldWb = await readWorkbook(OLD_EXCEL_PATH);
+  const oldRows = oldWb.rows(oldWb.sheetNames[0] ?? "");
 
   const oldValues = oldRows
     .slice(1)
@@ -61,9 +60,8 @@ async function importGlossary() {
   console.log(`Restored ${oldInserted.length} old terms`);
 
   // Step 2: Load NEW terms (Begriffe) and upsert — overwrite duplicates
-  const newWb = XLSX.readFile(NEW_EXCEL_PATH);
-  const newWs = newWb.Sheets[newWb.SheetNames[0]];
-  const newRows = XLSX.utils.sheet_to_json<string[]>(newWs, { header: 1 });
+  const newWb = await readWorkbook(NEW_EXCEL_PATH);
+  const newRows = newWb.rows(newWb.sheetNames[0] ?? "");
 
   const newValues = newRows
     .slice(1)

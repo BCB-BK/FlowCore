@@ -5,7 +5,10 @@ import { eq, ilike, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import multer from "multer";
-import * as XLSX from "xlsx";
+import {
+  readFirstSheetAsObjects,
+  writeSheetFromObjects,
+} from "../lib/spreadsheet";
 import { reimportGlossarySeedTerms } from "../services/startup-seed.service";
 import { recordEvent } from "../services/graph-change-feed.service";
 
@@ -84,13 +87,11 @@ router.get(
       abbreviation: t.abbreviation ?? "",
     }));
 
-    const workbook = XLSX.utils.book_new();
-    const sheet = XLSX.utils.json_to_sheet(rows, {
-      header: ["term", "definition", "synonyms", "abbreviation"],
-    });
-    XLSX.utils.book_append_sheet(workbook, sheet, "Glossar");
-
-    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    const buffer = await writeSheetFromObjects(
+      rows,
+      ["term", "definition", "synonyms", "abbreviation"],
+      "Glossar",
+    );
 
     res.setHeader(
       "Content-Type",
@@ -331,24 +332,13 @@ router.post(
 
     const dryRun = req.query.dryRun === "true";
 
-    let workbook: XLSX.WorkBook;
+    let rows: Array<Record<string, unknown>>;
     try {
-      workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+      rows = await readFirstSheetAsObjects(req.file.buffer);
     } catch {
       res.status(400).json({ error: "Datei konnte nicht gelesen werden" });
       return;
     }
-
-    const sheetName = workbook.SheetNames[0];
-    if (!sheetName) {
-      res.status(400).json({ error: "Keine Tabellenblätter in der Datei" });
-      return;
-    }
-
-    const sheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
-      defval: "",
-    });
 
     if (rows.length === 0) {
       res.status(400).json({ error: "Die Tabelle enthält keine Daten" });

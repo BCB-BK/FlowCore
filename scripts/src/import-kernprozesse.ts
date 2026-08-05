@@ -6,7 +6,7 @@ import {
 } from "@workspace/db/schema";
 import { sql, eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import XLSX from "xlsx";
+import { readWorkbook } from "./lib/spreadsheet";
 import path from "path";
 
 const EXCEL_PATH = path.resolve(
@@ -139,11 +139,7 @@ function detectLayout(data: unknown[][]): TabLayout | null {
   return null;
 }
 
-function parseTab(tabName: string, sheet: XLSX.WorkSheet): ParsedRow[] {
-  const data: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    defval: "",
-  });
+function parseTab(tabName: string, data: string[][]): ParsedRow[] {
 
   const layout = detectLayout(data);
   if (!layout) {
@@ -423,8 +419,8 @@ async function generateDisplayCode(
   return `${prefix}-${String(nextNum).padStart(3, "0")}`;
 }
 
-async function importTab(tabName: string, sheet: XLSX.WorkSheet): Promise<{ created: number; skipped: number }> {
-  const rows = parseTab(tabName, sheet);
+async function importTab(tabName: string, data: string[][]): Promise<{ created: number; skipped: number }> {
+  const rows = parseTab(tabName, data);
   const tabShort = getTabShortName(tabName);
 
   console.log(`\n  Tab "${tabName}" — ${rows.length} rows parsed`);
@@ -482,8 +478,8 @@ async function main() {
   console.log("=== Kernprozess-Struktur Import ===");
   console.log(`Reading: ${EXCEL_PATH}\n`);
 
-  const workbook = XLSX.readFile(EXCEL_PATH);
-  const availableTabs = workbook.SheetNames;
+  const workbook = await readWorkbook(EXCEL_PATH);
+  const availableTabs = workbook.sheetNames;
 
   let totalCreated = 0;
   let totalSkipped = 0;
@@ -501,8 +497,7 @@ async function main() {
       continue;
     }
 
-    const sheet = workbook.Sheets[matchedTab];
-    const { created, skipped } = await importTab(tabName, sheet);
+    const { created, skipped } = await importTab(tabName, workbook.rows(matchedTab));
 
     totalCreated += created;
     totalSkipped += skipped;
