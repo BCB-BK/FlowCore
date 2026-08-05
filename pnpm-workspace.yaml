@@ -5,6 +5,10 @@ packages:
   - scripts
   - e2e
 
+allowBuilds:
+  core-js: true
+  esbuild: true
+
 autoInstallPeers: false
 
 catalog:
