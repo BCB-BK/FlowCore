@@ -14,7 +14,7 @@ beforeAll(() => {
   vi.stubEnv("SESSION_SECRET", "test-session-secret-0123456789abcdef");
 });
 
-const laden = async () => await import("../src/services/rbac.service");
+const laden = async () => await import("../services/rbac.service");
 
 describe("Rollen-Rechte-Matrix", () => {
   it("weist jeder Rolle mindestens ein Recht zu", async () => {
@@ -48,7 +48,7 @@ describe("Rollen-Rechte-Matrix", () => {
 
   it("gibt der Leserolle keine verwaltenden Rechte", async () => {
     const { getPermissionsForRole } = await laden();
-    const viewer = getPermissionsForRole("viewer" as never);
+    const viewer = getPermissionsForRole("viewer");
     for (const verboten of [
       "manage_permissions",
       "manage_settings",
@@ -76,9 +76,7 @@ describe("Sichtbarkeit in der Suche", () => {
 
   it("beschränkt die Leserolle auf veröffentlichte Inhalte", async () => {
     const { getSearchVisibilityForRole } = await laden();
-    expect(getSearchVisibilityForRole("viewer" as never)).toBe(
-      "published_only",
-    );
+    expect(getSearchVisibilityForRole("viewer")).toBe("published_only");
   });
 });
 

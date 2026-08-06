@@ -190,15 +190,18 @@ export async function reimportGlossarySeedTerms(): Promise<{
   return { upserted: terms.length };
 }
 
+/** Ergebniszeile der Dublettenabfrage in deduplicatePrincipals. */
+type DuplicateRow = {
+  dup_id: string;
+  canonical_id: string;
+  display_name: string;
+};
+
 async function deduplicatePrincipals(): Promise<void> {
   const { principalsTable } = await import("@workspace/db/schema");
   const { eq, sql: dsql } = await import("drizzle-orm");
 
-  const dupes: {
-    dup_id: string;
-    canonical_id: string;
-    display_name: string;
-  }[] = (await db.execute(dsql`
+  const dupes = (await db.execute(dsql`
     SELECT p1.id AS dup_id, p2.id AS canonical_id, p1.display_name
     FROM principals p1
     JOIN principals p2
@@ -208,9 +211,11 @@ async function deduplicatePrincipals(): Promise<void> {
     WHERE p1.external_provider = 'entra_id'
       AND p1.status = 'active'
       AND p1.id <> p2.id
-  `)) as any;
+  `)) as DuplicateRow[] | { rows?: DuplicateRow[] };
 
-  const rows = Array.isArray(dupes) ? dupes : ((dupes as any).rows ?? []);
+  const rows: DuplicateRow[] = Array.isArray(dupes)
+    ? dupes
+    : (dupes.rows ?? []);
   for (const row of rows) {
     await db
       .update(principalsTable)

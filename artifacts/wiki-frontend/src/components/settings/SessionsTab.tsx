@@ -63,7 +63,7 @@ export function SessionsTab() {
   }, []);
 
   useEffect(() => {
-    loadSessions();
+    void loadSessions();
   }, [loadSessions]);
 
   const terminateSession = async (sid: string) => {

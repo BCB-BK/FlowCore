@@ -24,7 +24,7 @@ interface FieldProfileData {
   isActive: boolean;
 }
 
-const ALL_OPS = [
+const _ALL_OPS = [
   "reformulate",
   "professionalize",
   "expand",

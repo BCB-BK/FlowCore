@@ -153,11 +153,11 @@ export function AuditTrailTab() {
   ]);
 
   useEffect(() => {
-    loadFilters();
+    void loadFilters();
   }, [loadFilters]);
 
   useEffect(() => {
-    loadEvents();
+    void loadEvents();
   }, [loadEvents]);
 
   const handleExport = async (format: "json" | "csv") => {

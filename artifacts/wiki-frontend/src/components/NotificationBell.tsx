@@ -76,11 +76,13 @@ export function NotificationBell() {
   const notifications = notifData?.items ?? [];
 
   const invalidateAll = () => {
-    queryClient.invalidateQueries({ queryKey: getGetNotificationsQueryKey() });
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
+      queryKey: getGetNotificationsQueryKey(),
+    });
+    void queryClient.invalidateQueries({
       queryKey: getGetUnreadNotificationCountQueryKey(),
     });
-    refetch();
+    void refetch();
   };
 
   const handleMarkRead = (id: string) => {

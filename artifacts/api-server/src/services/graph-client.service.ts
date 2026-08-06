@@ -1,4 +1,4 @@
-import { Client } from "@microsoft/microsoft-graph-client";
+import { Client, ResponseType } from "@microsoft/microsoft-graph-client";
 import { appConfig } from "../lib/config";
 import { logger } from "../lib/logger";
 import { getAppAccessToken, isAuthConfigured } from "./auth.service";
@@ -251,7 +251,7 @@ export async function getPersonPhoto(
     const client = getGraphClient(token);
     const photo = await client
       .api(`/users/${userId}/photos/${size}/$value`)
-      .responseType("arraybuffer" as any)
+      .responseType(ResponseType.ARRAYBUFFER)
       .get();
     return Buffer.from(photo);
   } catch {

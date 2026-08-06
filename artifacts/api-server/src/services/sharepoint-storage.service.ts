@@ -95,7 +95,7 @@ export class SharePointStorageProvider implements IStorageProvider {
       buffer = data;
     } else {
       const chunks: Uint8Array[] = [];
-      const reader = (data as ReadableStream).getReader();
+      const reader = data.getReader();
       let done = false;
       while (!done) {
         const result = await reader.read();

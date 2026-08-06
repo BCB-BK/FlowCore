@@ -198,7 +198,7 @@ export async function validateBackupTarget(
   folderId?: string,
 ): Promise<{ valid: boolean; error?: string }> {
   try {
-    const config = await getBackupConfig();
+    const _config = await getBackupConfig();
     const connConfig = await getConnectorConfig();
     const token = await acquireSystemToken(connConfig);
     if (!token) {
@@ -771,7 +771,7 @@ async function applyRetention(config: typeof backupConfigsTable.$inferSelect) {
             const client = getGraphClient(token);
             const itemsToDelete: string[] = [];
             if (run.driveItemId) itemsToDelete.push(run.driveItemId);
-            const sidecars = run.sidecarItemIds as string[] | null;
+            const sidecars = run.sidecarItemIds;
             if (sidecars?.length) itemsToDelete.push(...sidecars);
             for (const itemId of itemsToDelete) {
               try {

@@ -16,7 +16,6 @@ import { requireAuth } from "../middlewares/require-auth";
 import {
   getEffectivePermissions,
   getSodConfig,
-  type WikiPermission,
 } from "../services/rbac.service";
 import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
@@ -237,7 +236,7 @@ router.get("/auth/me", requireAuth, async (req, res) => {
       role: r.role,
       scope: r.scope,
     })),
-    permissions: Array.from(permissions) as WikiPermission[],
+    permissions: Array.from(permissions),
     sodRules: sodConfig.reduce(
       (acc, rule) => {
         acc[rule.ruleKey] = rule.isEnabled;

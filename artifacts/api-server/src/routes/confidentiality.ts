@@ -81,7 +81,9 @@ router.post(
 
     if (
       !level ||
-      !CONFIDENTIALITY_LEVELS.includes(level as any) ||
+      !CONFIDENTIALITY_LEVELS.includes(
+        level as (typeof CONFIDENTIALITY_LEVELS)[number],
+      ) ||
       level === "public"
     ) {
       res.status(400).json({

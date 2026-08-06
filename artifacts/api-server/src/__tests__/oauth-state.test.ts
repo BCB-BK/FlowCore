@@ -12,7 +12,7 @@ import {
   verifyOAuthState,
   nonceAusState,
   STATE_MAX_AGE_MS,
-} from "../src/lib/oauth-state";
+} from "../lib/oauth-state";
 
 const SECRET = "test-secret-nur-fuer-diesen-lauf-0123456789";
 const NONCE = "11111111-2222-3333-4444-555555555555";

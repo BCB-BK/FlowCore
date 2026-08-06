@@ -11,7 +11,7 @@ import {
   cellToString,
   readFirstSheetAsObjects,
   writeSheetFromObjects,
-} from "../src/lib/spreadsheet";
+} from "../lib/spreadsheet";
 
 describe("cellToString", () => {
   it("gibt Strings unverändert zurück", () => {

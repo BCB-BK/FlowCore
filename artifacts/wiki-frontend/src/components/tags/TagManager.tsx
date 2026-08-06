@@ -29,7 +29,7 @@ export function TagManager({ nodeId, readonly }: TagManagerProps) {
   const assignMutation = useAssignTagToNode({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: [`/api/tags/nodes/${nodeId}`],
         });
       },
@@ -39,7 +39,7 @@ export function TagManager({ nodeId, readonly }: TagManagerProps) {
   const removeMutation = useRemoveTagFromNode({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: [`/api/tags/nodes/${nodeId}`],
         });
       },
@@ -51,7 +51,7 @@ export function TagManager({ nodeId, readonly }: TagManagerProps) {
       onSuccess: (tag) => {
         assignMutation.mutate({ nodeId, data: { tagId: tag.id } });
         setNewTagName("");
-        queryClient.invalidateQueries({ queryKey: ["/api/tags"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/tags"] });
       },
     },
   });

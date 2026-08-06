@@ -54,7 +54,7 @@ export function TeamsTabConfig() {
 
   useEffect(() => {
     if (inTeams && initialized) {
-      configureTab({
+      void configureTab({
         entityId: config.tabType,
         contentUrl: getContentUrl(config),
         suggestedDisplayName: config.label || "FlowCore",

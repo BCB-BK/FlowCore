@@ -110,7 +110,7 @@ export function ReleaseTab() {
   }, []);
 
   useEffect(() => {
-    loadReleases();
+    void loadReleases();
   }, [loadReleases]);
 
   const [transitionMeta, setTransitionMeta] = useState<Record<string, string>>(
@@ -193,7 +193,7 @@ export function ReleaseTab() {
         <CreateReleaseForm
           onCreated={() => {
             setShowCreate(false);
-            loadReleases();
+            void loadReleases();
           }}
           onCancel={() => setShowCreate(false)}
         />

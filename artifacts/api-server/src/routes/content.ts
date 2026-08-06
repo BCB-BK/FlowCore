@@ -623,8 +623,7 @@ router.post(
   },
   requirePermission(
     "create_working_copy",
-    (req) =>
-      (req as unknown as Record<string, string>)._resolvedNodeId as string,
+    (req) => (req as unknown as Record<string, string>)._resolvedNodeId,
   ),
   async (req, res) => {
     const sourceRevisionId = req.params.id as string;

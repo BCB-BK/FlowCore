@@ -506,14 +506,8 @@ router.get(
       }
     }
 
-    const structuredFieldsA = (revA.structuredFields || {}) as Record<
-      string,
-      unknown
-    >;
-    const structuredFieldsB = (revB.structuredFields || {}) as Record<
-      string,
-      unknown
-    >;
+    const structuredFieldsA = revA.structuredFields || {};
+    const structuredFieldsB = revB.structuredFields || {};
     const structuredFieldChanges: Record<
       string,
       { old: unknown; new: unknown }
@@ -535,8 +529,8 @@ router.get(
       }
     }
 
-    const contentA = revA.content as Record<string, unknown> | null;
-    const contentB = revB.content as Record<string, unknown> | null;
+    const contentA = revA.content;
+    const contentB = revB.content;
     const contentChanged =
       JSON.stringify(contentA) !== JSON.stringify(contentB);
 

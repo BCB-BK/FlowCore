@@ -57,7 +57,7 @@ export async function getNodeConfidentialityLevel(
 
   if (!revision?.structuredFields) return DEFAULT_CONFIDENTIALITY_LEVEL;
 
-  const fields = revision.structuredFields as Record<string, unknown>;
+  const fields = revision.structuredFields;
   const level = fields.confidentiality as string | undefined;
 
   if (!level) return DEFAULT_CONFIDENTIALITY_LEVEL;
@@ -261,7 +261,7 @@ export async function checkConfidentialityAccessBatch(
   for (const node of nodes) {
     const revId = node.publishedRevisionId || node.currentRevisionId;
     const rev = revId ? revisionMap.get(revId) : null;
-    const fields = (rev?.structuredFields || {}) as Record<string, unknown>;
+    const fields = rev?.structuredFields || {};
     const level =
       (fields.confidentiality as string | undefined) ||
       DEFAULT_CONFIDENTIALITY_LEVEL;

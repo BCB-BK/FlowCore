@@ -181,7 +181,7 @@ export function requireAuth(
   }
 
   if (req.session?.user) {
-    const sessionUser = req.session.user as AuthUser;
+    const sessionUser = req.session.user;
     const externalId = sessionUser.externalId;
 
     if (appConfig.entraRequiredGroupId && externalId) {

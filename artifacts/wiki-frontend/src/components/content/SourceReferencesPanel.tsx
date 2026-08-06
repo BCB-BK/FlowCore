@@ -191,10 +191,10 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
                     className="h-7 w-7 p-0"
                     onClick={() => {
                       checkRef.mutate(
-                        { refId: ref.id! },
+                        { refId: ref.id },
                         {
                           onSuccess: () => {
-                            queryClient.invalidateQueries({
+                            void queryClient.invalidateQueries({
                               queryKey: getListSourceReferencesQueryKey(nodeId),
                             });
                           },
@@ -211,10 +211,10 @@ export function SourceReferencesPanel({ nodeId }: { nodeId: string }) {
                     onClick={() => {
                       if (confirm("Verknüpfung entfernen?")) {
                         deleteRef.mutate(
-                          { refId: ref.id! },
+                          { refId: ref.id },
                           {
                             onSuccess: () => {
-                              queryClient.invalidateQueries({
+                              void queryClient.invalidateQueries({
                                 queryKey:
                                   getListSourceReferencesQueryKey(nodeId),
                               });

@@ -135,7 +135,7 @@ export function AiFieldProfilesPanel() {
   const deleteMutation = useDeleteAiFieldProfile();
 
   const invalidate = () => {
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: getGetAiFieldProfilesQueryKey(),
     });
   };

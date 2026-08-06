@@ -447,7 +447,7 @@ export function BlockEditor({
       if (hasPlaceholder) {
         resolveTimerRef.current = setTimeout(() => {
           resolveTimerRef.current = null;
-          doResolve();
+          void doResolve();
         }, 1000);
       }
     };

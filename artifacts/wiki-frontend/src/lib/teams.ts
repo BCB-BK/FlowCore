@@ -24,8 +24,8 @@ export async function initializeTeamsSDK(): Promise<boolean> {
     await microsoftTeams.app.initialize();
     _initialized = true;
     _inTeams = true;
-    await microsoftTeams.app.notifyAppLoaded();
-    await microsoftTeams.app.notifySuccess();
+    microsoftTeams.app.notifyAppLoaded();
+    void microsoftTeams.app.notifySuccess();
     return true;
   } catch {
     _initialized = true;
@@ -200,7 +200,7 @@ export async function configureTab(settings: {
 
   microsoftTeams.pages.config.registerOnSaveHandler(
     (saveEvent: microsoftTeams.pages.config.SaveEvent) => {
-      microsoftTeams.pages.config.setConfig({
+      void microsoftTeams.pages.config.setConfig({
         entityId: settings.entityId,
         contentUrl: settings.contentUrl,
         suggestedDisplayName: settings.suggestedDisplayName,
@@ -210,7 +210,7 @@ export async function configureTab(settings: {
     },
   );
 
-  await microsoftTeams.pages.config.setValidityState(true);
+  microsoftTeams.pages.config.setValidityState(true);
 }
 
 export function navigateToSubEntity(subEntityId: string): void {

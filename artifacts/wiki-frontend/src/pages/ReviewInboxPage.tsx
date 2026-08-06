@@ -543,7 +543,7 @@ function DeletionRequestsSection() {
             ? "L\u00F6schanfrage genehmigt \u2013 Seite archiviert"
             : "L\u00F6schanfrage abgelehnt",
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getListDeletionRequestsQueryKey(),
       });
     } catch (err) {

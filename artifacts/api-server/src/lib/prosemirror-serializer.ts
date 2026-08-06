@@ -45,7 +45,7 @@ class Serializer {
   linkedNodeIds: string[] = [];
 
   serializeText(node: PMNode): { plain: string; md: string } {
-    let plain = node.text ?? "";
+    const plain = node.text ?? "";
     let md = plain;
     for (const mark of node.marks ?? []) {
       switch (mark.type) {
@@ -382,7 +382,7 @@ export function serializeProseMirrorContent(
     return { plaintext: "", markdown: "", media: [], linkedNodeIds: [] };
   }
   const serializer = new Serializer();
-  serializer.serializeNode(doc as PMNode, 0, false);
+  serializer.serializeNode(doc, 0, false);
   return {
     plaintext: serializer.plaintextParts.join("\n\n").trim(),
     markdown: serializer.markdownParts.join("\n\n").trim(),

@@ -86,7 +86,7 @@ function SvgViewer({ svgContent }: { svgContent: string }) {
       .then(({ default: svgPanZoom }) => {
         if (cancelled || !svgEl.parentNode) return;
         try {
-          const instance = svgPanZoom(svgEl as SVGElement, {
+          const instance = svgPanZoom(svgEl, {
             zoomEnabled: true,
             panEnabled: true,
             controlIconsEnabled: true,

@@ -408,7 +408,7 @@ router.get(
       const includePersonalData = req.query.includePersonalData === "true";
       const canExportPersonal =
         includePersonalData && req.user
-          ? await hasPermission(req.user!.principalId, "manage_settings")
+          ? await hasPermission(req.user.principalId, "manage_settings")
           : false;
 
       const result = await auditService.query(opts);

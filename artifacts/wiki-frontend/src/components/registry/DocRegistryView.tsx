@@ -269,7 +269,7 @@ function ClusterSection({
                   <Select
                     value={NOT_ASSIGNED_SENTINEL}
                     onValueChange={(val) =>
-                      onAssignToCluster!(
+                      onAssignToCluster(
                         child.id,
                         val === NOT_ASSIGNED_SENTINEL ? null : val,
                       )

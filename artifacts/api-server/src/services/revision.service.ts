@@ -270,9 +270,7 @@ export async function getVersionTree(nodeId: string) {
       .from(principalsTable)
       .where(inArray(principalsTable.id, Array.from(principalIds)));
     nameMap = new Map(
-      principals
-        .filter((p) => p.displayName)
-        .map((p) => [p.id, p.displayName as string]),
+      principals.filter((p) => p.displayName).map((p) => [p.id, p.displayName]),
     );
   }
 

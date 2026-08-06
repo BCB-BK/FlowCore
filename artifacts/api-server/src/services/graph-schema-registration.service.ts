@@ -305,7 +305,7 @@ export async function buildGlossaryExternalItem(
       itemId,
       itemType: "glossary",
       nodeId: null,
-      level: "internal" as ConfidentialityLevel,
+      level: "internal",
     });
   } catch (err) {
     mapAclErrorToAppError(err, `Glossarbegriff ${termId}`);
@@ -331,7 +331,7 @@ function mapAclErrorToAppError(err: unknown, context: string): never {
   if (err instanceof AppError) throw err;
   const reason =
     err && typeof err === "object" && "reason" in err
-      ? String((err as { reason: unknown }).reason)
+      ? String(err.reason)
       : "unknown_error";
   const message =
     err instanceof Error ? err.message : `ACL für ${context} nicht ermittelbar`;

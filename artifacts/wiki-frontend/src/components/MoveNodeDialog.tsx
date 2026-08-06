@@ -140,18 +140,20 @@ export function MoveNodeDialog({
   const moveMutation = useMoveNode({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetNodeQueryKey(nodeId) });
+        void queryClient.invalidateQueries({
+          queryKey: getGetNodeQueryKey(nodeId),
+        });
         if (currentParentId) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetNodeChildrenQueryKey(currentParentId),
           });
         }
         if (selectedParentId) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetNodeChildrenQueryKey(selectedParentId),
           });
         }
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListRootNodesQueryKey(),
         });
         onOpenChange(false);

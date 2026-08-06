@@ -246,7 +246,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
         className="h-7 w-7 shrink-0"
         title="Kopieren"
         onClick={() => {
-          navigator.clipboard.writeText(value).then(() => {
+          void navigator.clipboard.writeText(value).then(() => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           });
@@ -518,7 +518,7 @@ export function IntegrationKeysTab() {
 
   const copyKey = () => {
     if (!newKey) return;
-    navigator.clipboard.writeText(newKey.apiKey).then(() => {
+    void navigator.clipboard.writeText(newKey.apiKey).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });

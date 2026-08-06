@@ -533,7 +533,7 @@ export async function notifyReviewOverdue(
     nodeId,
     actorId: systemActorId,
     status: "unread" as const,
-    metadata: { daysOverdue, escalation } as Record<string, unknown>,
+    metadata: { daysOverdue, escalation },
   }));
 
   if (rows.length > 0) {

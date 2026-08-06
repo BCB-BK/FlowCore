@@ -96,7 +96,6 @@ import { WatchButton } from "@/components/versioning/WatchButton";
 import { VersionHistoryPanel } from "@/components/versioning/VersionHistoryPanel";
 import { WorkingCopyBanner } from "@/components/versioning/WorkingCopyBanner";
 import { WorkingCopyActions } from "@/components/versioning/WorkingCopyActions";
-import type { JSONContent } from "@tiptap/react";
 import { useState, useCallback, useMemo } from "react";
 import { useQueryClient, useQueries } from "@tanstack/react-query";
 import { ShareToTeams } from "@/components/teams/ShareToTeams";
@@ -193,7 +192,7 @@ export function NodeDetail() {
   const showsClusterArea = pageDef?.supportsClusterGroups === true;
   const showQuickFacts = !isOverviewPage && !showsClusterArea && !!pageDef;
 
-  const allowedChildTypes = useMemo(() => {
+  const _allowedChildTypes = useMemo(() => {
     if (!node) return [];
     return getAllowedChildTypes(node.templateType);
   }, [node]);
@@ -218,7 +217,7 @@ export function NodeDetail() {
     );
   }, [children, sortByDisplayCode]);
 
-  const groupedChildren = useMemo(() => {
+  const _groupedChildren = useMemo(() => {
     if (publishedChildren.length === 0) return {};
     const groups: Record<string, typeof publishedChildren> = {};
     for (const child of publishedChildren) {
@@ -229,7 +228,7 @@ export function NodeDetail() {
     return groups;
   }, [publishedChildren]);
 
-  const isPublished = useCallback(
+  const _isPublished = useCallback(
     (c: { status: string; publishedRevisionId?: string | null }) => {
       return c.status === "published" || !!c.publishedRevisionId;
     },
@@ -312,10 +311,7 @@ export function NodeDetail() {
     // Prefer working copy's _clusters once loaded — so cluster assignments
     // made via handleNodeCreatedInCluster are immediately visible without publish
     if (!wcLoading) {
-      const wcSF = activeWC?.structuredFields as
-        | Record<string, unknown>
-        | null
-        | undefined;
+      const wcSF = activeWC?.structuredFields;
       if (wcSF?._clusters) return parseClusters(wcSF._clusters);
     }
     return parseClusters(structuredFields._clusters);
@@ -324,12 +320,9 @@ export function NodeDetail() {
   // Verlinkte Nodes (Cross-References): im Working-Copy als _linkedNodeIds gespeichert
   const linkedNodeIds = useMemo(() => {
     if (!wcLoading && activeWC) {
-      const wcSF = activeWC.structuredFields as
-        | Record<string, unknown>
-        | null
-        | undefined;
+      const wcSF = activeWC.structuredFields;
       if (Array.isArray(wcSF?._linkedNodeIds))
-        return wcSF!._linkedNodeIds as string[];
+        return wcSF._linkedNodeIds as string[];
     }
     const ids = structuredFields._linkedNodeIds;
     return Array.isArray(ids) ? (ids as string[]) : [];
@@ -384,7 +377,7 @@ export function NodeDetail() {
   const editorContent = useMemo(() => {
     const raw = structuredFields._editorContent ?? structuredFields.discussion;
     if (raw && typeof raw === "object") {
-      return raw as JSONContent;
+      return raw;
     }
     return null;
   }, [structuredFields]);
@@ -822,8 +815,8 @@ export function NodeDetail() {
   const isConfidentialityDenied =
     nodeError &&
     typeof nodeError === "object" &&
-    "status" in (nodeError as any) &&
-    (nodeError as any).status === 403;
+    "status" in nodeError &&
+    (nodeError as { status?: number }).status === 403;
 
   if (isConfidentialityDenied) {
     return (
@@ -887,7 +880,7 @@ export function NodeDetail() {
       toast({ title: "L\u00F6schanfrage eingereicht" });
       setShowDeleteRequest(false);
       setDeleteReason("");
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetNodeDeletionRequestQueryKey(node.id),
       });
     } catch (err) {
@@ -903,7 +896,7 @@ export function NodeDetail() {
     try {
       await cancelDeletionRequest.mutateAsync({ requestId });
       toast({ title: "L\u00F6schanfrage zur\u00FCckgezogen" });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetNodeDeletionRequestQueryKey(node.id),
       });
     } catch (err) {
@@ -915,11 +908,9 @@ export function NodeDetail() {
     }
   };
 
-  const openEditDialog = () => {
+  const _openEditDialog = () => {
     setEditTitle(node.title);
-    setEditTemplateType(
-      node.templateType as NonNullable<UpdateNodeInput["templateType"]>,
-    );
+    setEditTemplateType(node.templateType);
     setShowEdit(true);
   };
 
@@ -1204,7 +1195,7 @@ export function NodeDetail() {
                           className="h-8 text-sm w-44"
                           autoFocus
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") handleAddCluster();
+                            if (e.key === "Enter") void handleAddCluster();
                             if (e.key === "Escape") {
                               setShowAddCluster(false);
                               setNewClusterTitle("");
@@ -1577,14 +1568,7 @@ export function NodeDetail() {
                             </Tooltip>
                           </TooltipProvider>
                         )}
-                        <StatusBadge
-                          status={
-                            child.status as Parameters<
-                              typeof StatusBadge
-                            >[0]["status"]
-                          }
-                          compact
-                        />
+                        <StatusBadge status={child.status} compact />
                       </CardContent>
                     </a>
                   </Card>
@@ -1662,7 +1646,7 @@ export function NodeDetail() {
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleUpdate();
+                  if (e.key === "Enter") void handleUpdate();
                 }}
               />
             </div>
@@ -1733,7 +1717,7 @@ export function NodeDetail() {
                 placeholder={"Warum soll die Seite gel\u00F6scht werden?"}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && deleteReason.trim())
-                    handleDeletionRequest();
+                    void handleDeletionRequest();
                 }}
               />
             </div>

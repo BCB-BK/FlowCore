@@ -28,7 +28,7 @@ function analyzeContent(editor: Editor, templateType?: string): ContentCheck[] {
 
   let hasH1 = false;
   let hasH2 = false;
-  let paragraphCount = 0;
+  let _paragraphCount = 0;
   let hasImage = false;
   let hasMedia = false;
   let totalTextLength = 0;
@@ -42,7 +42,7 @@ function analyzeContent(editor: Editor, templateType?: string): ContentCheck[] {
       if (node.textContent.trim().length === 0) emptyHeadings++;
     }
     if (node.type.name === "paragraph") {
-      paragraphCount++;
+      _paragraphCount++;
       totalTextLength += node.textContent.length;
     }
     if (node.type.name === "image") hasImage = true;

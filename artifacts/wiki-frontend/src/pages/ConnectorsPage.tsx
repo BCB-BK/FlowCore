@@ -283,26 +283,19 @@ function SourceSystemsTab({
                     size="sm"
                     onClick={() => {
                       validateSystem.mutate(
-                        { systemId: system.id! },
+                        { systemId: system.id },
                         {
                           onSuccess: (data) => {
-                            const result = data as {
-                              valid: boolean;
-                              checks: Array<{
-                                check: string;
-                                status: "ok" | "warning" | "error";
-                                message: string;
-                              }>;
-                            };
+                            const result = data;
                             setValidationResult({
-                              systemId: system.id!,
+                              systemId: system.id,
                               valid: result.valid,
                               checks: result.checks,
                             });
                           },
                           onError: () => {
                             setValidationResult({
-                              systemId: system.id!,
+                              systemId: system.id,
                               valid: false,
                               checks: [
                                 {
@@ -331,13 +324,13 @@ function SourceSystemsTab({
                     size="sm"
                     onClick={() => {
                       triggerSync.mutate(
-                        { systemId: system.id! },
+                        { systemId: system.id },
                         {
                           onSuccess: () => {
-                            queryClient.invalidateQueries({
+                            void queryClient.invalidateQueries({
                               queryKey: getListSourceSystemsQueryKey(),
                             });
-                            queryClient.invalidateQueries({
+                            void queryClient.invalidateQueries({
                               queryKey: getGetSyncStatusQueryKey(),
                             });
                           },
@@ -368,10 +361,10 @@ function SourceSystemsTab({
                     onClick={() => {
                       if (confirm("Quellsystem wirklich löschen?")) {
                         deleteSystem.mutate(
-                          { systemId: system.id! },
+                          { systemId: system.id },
                           {
                             onSuccess: () => {
-                              queryClient.invalidateQueries({
+                              void queryClient.invalidateQueries({
                                 queryKey: getListSourceSystemsQueryKey(),
                               });
                             },
@@ -561,7 +554,7 @@ function EditSourceSystemDialog({
       { systemId: system.id as string, data },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListSourceSystemsQueryKey(),
           });
           onClose();
@@ -740,12 +733,12 @@ function StorageProvidersTab({
                       onClick={() => {
                         updateProvider.mutate(
                           {
-                            providerId: provider.id!,
+                            providerId: provider.id,
                             data: { isDefault: true },
                           },
                           {
                             onSuccess: () => {
-                              queryClient.invalidateQueries({
+                              void queryClient.invalidateQueries({
                                 queryKey: getListStorageProvidersQueryKey(),
                               });
                             },
@@ -850,13 +843,13 @@ function SyncStatusTab({
                   size="sm"
                   onClick={() => {
                     triggerSync.mutate(
-                      { systemId: entry.systemId! },
+                      { systemId: entry.systemId },
                       {
                         onSuccess: () => {
-                          queryClient.invalidateQueries({
+                          void queryClient.invalidateQueries({
                             queryKey: getGetSyncStatusQueryKey(),
                           });
-                          queryClient.invalidateQueries({
+                          void queryClient.invalidateQueries({
                             queryKey: getListSourceSystemsQueryKey(),
                           });
                         },
@@ -1000,7 +993,7 @@ function CreateSourceSystemDialog({
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListSourceSystemsQueryKey(),
           });
           onClose();
@@ -1195,12 +1188,12 @@ function CreateStorageProviderDialog({
             | "backup_target",
           accessMode: accessMode as "read_only" | "read_write",
           isDefault,
-          config: config as Record<string, unknown> | undefined,
+          config: config,
         },
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListStorageProvidersQueryKey(),
           });
           onClose();

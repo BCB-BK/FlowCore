@@ -46,10 +46,7 @@ export type WikiPermission =
   | "view_dashboard"
   | "view_tasks"
   | "view_settings"
-  | "view_backups"
   | "manage_backups"
-  | "run_backup"
-  | "restore_backup"
   | "create_working_copy"
   | "edit_working_copy"
   | "submit_working_copy"
@@ -235,7 +232,7 @@ export async function getUserRoles(
     .from(roleAssignmentsTable)
     .where(and(...conditions));
 
-  return rows.map((r) => r.role as WikiRole);
+  return rows.map((r) => r.role);
 }
 
 export async function getHighestRole(principalId: string): Promise<WikiRole> {
@@ -291,7 +288,7 @@ export async function getEffectivePermissions(
   for (const { role, scope } of roles) {
     if (!scopeConditions.has(scope)) continue;
 
-    const rolePerms = ROLE_PERMISSIONS[role as WikiRole];
+    const rolePerms = ROLE_PERMISSIONS[role];
     if (rolePerms) {
       for (const p of rolePerms) {
         permissions.add(p);
@@ -411,7 +408,7 @@ export async function hasPermissionBatch(
   const globalGranted = roles.some(
     (r) =>
       r.scope === "global" &&
-      (ROLE_PERMISSIONS[r.role as WikiRole] ?? []).includes(permission),
+      (ROLE_PERMISSIONS[r.role] ?? []).includes(permission),
   );
 
   if (globalGranted) {
@@ -472,7 +469,7 @@ export async function hasPermissionBatch(
     let granted = false;
     for (const { role, scope } of roles) {
       if (!scopes.has(scope)) continue;
-      if ((ROLE_PERMISSIONS[role as WikiRole] ?? []).includes(permission)) {
+      if ((ROLE_PERMISSIONS[role] ?? []).includes(permission)) {
         granted = true;
         break;
       }
@@ -575,9 +572,7 @@ export async function hasPermissionBatch(
           for (const dr of delegatorRoles) {
             if (dr.principalId !== delegation.delegatorId) continue;
             if (!nodeScopes.has(dr.scope)) continue;
-            if (
-              (ROLE_PERMISSIONS[dr.role as WikiRole] ?? []).includes(permission)
-            ) {
+            if ((ROLE_PERMISSIONS[dr.role] ?? []).includes(permission)) {
               granted = true;
               break;
             }
@@ -684,7 +679,7 @@ async function resolveDeputyPermissions(
 
     for (const { role, scope } of delegatorRoles) {
       if (!scopeConditions.has(scope)) continue;
-      const rolePerms = ROLE_PERMISSIONS[role as WikiRole];
+      const rolePerms = ROLE_PERMISSIONS[role];
       if (rolePerms) {
         for (const p of rolePerms) {
           inheritedPerms.push(p);

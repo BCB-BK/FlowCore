@@ -300,7 +300,9 @@ function BackupConfigSection() {
           targetFolderPath: spSelection?.folderPath || null,
         },
       });
-      queryClient.invalidateQueries({ queryKey: getGetBackupConfigQueryKey() });
+      void queryClient.invalidateQueries({
+        queryKey: getGetBackupConfigQueryKey(),
+      });
       setSuccess("Konfiguration gespeichert");
     } catch (err: unknown) {
       const msg =
@@ -317,7 +319,9 @@ function BackupConfigSection() {
     setSuccess(null);
     try {
       await triggerBackup.mutateAsync();
-      queryClient.invalidateQueries({ queryKey: getListBackupRunsQueryKey() });
+      void queryClient.invalidateQueries({
+        queryKey: getListBackupRunsQueryKey(),
+      });
       setSuccess("Backup wurde gestartet");
     } catch (err: unknown) {
       const msg =
@@ -892,7 +896,9 @@ function RestoreDialog({
     setRestoreError(null);
     try {
       await restore.mutateAsync({ id: run.id });
-      queryClient.invalidateQueries({ queryKey: getListBackupRunsQueryKey() });
+      void queryClient.invalidateQueries({
+        queryKey: getListBackupRunsQueryKey(),
+      });
       onClose();
     } catch (err: unknown) {
       const msg =

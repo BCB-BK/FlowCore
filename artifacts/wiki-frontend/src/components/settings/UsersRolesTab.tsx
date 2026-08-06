@@ -235,7 +235,7 @@ export function UsersRolesTab() {
     <div className="space-y-6">
       <AddPrincipalSection
         onPrincipalAdded={(id) => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListPrincipalsQueryKey(),
           });
           setSelectedPrincipalId(id);
@@ -269,7 +269,7 @@ export function UsersRolesTab() {
             <PrincipalDetail
               principalId={selectedPrincipalId}
               onChanged={() => {
-                queryClient.invalidateQueries({
+                void queryClient.invalidateQueries({
                   queryKey: getListPrincipalsQueryKey(),
                 });
               }}
@@ -686,7 +686,7 @@ function PrincipalDetail({
         description: `${ROLE_LABELS[newRole]} wurde ${principal.displayName} zugewiesen.`,
       });
       setNewRole("");
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetPrincipalQueryKey(principalId),
       });
       onChanged();
@@ -710,7 +710,7 @@ function PrincipalDetail({
         title: "Rolle entfernt",
         description: `${ROLE_LABELS[roleName] ?? roleName} wurde von ${principal.displayName} entfernt.`,
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetPrincipalQueryKey(principalId),
       });
       onChanged();

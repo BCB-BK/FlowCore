@@ -125,7 +125,7 @@ export function CreateNodeDialog({
   const { data: rootNodes } = useRootNodes();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   const [showAllTypes, setShowAllTypes] = useState(false);
   const [linkQuery, setLinkQuery] = useState("");
@@ -212,12 +212,12 @@ export function CreateNodeDialog({
     } else if (allowedTypes.length > 0) {
       const firstRecommended =
         recommendedTypes.length > 0 ? recommendedTypes[0] : allowedTypes[0];
-      setTemplateType(firstRecommended as CreateNodeInput["templateType"]);
+      setTemplateType(firstRecommended);
     }
   }, [allowedTypes, presetType, recommendedTypes]);
 
   useEffect(() => {
-    const def = PAGE_TYPE_REGISTRY[templateType as TemplateType];
+    const def = PAGE_TYPE_REGISTRY[templateType];
     if (def?.variants?.length) {
       const standardVariant = def.variants.find(
         (v) => v.variantCategory === "standard",
@@ -290,11 +290,11 @@ export function CreateNodeDialog({
     setShowAllTypes(false);
   }, [parentTemplateType]);
 
-  const selectedDef = PAGE_TYPE_REGISTRY[templateType as TemplateType];
+  const selectedDef = PAGE_TYPE_REGISTRY[templateType];
 
   const variantsByCat = useMemo(() => {
     if (!selectedDef) return [];
-    const grouped = getVariantsByCategory(templateType as string);
+    const grouped = getVariantsByCategory(templateType);
     const order: VariantCategory[] = [
       "schlank",
       "standard",
@@ -687,17 +687,11 @@ export function CreateNodeDialog({
                               ? "ring-2 ring-primary border-primary"
                               : "hover:border-primary/40"
                           }`}
-                          onClick={() =>
-                            setTemplateType(
-                              t as CreateNodeInput["templateType"],
-                            )
-                          }
+                          onClick={() => setTemplateType(t)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              setTemplateType(
-                                t as CreateNodeInput["templateType"],
-                              );
+                              setTemplateType(t);
                             }
                           }}
                         >

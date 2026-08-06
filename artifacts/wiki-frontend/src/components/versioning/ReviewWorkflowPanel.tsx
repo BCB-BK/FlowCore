@@ -94,14 +94,14 @@ export function ReviewWorkflowPanel({
   }, [apiBase, revisionId]);
 
   useEffect(() => {
-    fetchWorkflow();
+    void fetchWorkflow();
   }, [fetchWorkflow]);
 
   const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: [`/api/content/nodes/${nodeId}/revisions`],
     });
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: [`/api/content/nodes/${nodeId}`],
     });
   }, [queryClient, nodeId]);
@@ -125,7 +125,7 @@ export function ReviewWorkflowPanel({
       });
       setSubmitDialogOpen(false);
       setComment("");
-      fetchWorkflow();
+      void fetchWorkflow();
       invalidate();
     } catch (err) {
       toast({
@@ -151,7 +151,7 @@ export function ReviewWorkflowPanel({
       setApproveDialogOpen(false);
       setComment("");
       setNextReviewDate("");
-      fetchWorkflow();
+      void fetchWorkflow();
       invalidate();
     } catch {
       toast({ variant: "destructive", title: "Fehler bei der Genehmigung" });
@@ -186,7 +186,7 @@ export function ReviewWorkflowPanel({
       });
       setRejectDialogOpen(false);
       setComment("");
-      fetchWorkflow();
+      void fetchWorkflow();
       invalidate();
     } catch {
       toast({ variant: "destructive", title: "Fehler bei der Ablehnung" });

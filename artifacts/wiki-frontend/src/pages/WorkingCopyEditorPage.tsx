@@ -249,7 +249,7 @@ export function WorkingCopyEditorPage() {
     createWorkingCopy
       .mutateAsync({ nodeId })
       .then(() => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
         });
       })
@@ -270,7 +270,7 @@ export function WorkingCopyEditorPage() {
     queryClient,
   ]);
 
-  const wcContent = useMemo(() => {
+  const _wcContent = useMemo(() => {
     if (!activeWC) return {};
     return (activeWC.content as Record<string, unknown>) ?? {};
   }, [activeWC]);
@@ -314,7 +314,6 @@ export function WorkingCopyEditorPage() {
     localStructuredFieldsRef.current = {};
     setValidationSFSnapshot({});
     // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeId]);
 
   useEffect(() => {
@@ -340,7 +339,7 @@ export function WorkingCopyEditorPage() {
     const raw =
       wcStructuredFields._editorContent ?? wcStructuredFields.discussion;
     if (raw && typeof raw === "object") {
-      return raw as JSONContent;
+      return raw;
     }
     return null;
   }, [wcStructuredFields]);
@@ -373,14 +372,12 @@ export function WorkingCopyEditorPage() {
 
   const previewLinkedNodes = useMemo(
     () =>
-      previewLinkedNodeQueries
-        .filter((q) => q.data != null)
-        .map((q) => q.data as Record<string, unknown>),
+      previewLinkedNodeQueries.filter((q) => q.data != null).map((q) => q.data),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [previewLinkedNodeQueries.map((q) => q.dataUpdatedAt).join(",")],
   );
 
-  const previewLinkedNodeIdSet = useMemo(
+  const _previewLinkedNodeIdSet = useMemo(
     () => new Set(previewLinkedNodeIds),
     [previewLinkedNodeIds],
   );
@@ -390,7 +387,7 @@ export function WorkingCopyEditorPage() {
       ? localStructuredFieldsRef.current
       : wcStructuredFields;
     if (sf._editorContent && typeof sf._editorContent === "object") {
-      return sf._editorContent as JSONContent;
+      return sf._editorContent;
     }
     return null;
   }, [showPreview, wcStructuredFields]);
@@ -606,7 +603,7 @@ export function WorkingCopyEditorPage() {
     setShowCreate(true);
   }, []);
 
-  const handleCreateInCluster = useCallback((clusterId: string) => {
+  const _handleCreateInCluster = useCallback((clusterId: string) => {
     setPendingClusterId(clusterId);
     setShowCreate(true);
   }, []);
@@ -900,7 +897,7 @@ export function WorkingCopyEditorPage() {
     setDirty,
   ]);
 
-  const handleCancel = useCallback(async () => {
+  const _handleCancel = useCallback(async () => {
     if (!activeWC) return;
     try {
       await cancelWorkingCopy.mutateAsync({
@@ -990,7 +987,7 @@ export function WorkingCopyEditorPage() {
       toast({ title: "Löschanfrage eingereicht" });
       setShowDeleteRequest(false);
       setDeleteReason("");
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetNodeDeletionRequestQueryKey(node.id),
       });
     } catch (err) {
@@ -1199,7 +1196,7 @@ export function WorkingCopyEditorPage() {
             editableMetadata,
             validationSectionData,
           );
-          const guided = getGuidedSections(node.templateType);
+          const _guided = getGuidedSections(node.templateType);
           return (
             <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
               <div className="flex items-center justify-between">
@@ -1358,11 +1355,7 @@ export function WorkingCopyEditorPage() {
                                       </div>
                                     </div>
                                     <StatusBadge
-                                      status={
-                                        child.status as Parameters<
-                                          typeof StatusBadge
-                                        >[0]["status"]
-                                      }
+                                      status={child.status}
                                       compact
                                     />
                                   </div>
@@ -1413,14 +1406,7 @@ export function WorkingCopyEditorPage() {
                                 {child.displayCode}
                               </p>
                             </div>
-                            <StatusBadge
-                              status={
-                                child.status as Parameters<
-                                  typeof StatusBadge
-                                >[0]["status"]
-                              }
-                              compact
-                            />
+                            <StatusBadge status={child.status} compact />
                           </div>
                         );
                       })}
@@ -2061,7 +2047,7 @@ export function WorkingCopyEditorPage() {
                 placeholder="Warum soll die Seite gelöscht werden?"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && deleteReason.trim())
-                    handleDeletionRequest();
+                    void handleDeletionRequest();
                 }}
               />
             </div>

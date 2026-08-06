@@ -111,7 +111,7 @@ export function AISettingsTab() {
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetAiSettingsQueryKey(),
           });
           toast({

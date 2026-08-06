@@ -10,7 +10,7 @@ import {
   confidentialityPrincipalAccessTable,
 } from "@workspace/db/schema";
 import { eq, and, or, sql, inArray } from "drizzle-orm";
-import { getPermissionsForRole, type WikiRole } from "./rbac.service";
+import { getPermissionsForRole } from "./rbac.service";
 import type { ConfidentialityLevel } from "./confidentiality.service";
 import { logger } from "../lib/logger";
 
@@ -89,7 +89,7 @@ export async function resolveReadAccessPrincipals(
   const grantedViaRole = new Set<string>();
   for (const row of roleRows) {
     if (!scopes.has(row.scope)) continue;
-    const perms = getPermissionsForRole(row.role as WikiRole);
+    const perms = getPermissionsForRole(row.role);
     if (perms.includes("read_page")) {
       principalIds.add(row.principalId);
       grantedViaRole.add(row.principalId);

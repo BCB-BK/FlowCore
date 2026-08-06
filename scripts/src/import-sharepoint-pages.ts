@@ -34,13 +34,6 @@ interface ParsedPage {
   urlSlug: string;
 }
 
-interface HierarchyNode {
-  displayTitle: string;
-  kuerzel: string;
-  file: string | null;
-  children: HierarchyNode[];
-}
-
 function parseHtmlFile(html: string, filename: string): ParsedPage {
   const sections: string[] = [];
   const sectionRegex2 = /<section>([\s\S]*?)<\/section>/g;
@@ -675,7 +668,7 @@ async function main() {
       .trim();
   }
 
-  function resolveSlugToFile(slug: string): string | null {
+  function _resolveSlugToFile(slug: string): string | null {
     const direct = slugToFile.get(slug);
     if (direct) return direct;
     const decoded = decodeURIComponent(slug);
@@ -1232,7 +1225,7 @@ async function main() {
 
   if (orphanCount > 0)
     errors.push(`${orphanCount} Nodes ohne veröffentlichte Revision`);
-  const overviewAndExcludedCount = importedFiles.size - totalPages;
+  const _overviewAndExcludedCount = importedFiles.size - totalPages;
   if (importedFiles.size !== htmlFiles.length) {
     errors.push(
       `Import-Zählung inkonsistent: ${importedFiles.size} Dateien verarbeitet, ${htmlFiles.length} HTML-Dateien vorhanden`,
@@ -1267,5 +1260,5 @@ async function main() {
 
 main().catch((err: unknown) => {
   console.error("Fatal error:", err);
-  pool.end().then(() => process.exit(1));
+  void pool.end().then(() => process.exit(1));
 });

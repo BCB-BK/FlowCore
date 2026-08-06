@@ -952,8 +952,10 @@ export function QualityDashboard() {
     for (const key of keysToRemove) {
       queryClient.removeQueries({ queryKey: key });
     }
-    queryClient.refetchQueries({ queryKey: getGetQualityPagesQueryKey() });
-    queryClient.refetchQueries({ queryKey: getGetQualityOverviewQueryKey() });
+    void queryClient.refetchQueries({ queryKey: getGetQualityPagesQueryKey() });
+    void queryClient.refetchQueries({
+      queryKey: getGetQualityOverviewQueryKey(),
+    });
   }, [queryClient, clearSelection]);
 
   const { data: overview, isLoading: overviewLoading } =

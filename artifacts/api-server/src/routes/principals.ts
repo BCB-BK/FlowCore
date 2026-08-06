@@ -28,7 +28,6 @@ import {
   getActiveDelegationsForPrincipal,
   getActiveDelegationsForDeputy,
   getAllDelegations,
-  type WikiPermission,
 } from "../services/rbac.service";
 import {
   searchPeople,
@@ -177,7 +176,7 @@ router.get("/principals/:id/permissions", requireAuth, async (req, res) => {
   );
   res.json({
     principalId: id,
-    permissions: Array.from(permissions) as WikiPermission[],
+    permissions: Array.from(permissions),
   });
 });
 

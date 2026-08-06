@@ -167,7 +167,7 @@ export function MediaLibraryDialog({
           value={activeTab}
           onValueChange={(v) => {
             setActiveTab(v);
-            if (v === "browse") loadAssets();
+            if (v === "browse") void loadAssets();
           }}
         >
           <TabsList className="w-full">
@@ -285,7 +285,7 @@ export function MediaLibraryDialog({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") loadAssets();
+                  if (e.key === "Enter") void loadAssets();
                 }}
               />
               <Button variant="outline" onClick={loadAssets}>

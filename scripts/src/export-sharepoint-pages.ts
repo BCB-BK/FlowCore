@@ -249,12 +249,15 @@ function buildHtml(page: SitePageDetail): string {
 }
 
 function sanitizeFilename(title: string): string {
-  return title
-    .replace(/[<>:"/\\|?*\x00-\x1f]/g, "_")
-    .replace(/\s+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_|_$/g, "")
-    .substring(0, 200);
+  return (
+    title
+      // eslint-disable-next-line no-control-regex -- Steuerzeichen werden hier absichtlich aus dem Export entfernt
+      .replace(/[<>:"/\\|?*\x00-\x1f]/g, "_")
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_|_$/g, "")
+      .substring(0, 200)
+  );
 }
 
 async function main() {

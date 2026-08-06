@@ -107,7 +107,7 @@ export async function projectGlossaryTerm(
         reviewDue = revision.nextReviewDate
           ? revision.nextReviewDate.toISOString()
           : null;
-        const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
+        const sf = revision.structuredFields ?? {};
         authorityLevel =
           typeof sf.authority_level === "string" ? sf.authority_level : null;
         sourcePriority =

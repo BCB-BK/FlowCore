@@ -103,7 +103,7 @@ export function ConfidentialitySection() {
   }, [toast]);
 
   useEffect(() => {
-    loadConfig();
+    void loadConfig();
   }, [loadConfig]);
 
   if (loading) {

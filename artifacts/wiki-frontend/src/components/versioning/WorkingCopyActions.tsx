@@ -83,10 +83,10 @@ export function WorkingCopyActions({
   }, [templateType, workingCopy.content, workingCopy.structuredFields]);
 
   const invalidateNode = () => {
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: [`/api/content/nodes/${nodeId}`],
     });
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: [`/api/content/nodes/${nodeId}/revisions`],
     });
   };

@@ -273,7 +273,7 @@ export function SharePointMediaBrowser({
               <button
                 key={site.id}
                 className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent text-left"
-                onClick={() => handleSelectSite(site.id!)}
+                onClick={() => handleSelectSite(site.id)}
               >
                 <Globe className="w-5 h-5 text-blue-500 shrink-0" />
                 <div className="min-w-0">
@@ -307,7 +307,7 @@ export function SharePointMediaBrowser({
               <button
                 key={drive.id}
                 className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent text-left"
-                onClick={() => handleSelectDrive(drive.id!)}
+                onClick={() => handleSelectDrive(drive.id)}
               >
                 <HardDrive className="w-5 h-5 text-amber-500 shrink-0" />
                 <div>
@@ -339,7 +339,7 @@ export function SharePointMediaBrowser({
                   <button
                     key={item.id}
                     className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent text-left"
-                    onClick={() => handleOpenFolder(item.id!, item.name!)}
+                    onClick={() => handleOpenFolder(item.id, item.name)}
                   >
                     <Folder className="w-5 h-5 text-amber-500 shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -363,11 +363,11 @@ export function SharePointMediaBrowser({
                   disabled={isImporting}
                   onClick={() =>
                     handleSelectItem({
-                      id: item.id!,
-                      name: item.name!,
+                      id: item.id,
+                      name: item.name,
                       mimeType: item.mimeType ?? "application/octet-stream",
                       size: item.size ?? 0,
-                      driveId: item.driveId!,
+                      driveId: item.driveId,
                     })
                   }
                 >

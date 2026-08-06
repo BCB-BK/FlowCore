@@ -304,7 +304,7 @@ export function MetadataFieldRenderer({
         {canShowAi && (
           <FieldAiButton
             fieldKey={fieldKey}
-            pageType={pageType!}
+            pageType={pageType}
             nodeId={nodeId}
             getValue={getTextValue}
             onApply={handleAiApply}

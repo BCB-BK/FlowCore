@@ -604,10 +604,8 @@ function DroppableClusterBody({
 
 function SortableChildRow({
   child,
-  clusters,
   currentClusterId,
   isLinked,
-  onAssign,
   onRemove,
 }: {
   child: ChildNode;

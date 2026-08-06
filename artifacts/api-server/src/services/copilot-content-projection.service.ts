@@ -201,9 +201,7 @@ async function findGlossaryTermsInText(plaintext: string): Promise<string[]> {
   const lowerText = plaintext.toLowerCase();
   const found = new Set<string>();
   for (const t of terms) {
-    const candidates = [t.term, ...(t.synonyms ?? [])].filter(
-      Boolean,
-    ) as string[];
+    const candidates = [t.term, ...(t.synonyms ?? [])].filter(Boolean);
     for (const candidate of candidates) {
       const pattern = new RegExp(
         `\\b${escapeRegExp(candidate.toLowerCase())}\\b`,
@@ -329,7 +327,7 @@ export async function getPublishedChildPages(
       ),
     );
   return rows.map((r) => {
-    const sf = (r.structuredFields ?? {}) as Record<string, unknown>;
+    const sf = r.structuredFields ?? {};
     const shortDescription =
       typeof sf.kurzbeschreibung === "string" &&
       sf.kurzbeschreibung.trim().length > 0
@@ -517,7 +515,7 @@ export async function projectPublishedPage(
   const structuredFields = {
     ...scopeStructuredFieldsToTemplate(
       node.templateType,
-      (revision.structuredFields ?? {}) as Record<string, unknown>,
+      revision.structuredFields ?? {},
     ),
     media,
   };
@@ -538,7 +536,7 @@ export async function projectPublishedPage(
   const childPagesExport = deriveChildPagesExport(node.displayCode, childPages);
   const { hasChildren, childPageCount } = childPagesExport;
 
-  const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
+  const sf = revision.structuredFields ?? {};
   const confidentiality =
     typeof sf.confidentiality === "string"
       ? sf.confidentiality
@@ -615,7 +613,7 @@ export async function projectPublishedPage(
     authorityLevel,
     sourcePriority,
     brandScope: deriveBrandScope(tags),
-    agentScope: agentScope as string[],
+    agentScope: agentScope,
     agentEnabled: agentMetadata.agentEnabled,
     decisionStatus: agentMetadata.decisionStatus,
     copilotSummary: agentMetadata.copilotSummary,

@@ -662,8 +662,7 @@ function WorkflowCard({
                       variant="outline"
                       className="text-[10px] px-1 py-0 font-normal"
                     >
-                      {PAGE_TYPE_LABELS[pt as keyof typeof PAGE_TYPE_LABELS] ??
-                        pt}
+                      {PAGE_TYPE_LABELS[pt] ?? pt}
                     </Badge>
                   ))}
                   {assignedPageTypes.length > 4 && (
@@ -777,7 +776,7 @@ function WorkflowsSection() {
   }, []);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const handleDelete = async (id: string) => {
@@ -817,7 +816,7 @@ function WorkflowsSection() {
       id: "",
       name: `${t.name} (Kopie)`,
       isDefault: false,
-    } as unknown as WorkflowTemplate);
+    });
     setShowEditor(true);
   };
 
@@ -933,9 +932,7 @@ function WorkflowsSection() {
           <CardContent>
             <div className="space-y-1">
               {pageTypes.map((pageType) => {
-                const label =
-                  PAGE_TYPE_LABELS[pageType as keyof typeof PAGE_TYPE_LABELS] ??
-                  pageType;
+                const label = PAGE_TYPE_LABELS[pageType] ?? pageType;
                 const assignment = assignments.find(
                   (a) => a.pageType === pageType,
                 );
@@ -1216,7 +1213,7 @@ function NotificationRulesSection() {
   }, []);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (!seeded) {
         setSeeded(true);
         await customFetch("/api/admin/notification-rules/seed", {

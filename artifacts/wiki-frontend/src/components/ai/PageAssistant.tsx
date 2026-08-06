@@ -250,7 +250,7 @@ export function PageAssistant({
 
   const handleCopy = useCallback(() => {
     if (result) {
-      navigator.clipboard.writeText(result);
+      void navigator.clipboard.writeText(result);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

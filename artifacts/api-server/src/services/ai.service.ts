@@ -16,6 +16,8 @@ import {
 } from "./rbac.service";
 import { checkConfidentialityAccessBatch } from "./confidentiality.service";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
+import nodePath from "path";
+import nodeFs from "fs";
 
 let _openaiClient: OpenAI | null = null;
 
@@ -31,7 +33,7 @@ async function getOpenAI(): Promise<OpenAI> {
     const mod = await import("@workspace/integrations-openai-ai-server");
     _openaiClient = mod.openai;
   }
-  return _openaiClient!;
+  return _openaiClient;
 }
 
 // Chat-fähige Modell-Prefixe die von OpenAI unterstützt werden
@@ -352,25 +354,26 @@ const DOCS_KB: Array<{
 ];
 
 function getDocsRootForAi(): string {
-  const replHome = process.env["REPL_HOME"] ?? "";
+  // WORKSPACE_ROOT ist der Pfad auf dem Server; REPL_HOME bleibt als
+  // Rueckfallebene erhalten, solange die Replit-Instanz parallel laeuft.
+  const wurzel =
+    process.env["WORKSPACE_ROOT"] ?? process.env["REPL_HOME"] ?? "";
   const candidates = [
-    require("path").join(replHome, "docs"),
-    require("path").join(process.cwd(), "docs"),
-    require("path").join(process.cwd(), "../../../docs"),
-    require("path").join(process.cwd(), "../../../../docs"),
+    nodePath.join(wurzel, "docs"),
+    nodePath.join(process.cwd(), "docs"),
+    nodePath.join(process.cwd(), "../../../docs"),
+    nodePath.join(process.cwd(), "../../../../docs"),
   ];
   for (const c of candidates) {
-    if (require("fs").existsSync(c)) return c;
+    if (nodeFs.existsSync(c)) return c;
   }
-  return require("path").join(replHome, "docs");
+  return nodePath.join(wurzel, "docs");
 }
 
 function readDocForAi(docsRoot: string, filename: string): string | null {
-  const fs = require("fs");
-  const path = require("path");
-  const filePath = path.join(docsRoot, path.basename(filename));
-  if (!fs.existsSync(filePath)) return null;
-  return fs.readFileSync(filePath, "utf-8") as string;
+  const filePath = nodePath.join(docsRoot, nodePath.basename(filename));
+  if (!nodeFs.existsSync(filePath)) return null;
+  return nodeFs.readFileSync(filePath, "utf-8") as string;
 }
 
 function buildDocsContext(query: string): string {
@@ -579,7 +582,7 @@ async function searchWikiContent(
 
   return filtered.map((r) => {
     let snippet = "";
-    const sf = r.structuredFields as Record<string, unknown> | null;
+    const sf = r.structuredFields;
     if (sf) {
       const editorContent = sf._editorContent;
       if (typeof editorContent === "object" && editorContent !== null) {
@@ -597,7 +600,7 @@ async function searchWikiContent(
       displayCode: r.displayCode,
       templateType: r.templateType,
       snippet,
-      sourceType: "wiki" as SourceType,
+      sourceType: "wiki",
       contentStatus: r.status,
     };
   });
@@ -655,7 +658,7 @@ async function searchConnectorSources(
     displayCode: r.node_display_code,
     templateType: r.node_template_type,
     snippet: `Externe Quelle: ${r.system_name}`,
-    sourceType: "connector" as SourceType,
+    sourceType: "connector",
     externalUrl: r.external_url || undefined,
     sourceSystemName: r.system_name,
   }));

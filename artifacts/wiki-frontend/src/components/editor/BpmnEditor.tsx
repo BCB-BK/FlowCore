@@ -702,7 +702,7 @@ export function BpmnEditor({
   }, [effectiveXml, editable, readElementProps, subscribeMinimapEvents]);
 
   useEffect(() => {
-    initBpmn();
+    void initBpmn();
     return () => {
       if (minimapUnsubRef.current) {
         minimapUnsubRef.current();

@@ -57,7 +57,7 @@ const PATTERNS: Array<{ regex: RegExp; description: string }> = [
     description: "Hardcoded UUID (potential dev principal ID or secret)",
   },
   {
-    regex: /['"]Bearer\s+[A-Za-z0-9._~+\/=-]{20,}['"]/,
+    regex: /['"]Bearer\s+[A-Za-z0-9._~+/=-]{20,}['"]/,
     description: "Hardcoded Bearer token",
   },
   {

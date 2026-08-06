@@ -40,7 +40,6 @@ import {
 import { customFetch } from "@workspace/api-client-react";
 import { PAGE_TYPE_REGISTRY } from "@/lib/types";
 import { PAGE_TYPE_LABELS } from "@/lib/types";
-import type { PageTypeDefinition } from "@workspace/shared/page-types";
 import { AISettingsTab } from "@/components/settings/AISettingsTab";
 import { ConnectorsTab } from "@/components/settings/ConnectorsTab";
 import { TemplateDetailPanel } from "@/components/settings/TemplateDetailPanel";
@@ -834,7 +833,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 function TemplatesTab() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<string | null>(null);
-  const templates = Object.values(PAGE_TYPE_REGISTRY) as PageTypeDefinition[];
+  const templates = Object.values(PAGE_TYPE_REGISTRY);
   const previewTemplate = previewType
     ? (templates.find((t) => t.type === previewType) ?? null)
     : null;

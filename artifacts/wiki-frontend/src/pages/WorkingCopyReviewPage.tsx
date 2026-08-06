@@ -53,7 +53,7 @@ interface RevisionRecord {
 
 function extractEditorContent(sf: Record<string, unknown>): JSONContent | null {
   if (sf._editorContent && typeof sf._editorContent === "object") {
-    return sf._editorContent as JSONContent;
+    return sf._editorContent;
   }
   return null;
 }
@@ -155,7 +155,7 @@ export function WorkingCopyReviewPage() {
         { method: "POST" },
       );
       toast({ title: "KI-Zusammenfassung generiert" });
-      activeWCQuery.refetch();
+      void activeWCQuery.refetch();
       if (result.summary) {
         setEditableSummary(result.summary);
       }
@@ -170,7 +170,7 @@ export function WorkingCopyReviewPage() {
   const publishedRevision = useMemo<RevisionRecord | null>(() => {
     if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
       return null;
-    return revisions[0] as RevisionRecord;
+    return revisions[0];
   }, [revisions]);
 
   const publishedSF = useMemo<Record<string, unknown>>(() => {
@@ -184,12 +184,12 @@ export function WorkingCopyReviewPage() {
     [publishedSF],
   );
 
-  const publishedSections = useMemo(
+  const _publishedSections = useMemo(
     () => extractSections(publishedSF),
     [publishedSF],
   );
 
-  const publishedMetadata = useMemo(
+  const _publishedMetadata = useMemo(
     () =>
       extractMetadata(
         (publishedRevision?.content as Record<string, unknown>) ?? {},
@@ -207,7 +207,7 @@ export function WorkingCopyReviewPage() {
     [wcStructuredFields],
   );
 
-  const wcSections = useMemo(
+  const _wcSections = useMemo(
     () => extractSections(wcStructuredFields),
     [wcStructuredFields],
   );
@@ -479,7 +479,7 @@ export function WorkingCopyReviewPage() {
                         },
                       );
                       toast({ title: "Zusammenfassung gespeichert" });
-                      activeWCQuery.refetch();
+                      void activeWCQuery.refetch();
                     } catch {
                       toast({
                         variant: "destructive",

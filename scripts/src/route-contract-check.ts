@@ -34,7 +34,7 @@ function extractSpecPaths(): Map<string, Set<string>> {
     }
     if (!inPaths) continue;
 
-    const pathMatch = line.match(/^  (\/[^:]+):\s*$/);
+    const pathMatch = line.match(/^ {2}(\/[^:]+):\s*$/);
     if (pathMatch) {
       currentPath = pathMatch[1];
       if (!paths.has(currentPath)) {

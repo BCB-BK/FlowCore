@@ -7,17 +7,22 @@
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "lint": "prettier --check \"artifacts/**/*.{ts,tsx}\" \"lib/**/*.{ts,tsx}\" \"scripts/**/*.ts\"",
+    "lint": "prettier --check \"artifacts/**/*.{ts,tsx}\" \"lib/**/*.{ts,tsx}\" \"scripts/**/*.ts\" && eslint .",
     "lint:fix": "prettier --write \"artifacts/**/*.{ts,tsx}\" \"lib/**/*.{ts,tsx}\" \"scripts/**/*.ts\"",
-    "test": "pnpm -r --if-present run test",
-    "e2e": "echo \"Run Playwright E2E tests via: pnpm --filter @workspace/e2e run test\" && exit 0",
+    "test": "pnpm -r --filter \"!@workspace/e2e\" --if-present run test",
     "no-hardcode-check": "pnpm --filter @workspace/scripts run no-hardcode-check",
-    "docs:check": "pnpm --filter @workspace/scripts run docs:check"
+    "docs:check": "pnpm --filter @workspace/scripts run docs:check",
+    "test:e2e": "pnpm --filter @workspace/e2e run test"
   },
   "private": true,
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.0",
+    "globals": "^16.5.0",
     "prettier": "^3.8.1",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.48.0"
   },
   "dependencies": {}
 }

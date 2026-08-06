@@ -110,7 +110,9 @@ export async function batchProcessWithSSE<T, R>(
         factor: 2,
         onFailedAttempt: (error) => {
           if (!isRateLimitError(error)) {
-            throw error;
+            // Der Fehler stammt aus der Bibliothek und ist als unknown typisiert;
+            // hier wird er unveraendert weitergereicht.
+            throw error instanceof Error ? error : new Error(String(error));
           }
         },
       });

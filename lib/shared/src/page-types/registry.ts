@@ -4316,8 +4316,7 @@ function isNonEmpty(val: unknown): boolean {
   if (val === undefined || val === null) return false;
   if (typeof val === "string") return val.trim().length > 0;
   if (Array.isArray(val)) return val.length > 0;
-  if (typeof val === "object")
-    return Object.keys(val as Record<string, unknown>).length > 0;
+  if (typeof val === "object") return Object.keys(val).length > 0;
   return true;
 }
 

@@ -393,7 +393,7 @@ export function GlobalAssistant() {
           className="flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            handleAsk();
+            void handleAsk();
           }}
         >
           <Input

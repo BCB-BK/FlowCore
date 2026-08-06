@@ -223,11 +223,8 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
         .where(eq(contentRevisionsTable.id, node.publishedRevisionId));
       if (pubRev) {
         title = pubRev.title;
-        content = pubRev.content as Record<string, unknown> | null;
-        structuredFields = pubRev.structuredFields as Record<
-          string,
-          unknown
-        > | null;
+        content = pubRev.content;
+        structuredFields = pubRev.structuredFields;
         baseRevisionId = pubRev.id;
       }
     } else {
@@ -239,11 +236,8 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
         .limit(1);
       if (latestRev) {
         title = latestRev.title;
-        content = latestRev.content as Record<string, unknown> | null;
-        structuredFields = latestRev.structuredFields as Record<
-          string,
-          unknown
-        > | null;
+        content = latestRev.content;
+        structuredFields = latestRev.structuredFields;
         baseRevisionId = latestRev.id;
       }
     }
@@ -1089,11 +1083,8 @@ export async function restoreAsWorkingCopy(
         nodeId,
         baseRevisionId,
         title: source.title,
-        content: source.content as Record<string, unknown> | null,
-        structuredFields: source.structuredFields as Record<
-          string,
-          unknown
-        > | null,
+        content: source.content,
+        structuredFields: source.structuredFields,
         authorId: actorId,
         lockedBy: actorId,
         status: "draft",
@@ -1183,17 +1174,14 @@ export async function getWorkingCopyDiff(id: string) {
       .from(contentRevisionsTable)
       .where(eq(contentRevisionsTable.id, wc.baseRevisionId));
     if (baseRev) {
-      baseContent = baseRev.content as Record<string, unknown> | null;
-      baseStructuredFields = baseRev.structuredFields as Record<
-        string,
-        unknown
-      > | null;
+      baseContent = baseRev.content;
+      baseStructuredFields = baseRev.structuredFields;
       baseTitle = baseRev.title;
     }
   }
 
-  const wcFields = (wc.structuredFields || {}) as Record<string, unknown>;
-  const baseFields = (baseStructuredFields || {}) as Record<string, unknown>;
+  const wcFields = wc.structuredFields || {};
+  const baseFields = baseStructuredFields || {};
   const structuredFieldChanges: Record<string, { old: unknown; new: unknown }> =
     {};
   const allKeys = new Set([

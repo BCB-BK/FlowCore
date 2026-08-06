@@ -46,13 +46,13 @@ export function RestoreDialog({
         description: `Eine Arbeitskopie mit dem Inhalt von Revision ${revisionNo} wurde erstellt. Die Änderungen müssen geprüft und freigegeben werden, bevor sie veröffentlicht werden.`,
       });
 
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}/revisions`],
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}`],
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
       });
       onOpenChange(false);

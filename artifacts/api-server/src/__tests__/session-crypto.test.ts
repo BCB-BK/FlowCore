@@ -17,7 +17,7 @@ beforeAll(() => {
   vi.stubEnv("SESSION_SECRET", "test-session-secret-0123456789abcdef");
 });
 
-const laden = async () => await import("../src/lib/session-crypto");
+const laden = async () => await import("../lib/session-crypto");
 
 const TOKEN =
   "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.beispielhafter-nutzdatenteil.signaturteil";

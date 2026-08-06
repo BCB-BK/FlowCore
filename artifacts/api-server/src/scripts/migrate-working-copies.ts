@@ -64,7 +64,7 @@ export async function migrateToWorkingCopyModel() {
 
     let draftsConverted = 0;
     for (const row of draftRevsResult.rows) {
-      const r = row as Record<string, unknown>;
+      const r = row;
       const baseRevId =
         (r.based_on_revision_id as string) ||
         (r.published_revision_id as string) ||

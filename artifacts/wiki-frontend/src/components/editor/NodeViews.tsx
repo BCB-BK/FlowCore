@@ -856,7 +856,7 @@ export function DiagramBlockNodeView({ node, editor }: NodeViewProps) {
   );
 }
 
-function DiagramMetaPanel({
+function _DiagramMetaPanel({
   diagramType,
   caption,
   description,
@@ -1236,7 +1236,7 @@ export function GalleryBlockNodeView({ node, editor }: NodeViewProps) {
   );
 }
 
-function DiagramMetaReadOnly({
+function _DiagramMetaReadOnly({
   steps,
   roles,
 }: {
@@ -1291,7 +1291,7 @@ function DiagramMetaReadOnly({
   );
 }
 
-export function WikiLinkNodeView({ node, editor }: NodeViewProps) {
+export function WikiLinkNodeView({ node }: NodeViewProps) {
   const { nodeId, title, displayCode, templateType } = node.attrs as {
     nodeId: string;
     title: string;

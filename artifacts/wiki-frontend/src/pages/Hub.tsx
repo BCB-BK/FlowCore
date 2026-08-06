@@ -203,14 +203,7 @@ export function Hub() {
                               </span>
                             </div>
                           </div>
-                          <StatusBadge
-                            status={
-                              node.status as Parameters<
-                                typeof StatusBadge
-                              >[0]["status"]
-                            }
-                            compact
-                          />
+                          <StatusBadge status={node.status} compact />
                           <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                         </CardContent>
                       </Card>

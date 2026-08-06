@@ -90,7 +90,7 @@ function applyBaseUrl(input: RequestInfo | URL): RequestInfo | URL {
   const absolute = `${_baseUrl}${url}`;
   if (typeof input === "string") return absolute;
   if (isUrl(input)) return new URL(absolute);
-  return new Request(absolute, input as Request);
+  return new Request(absolute, input);
 }
 
 function resolveUrl(input: RequestInfo | URL): string {

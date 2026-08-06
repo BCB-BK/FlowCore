@@ -171,7 +171,7 @@ router.get("/docs/:filename", requireAuth, (req, res) => {
 });
 
 router.get("/docs-export/all", requireAuth, async (req, res) => {
-  const docsRoot = getDocsRoot();
+  const _docsRoot = getDocsRoot();
   const docs: Record<string, string> = {};
 
   for (const entry of DOCS_CATALOG) {

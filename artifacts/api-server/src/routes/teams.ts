@@ -11,10 +11,7 @@ import {
   getRolesForPrincipal,
   assignRole,
 } from "../services/principal.service";
-import {
-  getEffectivePermissions,
-  type WikiPermission,
-} from "../services/rbac.service";
+import { getEffectivePermissions } from "../services/rbac.service";
 import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
@@ -153,7 +150,7 @@ teamsRouter.post("/teams/sso", authRateLimit, async (req, res) => {
       displayName: tokenResult.displayName,
       email: tokenResult.email,
       roles: roles.map((r) => ({ role: r.role, scope: r.scope })),
-      permissions: Array.from(permissions) as WikiPermission[],
+      permissions: Array.from(permissions),
     });
   } catch (err) {
     logger.error({ err }, "Teams SSO token exchange failed");

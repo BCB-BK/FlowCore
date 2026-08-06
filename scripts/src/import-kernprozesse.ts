@@ -9,6 +9,9 @@ import { randomUUID } from "crypto";
 import { readWorkbook } from "./lib/spreadsheet";
 import path from "path";
 
+/** Zulaessige Seitentypen -- direkt aus dem Datenbankschema abgeleitet. */
+type TemplateType = typeof contentNodesTable.$inferInsert.templateType;
+
 const EXCEL_PATH = path.resolve(
   import.meta.dirname,
   "../../attached_assets/Kern-,_Teilprozesse_und_Use-Cases_–_BCB_gesamt_1774518924814.xlsx",
@@ -309,7 +312,7 @@ async function findExistingNodeByTitle(
 ): Promise<string | null> {
   const conditions = [
     eq(contentNodesTable.title, title),
-    eq(contentNodesTable.templateType, templateType as any),
+    eq(contentNodesTable.templateType, templateType as TemplateType),
     eq(contentNodesTable.isDeleted, false),
   ];
 
@@ -436,7 +439,7 @@ async function generateDisplayCode(
       and(
         sql`${contentNodesTable.parentNodeId} IS NULL`,
         eq(contentNodesTable.isDeleted, false),
-        eq(contentNodesTable.templateType, templateType as any),
+        eq(contentNodesTable.templateType, templateType as TemplateType),
       ),
     );
 
@@ -557,5 +560,5 @@ main()
   .then(() => process.exit(0))
   .catch((err) => {
     console.error("Import failed:", err);
-    pool.end().then(() => process.exit(1));
+    void pool.end().then(() => process.exit(1));
   });

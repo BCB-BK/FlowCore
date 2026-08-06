@@ -29,8 +29,6 @@ import {
   updateFieldProfile,
   deleteFieldProfile,
   listAvailableModels,
-  type PageAssistAction,
-  type FieldAssistAction,
 } from "../services/ai.service";
 import { logger } from "../lib/logger";
 
@@ -121,7 +119,7 @@ aiRouter.post("/page-assist", requireAuth, aiRateLimit, async (req, res) => {
 
   try {
     await streamPageAssist(
-      parsed.data.action as PageAssistAction,
+      parsed.data.action,
       parsed.data.text,
       parsed.data.nodeId,
       req.user!.principalId,
@@ -144,7 +142,7 @@ aiRouter.post("/field-assist", requireAuth, aiRateLimit, async (req, res) => {
 
   try {
     await streamFieldAssist(
-      parsed.data.action as FieldAssistAction,
+      parsed.data.action,
       parsed.data.text,
       parsed.data.fieldKey,
       parsed.data.pageType,

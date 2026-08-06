@@ -93,7 +93,7 @@ export function GlossaryPage() {
   const createMutation = useCreateGlossaryTerm({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
         closeDialog();
       },
     },
@@ -102,7 +102,7 @@ export function GlossaryPage() {
   const updateMutation = useUpdateGlossaryTerm({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
         closeDialog();
       },
     },
@@ -111,7 +111,7 @@ export function GlossaryPage() {
   const deleteMutation = useDeleteGlossaryTerm({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
       },
     },
   });
@@ -169,7 +169,7 @@ export function GlossaryPage() {
     for (const t of terms) {
       const letter = t.term[0]?.toUpperCase() || "#";
       if (!grouped[letter]) grouped[letter] = [];
-      grouped[letter]!.push(t);
+      grouped[letter].push(t);
     }
   }
 
