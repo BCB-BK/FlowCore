@@ -4,6 +4,39 @@
 
 FlowCore verfügt über ein eingebautes automatisches Backup-System, das Datenbankdumps, Systemkonfiguration, Template-Definitionen, Konnektor-Konfiguration, den Medien-Index und Audit-Metadaten regelmäßig in einen konfigurierten SharePoint-Ordner sichert.
 
+## Zwei getrennte Sicherungswege
+
+Seit dem 06.08.2026 gibt es **zwei** Sicherungen, die einander ergaenzen
+(technisches Audit, Befund B5):
+
+| | Anwendungs-Backup nach SharePoint | Serverseitige Datenbanksicherung |
+|---|---|---|
+| Gesteuert von | FlowCore selbst, Zeitplan in der Anwendung | Cron auf dem Server (`/etc/cron.d/flowcore-backup`) |
+| Inhalt | DB-Dump im JSON-Format, Konfiguration, Medien-Index, Audit-Auszug | vollstaendiger `pg_dump` beider Datenbanken im pg-eigenen Format |
+| Ablage | SharePoint-Bibliothek | `/var/backups/flowcore/postgres` auf dem Server |
+| Aufbewahrung | nach Backup-Konfiguration | 7 taeglich, 4 woechentlich, 6 monatlich |
+| Rueckweg erprobt | nein | ja, woechentlich automatisch |
+
+Der zweite Weg schliesst die Luecke, dass die Anwendungs-Sicherung ausfaellt,
+sobald die Anwendung selbst nicht laeuft -- genau dann, wenn man sie braucht.
+
+**Bedienung auf dem Server:**
+
+```bash
+sudo flowcore-backup           # Sicherung sofort ausfuehren
+sudo flowcore-backup --list    # vorhandene Sicherungen anzeigen
+sudo flowcore-restore-test     # juengste PROD-Sicherung probeweise zurueckspielen
+```
+
+Der Wiederherstellungstest legt eine Wegwerf-Datenbank an, spielt die
+Sicherung ein, vergleicht die Zeilenzahlen der wichtigsten Tabellen mit dem
+Original und entfernt die Wegwerf-Datenbank wieder. Die Produktivdatenbank
+wird dabei ausschliesslich gelesen.
+
+`user_sessions` wird bewusst **nicht** mitgesichert: die Tabelle ist
+fluechtig und trug bis zur Verschluesselung Zugriffstoken im Klartext
+(Audit-Befund A3).
+
 ## Backup-Architektur
 
 ```

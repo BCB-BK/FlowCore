@@ -7,8 +7,10 @@ import {
   jsonb,
   uniqueIndex,
   index,
+  check,
 } from "drizzle-orm/pg-core";
 import { changeTypeEnum, nodeStatusEnum, revisionEventTypeEnum } from "./enums";
+import { sql } from "drizzle-orm";
 import { contentNodesTable } from "./content-nodes";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -41,6 +43,7 @@ export const contentRevisionsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    check("ck_content_revisions_revision_no", sql`${table.revisionNo} >= 1`),
     uniqueIndex("idx_content_revisions_node_revision").on(
       table.nodeId,
       table.revisionNo,

@@ -67,6 +67,11 @@ export default tseslint.config(
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" },
       ],
+      // Nicht-Null-Zusicherungen (x!.y) umgehen die Typpruefung. Im Bestand
+      // sind viele davon nach requireAuth sachlich korrekt (req.user!), neue
+      // sollen aber nicht unbemerkt dazukommen -- deshalb Warnung, nicht
+      // Fehler (Audit-Befund C4).
+      "@typescript-eslint/no-non-null-assertion": "warn",
       eqeqeq: ["error", "smart"],
       "no-console": "off",
       // Vom Typpruefer bereits abgedeckt oder im Bestand zu laut:

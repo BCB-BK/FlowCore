@@ -6,6 +6,7 @@ import {
   boolean,
   uniqueIndex,
   index,
+  check,
 } from "drizzle-orm/pg-core";
 import {
   principalTypeEnum,
@@ -14,6 +15,7 @@ import {
   wikiPermissionEnum,
 } from "./enums";
 import { contentNodesTable } from "./content-nodes";
+import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -37,6 +39,7 @@ export const principalsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    check("ck_principals_display_name", sql`btrim(${table.displayName}) <> ''`),
     uniqueIndex("idx_principals_external").on(
       table.externalProvider,
       table.externalId,
