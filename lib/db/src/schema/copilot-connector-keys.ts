@@ -40,7 +40,10 @@ export const copilotConnectorKeysTable = pgTable(
       .defaultNow(),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
   },
-  (table) => [index("idx_copilot_connector_keys_hash").on(table.keyHash)],
+  (table) => [
+    index("idx_copilot_connector_keys_created_by").on(table.createdBy),
+    index("idx_copilot_connector_keys_hash").on(table.keyHash),
+  ],
 );
 
 export const insertCopilotConnectorKeySchema = createInsertSchema(

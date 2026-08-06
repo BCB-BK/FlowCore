@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
 import { createInsertSchema } from "drizzle-zod";
@@ -29,7 +30,10 @@ export const glossaryTermsTable = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [uniqueIndex("idx_glossary_terms_slug").on(table.slug)],
+  (table) => [
+    index("idx_glossary_terms_node").on(table.nodeId),
+    uniqueIndex("idx_glossary_terms_slug").on(table.slug),
+  ],
 );
 
 export const insertGlossaryTermSchema = createInsertSchema(

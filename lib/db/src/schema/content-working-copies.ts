@@ -63,19 +63,25 @@ export const contentWorkingCopiesTable = pgTable(
   ],
 );
 
-export const workingCopyEventsTable = pgTable("working_copy_events", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  workingCopyId: uuid("working_copy_id")
-    .notNull()
-    .references(() => contentWorkingCopiesTable.id, { onDelete: "cascade" }),
-  eventType: workingCopyEventTypeEnum("event_type").notNull(),
-  actorId: text("actor_id"),
-  comment: text("comment"),
-  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const workingCopyEventsTable = pgTable(
+  "working_copy_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workingCopyId: uuid("working_copy_id")
+      .notNull()
+      .references(() => contentWorkingCopiesTable.id, { onDelete: "cascade" }),
+    eventType: workingCopyEventTypeEnum("event_type").notNull(),
+    actorId: text("actor_id"),
+    comment: text("comment"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_working_copy_events_working_copy").on(table.workingCopyId),
+  ],
+);
 
 export const insertWorkingCopySchema = createInsertSchema(
   contentWorkingCopiesTable,

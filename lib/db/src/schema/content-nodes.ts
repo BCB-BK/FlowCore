@@ -58,6 +58,7 @@ export const contentNodesTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_content_nodes_template").on(table.templateId),
     uniqueIndex("idx_content_nodes_display_code")
       .on(table.displayCode)
       .where(sql`is_deleted = false`),

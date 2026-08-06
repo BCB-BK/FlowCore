@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   pgEnum,
+  index,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -50,18 +51,22 @@ export const workflowTemplatesTable = pgTable("workflow_templates", {
   createdBy: text("created_by"),
 });
 
-export const workflowStepsTable = pgTable("workflow_steps", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  workflowId: uuid("workflow_id")
-    .notNull()
-    .references(() => workflowTemplatesTable.id, { onDelete: "cascade" }),
-  stepNumber: integer("step_number").notNull(),
-  name: text("name").notNull(),
-  roles: text("roles").array().notNull().default([]),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const workflowStepsTable = pgTable(
+  "workflow_steps",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workflowId: uuid("workflow_id")
+      .notNull()
+      .references(() => workflowTemplatesTable.id, { onDelete: "cascade" }),
+    stepNumber: integer("step_number").notNull(),
+    name: text("name").notNull(),
+    roles: text("roles").array().notNull().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_workflow_steps_workflow").on(table.workflowId)],
+);
 
 export const pageTypeWorkflowAssignmentsTable = pgTable(
   "page_type_workflow_assignments",
@@ -75,6 +80,9 @@ export const pageTypeWorkflowAssignmentsTable = pgTable(
       .notNull()
       .defaultNow(),
   },
+  (table) => [
+    index("idx_page_type_workflow_assignments_workflow").on(table.workflowId),
+  ],
 );
 
 export const notificationRulesTable = pgTable("notification_rules", {

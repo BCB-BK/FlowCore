@@ -81,6 +81,7 @@ export const backupRunsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_backup_runs_config").on(table.configId),
     index("idx_backup_runs_status").on(table.status),
     index("idx_backup_runs_type").on(table.backupType),
     index("idx_backup_runs_created").on(table.createdAt),

@@ -52,19 +52,25 @@ export const contentRevisionsTable = pgTable(
   ],
 );
 
-export const contentRevisionEventsTable = pgTable("content_revision_events", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  revisionId: uuid("revision_id")
-    .notNull()
-    .references(() => contentRevisionsTable.id),
-  eventType: revisionEventTypeEnum("event_type").notNull(),
-  actorId: text("actor_id"),
-  comment: text("comment"),
-  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const contentRevisionEventsTable = pgTable(
+  "content_revision_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    revisionId: uuid("revision_id")
+      .notNull()
+      .references(() => contentRevisionsTable.id),
+    eventType: revisionEventTypeEnum("event_type").notNull(),
+    actorId: text("actor_id"),
+    comment: text("comment"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_content_revision_events_revision").on(table.revisionId),
+  ],
+);
 
 export const insertContentRevisionSchema = createInsertSchema(
   contentRevisionsTable,
