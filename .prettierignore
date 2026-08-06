@@ -1,0 +1,16 @@
+# Erzeugte Dateien gehoeren nicht in die Formatpruefung.
+#
+# Hintergrund: mockup-components.ts wird bei jedem `vite build` vom
+# mockupPreviewPlugin neu geschrieben -- unformatiert. Die Datei ist im
+# Repository verfolgt, also machte jeder Build die Formatpruefung rot und
+# jedes `prettier --write` war beim naechsten Build wieder hinfaellig.
+# Nachgewiesen am 06.08.2026 durch den ersten scharfen CI-Lauf.
+#
+# ESLint ignoriert diese Verzeichnisse bereits; hier wird nachgezogen.
+**/.generated/**
+lib/api-zod/src/generated/**
+lib/api-client-react/src/generated/**
+**/dist/**
+**/build/**
+e2e/playwright-report/**
+e2e/test-results/**
