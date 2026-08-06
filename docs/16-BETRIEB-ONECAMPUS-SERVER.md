@@ -48,6 +48,12 @@ sudo flowcore-deploy dev --erzwingen # auch bauen, wenn kein neuer Commit da ist
 
 Protokolle: `/var/log/flowcore-deploy.log` und `/var/log/flowcore-webhook.log`.
 
+> **Falle beim Arbeiten direkt auf dem Server:** Wer im Server-Arbeitsbaum committet und von
+> dort pusht, hat den Zielstand bereits lokal. Der Webhook kommt an, das Deploy-Skript sieht
+> „kein neuer Commit" und **baut nicht**. Bei Doku-Änderungen ist das folgenlos, bei Code
+> nicht. Danach also `sudo flowcore-deploy dev --erzwingen` nachschieben — oder besser: von
+> der eigenen Arbeitsumgebung aus pushen, nicht vom Server.
+
 ## 3. Was der Agent darf — und was nicht (Tier B)
 
 | | DEV | PROD |
