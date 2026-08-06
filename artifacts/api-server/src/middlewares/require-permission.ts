@@ -3,7 +3,11 @@ import { hasPermission, type WikiPermission } from "../services/rbac.service";
 import { logger } from "../lib/logger";
 
 export function requireAnyPermission(...permissions: WikiPermission[]) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     if (!req.user) {
       res.status(401).json({ error: "Authentication required" });
       return;
@@ -15,8 +19,13 @@ export function requireAnyPermission(...permissions: WikiPermission[]) {
       next();
       return;
     }
-    logger.warn({ principalId: req.user.principalId, permissions }, "Permission denied (any)");
-    res.status(403).json({ error: "Forbidden", requiredPermissions: permissions });
+    logger.warn(
+      { principalId: req.user.principalId, permissions },
+      "Permission denied (any)",
+    );
+    res
+      .status(403)
+      .json({ error: "Forbidden", requiredPermissions: permissions });
   };
 }
 

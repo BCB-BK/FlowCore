@@ -27,7 +27,9 @@ export interface WorkflowTemplateWithSteps {
   }>;
 }
 
-export async function listWorkflowTemplates(): Promise<WorkflowTemplateWithSteps[]> {
+export async function listWorkflowTemplates(): Promise<
+  WorkflowTemplateWithSteps[]
+> {
   const templates = await db
     .select()
     .from(workflowTemplatesTable)
@@ -51,7 +53,9 @@ export async function listWorkflowTemplates(): Promise<WorkflowTemplateWithSteps
   }));
 }
 
-export async function getWorkflowTemplate(id: string): Promise<WorkflowTemplateWithSteps | null> {
+export async function getWorkflowTemplate(
+  id: string,
+): Promise<WorkflowTemplateWithSteps | null> {
   const [template] = await db
     .select()
     .from(workflowTemplatesTable)
@@ -87,9 +91,7 @@ export async function createWorkflowTemplate(input: {
 }): Promise<WorkflowTemplateWithSteps> {
   return db.transaction(async (tx) => {
     if (input.isDefault) {
-      await tx
-        .update(workflowTemplatesTable)
-        .set({ isDefault: false });
+      await tx.update(workflowTemplatesTable).set({ isDefault: false });
     }
 
     const [template] = await tx
@@ -152,17 +154,17 @@ export async function updateWorkflowTemplate(
     if (!existing) return null;
 
     if (input.isDefault) {
-      await tx
-        .update(workflowTemplatesTable)
-        .set({ isDefault: false });
+      await tx.update(workflowTemplatesTable).set({ isDefault: false });
     }
 
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (input.name !== undefined) updateData.name = input.name;
-    if (input.description !== undefined) updateData.description = input.description;
+    if (input.description !== undefined)
+      updateData.description = input.description;
     if (input.isDefault !== undefined) updateData.isDefault = input.isDefault;
     if (input.isActive !== undefined) updateData.isActive = input.isActive;
-    if (input.enforceSoD !== undefined) updateData.enforceSoD = input.enforceSoD;
+    if (input.enforceSoD !== undefined)
+      updateData.enforceSoD = input.enforceSoD;
 
     const [updated] = await tx
       .update(workflowTemplatesTable)
@@ -231,12 +233,13 @@ export async function deleteWorkflowTemplate(id: string): Promise<boolean> {
 }
 
 export async function listPageTypeAssignments() {
-  return db
-    .select()
-    .from(pageTypeWorkflowAssignmentsTable);
+  return db.select().from(pageTypeWorkflowAssignmentsTable);
 }
 
-export async function upsertPageTypeAssignment(pageType: string, workflowId: string) {
+export async function upsertPageTypeAssignment(
+  pageType: string,
+  workflowId: string,
+) {
   const [existing] = await db
     .select()
     .from(pageTypeWorkflowAssignmentsTable)
@@ -329,20 +332,27 @@ export const DEFAULT_NOTIFICATION_RULES: Array<{
   },
 ];
 
-export async function seedNotificationRules(): Promise<{ created: number; existing: number }> {
+export async function seedNotificationRules(): Promise<{
+  created: number;
+  existing: number;
+}> {
   const existing = await db
     .select({ eventType: notificationRulesTable.eventType })
     .from(notificationRulesTable);
   const existingTypes = new Set(existing.map((r) => r.eventType));
 
   const toCreate = DEFAULT_NOTIFICATION_RULES.filter(
-    (r) => !existingTypes.has(r.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"]),
+    (r) =>
+      !existingTypes.has(
+        r.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"],
+      ),
   );
 
   if (toCreate.length > 0) {
     await db.insert(notificationRulesTable).values(
       toCreate.map((r) => ({
-        eventType: r.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"],
+        eventType:
+          r.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"],
         recipientTypes: r.recipientTypes,
         channels: r.channels,
         reminderAfterDays: r.reminderAfterDays,
@@ -350,7 +360,10 @@ export async function seedNotificationRules(): Promise<{ created: number; existi
         isEnabled: true,
       })),
     );
-    logger.info({ created: toCreate.length }, "Seeded default notification rules");
+    logger.info(
+      { created: toCreate.length },
+      "Seeded default notification rules",
+    );
   }
 
   return { created: toCreate.length, existing: existingTypes.size };
@@ -391,7 +404,8 @@ export async function upsertNotificationRule(input: {
   const [inserted] = await db
     .insert(notificationRulesTable)
     .values({
-      eventType: input.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"],
+      eventType:
+        input.eventType as (typeof notificationRulesTable.$inferInsert)["eventType"],
       recipientTypes: input.recipientTypes,
       channels: input.channels,
       reminderAfterDays: input.reminderAfterDays ?? null,
@@ -410,7 +424,9 @@ export async function deleteNotificationRule(id: string): Promise<boolean> {
   return result.length > 0;
 }
 
-export async function isWorkflowActiveForPageType(templateType: string): Promise<boolean> {
+export async function isWorkflowActiveForPageType(
+  templateType: string,
+): Promise<boolean> {
   const [assignment] = await db
     .select({ workflowId: pageTypeWorkflowAssignmentsTable.workflowId })
     .from(pageTypeWorkflowAssignmentsTable)
@@ -439,7 +455,11 @@ export async function getSystemSetting(key: string): Promise<string | null> {
   return row?.value ?? null;
 }
 
-export async function setSystemSetting(key: string, value: string | null, updatedBy?: string) {
+export async function setSystemSetting(
+  key: string,
+  value: string | null,
+  updatedBy?: string,
+) {
   const [existing] = await db
     .select({ id: systemSettingsTable.id })
     .from(systemSettingsTable)

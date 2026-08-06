@@ -78,14 +78,14 @@ export function useCreateNode() {
   return useCreateNodeMutation({
     mutation: {
       onSuccess: (_data, variables) => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListRootNodesQueryKey(),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListNodesQueryKey(),
         });
         if (variables.data.parentNodeId) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetNodeChildrenQueryKey(variables.data.parentNodeId),
           });
           const parentNode = queryClient
@@ -94,7 +94,7 @@ export function useCreateNode() {
             })
             .flatMap(([, data]) => (data ? [data] : []))[0];
           if (parentNode?.parentNodeId) {
-            queryClient.invalidateQueries({
+            void queryClient.invalidateQueries({
               queryKey: getGetNodeChildrenQueryKey(parentNode.parentNodeId),
             });
           }
@@ -109,10 +109,10 @@ export function useDeleteNode() {
   return useDeleteNodeMutation({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListRootNodesQueryKey(),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListNodesQueryKey(),
         });
       },
@@ -125,19 +125,19 @@ export function useUpdateNode() {
   return useUpdateNodeMutation({
     mutation: {
       onSuccess: (_data, variables) => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getGetNodeQueryKey(variables.nodeId),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getGetNodeChildrenQueryKey(variables.nodeId),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getGetNodeAncestorsQueryKey(variables.nodeId),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListRootNodesQueryKey(),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListNodesQueryKey(),
         });
       },
@@ -150,10 +150,10 @@ export function useCreateRevision() {
   return useCreateRevisionMutation({
     mutation: {
       onSuccess: (_data, variables) => {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListNodeRevisionsQueryKey(variables.nodeId),
         });
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getGetNodeQueryKey(variables.nodeId),
         });
       },

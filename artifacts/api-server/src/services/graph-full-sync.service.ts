@@ -58,7 +58,9 @@ export async function runFullSync(dryRun = false): Promise<FullSyncSummary> {
     }
   }
 
-  const terms = await db.select({ id: glossaryTermsTable.id }).from(glossaryTermsTable);
+  const terms = await db
+    .select({ id: glossaryTermsTable.id })
+    .from(glossaryTermsTable);
   const currentGlossaryItemIds = new Set<string>();
   summary.glossary.total = terms.length;
   for (const term of terms) {

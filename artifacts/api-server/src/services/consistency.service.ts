@@ -1,6 +1,8 @@
 import { pool } from "@workspace/db";
 import * as schema from "@workspace/db";
 import { getTableName, is, Table } from "drizzle-orm";
+import nodePath from "path";
+import nodeFs from "fs";
 
 export interface ConsistencyCheckResult {
   category: string;
@@ -22,12 +24,11 @@ export interface ConsistencyReport {
 }
 
 function getWorkspaceRoot(): string {
-  const path = require("path");
   if (process.env["WORKSPACE_ROOT"]) return process.env["WORKSPACE_ROOT"];
   // REPL_HOME is already the workspace root (e.g. /home/runner/workspace)
   if (process.env["REPL_HOME"]) return process.env["REPL_HOME"];
   // Fallback: __dirname is artifacts/api-server/src/services → 4 levels up = workspace root
-  return path.resolve(__dirname, "../../../..");
+  return nodePath.resolve(__dirname, "../../../..");
 }
 
 function getExpectedTablesFromSchema(): string[] {
@@ -103,7 +104,7 @@ async function checkExpectedTables(): Promise<ConsistencyCheckResult[]> {
 
     const codeTableSet = new Set(expectedTables);
     for (const existing of existingTables) {
-      if (!codeTableSet.has(existing as string) && !(existing as string).startsWith("drizzle_")) {
+      if (!codeTableSet.has(existing) && !existing.startsWith("drizzle_")) {
         results.push({
           category: "Schema",
           item: `Tabelle: ${existing}`,
@@ -211,8 +212,7 @@ function checkEnvironmentConfig(): ConsistencyCheckResult[] {
       category: "Sicherheit",
       item: "Session-Secret",
       status: "error",
-      message:
-        "SESSION_SECRET hat einen unsicheren Standardwert in Produktion",
+      message: "SESSION_SECRET hat einen unsicheren Standardwert in Produktion",
     });
   }
 
@@ -230,8 +230,6 @@ function checkEnvironmentConfig(): ConsistencyCheckResult[] {
 
 function checkDocumentation(): ConsistencyCheckResult[] {
   const results: ConsistencyCheckResult[] = [];
-  const fs = require("fs");
-  const path = require("path");
 
   const requiredDocs = [
     "docs/01-ARCHITECTURE.md",
@@ -247,8 +245,8 @@ function checkDocumentation(): ConsistencyCheckResult[] {
   const workspaceRoot = getWorkspaceRoot();
 
   for (const doc of requiredDocs) {
-    const fullPath = path.join(workspaceRoot, doc);
-    const exists = fs.existsSync(fullPath);
+    const fullPath = nodePath.join(workspaceRoot, doc);
+    const exists = nodeFs.existsSync(fullPath);
     results.push({
       category: "Dokumentation",
       item: doc,
@@ -331,22 +329,25 @@ async function checkReleaseStatus(): Promise<ConsistencyCheckResult> {
 
 function checkBuildArtifacts(): ConsistencyCheckResult[] {
   const results: ConsistencyCheckResult[] = [];
-  const fs = require("fs");
-  const path = require("path");
 
   const workspaceRoot = getWorkspaceRoot();
 
-  const apiDist = path.join(workspaceRoot, "artifacts/api-server/dist/index.mjs");
-  if (fs.existsSync(apiDist)) {
-    const distStat = fs.statSync(apiDist);
-    const srcDir = path.join(workspaceRoot, "artifacts/api-server/src");
+  const apiDist = nodePath.join(
+    workspaceRoot,
+    "artifacts/api-server/dist/index.mjs",
+  );
+  if (nodeFs.existsSync(apiDist)) {
+    const distStat = nodeFs.statSync(apiDist);
+    const srcDir = nodePath.join(workspaceRoot, "artifacts/api-server/src");
     let newerSrcExists = false;
     try {
-      const srcFiles = fs.readdirSync(srcDir, { recursive: true }) as string[];
+      const srcFiles = nodeFs.readdirSync(srcDir, {
+        recursive: true,
+      }) as string[];
       for (const file of srcFiles) {
-        const fullPath = path.join(srcDir, file);
+        const fullPath = nodePath.join(srcDir, file);
         try {
-          const srcStat = fs.statSync(fullPath);
+          const srcStat = nodeFs.statSync(fullPath);
           if (srcStat.isFile() && srcStat.mtimeMs > distStat.mtimeMs) {
             newerSrcExists = true;
             break;
@@ -376,7 +377,8 @@ function checkBuildArtifacts(): ConsistencyCheckResult[] {
       item: "API-Server Build",
       status: "error",
       message: "Kein Build-Artefakt gefunden (dist/index.mjs)",
-      details: "API-Server wurde noch nicht gebaut oder Build-Artefakte fehlen.",
+      details:
+        "API-Server wurde noch nicht gebaut oder Build-Artefakte fehlen.",
     });
   }
 
@@ -385,30 +387,31 @@ function checkBuildArtifacts(): ConsistencyCheckResult[] {
 
 function checkCodegenFreshness(): ConsistencyCheckResult[] {
   const results: ConsistencyCheckResult[] = [];
-  const fs = require("fs");
-  const path = require("path");
 
   const workspaceRoot = getWorkspaceRoot();
 
-  const specFile = path.join(workspaceRoot, "lib/api-spec/openapi.yaml");
+  const specFile = nodePath.join(workspaceRoot, "lib/api-spec/openapi.yaml");
   // Orval generates into lib/api-zod/src/generated/ — not the src/ root
-  const generatedDir = path.join(workspaceRoot, "lib/api-zod/src/generated");
+  const generatedDir = nodePath.join(
+    workspaceRoot,
+    "lib/api-zod/src/generated",
+  );
 
   try {
-    if (!fs.existsSync(specFile)) {
+    if (!nodeFs.existsSync(specFile)) {
       results.push({
         category: "Build-Konsistenz",
         item: "OpenAPI Spec",
         status: "error",
         message: "OpenAPI-Spezifikation fehlt (lib/api-spec/openapi.yaml)",
       });
-    } else if (fs.existsSync(generatedDir)) {
-      const genFiles = (fs.readdirSync(generatedDir) as string[]).filter(
+    } else if (nodeFs.existsSync(generatedDir)) {
+      const genFiles = (nodeFs.readdirSync(generatedDir) as string[]).filter(
         (f: string) => f.endsWith(".ts"),
       );
       const hasContent = genFiles.some((f: string) => {
         try {
-          return fs.statSync(path.join(generatedDir, f)).size > 100;
+          return nodeFs.statSync(nodePath.join(generatedDir, f)).size > 100;
         } catch {
           return false;
         }
@@ -430,7 +433,8 @@ function checkCodegenFreshness(): ConsistencyCheckResult[] {
         item: "OpenAPI Codegen",
         status: "warning",
         message: "Generiertes Verzeichnis fehlt (lib/api-zod/src/generated/)",
-        details: "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus.",
+        details:
+          "Führen Sie 'pnpm --filter @workspace/api-spec run codegen' aus.",
       });
     }
   } catch {
@@ -445,7 +449,9 @@ function checkCodegenFreshness(): ConsistencyCheckResult[] {
   return results;
 }
 
-async function checkReleaseSyncConsistency(): Promise<ConsistencyCheckResult[]> {
+async function checkReleaseSyncConsistency(): Promise<
+  ConsistencyCheckResult[]
+> {
   const results: ConsistencyCheckResult[] = [];
 
   try {
@@ -514,16 +520,14 @@ async function checkReleaseSyncConsistency(): Promise<ConsistencyCheckResult[]> 
 
 function checkMigrationFiles(): ConsistencyCheckResult[] {
   const results: ConsistencyCheckResult[] = [];
-  const fs = require("fs");
-  const path = require("path");
 
   const workspaceRoot = getWorkspaceRoot();
 
-  const drizzleDir = path.join(workspaceRoot, "lib/db/drizzle");
+  const drizzleDir = nodePath.join(workspaceRoot, "lib/db/drizzle");
   try {
-    if (fs.existsSync(drizzleDir)) {
-      const files = (fs.readdirSync(drizzleDir) as string[]).filter((f: string) =>
-        f.endsWith(".sql"),
+    if (nodeFs.existsSync(drizzleDir)) {
+      const files = (nodeFs.readdirSync(drizzleDir) as string[]).filter(
+        (f: string) => f.endsWith(".sql"),
       );
       results.push({
         category: "Build-Konsistenz",

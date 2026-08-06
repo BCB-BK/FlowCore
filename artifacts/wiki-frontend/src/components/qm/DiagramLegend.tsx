@@ -13,7 +13,14 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Prozessbeginn",
     svg: (
       <svg width="28" height="28" viewBox="0 0 28 28">
-        <circle cx="14" cy="14" r="11" fill="#6dd97b" stroke="#22863a" strokeWidth="1.5" />
+        <circle
+          cx="14"
+          cy="14"
+          r="11"
+          fill="#6dd97b"
+          stroke="#22863a"
+          strokeWidth="1.5"
+        />
       </svg>
     ),
   },
@@ -22,7 +29,14 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Prozessende",
     svg: (
       <svg width="28" height="28" viewBox="0 0 28 28">
-        <circle cx="14" cy="14" r="9" fill="#f87171" stroke="#b91c1c" strokeWidth="3" />
+        <circle
+          cx="14"
+          cy="14"
+          r="9"
+          fill="#f87171"
+          stroke="#b91c1c"
+          strokeWidth="3"
+        />
       </svg>
     ),
   },
@@ -31,7 +45,16 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Aktion oder Aktivit\u00E4t",
     svg: (
       <svg width="38" height="28" viewBox="0 0 38 28">
-        <rect x="2" y="4" width="34" height="20" rx="3" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1.5" />
+        <rect
+          x="2"
+          y="4"
+          width="34"
+          height="20"
+          rx="3"
+          fill="#dbeafe"
+          stroke="#3b82f6"
+          strokeWidth="1.5"
+        />
       </svg>
     ),
   },
@@ -40,7 +63,12 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Entscheidung (entweder/oder)",
     svg: (
       <svg width="28" height="28" viewBox="0 0 28 28">
-        <polygon points="14,2 26,14 14,26 2,14" fill="#fef9c3" stroke="#ca8a04" strokeWidth="1.5" />
+        <polygon
+          points="14,2 26,14 14,26 2,14"
+          fill="#fef9c3"
+          stroke="#ca8a04"
+          strokeWidth="1.5"
+        />
         <line x1="9" y1="9" x2="19" y2="19" stroke="#ca8a04" strokeWidth="2" />
         <line x1="19" y1="9" x2="9" y2="19" stroke="#ca8a04" strokeWidth="2" />
       </svg>
@@ -51,7 +79,12 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Parallelisierung (alle Pfade)",
     svg: (
       <svg width="28" height="28" viewBox="0 0 28 28">
-        <polygon points="14,2 26,14 14,26 2,14" fill="#f3f8f3" stroke="#2b7a27" strokeWidth="1.5" />
+        <polygon
+          points="14,2 26,14 14,26 2,14"
+          fill="#f3f8f3"
+          stroke="#2b7a27"
+          strokeWidth="1.5"
+        />
         <line x1="14" y1="7" x2="14" y2="21" stroke="#2b7a27" strokeWidth="2" />
         <line x1="7" y1="14" x2="21" y2="14" stroke="#2b7a27" strokeWidth="2" />
       </svg>
@@ -62,8 +95,24 @@ const LEGEND_ITEMS: LegendItem[] = [
     description: "Verantwortungsbereich",
     svg: (
       <svg width="38" height="28" viewBox="0 0 38 28">
-        <rect x="2" y="4" width="34" height="20" rx="2" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.5" />
-        <line x1="10" y1="4" x2="10" y2="24" stroke="#64748b" strokeWidth="1.5" />
+        <rect
+          x="2"
+          y="4"
+          width="34"
+          height="20"
+          rx="2"
+          fill="#f1f5f9"
+          stroke="#64748b"
+          strokeWidth="1.5"
+        />
+        <line
+          x1="10"
+          y1="4"
+          x2="10"
+          y2="24"
+          stroke="#64748b"
+          strokeWidth="1.5"
+        />
       </svg>
     ),
   },
@@ -88,7 +137,12 @@ const LEGEND_ITEMS: LegendItem[] = [
           stroke="#7c3aed"
           strokeWidth="1.5"
         />
-        <path d="M16 3 L16 8 L21 8" fill="none" stroke="#7c3aed" strokeWidth="1.5" />
+        <path
+          d="M16 3 L16 8 L21 8"
+          fill="none"
+          stroke="#7c3aed"
+          strokeWidth="1.5"
+        />
       </svg>
     ),
   },
@@ -108,9 +162,13 @@ function LegendItems() {
             {item.svg}
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium leading-tight">{item.label}</p>
+            <p className="text-[11px] font-medium leading-tight">
+              {item.label}
+            </p>
             {item.description && (
-              <p className="text-[10px] text-muted-foreground leading-tight">{item.description}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">
+                {item.description}
+              </p>
             )}
           </div>
         </div>
@@ -119,7 +177,10 @@ function LegendItems() {
   );
 }
 
-export function DiagramLegend({ defaultOpen = false, inline = false }: DiagramLegendProps) {
+export function DiagramLegend({
+  defaultOpen = false,
+  inline = false,
+}: DiagramLegendProps) {
   const [open, setOpen] = useState(defaultOpen);
 
   if (inline) {
@@ -132,7 +193,9 @@ export function DiagramLegend({ defaultOpen = false, inline = false }: DiagramLe
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-3 py-2 bg-muted/40 hover:bg-muted/60 transition-colors text-left"
       >
-        <span className="text-xs font-medium text-muted-foreground">Legende &amp; Symbole</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Legende &amp; Symbole
+        </span>
         {open ? (
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         ) : (
@@ -147,9 +210,13 @@ export function DiagramLegend({ defaultOpen = false, inline = false }: DiagramLe
                 {item.svg}
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-medium leading-tight">{item.label}</p>
+                <p className="text-[11px] font-medium leading-tight">
+                  {item.label}
+                </p>
                 {item.description && (
-                  <p className="text-[10px] text-muted-foreground leading-tight">{item.description}</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {item.description}
+                  </p>
                 )}
               </div>
             </div>

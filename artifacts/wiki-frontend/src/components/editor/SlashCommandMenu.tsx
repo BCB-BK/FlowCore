@@ -167,11 +167,7 @@ const SLASH_ITEMS: SlashMenuItem[] = [
     category: "Medien",
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).run();
-      editor
-        .chain()
-        .focus()
-        .setGalleryBlock({ images: [], columns: 3 })
-        .run();
+      editor.chain().focus().setGalleryBlock({ images: [], columns: 3 }).run();
     },
   },
   {

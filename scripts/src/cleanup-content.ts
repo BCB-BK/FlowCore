@@ -13,8 +13,12 @@ async function main() {
   const glossaryBefore = await db.execute(
     sql`SELECT count(*) AS cnt FROM glossary_terms`,
   );
-  const glossaryBeforeRow = glossaryBefore.rows[0] as { cnt: string } | undefined;
-  console.log(`Glossary terms (will be preserved): ${glossaryBeforeRow?.cnt ?? 0}\n`);
+  const glossaryBeforeRow = glossaryBefore.rows[0] as
+    | { cnt: string }
+    | undefined;
+  console.log(
+    `Glossary terms (will be preserved): ${glossaryBeforeRow?.cnt ?? 0}\n`,
+  );
 
   console.log("Deleting dependent tables in FK order...");
 

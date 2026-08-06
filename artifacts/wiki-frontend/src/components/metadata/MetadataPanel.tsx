@@ -41,8 +41,16 @@ export function MetadataPanel({
 
   const groupEntries = readOnly
     ? (allGroupEntries
-        .map(([key, fields]) => [key, fields.filter((f) => !isFieldEmpty(metadata[f.key]))] as const)
-        .filter(([, fields]) => fields.length > 0) as unknown as typeof allGroupEntries)
+        .map(
+          ([key, fields]) =>
+            [
+              key,
+              fields.filter((f) => !isFieldEmpty(metadata[f.key])),
+            ] as const,
+        )
+        .filter(
+          ([, fields]) => fields.length > 0,
+        ) as unknown as typeof allGroupEntries)
     : allGroupEntries;
 
   if (compact) {

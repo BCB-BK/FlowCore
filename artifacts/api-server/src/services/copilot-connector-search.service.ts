@@ -136,8 +136,8 @@ async function isGlossaryAllowedForKey(
   if (!scopeAllowed(key.brandScopes, projection.brandScope)) return false;
 
   const level = projection.nodeId
-    ? (await getNodeConfidentialityLevel(projection.nodeId)) ??
-      DEFAULT_CONFIDENTIALITY_LEVEL
+    ? ((await getNodeConfidentialityLevel(projection.nodeId)) ??
+      DEFAULT_CONFIDENTIALITY_LEVEL)
     : DEFAULT_CONFIDENTIALITY_LEVEL;
   return isConfidentialityAllowed(level, key.maxConfidentialityLevel);
 }
@@ -184,13 +184,85 @@ const STRUCTURE_GUIDE_TAG = "structure-guide";
  * intent detection (detectQueryIntent) still runs on the full original text.
  */
 const STOPWORDS = new Set([
-  "was","wie","wer","wo","wann","warum","weshalb","welche","welcher","welches","welchen","welchem",
-  "ist","sind","war","waren","bedeutet","bedeuten","heißt","versteht","verstehen",
-  "der","die","das","des","dem","den","ein","eine","einen","einem","einer","eines",
-  "und","oder","auch","noch","nur","man","ich","du","er","sie","es","wir","ihr",
-  "für","von","zu","zur","zum","in","im","an","am","auf","bei","mit","nach","über","unter",
-  "ab","lege","legen","lege ich","nutze","nutzen","neue","neues","neuer","neuen",
-  "kann","konzipiert","konzipieren","entwickelt","entwickeln","macht","gibt","es",
+  "was",
+  "wie",
+  "wer",
+  "wo",
+  "wann",
+  "warum",
+  "weshalb",
+  "welche",
+  "welcher",
+  "welches",
+  "welchen",
+  "welchem",
+  "ist",
+  "sind",
+  "war",
+  "waren",
+  "bedeutet",
+  "bedeuten",
+  "heißt",
+  "versteht",
+  "verstehen",
+  "der",
+  "die",
+  "das",
+  "des",
+  "dem",
+  "den",
+  "ein",
+  "eine",
+  "einen",
+  "einem",
+  "einer",
+  "eines",
+  "und",
+  "oder",
+  "auch",
+  "noch",
+  "nur",
+  "man",
+  "ich",
+  "du",
+  "er",
+  "sie",
+  "es",
+  "wir",
+  "ihr",
+  "für",
+  "von",
+  "zu",
+  "zur",
+  "zum",
+  "in",
+  "im",
+  "an",
+  "am",
+  "auf",
+  "bei",
+  "mit",
+  "nach",
+  "über",
+  "unter",
+  "ab",
+  "lege",
+  "legen",
+  "lege ich",
+  "nutze",
+  "nutzen",
+  "neue",
+  "neues",
+  "neuer",
+  "neuen",
+  "kann",
+  "konzipiert",
+  "konzipieren",
+  "entwickelt",
+  "entwickeln",
+  "macht",
+  "gibt",
+  "es",
 ]);
 
 /**
@@ -206,7 +278,12 @@ const STOPWORDS = new Set([
  * questions still discriminate on their one or two real keywords.
  */
 function textMatches(
-  fields: { title: string; summary: string; contentText: string; keywords: string[] },
+  fields: {
+    title: string;
+    summary: string;
+    contentText: string;
+    keywords: string[];
+  },
   query: string,
 ): number {
   const allWords = query
@@ -336,7 +413,10 @@ export async function searchForConnector(
         );
         if (score <= 0) return null;
 
-        if (intent.structureGuide && projection.tags.includes(STRUCTURE_GUIDE_TAG)) {
+        if (
+          intent.structureGuide &&
+          projection.tags.includes(STRUCTURE_GUIDE_TAG)
+        ) {
           score += INTENT_BOOST;
         }
 

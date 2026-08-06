@@ -70,7 +70,9 @@ function destroySessionAndReject(req: Request, res: Response): void {
       logger.warn({ err }, "Failed to destroy session for removed Entra user");
     }
   });
-  res.status(401).json({ error: "Session invalidated: user no longer in required group" });
+  res
+    .status(401)
+    .json({ error: "Session invalidated: user no longer in required group" });
 }
 
 function resolveAndSetPrincipal(
@@ -128,8 +130,14 @@ export function requireAuth(
           try {
             isMember = await checkEntraGroupMembership(externalId);
           } catch (err) {
-            logger.error({ err, externalId }, "Entra group check failed for API token, denying request (fail-closed)");
-            res.status(503).json({ error: "Gruppenprüfung derzeit nicht möglich, bitte erneut versuchen" });
+            logger.error(
+              { err, externalId },
+              "Entra group check failed for API token, denying request (fail-closed)",
+            );
+            res.status(503).json({
+              error:
+                "Gruppenprüfung derzeit nicht möglich, bitte erneut versuchen",
+            });
             return;
           }
           if (!isMember) {
@@ -137,7 +145,9 @@ export function requireAuth(
               { externalId, principalId: principal.id },
               "API token rejected: user no longer in required Entra group",
             );
-            res.status(401).json({ error: "Access denied: user no longer in required group" });
+            res.status(401).json({
+              error: "Access denied: user no longer in required group",
+            });
             return;
           }
         }
@@ -171,7 +181,7 @@ export function requireAuth(
   }
 
   if (req.session?.user) {
-    const sessionUser = req.session.user as AuthUser;
+    const sessionUser = req.session.user;
     const externalId = sessionUser.externalId;
 
     if (appConfig.entraRequiredGroupId && externalId) {
@@ -192,8 +202,14 @@ export function requireAuth(
           // Fail-closed: Session bleibt bestehen (kein destroy — der Fehler
           // liegt bei Graph, nicht beim Benutzer), aber der Request wird
           // abgelehnt, statt die Gruppenprüfung zu umgehen.
-          logger.error({ err, externalId }, "Entra group check failed, denying request (fail-closed)");
-          res.status(503).json({ error: "Gruppenprüfung derzeit nicht möglich, bitte erneut versuchen" });
+          logger.error(
+            { err, externalId },
+            "Entra group check failed, denying request (fail-closed)",
+          );
+          res.status(503).json({
+            error:
+              "Gruppenprüfung derzeit nicht möglich, bitte erneut versuchen",
+          });
         });
       return;
     }

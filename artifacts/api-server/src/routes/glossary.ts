@@ -1,11 +1,20 @@
 import { Router, type IRouter } from "express";
+import {
+  CreateGlossaryTermBody,
+  LinkGlossaryTermBody,
+  UpdateGlossaryTermBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import { glossaryTermsTable } from "@workspace/db/schema";
 import { eq, ilike, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import multer from "multer";
-import * as XLSX from "xlsx";
+import {
+  readFirstSheetAsObjects,
+  writeSheetFromObjects,
+} from "../lib/spreadsheet";
 import { reimportGlossarySeedTerms } from "../services/startup-seed.service";
 import { recordEvent } from "../services/graph-change-feed.service";
 
@@ -84,13 +93,11 @@ router.get(
       abbreviation: t.abbreviation ?? "",
     }));
 
-    const workbook = XLSX.utils.book_new();
-    const sheet = XLSX.utils.json_to_sheet(rows, {
-      header: ["term", "definition", "synonyms", "abbreviation"],
-    });
-    XLSX.utils.book_append_sheet(workbook, sheet, "Glossar");
-
-    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    const buffer = await writeSheetFromObjects(
+      rows,
+      ["term", "definition", "synonyms", "abbreviation"],
+      "Glossar",
+    );
 
     res.setHeader(
       "Content-Type",
@@ -127,6 +134,7 @@ router.post(
   "/",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(CreateGlossaryTermBody),
   async (req, res) => {
     const { term, definition, synonyms, abbreviation, nodeId } = req.body;
 
@@ -163,7 +171,11 @@ router.post(
         })
         .returning();
 
-      await recordEvent({ itemType: "glossary", termId: created.id, eventType: "glossary_change" });
+      await recordEvent({
+        itemType: "glossary",
+        termId: created.id,
+        eventType: "glossary_change",
+      });
 
       res.status(201).json(created);
     } catch (err) {
@@ -180,6 +192,7 @@ router.patch(
   "/:id",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(UpdateGlossaryTermBody),
   async (req, res) => {
     const id = req.params.id as string;
     const { term, definition, synonyms, abbreviation, nodeId } = req.body;
@@ -226,7 +239,11 @@ router.patch(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: updated.id,
+      eventType: "glossary_change",
+    });
     res.json(updated);
   },
 );
@@ -235,6 +252,7 @@ router.post(
   "/:id/link",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(LinkGlossaryTermBody),
   async (req, res) => {
     const id = req.params.id as string;
     const { nodeId } = req.body;
@@ -254,7 +272,11 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: updated.id,
+      eventType: "glossary_change",
+    });
     res.json(updated);
   },
 );
@@ -276,7 +298,11 @@ router.post(
       res.status(404).json({ error: "Term not found" });
       return;
     }
-    await recordEvent({ itemType: "glossary", termId: updated.id, eventType: "glossary_change" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: updated.id,
+      eventType: "glossary_change",
+    });
     res.json(updated);
   },
 );
@@ -303,7 +329,11 @@ router.delete(
   async (req, res) => {
     const id = req.params.id as string;
     await db.delete(glossaryTermsTable).where(eq(glossaryTermsTable.id, id));
-    await recordEvent({ itemType: "glossary", termId: id, eventType: "delete" });
+    await recordEvent({
+      itemType: "glossary",
+      termId: id,
+      eventType: "delete",
+    });
     res.status(204).send();
   },
 );
@@ -331,24 +361,13 @@ router.post(
 
     const dryRun = req.query.dryRun === "true";
 
-    let workbook: XLSX.WorkBook;
+    let rows: Array<Record<string, unknown>>;
     try {
-      workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+      rows = await readFirstSheetAsObjects(req.file.buffer);
     } catch {
       res.status(400).json({ error: "Datei konnte nicht gelesen werden" });
       return;
     }
-
-    const sheetName = workbook.SheetNames[0];
-    if (!sheetName) {
-      res.status(400).json({ error: "Keine Tabellenblätter in der Datei" });
-      return;
-    }
-
-    const sheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
-      defval: "",
-    });
 
     if (rows.length === 0) {
       res.status(400).json({ error: "Die Tabelle enthält keine Daten" });
@@ -377,7 +396,9 @@ router.post(
       const row = rows[i];
       const rowNum = i + 2;
 
-      const term = String(row["term"] ?? row["Term"] ?? row["Begriff"] ?? "").trim();
+      const term = String(
+        row["term"] ?? row["Term"] ?? row["Begriff"] ?? "",
+      ).trim();
       const definition = String(
         row["definition"] ?? row["Definition"] ?? row["Beschreibung"] ?? "",
       ).trim();
@@ -396,13 +417,12 @@ router.post(
       const rawSynonyms = String(
         row["synonyms"] ?? row["Synonyme"] ?? "",
       ).trim();
-      const synonyms =
-        rawSynonyms
-          ? rawSynonyms
-              .split(/[,;]/)
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : null;
+      const synonyms = rawSynonyms
+        ? rawSynonyms
+            .split(/[,;]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null;
 
       const abbreviation =
         String(row["abbreviation"] ?? row["Abkürzung"] ?? "").trim() || null;

@@ -22,7 +22,9 @@ export async function getSyncState(itemId: string) {
   return row ?? null;
 }
 
-export async function upsertSyncState(input: UpsertSyncStateInput): Promise<void> {
+export async function upsertSyncState(
+  input: UpsertSyncStateInput,
+): Promise<void> {
   await db
     .insert(graphSyncStateTable)
     .values({
@@ -48,5 +50,7 @@ export async function upsertSyncState(input: UpsertSyncStateInput): Promise<void
 }
 
 export async function deleteSyncState(itemId: string): Promise<void> {
-  await db.delete(graphSyncStateTable).where(eq(graphSyncStateTable.itemId, itemId));
+  await db
+    .delete(graphSyncStateTable)
+    .where(eq(graphSyncStateTable.itemId, itemId));
 }

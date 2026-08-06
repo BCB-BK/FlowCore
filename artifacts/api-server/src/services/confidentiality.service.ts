@@ -57,7 +57,7 @@ export async function getNodeConfidentialityLevel(
 
   if (!revision?.structuredFields) return DEFAULT_CONFIDENTIALITY_LEVEL;
 
-  const fields = revision.structuredFields as Record<string, unknown>;
+  const fields = revision.structuredFields;
   const level = fields.confidentiality as string | undefined;
 
   if (!level) return DEFAULT_CONFIDENTIALITY_LEVEL;
@@ -66,7 +66,10 @@ export async function getNodeConfidentialityLevel(
     return level as ConfidentialityLevel;
   }
 
-  logger.warn({ nodeId, rawLevel: level }, "Unknown confidentiality level on node, treating as strictly_confidential");
+  logger.warn(
+    { nodeId, rawLevel: level },
+    "Unknown confidentiality level on node, treating as strictly_confidential",
+  );
   return "strictly_confidential";
 }
 
@@ -197,9 +200,14 @@ export async function checkConfidentialityAccessBatch(
   // no explicit grant needed. Only "confidential"/"strictly_confidential" require one.
   // Clearance model: a higher-level grant also covers all lower levels.
   const rawAllowed = new Set(principalLevels.map((r) => r.level));
-  const maxGrantedIndex = rawAllowed.size > 0
-    ? Math.max(...[...rawAllowed].map((l) => CONFIDENTIALITY_LEVELS.indexOf(l as ConfidentialityLevel)))
-    : -1;
+  const maxGrantedIndex =
+    rawAllowed.size > 0
+      ? Math.max(
+          ...[...rawAllowed].map((l) =>
+            CONFIDENTIALITY_LEVELS.indexOf(l as ConfidentialityLevel),
+          ),
+        )
+      : -1;
   const allowedLevels = new Set<string>(
     maxGrantedIndex >= 0
       ? CONFIDENTIALITY_LEVELS.slice(0, maxGrantedIndex + 1)
@@ -253,8 +261,10 @@ export async function checkConfidentialityAccessBatch(
   for (const node of nodes) {
     const revId = node.publishedRevisionId || node.currentRevisionId;
     const rev = revId ? revisionMap.get(revId) : null;
-    const fields = (rev?.structuredFields || {}) as Record<string, unknown>;
-    const level = (fields.confidentiality as string | undefined) || DEFAULT_CONFIDENTIALITY_LEVEL;
+    const fields = rev?.structuredFields || {};
+    const level =
+      (fields.confidentiality as string | undefined) ||
+      DEFAULT_CONFIDENTIALITY_LEVEL;
 
     if (level === "public") {
       result.set(node.id, true);
@@ -270,7 +280,9 @@ export async function checkConfidentialityAccessBatch(
       continue;
     }
 
-    const effectiveLevel = CONFIDENTIALITY_LEVELS.includes(level as ConfidentialityLevel)
+    const effectiveLevel = CONFIDENTIALITY_LEVELS.includes(
+      level as ConfidentialityLevel,
+    )
       ? level
       : "strictly_confidential";
 
@@ -336,9 +348,7 @@ export async function getAssignmentsForLevel(level: string) {
 }
 
 export async function getAllAssignments() {
-  return db
-    .select()
-    .from(confidentialityPrincipalAccessTable);
+  return db.select().from(confidentialityPrincipalAccessTable);
 }
 
 export async function assignPrincipalToLevel(

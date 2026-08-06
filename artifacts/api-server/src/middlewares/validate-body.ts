@@ -18,7 +18,17 @@ export function validateBody(schema: ZodSchema) {
       });
       return;
     }
-    req.body = parsed.data;
+    // Bewusst zusammenfuehren statt ersetzen: die Spezifikation deckt noch
+    // nicht jedes Feld ab. Wuerde hier nur `parsed.data` uebernommen, fielen
+    // nicht beschriebene Felder still unter den Tisch -- ein Datenverlust,
+    // der erst beim Anwender auffiele. Bekannte Felder gelten geprueft und
+    // umgewandelt, unbekannte gehen unveraendert weiter (Audit-Befund B2).
+    req.body =
+      parsed.data &&
+      typeof parsed.data === "object" &&
+      !Array.isArray(parsed.data)
+        ? { ...(req.body as Record<string, unknown>), ...parsed.data }
+        : parsed.data;
     next();
   };
 }

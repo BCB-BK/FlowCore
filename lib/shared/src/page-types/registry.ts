@@ -68,7 +68,13 @@ export interface PageTypeSection {
   guidedModeStep?: number;
   errorMessage?: string;
   help?: FieldHelp;
-  compoundType?: "sipoc_cards" | "raci_matrix" | "qa_repeater" | "term_repeater" | "check_items" | "competency_areas";
+  compoundType?:
+    | "sipoc_cards"
+    | "raci_matrix"
+    | "qa_repeater"
+    | "term_repeater"
+    | "check_items"
+    | "competency_areas";
   /**
    * Optionale Gruppenüberschrift. Abschnitte mit identischem Gruppennamen
    * werden im Layout unter einer gemeinsamen Überschrift zusammengefasst
@@ -88,14 +94,37 @@ export interface PageTypeSection {
   softLimitItems?: number;
 }
 
-export type VariantCategory = "schlank" | "standard" | "qm_detail" | "grafisch" | "container";
+export type VariantCategory =
+  | "schlank"
+  | "standard"
+  | "qm_detail"
+  | "grafisch"
+  | "container";
 
-export const VARIANT_CATEGORY_LABELS: Record<VariantCategory, { label: string; description: string }> = {
-  schlank: { label: "Schlank", description: "Minimale Struktur – nur das Nötigste" },
-  standard: { label: "Standard", description: "Bewährte Grundstruktur für den Regelbetrieb" },
-  qm_detail: { label: "QM-detailliert", description: "Vollständig nach QM-Standard mit allen Pflichtfeldern" },
-  grafisch: { label: "Grafisch", description: "Visuelle Darstellung im Vordergrund" },
-  container: { label: "Container", description: "Übersichtsseite zur Bündelung von Unterseiten" },
+export const VARIANT_CATEGORY_LABELS: Record<
+  VariantCategory,
+  { label: string; description: string }
+> = {
+  schlank: {
+    label: "Schlank",
+    description: "Minimale Struktur – nur das Nötigste",
+  },
+  standard: {
+    label: "Standard",
+    description: "Bewährte Grundstruktur für den Regelbetrieb",
+  },
+  qm_detail: {
+    label: "QM-detailliert",
+    description: "Vollständig nach QM-Standard mit allen Pflichtfeldern",
+  },
+  grafisch: {
+    label: "Grafisch",
+    description: "Visuelle Darstellung im Vordergrund",
+  },
+  container: {
+    label: "Container",
+    description: "Übersichtsseite zur Bündelung von Unterseiten",
+  },
 };
 
 export interface TemplateVariant {
@@ -108,7 +137,13 @@ export interface TemplateVariant {
 }
 
 export interface InitialBlock {
-  type: "heading" | "paragraph" | "bulletList" | "table" | "callout" | "divider";
+  type:
+    | "heading"
+    | "paragraph"
+    | "bulletList"
+    | "table"
+    | "callout"
+    | "divider";
   content?: string;
   level?: number;
   items?: string[];
@@ -142,7 +177,10 @@ export interface PublicationRules {
 export interface PublicationRule {
   id: string;
   description: string;
-  check: (metadata: Record<string, unknown>, sections: Record<string, unknown>) => boolean;
+  check: (
+    metadata: Record<string, unknown>,
+    sections: Record<string, unknown>,
+  ) => boolean;
   errorMessage: string;
 }
 
@@ -150,7 +188,11 @@ export interface ValidationError {
   field: string;
   fieldLabel: string;
   message: string;
-  type: "missing_required" | "content_too_short" | "invalid_format" | "custom_rule";
+  type:
+    | "missing_required"
+    | "content_too_short"
+    | "invalid_format"
+    | "custom_rule";
 }
 
 export interface ValidationWarning {
@@ -167,7 +209,11 @@ export interface ValidationResult {
   readinessPercentage: number;
 }
 
-export const DISABLED_TEMPLATE_TYPES: Set<TemplateType> = new Set(["glossary", "work_instruction", "process_page_text"]);
+export const DISABLED_TEMPLATE_TYPES: Set<TemplateType> = new Set([
+  "glossary",
+  "work_instruction",
+  "process_page_text",
+]);
 
 export const REGISTRY_VERSION = "2.1.0";
 
@@ -230,7 +276,8 @@ const COMMON_IDENTITY_FIELDS: MetadataFieldDef[] = [
     description: "Art des Dokuments gemäß Dokumentenklassifikation",
     errorMessage: "Bitte wählen Sie eine Dokumentenart aus.",
     help: {
-      fillHelp: "Wählen Sie die Dokumentenart, die den Inhalt am besten beschreibt. Dies hilft bei der Filterung und Suche.",
+      fillHelp:
+        "Wählen Sie die Dokumentenart, die den Inhalt am besten beschreibt. Dies hilft bei der Filterung und Suche.",
       example: "Verfahrensanweisung, Richtlinie",
     },
   },
@@ -248,7 +295,8 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     description: "Verantwortlicher für den Inhalt",
     errorMessage: "Ein Prozesseigner muss zugewiesen werden.",
     help: {
-      fillHelp: "Wählen Sie die Person aus, die fachlich für diesen Inhalt verantwortlich ist und Änderungen freigibt.",
+      fillHelp:
+        "Wählen Sie die Person aus, die fachlich für diesen Inhalt verantwortlich ist und Änderungen freigibt.",
       example: "Dr. Maria Müller (Abteilungsleiterin QM)",
       badExample: "Team / Abteilung (keine konkrete Person)",
     },
@@ -268,13 +316,15 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     type: "person",
     required: false,
     requirement: "conditional",
-    conditionDescription: "Erforderlich, wenn der Inhalt einen Freigabeprozess durchläuft",
+    conditionDescription:
+      "Erforderlich, wenn der Inhalt einen Freigabeprozess durchläuft",
     publishRequired: true,
     group: "governance",
     description: "Fachliche Prüfung",
     errorMessage: "Für die Veröffentlichung muss ein Prüfer benannt werden.",
     help: {
-      fillHelp: "Wählen Sie eine Person, die den Inhalt fachlich prüft, bevor er veröffentlicht wird. Muss eine andere Person als der Autor sein (Vier-Augen-Prinzip).",
+      fillHelp:
+        "Wählen Sie eine Person, die den Inhalt fachlich prüft, bevor er veröffentlicht wird. Muss eine andere Person als der Autor sein (Vier-Augen-Prinzip).",
       example: "Thomas Schmidt (QM-Beauftragter)",
       badExample: "Dieselbe Person wie der Prozesseigner",
     },
@@ -285,7 +335,8 @@ const COMMON_GOVERNANCE_FIELDS: MetadataFieldDef[] = [
     type: "person",
     required: false,
     requirement: "conditional",
-    conditionDescription: "Erforderlich für regulatorische oder governance-relevante Inhalte",
+    conditionDescription:
+      "Erforderlich für regulatorische oder governance-relevante Inhalte",
     group: "governance",
     description: "Freigabe-Verantwortlicher",
   },
@@ -340,7 +391,8 @@ const COMMON_VALIDITY_FIELDS: MetadataFieldDef[] = [
     publishRequired: true,
     group: "validity",
     description: "Regelmäßiger Prüfintervall in Monaten",
-    errorMessage: "Bitte definieren Sie einen Prüfzyklus für die Veröffentlichung.",
+    errorMessage:
+      "Bitte definieren Sie einen Prüfzyklus für die Veröffentlichung.",
   },
   {
     key: "next_review_date",
@@ -396,7 +448,8 @@ const COMMON_CLASSIFICATION_FIELDS: MetadataFieldDef[] = [
     description: "Vertraulichkeitsstufe des Dokuments",
     errorMessage: "Bitte stufen Sie die Vertraulichkeit ein.",
     help: {
-      fillHelp: "Legen Sie fest, wer dieses Dokument einsehen darf. Die Vertraulichkeitsstufe steuert die Sichtbarkeit im Wiki.",
+      fillHelp:
+        "Legen Sie fest, wer dieses Dokument einsehen darf. Die Vertraulichkeitsstufe steuert die Sichtbarkeit im Wiki.",
       example: "Intern – für alle Mitarbeitenden sichtbar",
       badExample: "Keine Angabe bei sensiblen Inhalten",
     },
@@ -472,7 +525,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     canBeReferenceHub: true,
     supportsLinkedPages: true,
     canBeProcessContainer: true,
-    usageHint: "Übergeordneter Prozesscontainer mit SIPOC, KPIs und Schnittstellen. Kann Unterseiten, Cluster-Gruppen und Dokumentationsregister enthalten.",
+    usageHint:
+      "Übergeordneter Prozesscontainer mit SIPOC, KPIs und Schnittstellen. Kann Unterseiten, Cluster-Gruppen und Dokumentationsregister enthalten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -496,12 +550,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         publishRequired: true,
         minContentLength: 50,
         guidedModeStep: 1,
-        errorMessage: "Bitte beschreiben Sie den Zweck und Geltungsbereich des Prozesses.",
+        errorMessage:
+          "Bitte beschreiben Sie den Zweck und Geltungsbereich des Prozesses.",
       },
       {
         key: "process_steps",
         label: "Prozessschritte & Phasen",
-        description: "Hierarchische Darstellung der Prozessschritte, Phasen und Unterprozesse",
+        description:
+          "Hierarchische Darstellung der Prozessschritte, Phasen und Unterprozesse",
         helpText:
           "Definieren Sie die logische Abfolge der Prozessschritte. Gliedern Sie den Prozess in Phasen und ordnen Sie Unterprozesse hierarchisch zu.",
         guidingQuestions: [
@@ -538,15 +594,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         errorMessage: "Bitte füllen Sie die SIPOC-Analyse aus.",
         compoundType: "sipoc_cards",
         help: {
-          fillHelp: "Füllen Sie jede Spalte einzeln aus. Beginnen Sie mit den Hauptschritten (Process) und arbeiten Sie sich nach außen.",
-          example: "Suppliers: Einkauf, Lieferant X | Inputs: Bestellung, Spezifikation | Process: Wareneingang, Prüfung, Einlagerung | Outputs: Prüfbericht, Buchung | Customers: Produktion, Lager",
-          badExample: "Nur einen Freitext ohne klare Zuordnung zu den 5 Spalten",
+          fillHelp:
+            "Füllen Sie jede Spalte einzeln aus. Beginnen Sie mit den Hauptschritten (Process) und arbeiten Sie sich nach außen.",
+          example:
+            "Suppliers: Einkauf, Lieferant X | Inputs: Bestellung, Spezifikation | Process: Wareneingang, Prüfung, Einlagerung | Outputs: Prüfbericht, Buchung | Customers: Produktion, Lager",
+          badExample:
+            "Nur einen Freitext ohne klare Zuordnung zu den 5 Spalten",
         },
       },
       {
         key: "sub_processes",
         label: "Unterprozesse & Detailseiten",
-        description: "Verlinkung auf untergeordnete Prozessseiten und Verfahrensanweisungen",
+        description:
+          "Verlinkung auf untergeordnete Prozessseiten und Verfahrensanweisungen",
         helpText:
           "Ordnen Sie die Unterprozesse und Detailseiten den Phasen zu. Verlinken Sie auf die jeweiligen Detaildokumentationen.",
         guidingQuestions: [
@@ -578,7 +638,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "interfaces_systems",
         label: "Schnittstellen & Systeme",
-        description: "Beteiligte IT-Systeme, organisatorische Schnittstellen und Datenflüsse",
+        description:
+          "Beteiligte IT-Systeme, organisatorische Schnittstellen und Datenflüsse",
         helpText:
           "Dokumentieren Sie die IT-Systeme und Schnittstellen zu anderen Bereichen/Prozessen.",
         guidingQuestions: [
@@ -620,7 +681,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         requirement: "recommended",
         guidedModeStep: 8,
       },
-      { key: "children", label: "Untergeordnete Prozesse", required: false, requirement: "conditional", conditionDescription: "Wenn Teilprozesse existieren" },
+      {
+        key: "children",
+        label: "Untergeordnete Prozesse",
+        required: false,
+        requirement: "conditional",
+        conditionDescription: "Wenn Teilprozesse existieren",
+      },
     ],
     publicationRules: {
       minimumSections: ["overview", "process_steps", "sipoc"],
@@ -646,13 +713,26 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description:
           "Prozessschritte, SIPOC, KPIs und Compliance vorstrukturiert",
         variantCategory: "standard",
-        prefilledSections: ["overview", "process_steps", "sipoc", "sub_processes", "kpis", "compliance"],
+        prefilledSections: [
+          "overview",
+          "process_steps",
+          "sipoc",
+          "sub_processes",
+          "kpis",
+          "compliance",
+        ],
         initialBlocks: [
           { type: "heading", content: "Zweck & Geltungsbereich", level: 2 },
           { type: "paragraph", content: "" },
           { type: "divider" },
           { type: "heading", content: "SIPOC", level: 2 },
-          { type: "table", rows: [["Suppliers", "Inputs", "Process", "Outputs", "Customers"], ["", "", "", "", ""]] },
+          {
+            type: "table",
+            rows: [
+              ["Suppliers", "Inputs", "Process", "Outputs", "Customers"],
+              ["", "", "", "", ""],
+            ],
+          },
           { type: "divider" },
           { type: "heading", content: "KPIs & Kennzahlen", level: 2 },
           { type: "bulletList", items: ["KPI 1: ", "KPI 2: "] },
@@ -667,13 +747,28 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description:
           "Alle Abschnitte inkl. Schnittstellen und Risiken vorausgefüllt",
         variantCategory: "qm_detail",
-        prefilledSections: ["overview", "process_steps", "sipoc", "sub_processes", "kpis", "interfaces_systems", "compliance", "risks"],
+        prefilledSections: [
+          "overview",
+          "process_steps",
+          "sipoc",
+          "sub_processes",
+          "kpis",
+          "interfaces_systems",
+          "compliance",
+          "risks",
+        ],
         initialBlocks: [
           { type: "heading", content: "Zweck & Geltungsbereich", level: 2 },
           { type: "paragraph", content: "" },
           { type: "divider" },
           { type: "heading", content: "SIPOC", level: 2 },
-          { type: "table", rows: [["Suppliers", "Inputs", "Process", "Outputs", "Customers"], ["", "", "", "", ""]] },
+          {
+            type: "table",
+            rows: [
+              ["Suppliers", "Inputs", "Process", "Outputs", "Customers"],
+              ["", "", "", "", ""],
+            ],
+          },
           { type: "divider" },
           { type: "heading", content: "KPIs & Kennzahlen", level: 2 },
           { type: "bulletList", items: ["KPI 1: ", "KPI 2: ", "KPI 3: "] },
@@ -682,7 +777,18 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           { type: "bulletList", items: ["Norm/Gesetz: ", "Anforderung: "] },
           { type: "divider" },
           { type: "heading", content: "Prozessrisiken", level: 2 },
-          { type: "table", rows: [["Risiko", "Eintrittswahrscheinlichkeit", "Auswirkung", "Gegenmaßnahme"], ["", "", "", ""]] },
+          {
+            type: "table",
+            rows: [
+              [
+                "Risiko",
+                "Eintrittswahrscheinlichkeit",
+                "Auswirkung",
+                "Gegenmaßnahme",
+              ],
+              ["", "", "", ""],
+            ],
+          },
         ],
       },
       {
@@ -694,7 +800,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         prefilledSections: ["overview"],
         initialBlocks: [
           { type: "heading", content: "Übersicht", level: 2 },
-          { type: "callout", content: "Diese Seite dient als Sammelpunkt für die nachfolgenden Teilprozesse." },
+          {
+            type: "callout",
+            content:
+              "Diese Seite dient als Sammelpunkt für die nachfolgenden Teilprozesse.",
+          },
         ],
       },
     ],
@@ -753,7 +863,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     supportsLinkedPages: true,
     canBeProcessContainer: true,
     canBeGovernanceContainer: true,
-    usageHint: "Organisationsbereich oder Abteilung als Container. Kann Kernprozesse, Dokumentationsregister, Richtlinien und alle Inhaltstypen enthalten.",
+    usageHint:
+      "Organisationsbereich oder Abteilung als Container. Kann Kernprozesse, Dokumentationsregister, Richtlinien und alle Inhaltstypen enthalten.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -777,7 +888,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         publishRequired: true,
         minContentLength: 50,
         guidedModeStep: 1,
-        errorMessage: "Bitte beschreiben Sie die Aufgaben und Zuständigkeiten des Bereichs.",
+        errorMessage:
+          "Bitte beschreiben Sie die Aufgaben und Zuständigkeiten des Bereichs.",
       },
       {
         key: "structure",
@@ -808,7 +920,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         requirement: "recommended",
         guidedModeStep: 3,
       },
-      { key: "children", label: "Zugehörige Seiten", required: false, requirement: "conditional", conditionDescription: "Wenn zugehörige Seiten existieren" },
+      {
+        key: "children",
+        label: "Zugehörige Seiten",
+        required: false,
+        requirement: "conditional",
+        conditionDescription: "Wenn zugehörige Seiten existieren",
+      },
     ],
     publicationRules: {
       minimumSections: ["description"],
@@ -847,12 +965,17 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "container",
         label: "Container",
-        description: "Reine Sammelseite für untergeordnete Bereiche und Prozesse",
+        description:
+          "Reine Sammelseite für untergeordnete Bereiche und Prozesse",
         variantCategory: "container",
         prefilledSections: ["description"],
         initialBlocks: [
           { type: "heading", content: "Übersicht", level: 2 },
-          { type: "callout", content: "Diese Seite bündelt die zugehörigen Prozesse und Dokumente des Bereichs." },
+          {
+            type: "callout",
+            content:
+              "Diese Seite bündelt die zugehörigen Prozesse und Dokumente des Bereichs.",
+          },
         ],
       },
     ],
@@ -891,14 +1014,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: false,
         group: "classification",
         options: ["core", "support", "management"],
-        description: "Art des Prozesses (Kern-, Unterstützungs- oder Managementprozess)",
+        description:
+          "Art des Prozesses (Kern-, Unterstützungs- oder Managementprozess)",
       },
     ],
     sections: [
       {
         key: "trigger",
         label: "Auslöser & Eingaben",
-        description: "Was löst den Prozess aus und welche Eingaben werden benötigt?",
+        description:
+          "Was löst den Prozess aus und welche Eingaben werden benötigt?",
         helpText:
           "Beschreiben Sie die Auslöser (Trigger) und die notwendigen Eingaben für den Prozessstart.",
         guidingQuestions: [
@@ -979,12 +1104,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "detailed",
         label: "QM-detailliert",
-        description: "Alle Abschnitte inkl. Auslöser, Ergebnisse und Schnittstellen",
+        description:
+          "Alle Abschnitte inkl. Auslöser, Ergebnisse und Schnittstellen",
         variantCategory: "qm_detail",
         prefilledSections: ["trigger", "procedure", "outputs", "interfaces"],
         initialBlocks: [
           { type: "heading", content: "Auslöser & Eingaben", level: 2 },
-          { type: "bulletList", items: ["Auslöser: ", "Eingaben: ", "Vorbedingungen: "] },
+          {
+            type: "bulletList",
+            items: ["Auslöser: ", "Eingaben: ", "Vorbedingungen: "],
+          },
           { type: "divider" },
           { type: "heading", content: "Ablauf", level: 2 },
           { type: "paragraph", content: "" },
@@ -1082,7 +1211,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         prefilledSections: ["diagram", "description", "legend"],
         initialBlocks: [
           { type: "heading", content: "BPMN 2.0-Diagramm", level: 2 },
-          { type: "callout", content: "Erstellen Sie Ihr BPMN 2.0-Prozessdiagramm direkt im Editor." },
+          {
+            type: "callout",
+            content:
+              "Erstellen Sie Ihr BPMN 2.0-Prozessdiagramm direkt im Editor.",
+          },
           { type: "divider" },
           { type: "heading", content: "Erläuterung", level: 2 },
           { type: "paragraph", content: "" },
@@ -1109,7 +1242,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "VA",
     helpText:
       "Erstellen Sie eine detaillierte Verfahrensanweisung nach QM-Standard. Definieren Sie Zweck, Geltungsbereich, Auslöser, Ablauf, Verantwortlichkeiten, Schnittstellen, Risiken und mitgeltende Unterlagen.",
-    allowedChildTypes: ["work_instruction", "checklist", "meeting_protocol", "doc_registry"],
+    allowedChildTypes: [
+      "work_instruction",
+      "checklist",
+      "meeting_protocol",
+      "doc_registry",
+    ],
     suitableChildTypes: ["doc_registry"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -1148,7 +1286,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         requirement: "required",
         publishRequired: true,
         guidedModeStep: 1,
-        errorMessage: "Bitte beschreiben Sie den Zweck der Verfahrensanweisung.",
+        errorMessage:
+          "Bitte beschreiben Sie den Zweck der Verfahrensanweisung.",
       },
       {
         key: "scope",
@@ -1184,7 +1323,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "sipoc_light",
         label: "SIPOC (Kurzübersicht)",
-        description: "Suppliers, Inputs, Process, Outputs, Customers – kompakte Prozessübersicht",
+        description:
+          "Suppliers, Inputs, Process, Outputs, Customers – kompakte Prozessübersicht",
         helpText:
           "Erstellen Sie eine kompakte SIPOC-Übersicht, um den Prozesskontext auf einen Blick darzustellen.",
         guidingQuestions: [
@@ -1199,8 +1339,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         guidedModeStep: 4,
         compoundType: "sipoc_cards",
         help: {
-          fillHelp: "Füllen Sie jede Spalte einzeln aus. Beginnen Sie mit den Hauptschritten (Process) und arbeiten Sie sich nach außen.",
-          example: "S: Fachabteilung | I: Anforderung | P: Prüfung, Freigabe | O: Genehmigung | C: Antragsteller",
+          fillHelp:
+            "Füllen Sie jede Spalte einzeln aus. Beginnen Sie mit den Hauptschritten (Process) und arbeiten Sie sich nach außen.",
+          example:
+            "S: Fachabteilung | I: Anforderung | P: Prüfung, Freigabe | O: Genehmigung | C: Antragsteller",
           badExample: "Nur ein Freitext ohne Zuordnung zu den 5 Spalten",
         },
       },
@@ -1252,7 +1394,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "swimlane",
         label: "BPMN 2.0-Diagramm",
-        description: "Grafische Darstellung des Ablaufs mit Verantwortlichkeiten in Bahnen",
+        description:
+          "Grafische Darstellung des Ablaufs mit Verantwortlichkeiten in Bahnen",
         helpText:
           "Erstellen Sie ein BPMN 2.0-Diagramm, das den Ablauf visuell mit Rollen/Bereichen in den Bahnen darstellt.",
         guidingQuestions: [
@@ -1267,7 +1410,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "responsibilities",
         label: "Verantwortlichkeiten (RACI-Mini)",
-        description: "Responsible, Accountable, Consulted, Informed – kompakte Zuordnung",
+        description:
+          "Responsible, Accountable, Consulted, Informed – kompakte Zuordnung",
         helpText:
           "Ordnen Sie die Rollen und Verantwortlichkeiten nach dem RACI-Modell zu. Fokussieren Sie auf die Kernaktivitäten.",
         guidingQuestions: [
@@ -1282,16 +1426,21 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         guidedModeStep: 8,
         compoundType: "raci_matrix",
         help: {
-          fillHelp: "Erstellen Sie eine Matrix mit Aktivitäten in den Zeilen und Rollen in den Spalten. Vergeben Sie pro Zelle R, A, C oder I.",
-          example: "Bestellung aufgeben: Einkäufer=R, Abteilungsleiter=A, Controlling=I",
-          badExample: "Nur ‚Team ist verantwortlich' ohne klare Rollenzuordnung",
-          expectedFormat: "Aktivität | Rolle1=R | Rolle2=A | Rolle3=C | Rolle4=I",
+          fillHelp:
+            "Erstellen Sie eine Matrix mit Aktivitäten in den Zeilen und Rollen in den Spalten. Vergeben Sie pro Zelle R, A, C oder I.",
+          example:
+            "Bestellung aufgeben: Einkäufer=R, Abteilungsleiter=A, Controlling=I",
+          badExample:
+            "Nur ‚Team ist verantwortlich' ohne klare Rollenzuordnung",
+          expectedFormat:
+            "Aktivität | Rolle1=R | Rolle2=A | Rolle3=C | Rolle4=I",
         },
       },
       {
         key: "interfaces",
         label: "Schnittstellen & Systeme",
-        description: "Beteiligte IT-Systeme und organisatorische Schnittstellen",
+        description:
+          "Beteiligte IT-Systeme und organisatorische Schnittstellen",
         helpText:
           "Dokumentieren Sie die IT-Systeme und organisatorischen Schnittstellen, die im Verfahren genutzt werden.",
         guidingQuestions: [
@@ -1319,7 +1468,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "risks",
         label: "Risiken & Kontrollen",
-        description: "Identifizierte Risiken, Kontrollmaßnahmen und Restrisiko-Bewertung",
+        description:
+          "Identifizierte Risiken, Kontrollmaßnahmen und Restrisiko-Bewertung",
         helpText:
           "Listen Sie Risiken auf, die bei der Durchführung auftreten können, und definieren Sie Kontrollen und Gegenmaßnahmen.",
         guidingQuestions: [
@@ -1335,7 +1485,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "kpis",
         label: "KPI & Kennzahlen",
-        description: "Prozesskennzahlen zur Erfolgsmessung und Wirksamkeitskontrolle",
+        description:
+          "Prozesskennzahlen zur Erfolgsmessung und Wirksamkeitskontrolle",
         helpText:
           "Definieren Sie Kennzahlen, um die Wirksamkeit des Verfahrens zu messen und kontinuierlich zu verbessern.",
         guidingQuestions: [
@@ -1351,7 +1502,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "compliance",
         label: "Normbezug & Compliance",
-        description: "Regulatorische Anforderungen, Normreferenzen und gesetzliche Vorgaben",
+        description:
+          "Regulatorische Anforderungen, Normreferenzen und gesetzliche Vorgaben",
         helpText:
           "Listen Sie relevante Normen, Gesetze und regulatorische Anforderungen auf, die dieses Verfahren betreffen.",
         guidingQuestions: [
@@ -1381,7 +1533,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "relations",
         label: "Verknüpfungen & Querverweise",
-        description: "Verknüpfte Prozesse, übergeordnete Dokumente und abhängige Seiten",
+        description:
+          "Verknüpfte Prozesse, übergeordnete Dokumente und abhängige Seiten",
         helpText:
           "Dokumentieren Sie die Beziehungen zu anderen Wiki-Seiten: übergeordnete Prozesse, abhängige Arbeitsanweisungen, zugehörige Checklisten und Richtlinien.",
         guidingQuestions: [
@@ -1428,9 +1581,16 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "standard",
         label: "Standard",
-        description: "Kernabschnitte: Zweck, Geltungsbereich, Ablauf, RACI, Unterlagen",
+        description:
+          "Kernabschnitte: Zweck, Geltungsbereich, Ablauf, RACI, Unterlagen",
         variantCategory: "standard",
-        prefilledSections: ["purpose", "scope", "procedure", "responsibilities", "documents"],
+        prefilledSections: [
+          "purpose",
+          "scope",
+          "procedure",
+          "responsibilities",
+          "documents",
+        ],
         initialBlocks: [
           { type: "heading", content: "Zweck", level: 2 },
           { type: "paragraph", content: "" },
@@ -1451,7 +1611,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "detailed",
         label: "Vollständig (QM)",
-        description: "Alle Abschnitte nach QM-Muster inkl. SIPOC, BPMN 2.0-Diagramm, KPI, Compliance",
+        description:
+          "Alle Abschnitte nach QM-Muster inkl. SIPOC, BPMN 2.0-Diagramm, KPI, Compliance",
         variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
@@ -1490,7 +1651,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "UC",
     helpText:
       "Beschreiben Sie einen konkreten Anwendungsfall mit Akteuren, Vor-/Nachbedingungen, Normalablauf und Alternativabläufen.",
-    allowedChildTypes: ["checklist", "work_instruction", "meeting_protocol", "doc_registry"],
+    allowedChildTypes: [
+      "checklist",
+      "work_instruction",
+      "meeting_protocol",
+      "doc_registry",
+    ],
     suitableChildTypes: ["doc_registry"],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
@@ -1579,12 +1745,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "RL",
     helpText:
       "Erstellen Sie eine Richtlinie mit klarem Zweck, Geltungsbereich, Richtlinientext und Durchsetzungsmaßnahmen. Verknüpfen Sie bei Bedarf Verfahrensanweisungen.",
-    allowedChildTypes: ["procedure_instruction", "work_instruction", "checklist", "role_profile", "meeting_protocol"],
+    allowedChildTypes: [
+      "procedure_instruction",
+      "work_instruction",
+      "checklist",
+      "role_profile",
+      "meeting_protocol",
+    ],
     supportsClusterGroups: false,
     supportsChildPages: true,
     canBeRootNode: false,
     canBeReferenceHub: false,
-    usageHint: "Verbindliche Richtlinie für Governance und Compliance. Kein Ersatz für Register- oder Hub-Seiten – nutze dafür Dokumentationsregister.",
+    usageHint:
+      "Verbindliche Richtlinie für Governance und Compliance. Kein Ersatz für Register- oder Hub-Seiten – nutze dafür Dokumentationsregister.",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -1621,8 +1794,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "purpose",
         label: "Zweck",
         description: "Warum existiert diese Richtlinie?",
-        helpText:
-          "Erklären Sie den Zweck und das Ziel der Richtlinie.",
+        helpText: "Erklären Sie den Zweck und das Ziel der Richtlinie.",
         guidingQuestions: [
           "Welches Problem wird adressiert?",
           "Was soll die Richtlinie sicherstellen?",
@@ -1871,9 +2043,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         guidedModeStep: 3,
         compoundType: "competency_areas",
         help: {
-          fillHelp: "Gliedern Sie die Verantwortlichkeiten in Kompetenzbereiche. Jeder Bereich sollte einen Titel und die zugehörigen Aufgaben enthalten.",
-          example: "Bereich: Qualitätssicherung | Aufgaben: Prüfpläne erstellen, Audits durchführen, Abweichungen dokumentieren",
-          badExample: "Nur eine Aufzählung ohne Gruppierung nach Kompetenzbereichen",
+          fillHelp:
+            "Gliedern Sie die Verantwortlichkeiten in Kompetenzbereiche. Jeder Bereich sollte einen Titel und die zugehörigen Aufgaben enthalten.",
+          example:
+            "Bereich: Qualitätssicherung | Aufgaben: Prüfpläne erstellen, Audits durchführen, Abweichungen dokumentieren",
+          badExample:
+            "Nur eine Aufzählung ohne Gruppierung nach Kompetenzbereichen",
         },
       },
       {
@@ -1910,7 +2085,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "competencies_professional",
         label: "Fachliche Kompetenzen",
-        description: "Fachliche Qualifikationen, Ausbildung und Zertifizierungen",
+        description:
+          "Fachliche Qualifikationen, Ausbildung und Zertifizierungen",
         helpText:
           "Beschreiben Sie die erforderlichen fachlichen Qualifikationen: Ausbildung, Studium, Zertifizierungen, Fachkenntnisse.",
         guidingQuestions: [
@@ -1926,7 +2102,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "competencies_methodical",
         label: "Methodische Kompetenzen",
-        description: "Methodenkenntnisse, Arbeitsweisen und analytische Fähigkeiten",
+        description:
+          "Methodenkenntnisse, Arbeitsweisen und analytische Fähigkeiten",
         helpText:
           "Beschreiben Sie die erforderlichen Methodenkompetenzen: Projektmanagement, Analysemethoden, IT-Kenntnisse.",
         guidingQuestions: [
@@ -1956,7 +2133,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "competencies_personal",
         label: "Persönliche Kompetenzen",
-        description: "Persönliche Eigenschaften, Belastbarkeit und Selbstmanagement",
+        description:
+          "Persönliche Eigenschaften, Belastbarkeit und Selbstmanagement",
         helpText:
           "Beschreiben Sie die erwarteten persönlichen Eigenschaften: Eigeninitiative, Belastbarkeit, Flexibilität.",
         guidingQuestions: [
@@ -2060,7 +2238,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "standard",
         label: "Standard",
-        description: "Kernabschnitte: Zielsetzung, Aufgaben, Verantwortlichkeiten, Kompetenzen",
+        description:
+          "Kernabschnitte: Zielsetzung, Aufgaben, Verantwortlichkeiten, Kompetenzen",
         variantCategory: "standard",
         prefilledSections: [
           "role_definition",
@@ -2075,7 +2254,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "full",
         label: "Vollständig (HR)",
-        description: "Vollständiges Stellenprofil nach HR-Vorlage mit allen Abschnitten",
+        description:
+          "Vollständiges Stellenprofil nach HR-Vorlage mit allen Abschnitten",
         prefilledSections: [
           "role_definition",
           "core_tasks",
@@ -2096,7 +2276,11 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
           { type: "heading", content: "Rollendefinition", level: 2 },
           { type: "paragraph", content: "" },
           { type: "divider" },
-          { type: "heading", content: "Aufgaben & Verantwortlichkeiten", level: 2 },
+          {
+            type: "heading",
+            content: "Aufgaben & Verantwortlichkeiten",
+            level: 2,
+          },
           { type: "bulletList", items: ["Aufgabe: "] },
           { type: "divider" },
           { type: "heading", content: "Qualifikationen", level: 2 },
@@ -2116,8 +2300,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     type: "dashboard",
     label: "Dashboard",
     labelDe: "Dashboard",
-    description: "Dashboard with configurable widgets and KPI overview – modular, not part of core process tree",
-    descriptionDe: "Dashboard mit konfigurierbaren Widgets und KPI-Übersicht – modularer Seitentyp",
+    description:
+      "Dashboard with configurable widgets and KPI overview – modular, not part of core process tree",
+    descriptionDe:
+      "Dashboard mit konfigurierbaren Widgets und KPI-Übersicht – modularer Seitentyp",
     icon: "LayoutDashboard",
     color: "hsl(214, 15%, 40%)",
     category: "system",
@@ -2125,13 +2311,19 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "DSH",
     helpText:
       "Erstellen Sie ein Dashboard mit konfigurierbaren Widgets für KPI-Übersichten, Prozesskennzahlen und Statusanzeigen.",
-    allowedChildTypes: ["doc_registry", "meeting_protocol", "use_case", "procedure_instruction"],
+    allowedChildTypes: [
+      "doc_registry",
+      "meeting_protocol",
+      "use_case",
+      "procedure_instruction",
+    ],
     supportsClusterGroups: true,
     supportsChildPages: true,
     supportsLinkedPages: true,
     canBeRootNode: true,
     canBeGovernanceContainer: true,
-    usageHint: "Modulare Dashboard-Übersicht für KPIs und Prozesskennzahlen. Unterstützt Cluster-Gruppen und Unterseiten (Register, Protokolle, Use Cases).",
+    usageHint:
+      "Modulare Dashboard-Übersicht für KPIs und Prozesskennzahlen. Unterstützt Cluster-Gruppen und Unterseiten (Register, Protokolle, Use Cases).",
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       {
@@ -2150,7 +2342,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         description: "Dashboard-Konfiguration",
         required: false,
       },
-      { key: "description", label: "Beschreibung", required: false, requirement: "recommended" },
+      {
+        key: "description",
+        label: "Beschreibung",
+        required: false,
+        requirement: "recommended",
+      },
     ],
     publicationRules: {
       minimumSections: ["widgets"],
@@ -2203,9 +2400,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         errorMessage: "Bitte definieren Sie mindestens einen Glossarbegriff.",
         compoundType: "term_repeater",
         help: {
-          fillHelp: "Erfassen Sie jeden Begriff einzeln mit Definition und optionalen Synonymen. Nutzen Sie die strukturierten Eingabefelder.",
-          example: "Begriff: SLA | Definition: Service Level Agreement – vertragliche Vereinbarung über Dienstleistungsqualität | Synonyme: Dienstgütevereinbarung",
-          badExample: "Nur eine lange Textliste ohne klare Zuordnung von Begriff und Definition",
+          fillHelp:
+            "Erfassen Sie jeden Begriff einzeln mit Definition und optionalen Synonymen. Nutzen Sie die strukturierten Eingabefelder.",
+          example:
+            "Begriff: SLA | Definition: Service Level Agreement – vertragliche Vereinbarung über Dienstleistungsqualität | Synonyme: Dienstgütevereinbarung",
+          badExample:
+            "Nur eine lange Textliste ohne klare Zuordnung von Begriff und Definition",
           expectedFormat: "Begriff | Definition | Synonyme (optional)",
         },
       },
@@ -2240,7 +2440,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "SYS",
     helpText:
       "Dokumentieren Sie ein IT-System mit Schnittstellen, Datenobjekten, Zugriffsrechten und technischen Details.",
-    allowedChildTypes: ["interface_description", "checklist", "meeting_protocol", "training_resource"],
+    allowedChildTypes: [
+      "interface_description",
+      "checklist",
+      "meeting_protocol",
+      "training_resource",
+    ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -2267,7 +2472,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         type: "enum",
         required: false,
         group: "classification",
-        options: ["mission_critical", "business_critical", "standard", "non_critical"],
+        options: [
+          "mission_critical",
+          "business_critical",
+          "standard",
+          "non_critical",
+        ],
         description: "Einstufung der Geschäftskritikalität des Systems",
       },
     ],
@@ -2297,8 +2507,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "interfaces",
         label: "Schnittstellen",
         description: "Ein- und ausgehende Schnittstellen",
-        helpText:
-          "Dokumentieren Sie alle Schnittstellen zu anderen Systemen.",
+        helpText: "Dokumentieren Sie alle Schnittstellen zu anderen Systemen.",
         guidingQuestions: [
           "Welche Systeme sind angebunden?",
           "Welche Daten werden ausgetauscht?",
@@ -2430,8 +2639,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "materials",
         label: "Werkzeuge & Materialien",
         description: "Benötigte Werkzeuge, Materialien und Hilfsmittel",
-        helpText:
-          "Listen Sie alle benötigten Werkzeuge und Materialien auf.",
+        helpText: "Listen Sie alle benötigten Werkzeuge und Materialien auf.",
         required: false,
       },
       {
@@ -2486,7 +2694,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "safety",
         label: "QM-detailliert (Sicherheit)",
-        description: "Alle Abschnitte inkl. Sicherheitshinweise und Materialien",
+        description:
+          "Alle Abschnitte inkl. Sicherheitshinweise und Materialien",
         variantCategory: "qm_detail",
         prefilledSections: [
           "purpose",
@@ -2528,7 +2737,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         type: "enum",
         required: false,
         group: "classification",
-        options: ["inspection", "audit", "onboarding", "maintenance", "safety", "process", "general"],
+        options: [
+          "inspection",
+          "audit",
+          "onboarding",
+          "maintenance",
+          "safety",
+          "process",
+          "general",
+        ],
         description: "Art der Checkliste",
       },
       {
@@ -2537,7 +2754,15 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         type: "enum",
         required: false,
         group: "validity",
-        options: ["once", "daily", "weekly", "monthly", "quarterly", "yearly", "as_needed"],
+        options: [
+          "once",
+          "daily",
+          "weekly",
+          "monthly",
+          "quarterly",
+          "yearly",
+          "as_needed",
+        ],
         description: "Wie häufig muss die Checkliste durchgeführt werden?",
       },
     ],
@@ -2572,9 +2797,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: true,
         compoundType: "check_items",
         help: {
-          fillHelp: "Fügen Sie jeden Prüfpunkt einzeln hinzu. Formulieren Sie ihn so, dass er mit Ja/Nein/OK beantwortet werden kann.",
-          example: "☐ Feuerlöscher vorhanden und zugänglich | ☐ Prüfplakette aktuell | ☐ Fluchtweg frei",
-          badExample: "Allgemeine Beschreibungen wie ‚Sicherheit prüfen' ohne konkrete Prüfpunkte",
+          fillHelp:
+            "Fügen Sie jeden Prüfpunkt einzeln hinzu. Formulieren Sie ihn so, dass er mit Ja/Nein/OK beantwortet werden kann.",
+          example:
+            "☐ Feuerlöscher vorhanden und zugänglich | ☐ Prüfplakette aktuell | ☐ Fluchtweg frei",
+          badExample:
+            "Allgemeine Beschreibungen wie ‚Sicherheit prüfen' ohne konkrete Prüfpunkte",
         },
       },
       {
@@ -2655,7 +2883,13 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         type: "enum",
         required: false,
         group: "classification",
-        options: ["faq", "how_to", "explanation", "troubleshooting", "best_practice"],
+        options: [
+          "faq",
+          "how_to",
+          "explanation",
+          "troubleshooting",
+          "best_practice",
+        ],
         description: "Art des Wissensartikels",
       },
     ],
@@ -2682,9 +2916,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         required: true,
         compoundType: "qa_repeater",
         help: {
-          fillHelp: "Fügen Sie Frage-Antwort-Paare einzeln hinzu. Jede Frage sollte konkret und die Antwort verständlich formuliert sein.",
-          example: "F: Wie beantrage ich Urlaub? A: Über das Portal unter Personal > Anträge den Urlaubsantrag stellen und vom Vorgesetzten genehmigen lassen.",
-          badExample: "Alles in einem einzigen Textblock ohne klare Trennung von Fragen und Antworten",
+          fillHelp:
+            "Fügen Sie Frage-Antwort-Paare einzeln hinzu. Jede Frage sollte konkret und die Antwort verständlich formuliert sein.",
+          example:
+            "F: Wie beantrage ich Urlaub? A: Über das Portal unter Personal > Anträge den Urlaubsantrag stellen und vom Vorgesetzten genehmigen lassen.",
+          badExample:
+            "Alles in einem einzigen Textblock ohne klare Trennung von Fragen und Antworten",
         },
       },
       {
@@ -2746,7 +2983,14 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         type: "enum",
         required: false,
         group: "classification",
-        options: ["api", "file_transfer", "database", "message_queue", "manual", "organizational"],
+        options: [
+          "api",
+          "file_transfer",
+          "database",
+          "message_queue",
+          "manual",
+          "organizational",
+        ],
         description: "Art der Schnittstelle",
       },
       {
@@ -2817,7 +3061,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "responsibilities",
         label: "Verantwortlichkeiten",
-        description: "Wer ist für welche Seite der Schnittstelle verantwortlich?",
+        description:
+          "Wer ist für welche Seite der Schnittstelle verantwortlich?",
         required: false,
         requirement: "recommended",
         guidedModeStep: 6,
@@ -3026,7 +3271,12 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     displayIdPrefix: "SCH",
     helpText:
       "Erstellen Sie Schulungsmaterial oder Lernressourcen. Ideal für Einarbeitungspläne, Schulungsunterlagen und Wissenstransfer.",
-    allowedChildTypes: ["checklist", "faq", "work_instruction", "meeting_protocol"],
+    allowedChildTypes: [
+      "checklist",
+      "faq",
+      "work_instruction",
+      "meeting_protocol",
+    ],
     metadataFields: [
       ...COMMON_IDENTITY_FIELDS,
       ...COMMON_GOVERNANCE_FIELDS,
@@ -3079,8 +3329,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "objectives",
         label: "Lernziele",
         description: "Was sollen die Teilnehmer nach der Schulung können?",
-        helpText:
-          "Definieren Sie messbare Lernziele nach dem SMART-Prinzip.",
+        helpText: "Definieren Sie messbare Lernziele nach dem SMART-Prinzip.",
         guidingQuestions: [
           "Was soll der Teilnehmer nach der Schulung wissen?",
           "Was soll er können?",
@@ -3326,8 +3575,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     type: "doc_registry",
     label: "Documentation Registry",
     labelDe: "Dokumentationsregister",
-    description: "Index page grouping child documents by cluster, sorted newest first",
-    descriptionDe: "Indexseite, die untergeordnete Dokumente nach Cluster gruppiert, neueste zuerst",
+    description:
+      "Index page grouping child documents by cluster, sorted newest first",
+    descriptionDe:
+      "Indexseite, die untergeordnete Dokumente nach Cluster gruppiert, neueste zuerst",
     icon: "LayoutList",
     color: "hsl(210, 18%, 36%)",
     category: "documentation",
@@ -3357,11 +3608,9 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
     canBeReferenceHub: true,
     supportsLinkedPages: true,
     canBeGovernanceContainer: true,
-    usageHint: "Für Sammlungen, Register, Markenprofile, Entscheidungsdokumentationen, Vorlagen oder strategische Referenzdokumente. Fasst Unterseiten in Clustern zusammen.",
-    metadataFields: [
-      ...COMMON_IDENTITY_FIELDS,
-      ...COMMON_GOVERNANCE_FIELDS,
-    ],
+    usageHint:
+      "Für Sammlungen, Register, Markenprofile, Entscheidungsdokumentationen, Vorlagen oder strategische Referenzdokumente. Fasst Unterseiten in Clustern zusammen.",
+    metadataFields: [...COMMON_IDENTITY_FIELDS, ...COMMON_GOVERNANCE_FIELDS],
     sections: [
       {
         key: "description",
@@ -3440,8 +3689,10 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         requirement: "required",
         publishRequired: true,
         group: "identity",
-        description: "Marke bzw. Bildungsinstitution, die dieses Profil beschreibt",
-        errorMessage: "Bitte geben Sie an, für welche Marke dieses Profil gilt.",
+        description:
+          "Marke bzw. Bildungsinstitution, die dieses Profil beschreibt",
+        errorMessage:
+          "Bitte geben Sie an, für welche Marke dieses Profil gilt.",
         help: {
           fillHelp:
             "Tragen Sie die Marke ein, für die dieses Profil gilt (Dachmarke oder Einzelmarke).",
@@ -3496,7 +3747,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "brand_purpose",
         label: "Markenauftrag und Purpose",
         group: "Strategischer Kern",
-        description: "Warum die Marke existiert und welchen dauerhaften Beitrag sie leistet",
+        description:
+          "Warum die Marke existiert und welchen dauerhaften Beitrag sie leistet",
         helpText:
           "Warum existiert die Marke? Welchen dauerhaften Nutzen stiftet sie für ihre Zielgruppen und innerhalb der Gruppe?",
         guidingQuestions: [
@@ -3544,7 +3796,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         key: "brand_mandate",
         label: "Mandat und Verantwortungsrahmen",
         group: "Strategischer Kern",
-        description: "Richtlinienkompetenz, Steuerungsmandat, Zuständigkeiten und Grenzen",
+        description:
+          "Richtlinienkompetenz, Steuerungsmandat, Zuständigkeiten und Grenzen",
         helpText:
           "Welche gruppenweiten oder markenspezifischen Entscheidungen und Standards führt die Marke? Welche Verantwortung verbleibt ausdrücklich bei anderen Marken, Gesellschaften, Fachstellen oder Organen?",
         guidingQuestions: [
@@ -3606,8 +3859,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
         guidedModeStep: 6,
         softLimitChars: 600,
         help: {
-          fillHelp:
-            "Ein kurzes, überprüfbares Versprechen — kein Werbeslogan.",
+          fillHelp: "Ein kurzes, überprüfbares Versprechen — kein Werbeslogan.",
           example:
             "Qualifizierung, die berufsbegleitend absolvierbar ist und auf anerkannte Abschlüsse anrechenbar bleibt.",
           badExample:
@@ -3634,8 +3886,7 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
             "Leistungsarten und Aufbaulogik, als Aufzählung — maximal zehn Punkte.",
           example:
             "Zertifikatslehrgänge; berufsbegleitende Studiengänge; Inhouse-Qualifizierung; geförderte Maßnahmen.",
-          badExample:
-            "Vollständiger Kurskatalog mit Preisen und Terminen.",
+          badExample: "Vollständiger Kurskatalog mit Preisen und Terminen.",
         },
       },
 
@@ -3784,7 +4035,8 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       {
         key: "blank",
         label: "Schlank",
-        description: "Strategischer Kern und Zielgruppen — für eine schnelle Erstfassung",
+        description:
+          "Strategischer Kern und Zielgruppen — für eine schnelle Erstfassung",
         variantCategory: "schlank",
         prefilledSections: [
           "strategic_decision",
@@ -3818,7 +4070,6 @@ export const PAGE_TYPE_REGISTRY: Record<TemplateType, PageTypeDefinition> = {
       },
     ],
   },
-
 };
 
 export const ALL_TEMPLATE_TYPES = Object.keys(
@@ -3949,7 +4200,11 @@ export function calculateCompleteness(
     !hasOwner &&
     def.metadataFields.some((f) => f.key === "owner" && f.required)
   ) {
-    if (!missing.includes("Prozesseigner") && !missing.includes("Verantwortlicher") && !missing.includes("Protokollführer")) {
+    if (
+      !missing.includes("Prozesseigner") &&
+      !missing.includes("Verantwortlicher") &&
+      !missing.includes("Protokollführer")
+    ) {
       missing.push("Prozesseigner");
       total++;
     }
@@ -3998,37 +4253,44 @@ export const DISPLAY_PROFILE_LABELS: Record<
   overview_container: {
     label: "Overview Container",
     labelDe: "Übersichtscontainer",
-    description: "Top-level container pages that aggregate child pages (e.g. core process overview, area overview, dashboard)",
+    description:
+      "Top-level container pages that aggregate child pages (e.g. core process overview, area overview, dashboard)",
   },
   process_document: {
     label: "Process Document",
     labelDe: "Prozessdokument",
-    description: "Step-by-step procedural documentation (e.g. process page, procedure instruction, work instruction)",
+    description:
+      "Step-by-step procedural documentation (e.g. process page, procedure instruction, work instruction)",
   },
   reference_article: {
     label: "Reference Article",
     labelDe: "Nachschlagewerk",
-    description: "Self-contained knowledge or reference content (e.g. use case, FAQ, glossary, role profile, meeting protocol)",
+    description:
+      "Self-contained knowledge or reference content (e.g. use case, FAQ, glossary, role profile, meeting protocol)",
   },
   governance_document: {
     label: "Governance Document",
     labelDe: "Governance-Dokument",
-    description: "Normative or regulatory content requiring formal approval (e.g. policy, audit object)",
+    description:
+      "Normative or regulatory content requiring formal approval (e.g. policy, audit object)",
   },
   system_document: {
     label: "System Document",
     labelDe: "Systemdokument",
-    description: "Technical system or interface documentation (e.g. system documentation, interface description)",
+    description:
+      "Technical system or interface documentation (e.g. system documentation, interface description)",
   },
   module_page: {
     label: "Module Page",
     labelDe: "Modulseite",
-    description: "Structured interactive content with specialized rendering (e.g. checklist, training resource)",
+    description:
+      "Structured interactive content with specialized rendering (e.g. checklist, training resource)",
   },
   doc_registry: {
     label: "Documentation Registry",
     labelDe: "Dokumentationsregister",
-    description: "Index pages grouping child documents by cluster, sorted newest first",
+    description:
+      "Index pages grouping child documents by cluster, sorted newest first",
   },
 };
 
@@ -4054,7 +4316,7 @@ function isNonEmpty(val: unknown): boolean {
   if (val === undefined || val === null) return false;
   if (typeof val === "string") return val.trim().length > 0;
   if (Array.isArray(val)) return val.length > 0;
-  if (typeof val === "object") return Object.keys(val as Record<string, unknown>).length > 0;
+  if (typeof val === "object") return Object.keys(val).length > 0;
   return true;
 }
 
@@ -4108,12 +4370,12 @@ const PSEUDO_CONTENT_PATTERNS = [
   /^(todo|tbd|xxx|n\/a|tba|placeholder|test|hier\s+einfügen|folgt|wird\s+ergänzt|noch\s+offen|offen|\.{3,}|—+|-+)$/i,
   /^(lorem\s+ipsum)/i,
   /^\.+$/,
-]
+];
 
 function isStringPseudo(s: string): boolean {
   const trimmed = s.trim();
   if (!trimmed) return true;
-  return PSEUDO_CONTENT_PATTERNS.some(p => p.test(trimmed));
+  return PSEUDO_CONTENT_PATTERNS.some((p) => p.test(trimmed));
 }
 
 function isPseudoContent(val: unknown): boolean {
@@ -4128,7 +4390,7 @@ function isPseudoContent(val: unknown): boolean {
       // not JSON, treat as plain string
     }
   }
-  return PSEUDO_CONTENT_PATTERNS.some(p => p.test(trimmed));
+  return PSEUDO_CONTENT_PATTERNS.some((p) => p.test(trimmed));
 }
 
 function isPseudoStructured(val: unknown): boolean {
@@ -4141,9 +4403,11 @@ function isPseudoStructured(val: unknown): boolean {
   if (typeof val === "object") {
     const values = Object.values(val as Record<string, unknown>);
     if (values.length === 0) return true;
-    const stringValues = values.filter((v): v is string => typeof v === "string");
+    const stringValues = values.filter(
+      (v): v is string => typeof v === "string",
+    );
     if (stringValues.length === 0) return false;
-    return stringValues.every(s => isStringPseudo(s));
+    return stringValues.every((s) => isStringPseudo(s));
   }
   return false;
 }
@@ -4155,7 +4419,19 @@ export function validateForPublication(
 ): ValidationResult {
   const def = getPageType(type);
   if (!def) {
-    return { valid: false, errors: [{ field: "type", fieldLabel: "Seitentyp", message: `Unbekannter Seitentyp: ${type}`, type: "invalid_format" }], warnings: [], readinessPercentage: 0 };
+    return {
+      valid: false,
+      errors: [
+        {
+          field: "type",
+          fieldLabel: "Seitentyp",
+          message: `Unbekannter Seitentyp: ${type}`,
+          type: "invalid_format",
+        },
+      ],
+      warnings: [],
+      readinessPercentage: 0,
+    };
   }
 
   const errors: ValidationError[] = [];
@@ -4169,7 +4445,9 @@ export function validateForPublication(
       errors.push({
         field: metaKey,
         fieldLabel: field.label,
-        message: field.errorMessage ?? `„${field.label}" ist ein Pflichtfeld für die Veröffentlichung.`,
+        message:
+          field.errorMessage ??
+          `„${field.label}" ist ein Pflichtfeld für die Veröffentlichung.`,
         type: "missing_required",
       });
     }
@@ -4181,7 +4459,9 @@ export function validateForPublication(
         errors.push({
           field: field.key,
           fieldLabel: field.label,
-          message: field.errorMessage ?? `„${field.label}" muss für die Veröffentlichung ausgefüllt werden.`,
+          message:
+            field.errorMessage ??
+            `„${field.label}" muss für die Veröffentlichung ausgefüllt werden.`,
           type: "missing_required",
         });
       }
@@ -4196,7 +4476,9 @@ export function validateForPublication(
       errors.push({
         field: sectionKey,
         fieldLabel: section.label,
-        message: section.errorMessage ?? `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
+        message:
+          section.errorMessage ??
+          `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
         type: "missing_required",
       });
     } else if (isPseudoContent(val)) {
@@ -4220,13 +4502,18 @@ export function validateForPublication(
   }
 
   for (const section of def.sections) {
-    if (section.publishRequired && !rules.minimumSections.includes(section.key)) {
+    if (
+      section.publishRequired &&
+      !rules.minimumSections.includes(section.key)
+    ) {
       const val = sectionData[section.key];
       if (!isNonEmpty(val)) {
         errors.push({
           field: section.key,
           fieldLabel: section.label,
-          message: section.errorMessage ?? `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
+          message:
+            section.errorMessage ??
+            `Der Abschnitt „${section.label}" muss für die Veröffentlichung ausgefüllt werden.`,
           type: "missing_required",
         });
       } else if (isPseudoContent(val)) {
@@ -4254,7 +4541,11 @@ export function validateForPublication(
   }
 
   for (const field of def.metadataFields) {
-    if (field.requirement === "recommended" && !field.publishRequired && !isNonEmpty(metadata[field.key])) {
+    if (
+      field.requirement === "recommended" &&
+      !field.publishRequired &&
+      !isNonEmpty(metadata[field.key])
+    ) {
       warnings.push({
         field: field.key,
         fieldLabel: field.label,
@@ -4262,7 +4553,11 @@ export function validateForPublication(
         type: "recommended_empty",
       });
     }
-    if (field.requirement === "conditional" && !field.publishRequired && !isNonEmpty(metadata[field.key])) {
+    if (
+      field.requirement === "conditional" &&
+      !field.publishRequired &&
+      !isNonEmpty(metadata[field.key])
+    ) {
       warnings.push({
         field: field.key,
         fieldLabel: field.label,
@@ -4292,12 +4587,15 @@ export function validateForPublication(
 
   const allEnforcedFieldKeys = new Set<string>();
   for (const k of rules.minimumMetadata) allEnforcedFieldKeys.add(`meta:${k}`);
-  for (const k of rules.minimumSections) allEnforcedFieldKeys.add(`section:${k}`);
+  for (const k of rules.minimumSections)
+    allEnforcedFieldKeys.add(`section:${k}`);
   for (const f of def.metadataFields) {
-    if (f.publishRequired && !rules.minimumMetadata.includes(f.key)) allEnforcedFieldKeys.add(`meta:${f.key}`);
+    if (f.publishRequired && !rules.minimumMetadata.includes(f.key))
+      allEnforcedFieldKeys.add(`meta:${f.key}`);
   }
   for (const s of def.sections) {
-    if (s.publishRequired && !rules.minimumSections.includes(s.key)) allEnforcedFieldKeys.add(`section:${s.key}`);
+    if (s.publishRequired && !rules.minimumSections.includes(s.key))
+      allEnforcedFieldKeys.add(`section:${s.key}`);
   }
   if (rules.customRules) {
     for (const r of rules.customRules) allEnforcedFieldKeys.add(`rule:${r.id}`);
@@ -4307,14 +4605,20 @@ export function validateForPublication(
   for (const e of errors) {
     if (e.type === "custom_rule") {
       failedFieldKeys.add(`rule:${e.field}`);
-    } else if (rules.minimumSections.includes(e.field) || def.sections.some((s) => s.key === e.field)) {
+    } else if (
+      rules.minimumSections.includes(e.field) ||
+      def.sections.some((s) => s.key === e.field)
+    ) {
       failedFieldKeys.add(`section:${e.field}`);
     } else {
       failedFieldKeys.add(`meta:${e.field}`);
     }
   }
   const passedEnforced = totalEnforced - failedFieldKeys.size;
-  const readinessPercentage = totalEnforced === 0 ? 100 : Math.round((Math.max(0, passedEnforced) / totalEnforced) * 100);
+  const readinessPercentage =
+    totalEnforced === 0
+      ? 100
+      : Math.round((Math.max(0, passedEnforced) / totalEnforced) * 100);
 
   return {
     valid: errors.length === 0,
@@ -4331,7 +4635,19 @@ export function validateForDraft(
 ): ValidationResult {
   const def = getPageType(type);
   if (!def) {
-    return { valid: false, errors: [{ field: "type", fieldLabel: "Seitentyp", message: `Unbekannter Seitentyp: ${type}`, type: "invalid_format" }], warnings: [], readinessPercentage: 0 };
+    return {
+      valid: false,
+      errors: [
+        {
+          field: "type",
+          fieldLabel: "Seitentyp",
+          message: `Unbekannter Seitentyp: ${type}`,
+          type: "invalid_format",
+        },
+      ],
+      warnings: [],
+      readinessPercentage: 0,
+    };
   }
 
   const errors: ValidationError[] = [];
@@ -4350,7 +4666,10 @@ export function validateForDraft(
 
   const totalRequired = def.metadataFields.filter((f) => f.required).length;
   const filledRequired = totalRequired - errors.length;
-  const readinessPercentage = totalRequired === 0 ? 100 : Math.round((filledRequired / totalRequired) * 100);
+  const readinessPercentage =
+    totalRequired === 0
+      ? 100
+      : Math.round((filledRequired / totalRequired) * 100);
 
   return {
     valid: errors.length === 0,
@@ -4373,19 +4692,28 @@ export function getPublicationReadiness(
   type: string,
   metadata: Record<string, unknown>,
   sectionData: Record<string, unknown>,
-): { ready: boolean; percentage: number; missingRequired: string[]; missingRecommended: string[] } {
+): {
+  ready: boolean;
+  percentage: number;
+  missingRequired: string[];
+  missingRecommended: string[];
+} {
   const result = validateForPublication(type, metadata, sectionData);
   return {
     ready: result.valid,
     percentage: result.readinessPercentage,
     missingRequired: result.errors.map((e) => e.fieldLabel),
-    missingRecommended: result.warnings.filter((w) => w.type === "recommended_empty").map((w) => w.fieldLabel),
+    missingRecommended: result.warnings
+      .filter((w) => w.type === "recommended_empty")
+      .map((w) => w.fieldLabel),
   };
 }
 
-export function getFieldsByRequirement(
-  type: string,
-): { required: MetadataFieldDef[]; recommended: MetadataFieldDef[]; conditional: MetadataFieldDef[] } {
+export function getFieldsByRequirement(type: string): {
+  required: MetadataFieldDef[];
+  recommended: MetadataFieldDef[];
+  conditional: MetadataFieldDef[];
+} {
   const def = getPageType(type);
   if (!def) return { required: [], recommended: [], conditional: [] };
 
@@ -4394,7 +4722,8 @@ export function getFieldsByRequirement(
   const conditional: MetadataFieldDef[] = [];
 
   for (const field of def.metadataFields) {
-    const req = field.requirement ?? (field.required ? "required" : "recommended");
+    const req =
+      field.requirement ?? (field.required ? "required" : "recommended");
     if (req === "required") required.push(field);
     else if (req === "recommended") recommended.push(field);
     else conditional.push(field);
@@ -4403,9 +4732,11 @@ export function getFieldsByRequirement(
   return { required, recommended, conditional };
 }
 
-export function getSectionsByRequirement(
-  type: string,
-): { required: PageTypeSection[]; recommended: PageTypeSection[]; conditional: PageTypeSection[] } {
+export function getSectionsByRequirement(type: string): {
+  required: PageTypeSection[];
+  recommended: PageTypeSection[];
+  conditional: PageTypeSection[];
+} {
   const def = getPageType(type);
   if (!def) return { required: [], recommended: [], conditional: [] };
 
@@ -4414,7 +4745,8 @@ export function getSectionsByRequirement(
   const conditional: PageTypeSection[] = [];
 
   for (const section of def.sections) {
-    const req = section.requirement ?? (section.required ? "required" : "recommended");
+    const req =
+      section.requirement ?? (section.required ? "required" : "recommended");
     if (req === "required") required.push(section);
     else if (req === "recommended") recommended.push(section);
     else conditional.push(section);
@@ -4466,7 +4798,9 @@ export function getContainerCapabilities(type: string): {
   };
 }
 
-export function getVariantsByCategory(type: string): Record<VariantCategory, TemplateVariant[]> {
+export function getVariantsByCategory(
+  type: string,
+): Record<VariantCategory, TemplateVariant[]> {
   const def = getPageType(type);
   const result: Record<VariantCategory, TemplateVariant[]> = {
     schlank: [],
@@ -4483,7 +4817,9 @@ export function getVariantsByCategory(type: string): Record<VariantCategory, Tem
   return result;
 }
 
-export function buildInitialEditorContent(blocks: InitialBlock[]): Record<string, unknown> {
+export function buildInitialEditorContent(
+  blocks: InitialBlock[],
+): Record<string, unknown> {
   const content: Record<string, unknown>[] = [];
   for (const block of blocks) {
     switch (block.type) {
@@ -4505,7 +4841,12 @@ export function buildInitialEditorContent(blocks: InitialBlock[]): Record<string
           type: "bulletList",
           content: (block.items ?? []).map((item) => ({
             type: "listItem",
-            content: [{ type: "paragraph", content: item ? [{ type: "text", text: item }] : [] }],
+            content: [
+              {
+                type: "paragraph",
+                content: item ? [{ type: "text", text: item }] : [],
+              },
+            ],
           })),
         });
         break;
@@ -4517,7 +4858,12 @@ export function buildInitialEditorContent(blocks: InitialBlock[]): Record<string
               type: "tableRow",
               content: row.map((cell) => ({
                 type: rowIdx === 0 ? "tableHeader" : "tableCell",
-                content: [{ type: "paragraph", content: cell ? [{ type: "text", text: cell }] : [] }],
+                content: [
+                  {
+                    type: "paragraph",
+                    content: cell ? [{ type: "text", text: cell }] : [],
+                  },
+                ],
               })),
             })),
           });
@@ -4526,7 +4872,14 @@ export function buildInitialEditorContent(blocks: InitialBlock[]): Record<string
       case "callout":
         content.push({
           type: "blockquote",
-          content: [{ type: "paragraph", content: block.content ? [{ type: "text", text: block.content }] : [] }],
+          content: [
+            {
+              type: "paragraph",
+              content: block.content
+                ? [{ type: "text", text: block.content }]
+                : [],
+            },
+          ],
         });
         break;
       case "divider":

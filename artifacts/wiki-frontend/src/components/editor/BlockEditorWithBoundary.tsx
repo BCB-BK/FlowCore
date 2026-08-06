@@ -2,7 +2,9 @@ import type { ComponentProps } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BlockEditor } from "./BlockEditor";
 
-export function BlockEditorWithBoundary(props: ComponentProps<typeof BlockEditor>) {
+export function BlockEditorWithBoundary(
+  props: ComponentProps<typeof BlockEditor>,
+) {
   return (
     <ErrorBoundary
       compact

@@ -199,10 +199,7 @@ export async function getQualityOverview(): Promise<QualityOverview> {
   `);
 
   const totalPages = num(row, "total_pages");
-  const incompletePagesCount = num(
-    (incompleteResult.rows[0] ?? {}) as R,
-    "cnt",
-  );
+  const incompletePagesCount = num(incompleteResult.rows[0] ?? {}, "cnt");
 
   const completenessResult = await db.execute(sql`
     SELECT
@@ -224,17 +221,14 @@ export async function getQualityOverview(): Promise<QualityOverview> {
     draftPages: num(row, "draft_pages"),
     archivedPages: num(row, "archived_pages"),
     pagesWithoutOwner: num(row, "pages_without_owner"),
-    overdueReviews: num((overdueResult.rows[0] ?? {}) as R, "cnt"),
-    orphanedPages: num((orphanResult.rows[0] ?? {}) as R, "cnt"),
+    overdueReviews: num(overdueResult.rows[0] ?? {}, "cnt"),
+    orphanedPages: num(orphanResult.rows[0] ?? {}, "cnt"),
     incompletePagesCount,
-    avgCompleteness: num(
-      (completenessResult.rows[0] ?? {}) as R,
-      "avg_completeness",
-    ),
-    brokenLinks: num((brokenLinksResult.rows[0] ?? {}) as R, "cnt"),
-    unreferencedMedia: num((unreferencedMediaResult.rows[0] ?? {}) as R, "cnt"),
-    pagesWithoutTags: num((noTagsResult.rows[0] ?? {}) as R, "cnt"),
-    zeroResultSearches: num((zeroSearchResult.rows[0] ?? {}) as R, "cnt"),
+    avgCompleteness: num(completenessResult.rows[0] ?? {}, "avg_completeness"),
+    brokenLinks: num(brokenLinksResult.rows[0] ?? {}, "cnt"),
+    unreferencedMedia: num(unreferencedMediaResult.rows[0] ?? {}, "cnt"),
+    pagesWithoutTags: num(noTagsResult.rows[0] ?? {}, "cnt"),
+    zeroResultSearches: num(zeroSearchResult.rows[0] ?? {}, "cnt"),
   };
 }
 
@@ -282,7 +276,7 @@ export async function getPageQualityList(
     LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
     ${whereClause}
   `);
-  const total = num((countResult.rows[0] ?? {}) as R, "cnt");
+  const total = num(countResult.rows[0] ?? {}, "cnt");
 
   const result = await db.execute(sql`
     SELECT
@@ -818,7 +812,10 @@ export async function getPersonalWorkItems(
       displayCode: str(r, "display_code"),
       templateType: str(r, "template_type"),
       status: str(r, "wc_status"),
-      detail: str(r, "wc_status") === "changes_requested" ? "Änderung zurückgegeben" : "Entwurf wartet auf Fertigstellung",
+      detail:
+        str(r, "wc_status") === "changes_requested"
+          ? "Änderung zurückgegeben"
+          : "Entwurf wartet auf Fertigstellung",
       priority: "medium",
       updatedAt: str(r, "updated_at"),
     });

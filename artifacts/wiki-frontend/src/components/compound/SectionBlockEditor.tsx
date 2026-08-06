@@ -36,15 +36,19 @@ function parseSectionContent(raw: string): JSONContent {
   if (!raw) return { type: "doc", content: [{ type: "paragraph" }] };
   try {
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object" && parsed.type === "doc") return parsed;
+    if (parsed && typeof parsed === "object" && parsed.type === "doc")
+      return parsed;
   } catch {}
   const paragraphs = raw.split(/\n{2,}/).filter((p) => p.trim());
-  if (paragraphs.length === 0) return { type: "doc", content: [{ type: "paragraph" }] };
+  if (paragraphs.length === 0)
+    return { type: "doc", content: [{ type: "paragraph" }] };
   return {
     type: "doc",
     content: paragraphs.map((p) => ({
       type: "paragraph",
-      content: p.trim() ? [{ type: "text", text: p.replace(/\n/g, " ").trim() }] : undefined,
+      content: p.trim()
+        ? [{ type: "text", text: p.replace(/\n/g, " ").trim() }]
+        : undefined,
     })),
   };
 }
@@ -62,7 +66,8 @@ function extractPlainText(doc: JSONContent): string {
     if (node.type === "text") return node.text ?? "";
     if (!node.content) return "";
     const childText = node.content.map(walk).join("");
-    if (node.type === "paragraph" || node.type === "heading") return childText + "\n";
+    if (node.type === "paragraph" || node.type === "heading")
+      return childText + "\n";
     if (node.type === "listItem") return "- " + childText;
     return childText;
   }
@@ -77,11 +82,20 @@ interface ToolbarButtonProps {
   title: string;
 }
 
-function ToolbarButton({ onClick, active, disabled, icon: Icon, title }: ToolbarButtonProps) {
+function ToolbarButton({
+  onClick,
+  active,
+  disabled,
+  icon: Icon,
+  title,
+}: ToolbarButtonProps) {
   return (
     <button
       type="button"
-      onMouseDown={(e) => { e.preventDefault(); onClick(); }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
       disabled={disabled}
       title={title}
       className={`h-6 w-6 flex items-center justify-center rounded text-xs transition-colors ${
@@ -168,7 +182,11 @@ export function SectionBlockEditor({
       if (json.includes('"/')) {
         const { state } = ed;
         const { from } = state.selection;
-        const textBefore = state.doc.textBetween(Math.max(0, from - 20), from, "");
+        const textBefore = state.doc.textBetween(
+          Math.max(0, from - 20),
+          from,
+          "",
+        );
         const slashMatch = textBefore.match(/\/([^/]*)$/);
 
         if (slashMatch) {
@@ -188,20 +206,26 @@ export function SectionBlockEditor({
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none focus:outline-none min-h-[100px] px-1",
+        class:
+          "prose prose-sm max-w-none focus:outline-none min-h-[100px] px-1",
       },
     },
   });
 
   useEffect(() => {
     const handleWikiPickerEvent = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { editor?: unknown } | undefined;
+      const detail = (e as CustomEvent).detail as
+        | { editor?: unknown }
+        | undefined;
       if (detail?.editor !== editor) return;
       setWikiPickerOpen(true);
     };
     window.addEventListener("editor:open-wiki-picker", handleWikiPickerEvent);
     return () =>
-      window.removeEventListener("editor:open-wiki-picker", handleWikiPickerEvent);
+      window.removeEventListener(
+        "editor:open-wiki-picker",
+        handleWikiPickerEvent,
+      );
   }, [editor]);
 
   const handleEdit = useCallback(() => {
@@ -229,7 +253,9 @@ export function SectionBlockEditor({
 
   useEffect(() => {
     if (!editor || editing) return;
-    editor.commands.setContent(parseSectionContent(value), { emitUpdate: false });
+    editor.commands.setContent(parseSectionContent(value), {
+      emitUpdate: false,
+    });
   }, [value, editor, editing]);
 
   const getFieldValue = useCallback(() => {
@@ -285,11 +311,20 @@ export function SectionBlockEditor({
             )}
             {editing && (
               <>
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleCancel}
+                >
                   <X className="h-3 w-3 mr-1" />
                   Abbrechen
                 </Button>
-                <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+                <Button
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleSave}
+                >
                   <Check className="h-3 w-3 mr-1" />
                   Speichern
                 </Button>
@@ -301,16 +336,58 @@ export function SectionBlockEditor({
       <CardContent>
         {editing && editor && (
           <div className="flex flex-wrap gap-0.5 mb-2 pb-2 border-b">
-            <ToolbarButton icon={Bold} title="Fett" onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} />
-            <ToolbarButton icon={Italic} title="Kursiv" onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} />
-            <ToolbarButton icon={Underline} title="Unterstrichen" onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} />
+            <ToolbarButton
+              icon={Bold}
+              title="Fett"
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              active={editor.isActive("bold")}
+            />
+            <ToolbarButton
+              icon={Italic}
+              title="Kursiv"
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              active={editor.isActive("italic")}
+            />
+            <ToolbarButton
+              icon={Underline}
+              title="Unterstrichen"
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              active={editor.isActive("underline")}
+            />
             <div className="w-px h-5 bg-border mx-0.5 self-center" />
-            <ToolbarButton icon={List} title="Aufzählung" onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} />
-            <ToolbarButton icon={ListOrdered} title="Nummerierung" onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} />
-            <ToolbarButton icon={CheckSquare} title="Aufgabenliste" onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive("taskList")} />
+            <ToolbarButton
+              icon={List}
+              title="Aufzählung"
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              active={editor.isActive("bulletList")}
+            />
+            <ToolbarButton
+              icon={ListOrdered}
+              title="Nummerierung"
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              active={editor.isActive("orderedList")}
+            />
+            <ToolbarButton
+              icon={CheckSquare}
+              title="Aufgabenliste"
+              onClick={() => editor.chain().focus().toggleTaskList().run()}
+              active={editor.isActive("taskList")}
+            />
             <div className="w-px h-5 bg-border mx-0.5 self-center" />
-            <ToolbarButton icon={AlignLeft} title="Linksbündig" onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} />
-            <ToolbarButton icon={AlignCenter} title="Zentriert" onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} />
+            <ToolbarButton
+              icon={AlignLeft}
+              title="Linksbündig"
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              active={editor.isActive({ textAlign: "left" })}
+            />
+            <ToolbarButton
+              icon={AlignCenter}
+              title="Zentriert"
+              onClick={() =>
+                editor.chain().focus().setTextAlign("center").run()
+              }
+              active={editor.isActive({ textAlign: "center" })}
+            />
             <div className="w-px h-5 bg-border mx-0.5 self-center" />
             <ToolbarButton
               icon={BookOpen}
@@ -321,7 +398,9 @@ export function SectionBlockEditor({
           </div>
         )}
         {!editing && displayEmpty ? (
-          <p className="text-sm text-muted-foreground text-center py-4">{emptyText}</p>
+          <p className="text-sm text-muted-foreground text-center py-4">
+            {emptyText}
+          </p>
         ) : (
           <EditorContent editor={editor} />
         )}

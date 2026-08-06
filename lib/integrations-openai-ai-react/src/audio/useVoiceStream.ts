@@ -127,7 +127,7 @@ function extractCompleteSseBlocks(buffer: string): {
 }
 
 function isDoneEvent(event: VoiceStreamEvent): event is DoneEvent {
-  return "done" in event && (event as DoneEvent).done === true;
+  return "done" in event && event.done === true;
 }
 
 function handleVoiceStreamEvent(

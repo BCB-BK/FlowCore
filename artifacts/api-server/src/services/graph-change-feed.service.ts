@@ -9,7 +9,11 @@
  * reach the queue.
  */
 import { db } from "@workspace/db";
-import { graphChangeFeedTable, contentNodesTable, contentRevisionsTable } from "@workspace/db/schema";
+import {
+  graphChangeFeedTable,
+  contentNodesTable,
+  contentRevisionsTable,
+} from "@workspace/db/schema";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import type { GraphSyncItemType } from "./graph-sync-state.service";
 import type { GraphChangeFeedEventType } from "./graph-delta-detector.service";
@@ -34,14 +38,19 @@ function buildDedupKey(input: RecordEventInput): string {
  * Otherwise a new row is inserted and immediately handed to
  * GraphIndexEventHandler to decide + enqueue the resulting Graph operation.
  */
-export async function recordEvent(input: RecordEventInput): Promise<{ deduplicated: boolean }> {
+export async function recordEvent(
+  input: RecordEventInput,
+): Promise<{ deduplicated: boolean }> {
   const dedupKey = buildDedupKey(input);
 
   const [existing] = await db
     .select({ id: graphChangeFeedTable.id })
     .from(graphChangeFeedTable)
     .where(
-      and(eq(graphChangeFeedTable.dedupKey, dedupKey), eq(graphChangeFeedTable.status, "queued")),
+      and(
+        eq(graphChangeFeedTable.dedupKey, dedupKey),
+        eq(graphChangeFeedTable.status, "queued"),
+      ),
     );
 
   if (existing) {
@@ -71,7 +80,9 @@ export async function recordEvent(input: RecordEventInput): Promise<{ deduplicat
  * confidentiality level is granted/revoked (all pages of that level need
  * their ACL entry recomputed and re-pushed to Graph).
  */
-export async function recordAclChangeForConfidentialityLevel(level: string): Promise<number> {
+export async function recordAclChangeForConfidentialityLevel(
+  level: string,
+): Promise<number> {
   const rows = await db
     .select({ nodeId: contentNodesTable.id })
     .from(contentNodesTable)
@@ -88,7 +99,11 @@ export async function recordAclChangeForConfidentialityLevel(level: string): Pro
     );
 
   for (const row of rows) {
-    await recordEvent({ itemType: "page", nodeId: row.nodeId, eventType: "acl_change" });
+    await recordEvent({
+      itemType: "page",
+      nodeId: row.nodeId,
+      eventType: "acl_change",
+    });
   }
   return rows.length;
 }

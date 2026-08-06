@@ -1,4 +1,10 @@
 import { Router, type IRouter } from "express";
+import {
+  AssignTagToNodeBody,
+  CreateTagBody,
+  UpdateTagBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   contentTagsTable,
@@ -63,6 +69,7 @@ router.post(
   "/",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(CreateTagBody),
   async (req, res) => {
     const { name, color } = req.body;
     if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -93,6 +100,7 @@ router.patch(
   "/:id",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(UpdateTagBody),
   async (req, res) => {
     const id = req.params.id as string;
     const { name, color } = req.body;
@@ -170,6 +178,7 @@ router.post(
   "/nodes/:nodeId",
   requireAuth,
   requirePermission("edit_content", (req) => req.params.nodeId),
+  validateBody(AssignTagToNodeBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const { tagId } = req.body;

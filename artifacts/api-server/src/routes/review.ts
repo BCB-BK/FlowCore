@@ -6,6 +6,13 @@
  */
 
 import { Router, type IRouter } from "express";
+import {
+  ApproveRevisionBody,
+  RejectRevisionBody,
+  SubmitForReviewBody,
+  WatchNodeBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   reviewWorkflowsTable,
@@ -23,7 +30,10 @@ import { eq, and, desc } from "drizzle-orm";
 import type { Request } from "express";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
-import { checkSeparationOfDuties, type WikiPermission } from "../services/rbac.service";
+import {
+  checkSeparationOfDuties,
+  type WikiPermission,
+} from "../services/rbac.service";
 
 const router: IRouter = Router();
 
@@ -66,6 +76,7 @@ function resolveNodeIdFromRevision(permissionKey: WikiPermission) {
 router.post(
   "/revisions/:id/submit-for-review",
   ...resolveNodeIdFromRevision("submit_for_review"),
+  validateBody(SubmitForReviewBody),
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
@@ -159,6 +170,7 @@ router.post(
 router.post(
   "/revisions/:id/approve",
   ...resolveNodeIdFromRevision("approve_page"),
+  validateBody(ApproveRevisionBody),
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
@@ -215,7 +227,8 @@ router.post(
             },
           });
           res.status(403).json({
-            error: "Vier-Augen-Prinzip: Sie können Ihre eigene Einreichung nicht genehmigen.",
+            error:
+              "Vier-Augen-Prinzip: Sie können Ihre eigene Einreichung nicht genehmigen.",
             sodRule: sodResult.rule,
           });
           return;
@@ -314,6 +327,7 @@ router.post(
 router.post(
   "/revisions/:id/reject",
   ...resolveNodeIdFromRevision("review_page"),
+  validateBody(RejectRevisionBody),
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
@@ -502,14 +516,8 @@ router.get(
       }
     }
 
-    const structuredFieldsA = (revA.structuredFields || {}) as Record<
-      string,
-      unknown
-    >;
-    const structuredFieldsB = (revB.structuredFields || {}) as Record<
-      string,
-      unknown
-    >;
+    const structuredFieldsA = revA.structuredFields || {};
+    const structuredFieldsB = revB.structuredFields || {};
     const structuredFieldChanges: Record<
       string,
       { old: unknown; new: unknown }
@@ -531,8 +539,8 @@ router.get(
       }
     }
 
-    const contentA = revA.content as Record<string, unknown> | null;
-    const contentB = revB.content as Record<string, unknown> | null;
+    const contentA = revA.content;
+    const contentB = revB.content;
     const contentChanged =
       JSON.stringify(contentA) !== JSON.stringify(contentB);
 
@@ -608,6 +616,7 @@ router.post(
   "/nodes/:nodeId/watch",
   requireAuth,
   requirePermission("read_page", (req) => req.params.nodeId),
+  validateBody(WatchNodeBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const principalId = req.user!.principalId;

@@ -4,7 +4,15 @@ import { Badge } from "@workspace/ui/badge";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
 import { Textarea } from "@workspace/ui/textarea";
-import { HelpCircle, Plus, Trash2, Pencil, Check, X, GripVertical } from "lucide-react";
+import {
+  HelpCircle,
+  Plus,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  GripVertical,
+} from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import { useRowKeys } from "./useRowKeys";
 
@@ -17,7 +25,13 @@ interface QaRepeaterProps {
   value: string;
   onSave?: (key: string, value: string) => void;
   sectionKey: string;
-  help?: { fillHelp?: string; example?: string; badExample?: string; placeholder?: string; expectedFormat?: string };
+  help?: {
+    fillHelp?: string;
+    example?: string;
+    badExample?: string;
+    placeholder?: string;
+    expectedFormat?: string;
+  };
   helpText?: string;
   guidingQuestions?: string[];
 }
@@ -31,13 +45,20 @@ function parseQaPairs(raw: string): QaPair[] {
   return [{ question: "", answer: raw }];
 }
 
-export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQuestions }: QaRepeaterProps) {
+export function QaRepeater({
+  value,
+  onSave,
+  sectionKey,
+  help,
+  helpText,
+  guidingQuestions,
+}: QaRepeaterProps) {
   const [editing, setEditing] = useState(false);
   const [pairs, setPairs] = useState<QaPair[]>(() => parseQaPairs(value));
   const rowKeys = useRowKeys(pairs.length);
 
   const handleSave = () => {
-    const filtered = pairs.filter(p => p.question.trim() || p.answer.trim());
+    const filtered = pairs.filter((p) => p.question.trim() || p.answer.trim());
     onSave?.(sectionKey, JSON.stringify(filtered));
     setEditing(false);
   };
@@ -58,7 +79,7 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
   };
 
   const updatePair = (index: number, field: keyof QaPair, val: string) => {
-    setPairs(pairs.map((p, i) => i === index ? { ...p, [field]: val } : p));
+    setPairs(pairs.map((p, i) => (i === index ? { ...p, [field]: val } : p)));
   };
 
   const displayPairs = parseQaPairs(value);
@@ -71,7 +92,12 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
             <CardTitle className="text-sm flex items-center gap-2">
               <HelpCircle className="h-4 w-4 text-yellow-600" />
               Fragen & Antworten
-              <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>
+              <Badge
+                variant="destructive"
+                className="text-[9px] px-1 py-0 h-4 leading-none"
+              >
+                Pflicht
+              </Badge>
             </CardTitle>
             <FieldHelpTooltip
               fillHelp={help?.fillHelp}
@@ -82,18 +108,35 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
             />
           </div>
           {onSave && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => { setPairs(parseQaPairs(value)); setEditing(true); }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setPairs(parseQaPairs(value));
+                setEditing(true);
+              }}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
@@ -105,13 +148,21 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
         {editing ? (
           <div className="space-y-3">
             {pairs.map((pair, i) => (
-              <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+              <div
+                key={rowKeys.keys[i]}
+                className="border rounded-lg p-3 space-y-2 bg-muted/20"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <GripVertical className="h-3 w-3" />
                     <span>Frage {i + 1}</span>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-6 px-1.5 text-destructive" onClick={() => removePair(i)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-1.5 text-destructive"
+                    onClick={() => removePair(i)}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -129,7 +180,12 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
                 />
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full" onClick={addPair}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={addPair}
+            >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
               Frage hinzufügen
             </Button>
@@ -138,8 +194,12 @@ export function QaRepeater({ value, onSave, sectionKey, help, helpText, guidingQ
           <div className="space-y-3">
             {displayPairs.map((pair, i) => (
               <div key={i} className="border-b last:border-0 pb-3 last:pb-0">
-                <p className="text-sm font-medium mb-1">F: {pair.question || "—"}</p>
-                <p className="text-sm text-muted-foreground">{pair.answer || "—"}</p>
+                <p className="text-sm font-medium mb-1">
+                  F: {pair.question || "—"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {pair.answer || "—"}
+                </p>
               </div>
             ))}
           </div>

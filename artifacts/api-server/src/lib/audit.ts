@@ -9,7 +9,10 @@ export type TxLike = {
   insert: typeof db.insert;
 };
 
-export async function auditLogTx(tx: TxLike, event: InsertAuditEvent): Promise<void> {
+export async function auditLogTx(
+  tx: TxLike,
+  event: InsertAuditEvent,
+): Promise<void> {
   await tx.insert(auditEventsTable).values(event);
 }
 

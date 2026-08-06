@@ -47,7 +47,7 @@ export function TeamsProvider({ children }: TeamsProviderProps) {
           "/api";
         const authResult = await authenticateWithTeamsSso(apiBase);
         if (authResult && !cancelled) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getAuthMeQueryKey(),
           });
         }
@@ -58,7 +58,7 @@ export function TeamsProvider({ children }: TeamsProviderProps) {
       }
     }
 
-    boot();
+    void boot();
 
     return () => {
       cancelled = true;

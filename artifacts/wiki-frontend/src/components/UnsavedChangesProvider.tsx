@@ -12,7 +12,11 @@ import {
 import { Button } from "@workspace/ui/button";
 import { AlertTriangle } from "lucide-react";
 
-export function UnsavedChangesProvider({ children }: { children: React.ReactNode }) {
+export function UnsavedChangesProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isDirty, setIsDirty] = useState(false);
   const isDirtyRef = useRef(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -77,7 +81,8 @@ export function UnsavedChangesProvider({ children }: { children: React.ReactNode
       e.stopPropagation();
 
       const base = (import.meta.env.BASE_URL ?? "").replace(/\/$/, "");
-      const path = base && href.startsWith(base) ? href.slice(base.length) : href;
+      const path =
+        base && href.startsWith(base) ? href.slice(base.length) : href;
 
       openDialog(() => {
         navigate(path || "/");
@@ -105,18 +110,26 @@ export function UnsavedChangesProvider({ children }: { children: React.ReactNode
     <UnsavedChangesContext.Provider value={{ isDirty, setDirty, confirmLeave }}>
       {children}
 
-      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) handleCancelLeave(); }}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          if (!open) handleCancelLeave();
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 shrink-0">
                 <AlertTriangle className="h-5 w-5 text-amber-600" />
               </div>
-              <DialogTitle className="text-base">Ungespeicherte Änderungen</DialogTitle>
+              <DialogTitle className="text-base">
+                Ungespeicherte Änderungen
+              </DialogTitle>
             </div>
           </DialogHeader>
           <DialogDescription className="text-sm text-muted-foreground pt-1">
-            Wenn Sie die Seite jetzt verlassen, werden Ihre nicht gespeicherten Änderungen verworfen und können nicht wiederhergestellt werden.
+            Wenn Sie die Seite jetzt verlassen, werden Ihre nicht gespeicherten
+            Änderungen verworfen und können nicht wiederhergestellt werden.
           </DialogDescription>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={handleCancelLeave}>

@@ -72,6 +72,7 @@ export const integrationKeysTable = pgTable(
     requestCount: integer("request_count").notNull().default(0),
   },
   (table) => [
+    index("idx_integration_keys_created_by").on(table.createdBy),
     uniqueIndex("idx_integration_keys_hash").on(table.keyHash),
     index("idx_integration_keys_revoked").on(table.revoked),
   ],
@@ -106,6 +107,7 @@ export const integrationKeyNodesTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_integration_key_nodes_node").on(table.nodeId),
     index("idx_integration_key_nodes_key").on(table.keyId),
     uniqueIndex("idx_integration_key_nodes_unique").on(
       table.keyId,

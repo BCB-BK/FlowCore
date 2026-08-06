@@ -7,7 +7,11 @@ import {
 import { and, asc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import type { GraphSyncItemType } from "./graph-sync-state.service";
 
-export type GraphSyncQueueOperation = "upsert" | "acl_update" | "delete" | "skip";
+export type GraphSyncQueueOperation =
+  | "upsert"
+  | "acl_update"
+  | "delete"
+  | "skip";
 export type GraphSyncQueueStatus =
   | "queued"
   | "processing"
@@ -62,7 +66,9 @@ export async function enqueueSync(input: EnqueueSyncInput): Promise<void> {
  * confidentiality level is granted/revoked - all pages of that level need
  * their ACL entry recomputed and re-pushed to Graph).
  */
-export async function enqueueSyncForConfidentialityLevel(level: string): Promise<number> {
+export async function enqueueSyncForConfidentialityLevel(
+  level: string,
+): Promise<number> {
   const rows = await db
     .select({ nodeId: contentNodesTable.id })
     .from(contentNodesTable)
@@ -79,7 +85,11 @@ export async function enqueueSyncForConfidentialityLevel(level: string): Promise
     );
 
   for (const row of rows) {
-    await enqueueSync({ itemType: "page", nodeId: row.nodeId, operation: "acl_update" });
+    await enqueueSync({
+      itemType: "page",
+      nodeId: row.nodeId,
+      operation: "acl_update",
+    });
   }
   return rows.length;
 }
@@ -155,7 +165,10 @@ export async function completeDeleted(id: number): Promise<void> {
  * it goes back to "queued" with a short backoff so the next delta sync
  * run retries it (retry-with-limit).
  */
-export async function completeFailure(id: number, error: string): Promise<void> {
+export async function completeFailure(
+  id: number,
+  error: string,
+): Promise<void> {
   const [row] = await db
     .select()
     .from(graphSyncQueueTable)

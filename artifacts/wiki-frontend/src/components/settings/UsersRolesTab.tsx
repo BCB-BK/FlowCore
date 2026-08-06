@@ -235,7 +235,7 @@ export function UsersRolesTab() {
     <div className="space-y-6">
       <AddPrincipalSection
         onPrincipalAdded={(id) => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListPrincipalsQueryKey(),
           });
           setSelectedPrincipalId(id);
@@ -269,7 +269,7 @@ export function UsersRolesTab() {
             <PrincipalDetail
               principalId={selectedPrincipalId}
               onChanged={() => {
-                queryClient.invalidateQueries({
+                void queryClient.invalidateQueries({
                   queryKey: getListPrincipalsQueryKey(),
                 });
               }}
@@ -603,7 +603,10 @@ function PrincipalRow({
       }`}
       onClick={onSelect}
       onKeyDown={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          e.target === e.currentTarget
+        ) {
           e.preventDefault();
           onSelect();
         }
@@ -683,7 +686,7 @@ function PrincipalDetail({
         description: `${ROLE_LABELS[newRole]} wurde ${principal.displayName} zugewiesen.`,
       });
       setNewRole("");
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetPrincipalQueryKey(principalId),
       });
       onChanged();
@@ -707,7 +710,7 @@ function PrincipalDetail({
         title: "Rolle entfernt",
         description: `${ROLE_LABELS[roleName] ?? roleName} wurde von ${principal.displayName} entfernt.`,
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetPrincipalQueryKey(principalId),
       });
       onChanged();
@@ -894,7 +897,10 @@ function RoleOverviewSection({
               className="p-4 cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => setEditingRole(roleKey)}
               onKeyDown={(e) => {
-                if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                if (
+                  (e.key === "Enter" || e.key === " ") &&
+                  e.target === e.currentTarget
+                ) {
                   e.preventDefault();
                   setEditingRole(roleKey);
                 }

@@ -67,7 +67,10 @@ const UUID_PATTERN =
 
 /** Removes bare UUIDs from free text; they must stay in technical properties only. */
 function stripUuids(text: string): string {
-  return text.replace(UUID_PATTERN, "").replace(/[ \t]{2,}/g, " ").trim();
+  return text
+    .replace(UUID_PATTERN, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
 }
 
 /**
@@ -143,15 +146,14 @@ const STRUCTURED_FIELD_LABELS: Record<string, string> = {
 function humanizeFieldKey(key: string): string {
   const label = STRUCTURED_FIELD_LABELS[key];
   if (label) return label;
-  return key
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatStructuredFieldValue(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   if (Array.isArray(value)) {
     return value
       .map((entry) =>
@@ -182,7 +184,10 @@ function renderStructuredFieldsBlock(
   );
   if (entries.length === 0) return "";
   return entries
-    .map(([key, value]) => `${humanizeFieldKey(key)}: ${formatStructuredFieldValue(value)}`)
+    .map(
+      ([key, value]) =>
+        `${humanizeFieldKey(key)}: ${formatStructuredFieldValue(value)}`,
+    )
     .join("\n");
 }
 
@@ -297,7 +302,9 @@ function buildPageContent(projection: CopilotPageProjection): string {
       ? `Geltungsbereich / Kontext: ${sanitizeForContent(projection.scopeContext)}`
       : "",
     `\nInhalt:\n${sanitizeForContent(projection.contentText)}`,
-    structuredFieldsBlock ? `\nStrukturierte Felder:\n${structuredFieldsBlock}` : "",
+    structuredFieldsBlock
+      ? `\nStrukturierte Felder:\n${structuredFieldsBlock}`
+      : "",
     `\nUnterseiten / Detailseiten:${
       projection.childPagesGuidance ? `\n${projection.childPagesGuidance}` : ""
     }\n${childPagesBlock}`,
@@ -309,9 +316,7 @@ function buildPageContent(projection: CopilotPageProjection): string {
     projection.relations.length > 0
       ? `\nRelationen: ${formatRelations(projection.relations)}`
       : "",
-    projection.parentPath
-      ? `\nÜbergeordnet: ${projection.parentPath}`
-      : "",
+    projection.parentPath ? `\nÜbergeordnet: ${projection.parentPath}` : "",
     `\n${renderTrefferkontext({
       brandScope: projection.brandScope,
       agentScope: projection.agentScope,

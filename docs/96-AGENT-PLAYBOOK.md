@@ -21,6 +21,23 @@ Before writing any code:
 - [ ] Identify shared types that should go in `lib/`
 - [ ] Check if similar functionality exists elsewhere in the codebase
 
+## Sprache im Code und in der Dokumentation
+
+Festgelegt am 06.08.2026 im Nachgang zum technischen Audit (Befund C9). Der
+Bestand war gemischt: 226 deutsche und 452 englische Kommentarzeilen.
+
+- **Bezeichner** (Variablen, Funktionen, Typen, Tabellen- und Spaltennamen):
+  Englisch. Das bleibt unveraendert.
+- **Kommentare im Code**: Deutsch. Sie erklaeren fachliche Zusammenhaenge fuer
+  ein deutschsprachiges Team; die sicherheitsrelevanten Stellen sind bereits so
+  kommentiert.
+- **Betreiber- und Fachdokumentation** (`docs/`, Server-Register): Deutsch.
+- **Commit-Nachrichten**: Deutsch.
+
+Bestehende englische Kommentare werden **nicht** flaechendeckend uebersetzt --
+das erzeugt nur Rauschen im Verlauf. Sie werden angeglichen, wenn die Stelle
+ohnehin angefasst wird ("Clean up as you go").
+
 ## Implementation Rules
 
 ### No Hardcoded Values

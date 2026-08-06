@@ -1,4 +1,11 @@
-import { pgTable, uuid, text, timestamp, integer } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  integer,
+  index,
+} from "drizzle-orm/pg-core";
 
 export const searchQueriesTable = pgTable("search_queries", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -10,15 +17,19 @@ export const searchQueriesTable = pgTable("search_queries", {
     .defaultNow(),
 });
 
-export const searchClicksTable = pgTable("search_clicks", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  queryId: uuid("query_id").references(() => searchQueriesTable.id, {
-    onDelete: "cascade",
-  }),
-  nodeId: text("node_id").notNull(),
-  position: integer("position"),
-  userId: text("user_id"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const searchClicksTable = pgTable(
+  "search_clicks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    queryId: uuid("query_id").references(() => searchQueriesTable.id, {
+      onDelete: "cascade",
+    }),
+    nodeId: text("node_id").notNull(),
+    position: integer("position"),
+    userId: text("user_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_search_clicks_query").on(table.queryId)],
+);

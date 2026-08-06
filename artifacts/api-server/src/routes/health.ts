@@ -8,7 +8,7 @@ router.get("/healthz", async (_req, res) => {
   let dbStatus = "disconnected";
   try {
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("DB timeout")), 3000)
+      setTimeout(() => reject(new Error("DB timeout")), 3000),
     );
     await Promise.race([pool.query("SELECT 1"), timeoutPromise]);
     dbStatus = "connected";

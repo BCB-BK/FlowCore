@@ -32,8 +32,13 @@ function useAuthConfig() {
   return useQuery({
     queryKey: ["auth-config"],
     queryFn: async () => {
-      const res = await fetch(`${baseUrl}/api/auth/config`, { credentials: "include" });
-      return res.json() as Promise<{ devMode: boolean; entraConfigured: boolean }>;
+      const res = await fetch(`${baseUrl}/api/auth/config`, {
+        credentials: "include",
+      });
+      return res.json() as Promise<{
+        devMode: boolean;
+        entraConfigured: boolean;
+      }>;
     },
     staleTime: Infinity,
     retry: false,

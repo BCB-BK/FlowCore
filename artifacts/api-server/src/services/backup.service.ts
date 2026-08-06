@@ -31,7 +31,9 @@ async function acquireBackupLock(): Promise<boolean> {
   let client: PoolClient | null = null;
   try {
     client = await pool.connect();
-    const result = await client.query("SELECT pg_try_advisory_lock(42424242) as acquired");
+    const result = await client.query(
+      "SELECT pg_try_advisory_lock(42424242) as acquired",
+    );
     if ((result.rows[0] as Record<string, boolean>)?.acquired === true) {
       lockClient = client;
       return true;
@@ -39,7 +41,12 @@ async function acquireBackupLock(): Promise<boolean> {
     client.release();
     return false;
   } catch {
-    if (client) try { client.release(); } catch { /* ignore */ }
+    if (client)
+      try {
+        client.release();
+      } catch {
+        /* ignore */
+      }
     return false;
   }
 }
@@ -50,7 +57,11 @@ async function releaseBackupLock(): Promise<void> {
     await lockClient.query("SELECT pg_advisory_unlock(42424242)");
     lockClient.release();
   } catch {
-    try { lockClient.release(); } catch { /* ignore */ }
+    try {
+      lockClient.release();
+    } catch {
+      /* ignore */
+    }
     logger.warn("Failed to release backup advisory lock");
   } finally {
     lockClient = null;
@@ -67,7 +78,11 @@ export async function validateBackupConfigInput(
   }
 
   if (data.interval !== undefined) {
-    if (!VALID_INTERVALS.includes(data.interval as typeof VALID_INTERVALS[number])) {
+    if (
+      !VALID_INTERVALS.includes(
+        data.interval as (typeof VALID_INTERVALS)[number],
+      )
+    ) {
       errors.push("interval muss 'daily', 'weekly' oder 'monthly' sein");
     }
   }
@@ -78,7 +93,11 @@ export async function validateBackupConfigInput(
     }
   }
 
-  for (const field of ["retainDaily", "retainWeekly", "retainMonthly"] as const) {
+  for (const field of [
+    "retainDaily",
+    "retainWeekly",
+    "retainMonthly",
+  ] as const) {
     if (data[field] !== undefined) {
       const val = Number(data[field]);
       if (!Number.isInteger(val) || val < 1 || val > 365) {
@@ -179,7 +198,7 @@ export async function validateBackupTarget(
   folderId?: string,
 ): Promise<{ valid: boolean; error?: string }> {
   try {
-    const config = await getBackupConfig();
+    const _config = await getBackupConfig();
     const connConfig = await getConnectorConfig();
     const token = await acquireSystemToken(connConfig);
     if (!token) {
@@ -227,7 +246,8 @@ async function getConnectorConfig(): Promise<Record<string, string> | null> {
   const fromSystem = (system?.connectionConfig as Record<string, string>) ?? {};
   const tenantId = fromSystem.tenantId || process.env.ENTRA_TENANT_ID || "";
   const clientId = fromSystem.clientId || process.env.ENTRA_CLIENT_ID || "";
-  const clientSecret = fromSystem.clientSecret || process.env.ENTRA_CLIENT_SECRET || "";
+  const clientSecret =
+    fromSystem.clientSecret || process.env.ENTRA_CLIENT_SECRET || "";
 
   if (!tenantId || !clientId || !clientSecret) {
     return null;
@@ -248,12 +268,19 @@ export async function runBackup(
   const connConfig = await getConnectorConfig();
   const token = await acquireSystemToken(connConfig);
   if (!token) {
-    throw new Error("Kein SharePoint-Token verfügbar. Bitte prüfen Sie die Konnektoren-Konfiguration.");
+    throw new Error(
+      "Kein SharePoint-Token verfügbar. Bitte prüfen Sie die Konnektoren-Konfiguration.",
+    );
   }
 
-  const targetCheck = await validateBackupTarget(config.targetDriveId, config.targetFolderId ?? undefined);
+  const targetCheck = await validateBackupTarget(
+    config.targetDriveId,
+    config.targetFolderId ?? undefined,
+  );
   if (!targetCheck.valid) {
-    throw new Error(`SharePoint-Zielordner nicht erreichbar: ${targetCheck.error}`);
+    throw new Error(
+      `SharePoint-Zielordner nicht erreichbar: ${targetCheck.error}`,
+    );
   }
 
   const locked = await acquireBackupLock();
@@ -308,9 +335,7 @@ async function executeBackup(
 
     addLog("Backup gestartet");
 
-    const tmpDir = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), "backup-"),
-    );
+    const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "backup-"));
     const timestamp = new Date()
       .toISOString()
       .replace(/[:.]/g, "-")
@@ -321,7 +346,14 @@ async function executeBackup(
     const databaseUrl = process.env["DATABASE_URL"] || "";
     let backupFormat = "pg_dump_custom";
     try {
-      await execFileAsync("pg_dump", ["-Fc", "--no-owner", "--no-privileges", "-f", dumpFile, databaseUrl]);
+      await execFileAsync("pg_dump", [
+        "-Fc",
+        "--no-owner",
+        "--no-privileges",
+        "-f",
+        dumpFile,
+        databaseUrl,
+      ]);
     } catch (pgErr) {
       backupFormat = "json_export";
       addLog("pg_dump nicht verfügbar, verwende SQL-Export als Fallback...");
@@ -329,7 +361,9 @@ async function executeBackup(
         SELECT table_name FROM information_schema.tables 
         WHERE table_schema = 'public' ORDER BY table_name
       `);
-      const tables = sqlResult.rows.map((r: Record<string, string>) => r.table_name);
+      const tables = sqlResult.rows.map(
+        (r: Record<string, string>) => r.table_name,
+      );
       const sqlDump: string[] = [];
       for (const table of tables) {
         try {
@@ -368,10 +402,7 @@ async function executeBackup(
         "utf-8",
       );
       manifest.templates = { count: templates.length };
-      manifest.components = [
-        ...(manifest.components as string[]),
-        "templates",
-      ];
+      manifest.components = [...(manifest.components as string[]), "templates"];
       addLog(`${templates.length} Template-Definitionen exportiert`);
     }
 
@@ -393,19 +424,27 @@ async function executeBackup(
         })
         .from(storageProvidersTable);
 
-      const connectorData = { sourceSystems: systems, storageProviders: providers };
+      const connectorData = {
+        sourceSystems: systems,
+        storageProviders: providers,
+      };
       const connectorsFile = path.join(tmpDir, "connectors.json");
       await fs.promises.writeFile(
         connectorsFile,
         JSON.stringify(connectorData, null, 2),
         "utf-8",
       );
-      manifest.connectors = { sourceSystemCount: systems.length, storageProviderCount: providers.length };
+      manifest.connectors = {
+        sourceSystemCount: systems.length,
+        storageProviderCount: providers.length,
+      };
       manifest.components = [
         ...(manifest.components as string[]),
         "connectors",
       ];
-      addLog(`${systems.length} Quellsysteme und ${providers.length} Speicheranbieter exportiert (ohne Secrets)`);
+      addLog(
+        `${systems.length} Quellsysteme und ${providers.length} Speicheranbieter exportiert (ohne Secrets)`,
+      );
     }
 
     if (config?.includeMediaIndex) {
@@ -468,28 +507,39 @@ async function executeBackup(
         ...(manifest.components as string[]),
         "audit-metadata",
       ];
-      addLog(`${recentAudit.length} Audit-Einträge exportiert (von ${totalCount[0]?.count ?? 0} gesamt)`);
+      addLog(
+        `${recentAudit.length} Audit-Einträge exportiert (von ${totalCount[0]?.count ?? 0} gesamt)`,
+      );
     }
 
     const backupConfig = await getBackupConfig();
     const systemConfigData: Record<string, unknown> = {
       exportedAt: new Date().toISOString(),
-      backupConfig: backupConfig ? {
-        enabled: backupConfig.enabled,
-        interval: backupConfig.interval,
-        retainDaily: backupConfig.retainDaily,
-        retainWeekly: backupConfig.retainWeekly,
-        retainMonthly: backupConfig.retainMonthly,
-        includeTemplates: backupConfig.includeTemplates,
-        includeConnectors: backupConfig.includeConnectors,
-        includeMediaIndex: backupConfig.includeMediaIndex,
-        includeAuditMeta: backupConfig.includeAuditMeta,
-      } : null,
+      backupConfig: backupConfig
+        ? {
+            enabled: backupConfig.enabled,
+            interval: backupConfig.interval,
+            retainDaily: backupConfig.retainDaily,
+            retainWeekly: backupConfig.retainWeekly,
+            retainMonthly: backupConfig.retainMonthly,
+            includeTemplates: backupConfig.includeTemplates,
+            includeConnectors: backupConfig.includeConnectors,
+            includeMediaIndex: backupConfig.includeMediaIndex,
+            includeAuditMeta: backupConfig.includeAuditMeta,
+          }
+        : null,
     };
     const sysConfigFile = path.join(tmpDir, "system-config.json");
-    await fs.promises.writeFile(sysConfigFile, JSON.stringify(systemConfigData, null, 2), "utf-8");
+    await fs.promises.writeFile(
+      sysConfigFile,
+      JSON.stringify(systemConfigData, null, 2),
+      "utf-8",
+    );
     manifest.systemConfig = { included: true };
-    manifest.components = [...(manifest.components as string[]), "system-config"];
+    manifest.components = [
+      ...(manifest.components as string[]),
+      "system-config",
+    ];
     addLog("System-Konfiguration exportiert");
 
     const manifestFile = path.join(tmpDir, "manifest.json");
@@ -508,7 +558,11 @@ async function executeBackup(
       .access(jsonDumpFile)
       .then(() => true)
       .catch(() => false);
-    const actualDumpFile = dumpExists ? dumpFile : jsonExists ? jsonDumpFile : null;
+    const actualDumpFile = dumpExists
+      ? dumpFile
+      : jsonExists
+        ? jsonDumpFile
+        : null;
 
     let totalSize = 0;
     if (actualDumpFile) {
@@ -534,9 +588,10 @@ async function executeBackup(
       const folderPath = config.targetFolderPath || "";
 
       const uploadFile = async (localPath: string, remoteName: string) => {
-        const uploadPath = folderPath && folderPath !== "/"
-          ? `${folderPath}/${remoteName}`
-          : remoteName;
+        const uploadPath =
+          folderPath && folderPath !== "/"
+            ? `${folderPath}/${remoteName}`
+            : remoteName;
         const apiPath = `/drives/${driveId}/root:/${uploadPath}:/content`;
         const buf = await fs.promises.readFile(localPath);
         return client.api(apiPath).putStream(buf);
@@ -548,19 +603,45 @@ async function executeBackup(
         addLog(`Datenbank-Backup hochgeladen: ${backupFileName}`);
       }
 
-      const manifestResult = await uploadFile(manifestFile, `manifest-${timestamp}.json`);
+      const manifestResult = await uploadFile(
+        manifestFile,
+        `manifest-${timestamp}.json`,
+      );
       if (manifestResult.id) sidecarItemIds.push(manifestResult.id);
       addLog("Manifest hochgeladen");
 
       const sidecarFiles = [
-        { local: path.join(tmpDir, "templates.json"), remote: `templates-${timestamp}.json`, label: "Template-Export" },
-        { local: path.join(tmpDir, "connectors.json"), remote: `connectors-${timestamp}.json`, label: "Konnektoren-Export" },
-        { local: path.join(tmpDir, "media-index.json"), remote: `media-index-${timestamp}.json`, label: "Medien-Index" },
-        { local: path.join(tmpDir, "audit-metadata.json"), remote: `audit-metadata-${timestamp}.json`, label: "Audit-Metadaten" },
-        { local: path.join(tmpDir, "system-config.json"), remote: `system-config-${timestamp}.json`, label: "System-Konfiguration" },
+        {
+          local: path.join(tmpDir, "templates.json"),
+          remote: `templates-${timestamp}.json`,
+          label: "Template-Export",
+        },
+        {
+          local: path.join(tmpDir, "connectors.json"),
+          remote: `connectors-${timestamp}.json`,
+          label: "Konnektoren-Export",
+        },
+        {
+          local: path.join(tmpDir, "media-index.json"),
+          remote: `media-index-${timestamp}.json`,
+          label: "Medien-Index",
+        },
+        {
+          local: path.join(tmpDir, "audit-metadata.json"),
+          remote: `audit-metadata-${timestamp}.json`,
+          label: "Audit-Metadaten",
+        },
+        {
+          local: path.join(tmpDir, "system-config.json"),
+          remote: `system-config-${timestamp}.json`,
+          label: "System-Konfiguration",
+        },
       ];
       for (const sf of sidecarFiles) {
-        const exists = await fs.promises.access(sf.local).then(() => true).catch(() => false);
+        const exists = await fs.promises
+          .access(sf.local)
+          .then(() => true)
+          .catch(() => false);
         if (exists) {
           const r = await uploadFile(sf.local, sf.remote);
           if (r.id) sidecarItemIds.push(r.id);
@@ -572,7 +653,9 @@ async function executeBackup(
     }
 
     const durationMs = Date.now() - startTime;
-    addLog(`Backup abgeschlossen in ${durationMs}ms, Größe: ${totalSize} Bytes`);
+    addLog(
+      `Backup abgeschlossen in ${durationMs}ms, Größe: ${totalSize} Bytes`,
+    );
 
     await db
       .update(backupRunsTable)
@@ -603,7 +686,12 @@ async function executeBackup(
       actorId: triggeredBy,
       resourceType: "backup_run",
       resourceId: runId,
-      details: { backupType, sizeBytes: totalSize, durationMs, fileName: backupFileName },
+      details: {
+        backupType,
+        sizeBytes: totalSize,
+        durationMs,
+        fileName: backupFileName,
+      },
     });
 
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
@@ -640,9 +728,7 @@ async function executeBackup(
   }
 }
 
-async function applyRetention(
-  config: typeof backupConfigsTable.$inferSelect,
-) {
+async function applyRetention(config: typeof backupConfigsTable.$inferSelect) {
   try {
     const runs = await db
       .select()
@@ -685,18 +771,26 @@ async function applyRetention(
             const client = getGraphClient(token);
             const itemsToDelete: string[] = [];
             if (run.driveItemId) itemsToDelete.push(run.driveItemId);
-            const sidecars = run.sidecarItemIds as string[] | null;
+            const sidecars = run.sidecarItemIds;
             if (sidecars?.length) itemsToDelete.push(...sidecars);
             for (const itemId of itemsToDelete) {
               try {
-                await client.api(`/drives/${run.driveId}/items/${itemId}`).delete();
+                await client
+                  .api(`/drives/${run.driveId}/items/${itemId}`)
+                  .delete();
               } catch {
-                logger.warn({ runId: id, itemId }, "Failed to delete backup artifact from SharePoint");
+                logger.warn(
+                  { runId: id, itemId },
+                  "Failed to delete backup artifact from SharePoint",
+                );
               }
             }
           }
         } catch {
-          logger.warn({ runId: id }, "Failed to delete backup files from SharePoint");
+          logger.warn(
+            { runId: id },
+            "Failed to delete backup files from SharePoint",
+          );
         }
       }
       await db.delete(backupRunsTable).where(eq(backupRunsTable.id, id));
@@ -722,7 +816,10 @@ export async function restoreBackup(
     return { success: false, error: "Backup-Run nicht gefunden" };
   }
   if (run.status !== "completed") {
-    return { success: false, error: "Nur abgeschlossene Backups können wiederhergestellt werden" };
+    return {
+      success: false,
+      error: "Nur abgeschlossene Backups können wiederhergestellt werden",
+    };
   }
 
   const manifest = run.manifest as Record<string, unknown> | null;
@@ -730,7 +827,8 @@ export async function restoreBackup(
   if (dbFormat === "json_export") {
     return {
       success: false,
-      error: "Dieses Backup wurde im JSON-Fallback-Format erstellt und kann nicht automatisch wiederhergestellt werden. Bitte verwenden Sie ein pg_dump-Backup.",
+      error:
+        "Dieses Backup wurde im JSON-Fallback-Format erstellt und kann nicht automatisch wiederhergestellt werden. Bitte verwenden Sie ein pg_dump-Backup.",
     };
   }
 
@@ -745,7 +843,10 @@ export async function restoreBackup(
 
   try {
     if (!run.driveItemId || !run.driveId) {
-      return { success: false, error: "Keine SharePoint-Datei für diesen Backup-Run vorhanden" };
+      return {
+        success: false,
+        error: "Keine SharePoint-Datei für diesen Backup-Run vorhanden",
+      };
     }
 
     const connConfig = await getConnectorConfig();
@@ -814,12 +915,18 @@ export async function restoreBackup(
   }
 }
 
-export async function dryRunRestore(
-  runId: string,
-): Promise<{ feasible: boolean; details: Record<string, unknown>; warnings: string[] }> {
+export async function dryRunRestore(runId: string): Promise<{
+  feasible: boolean;
+  details: Record<string, unknown>;
+  warnings: string[];
+}> {
   const run = await getBackupRun(runId);
   if (!run) {
-    return { feasible: false, details: {}, warnings: ["Backup-Run nicht gefunden"] };
+    return {
+      feasible: false,
+      details: {},
+      warnings: ["Backup-Run nicht gefunden"],
+    };
   }
 
   const warnings: string[] = [];
@@ -847,7 +954,9 @@ export async function dryRunRestore(
 
   const dbFormat = (manifest?.database as Record<string, string>)?.format;
   if (dbFormat === "json_export") {
-    warnings.push("Backup im JSON-Fallback-Format – automatische Wiederherstellung nicht möglich");
+    warnings.push(
+      "Backup im JSON-Fallback-Format – automatische Wiederherstellung nicht möglich",
+    );
     return { feasible: false, details, warnings };
   }
 
@@ -860,7 +969,9 @@ export async function dryRunRestore(
     const connConfig = await getConnectorConfig();
     const token = await acquireSystemToken(connConfig);
     if (!token) {
-      warnings.push("SharePoint-Token nicht verfügbar – Restore-Datei nicht erreichbar");
+      warnings.push(
+        "SharePoint-Token nicht verfügbar – Restore-Datei nicht erreichbar",
+      );
       return { feasible: false, details, warnings };
     }
 
@@ -871,7 +982,9 @@ export async function dryRunRestore(
       .get();
     details.sharePointFile = { id: meta.id, name: meta.name, size: meta.size };
   } catch {
-    warnings.push("SharePoint-Backup-Datei konnte nicht verifiziert werden – möglicherweise gelöscht");
+    warnings.push(
+      "SharePoint-Backup-Datei konnte nicht verifiziert werden – möglicherweise gelöscht",
+    );
     return { feasible: false, details, warnings };
   }
 
@@ -895,7 +1008,9 @@ export function startBackupScheduler() {
       const config = await getBackupConfig();
       if (!config?.enabled) return;
       if (!config.targetDriveId) {
-        logger.warn("Scheduled backup skipped: no SharePoint target configured");
+        logger.warn(
+          "Scheduled backup skipped: no SharePoint target configured",
+        );
         return;
       }
 

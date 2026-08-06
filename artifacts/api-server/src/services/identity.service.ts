@@ -6,7 +6,14 @@ import {
   type InsertContentNode,
 } from "@workspace/db/schema";
 import { eq, and, isNull, sql, asc } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+/**
+ * Datenbankhandle: entweder die Verbindung selbst oder eine laufende
+ * Transaktion. Zuvor stand hier `DbOderTx` — der Typ war damit
+ * wirkungslos (Audit-Befund B3). Abgeleitet statt handgeschrieben, damit er
+ * bei Schemaaenderungen automatisch mitwandert.
+ */
+type Transaktion = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type DbOderTx = typeof db | Transaktion;
 import { logger } from "../lib/logger";
 import { type InsertAuditEvent } from "../lib/audit";
 import crypto from "node:crypto";
@@ -21,7 +28,7 @@ function getPrefix(templateType: string): string {
 }
 
 async function acquireParentLock(
-  tx: NodePgDatabase<any>,
+  tx: DbOderTx,
   parentNodeId: string | null | undefined,
 ): Promise<void> {
   if (parentNodeId) {
@@ -36,7 +43,7 @@ async function acquireParentLock(
 }
 
 async function generateDisplayCodeInTx(
-  tx: NodePgDatabase<any>,
+  tx: DbOderTx,
   templateType: string,
   parentNodeId: string | null | undefined,
 ): Promise<string> {
@@ -129,7 +136,7 @@ export async function createContentNode(
 }
 
 async function recomputeDescendantCodes(
-  tx: NodePgDatabase<any>,
+  tx: DbOderTx,
   nodeId: string,
   actorId?: string,
 ): Promise<void> {
@@ -182,7 +189,7 @@ async function recomputeDescendantCodes(
 }
 
 async function isDescendant(
-  tx: NodePgDatabase<Record<string, unknown>>,
+  tx: DbOderTx,
   ancestorId: string,
   candidateId: string,
 ): Promise<boolean> {

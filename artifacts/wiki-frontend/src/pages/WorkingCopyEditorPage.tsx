@@ -42,7 +42,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { Input } from "@workspace/ui/input";
-import { PAGE_TYPE_LABELS, getPageType, validateForPublication, getPublicationReadiness, getGuidedSections } from "@/lib/types";
+import {
+  PAGE_TYPE_LABELS,
+  getPageType,
+  validateForPublication,
+  getPublicationReadiness,
+  getGuidedSections,
+} from "@/lib/types";
 import type { ValidationResult } from "@/lib/types";
 import { parseClusters, groupChildrenByClusters } from "@/lib/clusters";
 import type { Cluster } from "@/lib/clusters";
@@ -65,7 +71,11 @@ import {
 import type { WorkingCopy, UpdateNodeInput } from "@workspace/api-client-react";
 import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { PageLayout } from "@/components/layouts/PageLayout";
-import { GenericLayout, meetingProtocolTopConfig, meetingProtocolBottomConfig } from "@/components/layouts/layout-engine";
+import {
+  GenericLayout,
+  meetingProtocolTopConfig,
+  meetingProtocolBottomConfig,
+} from "@/components/layouts/layout-engine";
 import { ReferencesEditor } from "@/components/compound/ReferencesEditor";
 import { BacklinksPanel } from "@/components/content/BacklinksPanel";
 import { MetadataPanel } from "@/components/metadata/MetadataPanel";
@@ -111,7 +121,10 @@ function getReferencesKey(templateType: string): string {
   return REFERENCES_KEY_MAP[templateType] ?? "references";
 }
 
-function getReferencesValue(structuredFields: Record<string, unknown>, templateType: string): string {
+function getReferencesValue(
+  structuredFields: Record<string, unknown>,
+  templateType: string,
+): string {
   const key = getReferencesKey(templateType);
   const val = structuredFields[key];
   if (val === null || val === undefined) return "";
@@ -132,11 +145,17 @@ export function WorkingCopyEditorPage() {
   const { setDirty, confirmLeave } = useUnsavedChanges();
 
   useEffect(() => {
-    return () => { setDirty(false); };
+    return () => {
+      setDirty(false);
+    };
   }, [setDirty]);
 
   const activeWCQuery = useGetActiveWorkingCopy(nodeId || "", {
-    query: { queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`], enabled: !!nodeId, retry: false },
+    query: {
+      queryKey: [`/api/content/nodes/${nodeId || ""}/working-copy`],
+      enabled: !!nodeId,
+      retry: false,
+    },
   });
   const activeWC = activeWCQuery.data;
   const wcLoading = activeWCQuery.isLoading;
@@ -144,21 +163,31 @@ export function WorkingCopyEditorPage() {
   const wcAuthorId = activeWC?.authorId;
   const wcIsOwn = !currentUser || wcAuthorId === currentUser?.principalId;
   const { data: wcAuthor } = useGetPrincipal(wcAuthorId || "", {
-    query: { queryKey: [`/api/principals/${wcAuthorId || ""}`], enabled: !!wcAuthorId && !wcIsOwn },
+    query: {
+      queryKey: [`/api/principals/${wcAuthorId || ""}`],
+      enabled: !!wcAuthorId && !wcIsOwn,
+    },
   });
 
   const { data: revisions } = useNodeRevisions(nodeId);
-  const showStructureTab = !!(getPageType(node?.templateType ?? "")?.supportsClusterGroups);
-  const { data: nodeChildren } = useNodeChildren(showStructureTab ? nodeId : undefined);
+  const showStructureTab = !!getPageType(node?.templateType ?? "")
+    ?.supportsClusterGroups;
+  const { data: nodeChildren } = useNodeChildren(
+    showStructureTab ? nodeId : undefined,
+  );
 
   const publishedSF = useMemo<Record<string, unknown>>(() => {
-    if (!revisions || !Array.isArray(revisions) || revisions.length === 0) return {};
-    const rev = revisions[0] as { structuredFields?: Record<string, unknown> | null };
+    if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
+      return {};
+    const rev = revisions[0] as {
+      structuredFields?: Record<string, unknown> | null;
+    };
     return (rev.structuredFields as Record<string, unknown>) ?? {};
   }, [revisions]);
 
   const publishedMeta = useMemo<Record<string, unknown>>(() => {
-    if (!revisions || !Array.isArray(revisions) || revisions.length === 0) return {};
+    if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
+      return {};
     const rev = revisions[0] as { content?: Record<string, unknown> | null };
     return (rev.content as Record<string, unknown>) ?? {};
   }, [revisions]);
@@ -169,7 +198,10 @@ export function WorkingCopyEditorPage() {
   const cancelWorkingCopy = useCancelWorkingCopy();
   const createDeletionRequest = useCreateDeletionRequest();
   const pendingDeletionQuery = useGetNodeDeletionRequest(nodeId || "", {
-    query: { queryKey: getGetNodeDeletionRequestQueryKey(nodeId || ""), enabled: !!nodeId },
+    query: {
+      queryKey: getGetNodeDeletionRequestQueryKey(nodeId || ""),
+      enabled: !!nodeId,
+    },
   });
 
   const [submitOpen, setSubmitOpen] = useState(false);
@@ -191,7 +223,9 @@ export function WorkingCopyEditorPage() {
   const [typeDraft, setTypeDraft] = useState("");
   const updateNode = useUpdateNode();
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
-  const [validationSFSnapshot, setValidationSFSnapshot] = useState<Record<string, unknown>>({});
+  const [validationSFSnapshot, setValidationSFSnapshot] = useState<
+    Record<string, unknown>
+  >({});
 
   const wcRef = useRef<WorkingCopy | null>(null);
   useEffect(() => {
@@ -212,20 +246,31 @@ export function WorkingCopyEditorPage() {
 
     if (autoCreateAttempted.current) return;
     autoCreateAttempted.current = true;
-    createWorkingCopy.mutateAsync({ nodeId }).then(() => {
-      queryClient.invalidateQueries({
-        queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+    createWorkingCopy
+      .mutateAsync({ nodeId })
+      .then(() => {
+        void queryClient.invalidateQueries({
+          queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
+        });
+      })
+      .catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Arbeitskopie konnte nicht erstellt werden",
+        });
+        navigate(`/node/${nodeId}`);
       });
-    }).catch(() => {
-      toast({
-        variant: "destructive",
-        title: "Arbeitskopie konnte nicht erstellt werden",
-      });
-      navigate(`/node/${nodeId}`);
-    });
-  }, [wcLoading, activeWC, nodeId, createWorkingCopy, toast, navigate, queryClient]);
+  }, [
+    wcLoading,
+    activeWC,
+    nodeId,
+    createWorkingCopy,
+    toast,
+    navigate,
+    queryClient,
+  ]);
 
-  const wcContent = useMemo(() => {
+  const _wcContent = useMemo(() => {
     if (!activeWC) return {};
     return (activeWC.content as Record<string, unknown>) ?? {};
   }, [activeWC]);
@@ -268,14 +313,16 @@ export function WorkingCopyEditorPage() {
     wcRef.current = null;
     localStructuredFieldsRef.current = {};
     setValidationSFSnapshot({});
-  // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // nodeId als einzige Dependency – fired genau bei jedem Seitenwechsel
   }, [nodeId]);
 
   useEffect(() => {
     // Selbstheilend (|| !sfInitializedRef.current): initialisiert auch dann,
     // wenn dieselbe WC-Instanz nach einem Reset erneut anliegt.
-    if (activeWC && (activeWC.id !== sfInitWcIdRef.current || !sfInitializedRef.current)) {
+    if (
+      activeWC &&
+      (activeWC.id !== sfInitWcIdRef.current || !sfInitializedRef.current)
+    ) {
       const sf = (activeWC.structuredFields as Record<string, unknown>) ?? {};
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
@@ -289,9 +336,10 @@ export function WorkingCopyEditorPage() {
   }, [activeWC, nodeId]);
 
   const editorContent = useMemo(() => {
-    const raw = wcStructuredFields._editorContent ?? wcStructuredFields.discussion;
+    const raw =
+      wcStructuredFields._editorContent ?? wcStructuredFields.discussion;
     if (raw && typeof raw === "object") {
-      return raw as JSONContent;
+      return raw;
     }
     return null;
   }, [wcStructuredFields]);
@@ -317,28 +365,39 @@ export function WorkingCopyEditorPage() {
   const previewLinkedNodeQueries = useQueries({
     queries: previewLinkedNodeIds.map((id) => ({
       queryKey: [`/api/content/nodes/${id}`],
-      queryFn: () => customFetch<Record<string, unknown>>(`/api/content/nodes/${id}`),
+      queryFn: () =>
+        customFetch<Record<string, unknown>>(`/api/content/nodes/${id}`),
     })),
   });
 
   const previewLinkedNodes = useMemo(
-    () => previewLinkedNodeQueries.filter((q) => q.data != null).map((q) => q.data as Record<string, unknown>),
+    () =>
+      previewLinkedNodeQueries.filter((q) => q.data != null).map((q) => q.data),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [previewLinkedNodeQueries.map((q) => q.dataUpdatedAt).join(",")],
   );
 
-  const previewLinkedNodeIdSet = useMemo(() => new Set(previewLinkedNodeIds), [previewLinkedNodeIds]);
+  const _previewLinkedNodeIdSet = useMemo(
+    () => new Set(previewLinkedNodeIds),
+    [previewLinkedNodeIds],
+  );
 
   const previewEditorContent = useMemo(() => {
-    const sf = showPreview ? localStructuredFieldsRef.current : wcStructuredFields;
+    const sf = showPreview
+      ? localStructuredFieldsRef.current
+      : wcStructuredFields;
     if (sf._editorContent && typeof sf._editorContent === "object") {
-      return sf._editorContent as JSONContent;
+      return sf._editorContent;
     }
     return null;
   }, [showPreview, wcStructuredFields]);
 
-  const [editableMetadata, setEditableMetadata] = useState<Record<string, unknown>>({});
-  const [metadataDisplayValues, setMetadataDisplayValues] = useState<Record<string, string>>({});
+  const [editableMetadata, setEditableMetadata] = useState<
+    Record<string, unknown>
+  >({});
+  const [metadataDisplayValues, setMetadataDisplayValues] = useState<
+    Record<string, string>
+  >({});
   const metadataInitRef = useRef(false);
 
   useEffect(() => {
@@ -382,7 +441,12 @@ export function WorkingCopyEditorPage() {
       const pending = pendingPatchRef.current;
       pendingPatchRef.current = {};
       const wc = wcRef.current;
-      const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+      const editableStatuses = [
+        "draft",
+        "changes_requested",
+        "submitted",
+        "in_review",
+      ];
       if (
         Object.keys(pending).length > 0 &&
         wc &&
@@ -399,7 +463,12 @@ export function WorkingCopyEditorPage() {
   const doSave = useCallback(
     async (patch: SavePatch) => {
       const wc = wcRef.current;
-      const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+      const editableStatuses = [
+        "draft",
+        "changes_requested",
+        "submitted",
+        "in_review",
+      ];
       if (!wc || !editableStatuses.includes(wc.status)) return;
       if (!sfInitializedRef.current) return;
       if (isMountedRef.current) setIsSaving(true);
@@ -440,7 +509,10 @@ export function WorkingCopyEditorPage() {
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-      const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
+      const merged = {
+        ...pendingPatchRef.current,
+        structuredFields: sf,
+      } as SavePatch;
       pendingPatchRef.current = {};
       await doSave(merged);
     },
@@ -470,12 +542,20 @@ export function WorkingCopyEditorPage() {
   );
 
   const editorClusters = useMemo(
-    () => parseClusters(validationSFSnapshot._clusters ?? wcStructuredFields._clusters),
+    () =>
+      parseClusters(
+        validationSFSnapshot._clusters ?? wcStructuredFields._clusters,
+      ),
     [validationSFSnapshot._clusters, wcStructuredFields._clusters],
   );
 
   const clusterGroupsForEditor = useMemo(() => {
-    if (!nodeChildren || nodeChildren.length === 0 || editorClusters.length === 0) return [];
+    if (
+      !nodeChildren ||
+      nodeChildren.length === 0 ||
+      editorClusters.length === 0
+    )
+      return [];
     return groupChildrenByClusters(nodeChildren, editorClusters);
   }, [nodeChildren, editorClusters]);
 
@@ -483,7 +563,9 @@ export function WorkingCopyEditorPage() {
     if (node?.templateType === "meeting_protocol") {
       return {
         ...validationSFSnapshot,
-        discussion: validationSFSnapshot._editorContent ?? validationSFSnapshot.discussion,
+        discussion:
+          validationSFSnapshot._editorContent ??
+          validationSFSnapshot.discussion,
       };
     }
     return validationSFSnapshot;
@@ -499,7 +581,11 @@ export function WorkingCopyEditorPage() {
         removedLinkedNodeIds && removedLinkedNodeIds.length > 0
           ? currentLinked.filter((id) => !removedLinkedNodeIds.includes(id))
           : currentLinked;
-      const sf = { ...sfNow, _clusters: updatedClusters, _linkedNodeIds: newLinked };
+      const sf = {
+        ...sfNow,
+        _clusters: updatedClusters,
+        _linkedNodeIds: newLinked,
+      };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       scheduleAutosave({ structuredFields: sf });
@@ -507,34 +593,27 @@ export function WorkingCopyEditorPage() {
     [scheduleAutosave],
   );
 
-  const handleCreateInClusterFromManager = useCallback(
-    (clusterId: string) => {
-      setPendingClusterId(clusterId);
-      setShowCreate(true);
-    },
-    [],
-  );
+  const handleCreateInClusterFromManager = useCallback((clusterId: string) => {
+    setPendingClusterId(clusterId);
+    setShowCreate(true);
+  }, []);
 
-  const handleLinkExistingFromManager = useCallback(
-    (clusterId: string) => {
-      setPendingClusterId(clusterId);
-      setShowCreate(true);
-    },
-    [],
-  );
+  const handleLinkExistingFromManager = useCallback((clusterId: string) => {
+    setPendingClusterId(clusterId);
+    setShowCreate(true);
+  }, []);
 
-  const handleCreateInCluster = useCallback(
-    (clusterId: string) => {
-      setPendingClusterId(clusterId);
-      setShowCreate(true);
-    },
-    [],
-  );
+  const _handleCreateInCluster = useCallback((clusterId: string) => {
+    setPendingClusterId(clusterId);
+    setShowCreate(true);
+  }, []);
 
   const handleNodeCreatedInCluster = useCallback(
     (newNodeId: string) => {
       if (!pendingClusterId) return;
-      const currentClusters = parseClusters(localStructuredFieldsRef.current._clusters);
+      const currentClusters = parseClusters(
+        localStructuredFieldsRef.current._clusters,
+      );
       const updated = currentClusters.map((c) =>
         c.id === pendingClusterId
           ? { ...c, childNodeIds: [...c.childNodeIds, newNodeId] }
@@ -544,7 +623,10 @@ export function WorkingCopyEditorPage() {
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-      const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
+      const merged = {
+        ...pendingPatchRef.current,
+        structuredFields: sf,
+      } as SavePatch;
       pendingPatchRef.current = {};
       doSave(merged).catch(() => {});
       setPendingClusterId(null);
@@ -554,13 +636,21 @@ export function WorkingCopyEditorPage() {
 
   // Verlinkt eine bestehende Seite im Cluster ohne parentNodeId-Änderung
   const handleLinkExistingInCluster = useCallback(
-    (linkedNodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => {
+    (
+      linkedNodeId: string,
+      nodeData?: {
+        title: string;
+        templateType: string;
+        displayCode?: string | null;
+      },
+    ) => {
       if (!pendingClusterId) return;
       // Node-Daten sofort in QueryClient-Cache schreiben → kein Netzwerk-Roundtrip nötig
       if (nodeData) {
         queryClient.setQueryData(
           [`/api/content/nodes/${linkedNodeId}`],
-          (old: Record<string, unknown> | undefined) => old ?? { id: linkedNodeId, ...nodeData },
+          (old: Record<string, unknown> | undefined) =>
+            old ?? { id: linkedNodeId, ...nodeData },
         );
       }
       const sfNow = localStructuredFieldsRef.current;
@@ -576,11 +666,18 @@ export function WorkingCopyEditorPage() {
       const updatedLinked = currentLinked.includes(linkedNodeId)
         ? currentLinked
         : [...currentLinked, linkedNodeId];
-      const sf = { ...sfNow, _clusters: updated, _linkedNodeIds: updatedLinked };
+      const sf = {
+        ...sfNow,
+        _clusters: updated,
+        _linkedNodeIds: updatedLinked,
+      };
       localStructuredFieldsRef.current = sf;
       setValidationSFSnapshot(sf);
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-      const merged = { ...pendingPatchRef.current, structuredFields: sf } as SavePatch;
+      const merged = {
+        ...pendingPatchRef.current,
+        structuredFields: sf,
+      } as SavePatch;
       pendingPatchRef.current = {};
       doSave(merged).catch(() => {});
       setPendingClusterId(null);
@@ -590,12 +687,20 @@ export function WorkingCopyEditorPage() {
 
   // Verlinkt eine bestehende Seite ohne Cluster-Kontext (allgemeine Verlinkung im Editor)
   const handleLinkExistingNode = useCallback(
-    (linkedNodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => {
+    (
+      linkedNodeId: string,
+      nodeData?: {
+        title: string;
+        templateType: string;
+        displayCode?: string | null;
+      },
+    ) => {
       // Node-Daten sofort in QueryClient-Cache schreiben → kein Netzwerk-Roundtrip nötig
       if (nodeData) {
         queryClient.setQueryData(
           [`/api/content/nodes/${linkedNodeId}`],
-          (old: Record<string, unknown> | undefined) => old ?? { id: linkedNodeId, ...nodeData },
+          (old: Record<string, unknown> | undefined) =>
+            old ?? { id: linkedNodeId, ...nodeData },
         );
       }
       const sfNow = localStructuredFieldsRef.current;
@@ -663,14 +768,22 @@ export function WorkingCopyEditorPage() {
 
   const submitValidation = useMemo<ValidationResult | null>(() => {
     if (!node) return null;
-    return validateForPublication(node.templateType, editableMetadata, validationSectionData);
+    return validateForPublication(
+      node.templateType,
+      editableMetadata,
+      validationSectionData,
+    );
   }, [node, editableMetadata, validationSectionData]);
 
   const handleSubmit = useCallback(async () => {
     if (!activeWC || !node) return;
 
     if (!isSetupMode) {
-      const validation = validateForPublication(node.templateType, editableMetadata, validationSectionData);
+      const validation = validateForPublication(
+        node.templateType,
+        editableMetadata,
+        validationSectionData,
+      );
       if (validation && !validation.valid) {
         toast({
           variant: "destructive",
@@ -688,10 +801,18 @@ export function WorkingCopyEditorPage() {
       await doSave({
         content: editableMetadata,
         structuredFields: localStructuredFieldsRef.current,
-        changeType: changeType as "editorial" | "minor" | "major" | "regulatory" | "structural",
+        changeType: changeType as
+          | "editorial"
+          | "minor"
+          | "major"
+          | "regulatory"
+          | "structural",
       });
     } catch {
-      toast({ variant: "destructive", title: "Speichern vor Einreichen fehlgeschlagen" });
+      toast({
+        variant: "destructive",
+        title: "Speichern vor Einreichen fehlgeschlagen",
+      });
       return;
     }
 
@@ -699,24 +820,49 @@ export function WorkingCopyEditorPage() {
       const submitResult = await submitWorkingCopy.mutateAsync({
         workingCopyId: activeWC.id,
         data: {
-          changeType: changeType as "editorial" | "minor" | "major" | "regulatory" | "structural",
+          changeType: changeType as
+            | "editorial"
+            | "minor"
+            | "major"
+            | "regulatory"
+            | "structural",
           changeSummary: changeSummary || undefined,
           comment: submitComment || undefined,
         },
       });
       const wasAutoPublished = submitResult?.status === "published";
-      toast({ title: wasAutoPublished ? "Direkt ver\u00F6ffentlicht (Freigabekette inaktiv)" : "Zur Pr\u00FCfung eingereicht" });
+      toast({
+        title: wasAutoPublished
+          ? "Direkt ver\u00F6ffentlicht (Freigabekette inaktiv)"
+          : "Zur Pr\u00FCfung eingereicht",
+      });
       setSubmitOpen(false);
       if (nodeId) {
         if (wasAutoPublished) {
-          queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
-          queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true });
-          queryClient.removeQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] });
+          queryClient.removeQueries({
+            queryKey: getGetActiveWorkingCopyQueryKey(nodeId),
+          });
+          queryClient.removeQueries({
+            queryKey: [`/api/content/nodes/${nodeId}`],
+            exact: true,
+          });
+          queryClient.removeQueries({
+            queryKey: [`/api/content/nodes/${nodeId}/revisions`],
+          });
           await Promise.all([
-            queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}`], exact: true }),
-            queryClient.refetchQueries({ queryKey: [`/api/content/nodes/${nodeId}/revisions`] }),
-            queryClient.invalidateQueries({ queryKey: [`/api/content/nodes/${nodeId}/children`] }),
-            queryClient.invalidateQueries({ queryKey: ["/api/content/nodes/roots"] }),
+            queryClient.refetchQueries({
+              queryKey: [`/api/content/nodes/${nodeId}`],
+              exact: true,
+            }),
+            queryClient.refetchQueries({
+              queryKey: [`/api/content/nodes/${nodeId}/revisions`],
+            }),
+            queryClient.invalidateQueries({
+              queryKey: [`/api/content/nodes/${nodeId}/children`],
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ["/api/content/nodes/roots"],
+            }),
           ]);
         } else {
           queryClient.setQueryData(
@@ -734,11 +880,24 @@ export function WorkingCopyEditorPage() {
       });
     }
   }, [
-    activeWC, node, doSave, editableMetadata, validationSFSnapshot, changeType,
-    changeSummary, submitComment, submitWorkingCopy, toast, nodeId, queryClient, navigate, isSetupMode, setDirty,
+    activeWC,
+    node,
+    doSave,
+    editableMetadata,
+    validationSFSnapshot,
+    changeType,
+    changeSummary,
+    submitComment,
+    submitWorkingCopy,
+    toast,
+    nodeId,
+    queryClient,
+    navigate,
+    isSetupMode,
+    setDirty,
   ]);
 
-  const handleCancel = useCallback(async () => {
+  const _handleCancel = useCallback(async () => {
     if (!activeWC) return;
     try {
       await cancelWorkingCopy.mutateAsync({
@@ -747,7 +906,9 @@ export function WorkingCopyEditorPage() {
       });
       toast({ title: "Arbeitskopie abgebrochen" });
       if (nodeId) {
-        queryClient.removeQueries({ queryKey: getGetActiveWorkingCopyQueryKey(nodeId) });
+        queryClient.removeQueries({
+          queryKey: getGetActiveWorkingCopyQueryKey(nodeId),
+        });
       }
       setDirty(false);
       navigate(`/node/${nodeId}`);
@@ -757,7 +918,15 @@ export function WorkingCopyEditorPage() {
         title: err instanceof Error ? err.message : "Fehler",
       });
     }
-  }, [activeWC, cancelWorkingCopy, toast, nodeId, queryClient, navigate, setDirty]);
+  }, [
+    activeWC,
+    cancelWorkingCopy,
+    toast,
+    nodeId,
+    queryClient,
+    navigate,
+    setDirty,
+  ]);
 
   if (nodeLoading || wcLoading) {
     return (
@@ -773,7 +942,11 @@ export function WorkingCopyEditorPage() {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
         <p className="text-muted-foreground">Seite nicht gefunden</p>
-        <Button variant="outline" className="mt-4" onClick={() => navigate("/")}>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => navigate("/")}
+        >
           Zurück zum Hub
         </Button>
       </div>
@@ -790,12 +963,19 @@ export function WorkingCopyEditorPage() {
   }
 
   const isOwnWc = !currentUser || activeWC.authorId === currentUser.principalId;
-  const isReviewPhase = activeWC.status === "submitted" || activeWC.status === "in_review";
-  const hasEditPermission = currentUser?.permissions?.includes("edit_working_copy") ?? false;
-  const hasAmendPermission = currentUser?.permissions?.includes("amend_working_copy_in_review") ?? false;
-  const isDraftOrReturned = activeWC.status === "draft" || activeWC.status === "changes_requested";
-  const canEdit = ((isOwnWc || hasEditPermission) && isDraftOrReturned) || (isReviewPhase && hasAmendPermission);
-  const canArchive = currentUser?.permissions?.includes("archive_page") ?? false;
+  const isReviewPhase =
+    activeWC.status === "submitted" || activeWC.status === "in_review";
+  const hasEditPermission =
+    currentUser?.permissions?.includes("edit_working_copy") ?? false;
+  const hasAmendPermission =
+    currentUser?.permissions?.includes("amend_working_copy_in_review") ?? false;
+  const isDraftOrReturned =
+    activeWC.status === "draft" || activeWC.status === "changes_requested";
+  const canEdit =
+    ((isOwnWc || hasEditPermission) && isDraftOrReturned) ||
+    (isReviewPhase && hasAmendPermission);
+  const canArchive =
+    currentUser?.permissions?.includes("archive_page") ?? false;
   const pageDef = getPageType(node.templateType);
 
   const handleDeletionRequest = async () => {
@@ -807,7 +987,7 @@ export function WorkingCopyEditorPage() {
       toast({ title: "Löschanfrage eingereicht" });
       setShowDeleteRequest(false);
       setDeleteReason("");
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getGetNodeDeletionRequestQueryKey(node.id),
       });
     } catch (err) {
@@ -881,7 +1061,9 @@ export function WorkingCopyEditorPage() {
             />
           ) : (
             <div className="flex items-center gap-2 group">
-              <h1 className="text-2xl font-bold tracking-tight break-words">{localTitle ?? activeWC.title ?? node.title}</h1>
+              <h1 className="text-2xl font-bold tracking-tight break-words">
+                {localTitle ?? activeWC.title ?? node.title}
+              </h1>
               {canEdit && (
                 <button
                   type="button"
@@ -902,7 +1084,11 @@ export function WorkingCopyEditorPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          <Button variant="ghost" size="sm" onClick={() => confirmLeave(() => navigate(`/node/${nodeId}`))}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => confirmLeave(() => navigate(`/node/${nodeId}`))}
+          >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Zurück
           </Button>
@@ -963,7 +1149,9 @@ export function WorkingCopyEditorPage() {
         <WorkingCopyBanner
           workingCopy={activeWC}
           currentUserId={currentUser?.principalId}
-          authorName={activeWC?.authorDisplayName ?? wcAuthor?.displayName ?? undefined}
+          authorName={
+            activeWC?.authorDisplayName ?? wcAuthor?.displayName ?? undefined
+          }
           canEditOthers={hasEditPermission}
         />
       )}
@@ -976,7 +1164,8 @@ export function WorkingCopyEditorPage() {
               Vorschau
             </p>
             <p className="text-xs text-blue-600 dark:text-blue-400">
-              So sieht die Seite nach Ver{"ö"}ffentlichung aus. Leere Abschnitte werden ausgeblendet.
+              So sieht die Seite nach Ver{"ö"}ffentlichung aus. Leere Abschnitte
+              werden ausgeblendet.
             </p>
           </div>
           <Button
@@ -998,50 +1187,66 @@ export function WorkingCopyEditorPage() {
         </div>
       )}
 
-      {!showPreview && canEdit && node && (() => {
-        const readiness = getPublicationReadiness(node.templateType, editableMetadata, validationSectionData);
-        const guided = getGuidedSections(node.templateType);
-        return (
-          <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Info className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Veröffentlichungsbereitschaft</span>
+      {!showPreview &&
+        canEdit &&
+        node &&
+        (() => {
+          const readiness = getPublicationReadiness(
+            node.templateType,
+            editableMetadata,
+            validationSectionData,
+          );
+          const _guided = getGuidedSections(node.templateType);
+          return (
+            <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    Veröffentlichungsbereitschaft
+                  </span>
+                </div>
+                <Badge
+                  variant={readiness.ready ? "default" : "secondary"}
+                  className={readiness.ready ? "bg-green-600" : ""}
+                >
+                  {readiness.percentage}%
+                </Badge>
               </div>
-              <Badge variant={readiness.ready ? "default" : "secondary"} className={readiness.ready ? "bg-green-600" : ""}>
-                {readiness.percentage}%
-              </Badge>
+              <Progress value={readiness.percentage} className="h-2" />
+              {readiness.missingRequired.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                    Pflichtfelder fehlen:
+                  </p>
+                  <ul className="text-xs text-muted-foreground space-y-0.5">
+                    {readiness.missingRequired.map((m) => (
+                      <li key={m} className="flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 text-red-500" />
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {readiness.missingRecommended.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    Empfohlen:
+                  </p>
+                  <ul className="text-xs text-muted-foreground space-y-0.5">
+                    {readiness.missingRecommended.map((m) => (
+                      <li key={m} className="flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 text-amber-500" />
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <Progress value={readiness.percentage} className="h-2" />
-            {readiness.missingRequired.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-red-600 dark:text-red-400">Pflichtfelder fehlen:</p>
-                <ul className="text-xs text-muted-foreground space-y-0.5">
-                  {readiness.missingRequired.map((m) => (
-                    <li key={m} className="flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3 text-red-500" />
-                      {m}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {readiness.missingRecommended.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Empfohlen:</p>
-                <ul className="text-xs text-muted-foreground space-y-0.5">
-                  {readiness.missingRecommended.map((m) => (
-                    <li key={m} className="flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3 text-amber-500" />
-                      {m}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       {showPreview ? (
         <div className="space-y-6">
@@ -1052,109 +1257,170 @@ export function WorkingCopyEditorPage() {
             nodeId={node.id}
           />
 
-          {showStructureTab && (() => {
-            const nodeChildrenArr = nodeChildren ?? [];
-            const childIdSet = new Set(nodeChildrenArr.map((c) => c.id));
-            const allPreviewNodes = [
-              ...nodeChildrenArr,
-              ...(previewLinkedNodes.filter((ln) => !childIdSet.has(ln.id as string)) as unknown as typeof nodeChildrenArr),
-            ];
-            const previewClusters = parseClusters(previewStructuredFields._clusters);
-            if (allPreviewNodes.length === 0 && previewClusters.length === 0) return null;
-            const clusterGroups = previewClusters.length > 0
-              ? groupChildrenByClusters(allPreviewNodes, previewClusters)
-              : [];
-            return (
-              <div className="space-y-6">
-                <h3 className="text-base font-semibold">
-                  {node.templateType === "core_process_overview" ? "Bereiche & Prozesse" : "Zugehörige Seiten"}
-                </h3>
-                {previewClusters.length > 0 ? (
-                  clusterGroups.map(({ cluster, children: groupChildren }) => (
-                    <div key={cluster?.id ?? "__unassigned__"} className="rounded-lg border bg-card">
-                      <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/40">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                          <Layers className="h-4 w-4 text-primary" />
-                        </div>
-                        <h4 className="text-sm font-semibold flex-1">{cluster?.title ?? "Sonstige"}</h4>
-                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 shrink-0">
-                          {groupChildren.length} {groupChildren.length === 1 ? "Seite" : "Seiten"}
-                        </Badge>
-                      </div>
-                      {groupChildren.length > 0 ? (
-                        <div className="divide-y">
-                          {groupChildren.map((child, idx) => {
-                            const childDef = getPageType(child.templateType);
-                            return (
-                              <div
-                                key={child.id}
-                                className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
-                                onClick={() => navigate(`/node/${child.id}`)}
-                              >
-                                <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">{idx + 1}.</span>
-                                {childDef ? (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0" style={{ backgroundColor: childDef.color }}>
-                                    <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
-                                  </div>
-                                ) : (
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                                    <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm group-hover:text-primary transition-colors">{child.title}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs text-muted-foreground">{child.displayCode}</span>
-                                    {childDef && <span className="text-[10px] text-muted-foreground/70">{childDef.label}</span>}
-                                  </div>
-                                </div>
-                                <StatusBadge status={child.status as Parameters<typeof StatusBadge>[0]["status"]} compact />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className="px-4 py-3 text-sm text-muted-foreground">Noch keine Seiten in diesem Cluster</p>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-lg border bg-card divide-y">
-                    {(nodeChildren ?? []).map((child, idx) => {
-                      const childDef = getPageType(child.templateType);
-                      return (
+          {showStructureTab &&
+            (() => {
+              const nodeChildrenArr = nodeChildren ?? [];
+              const childIdSet = new Set(nodeChildrenArr.map((c) => c.id));
+              const allPreviewNodes = [
+                ...nodeChildrenArr,
+                ...(previewLinkedNodes.filter(
+                  (ln) => !childIdSet.has(ln.id as string),
+                ) as unknown as typeof nodeChildrenArr),
+              ];
+              const previewClusters = parseClusters(
+                previewStructuredFields._clusters,
+              );
+              if (allPreviewNodes.length === 0 && previewClusters.length === 0)
+                return null;
+              const clusterGroups =
+                previewClusters.length > 0
+                  ? groupChildrenByClusters(allPreviewNodes, previewClusters)
+                  : [];
+              return (
+                <div className="space-y-6">
+                  <h3 className="text-base font-semibold">
+                    {node.templateType === "core_process_overview"
+                      ? "Bereiche & Prozesse"
+                      : "Zugehörige Seiten"}
+                  </h3>
+                  {previewClusters.length > 0 ? (
+                    clusterGroups.map(
+                      ({ cluster, children: groupChildren }) => (
                         <div
-                          key={child.id}
-                          className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
-                          onClick={() => navigate(`/node/${child.id}`)}
+                          key={cluster?.id ?? "__unassigned__"}
+                          className="rounded-lg border bg-card"
                         >
-                          <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">{idx + 1}.</span>
-                          {childDef ? (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0" style={{ backgroundColor: childDef.color }}>
-                              <PageTypeIcon iconName={childDef.icon} className="h-3.5 w-3.5" />
+                          <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/40">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                              <Layers className="h-4 w-4 text-primary" />
+                            </div>
+                            <h4 className="text-sm font-semibold flex-1">
+                              {cluster?.title ?? "Sonstige"}
+                            </h4>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] h-5 px-1.5 shrink-0"
+                            >
+                              {groupChildren.length}{" "}
+                              {groupChildren.length === 1 ? "Seite" : "Seiten"}
+                            </Badge>
+                          </div>
+                          {groupChildren.length > 0 ? (
+                            <div className="divide-y">
+                              {groupChildren.map((child, idx) => {
+                                const childDef = getPageType(
+                                  child.templateType,
+                                );
+                                return (
+                                  <div
+                                    key={child.id}
+                                    className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
+                                    onClick={() =>
+                                      navigate(`/node/${child.id}`)
+                                    }
+                                  >
+                                    <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">
+                                      {idx + 1}.
+                                    </span>
+                                    {childDef ? (
+                                      <div
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
+                                        style={{
+                                          backgroundColor: childDef.color,
+                                        }}
+                                      >
+                                        <PageTypeIcon
+                                          iconName={childDef.icon}
+                                          className="h-3.5 w-3.5"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                        <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                        {child.title}
+                                      </p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-xs text-muted-foreground">
+                                          {child.displayCode}
+                                        </span>
+                                        {childDef && (
+                                          <span className="text-[10px] text-muted-foreground/70">
+                                            {childDef.label}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <StatusBadge
+                                      status={child.status}
+                                      compact
+                                    />
+                                  </div>
+                                );
+                              })}
                             </div>
                           ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                              <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                            </div>
+                            <p className="px-4 py-3 text-sm text-muted-foreground">
+                              Noch keine Seiten in diesem Cluster
+                            </p>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm group-hover:text-primary transition-colors">{child.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{child.displayCode}</p>
-                          </div>
-                          <StatusBadge status={child.status as Parameters<typeof StatusBadge>[0]["status"]} compact />
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+                      ),
+                    )
+                  ) : (
+                    <div className="rounded-lg border bg-card divide-y">
+                      {(nodeChildren ?? []).map((child, idx) => {
+                        const childDef = getPageType(child.templateType);
+                        return (
+                          <div
+                            key={child.id}
+                            className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
+                            onClick={() => navigate(`/node/${child.id}`)}
+                          >
+                            <span className="text-xs font-mono text-muted-foreground w-5 text-right shrink-0">
+                              {idx + 1}.
+                            </span>
+                            {childDef ? (
+                              <div
+                                className="flex h-8 w-8 items-center justify-center rounded-lg text-white shrink-0"
+                                style={{ backgroundColor: childDef.color }}
+                              >
+                                <PageTypeIcon
+                                  iconName={childDef.icon}
+                                  className="h-3.5 w-3.5"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
+                                <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm group-hover:text-primary transition-colors">
+                                {child.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {child.displayCode}
+                              </p>
+                            </div>
+                            <StatusBadge status={child.status} compact />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
           {!isFieldEmpty(previewEditorContent) && (
             <div className="mt-6">
-              <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+              <h3 className="text-base font-semibold mb-3">
+                {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+              </h3>
               <BlockEditor
                 content={previewEditorContent}
                 onSave={() => {}}
@@ -1202,13 +1468,18 @@ export function WorkingCopyEditorPage() {
                   nodeId={node.id}
                 />
                 <ReferencesEditor
-                  value={getReferencesValue(validationSFSnapshot, node.templateType)}
+                  value={getReferencesValue(
+                    validationSFSnapshot,
+                    node.templateType,
+                  )}
                   onSave={canEdit ? handleSectionSave : undefined}
                   sectionKey={getReferencesKey(node.templateType)}
                   nodeId={node.id}
                 />
                 <div>
-                  <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                  <h3 className="text-base font-semibold mb-3">
+                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                  </h3>
                   <BlockEditor
                     content={editorContent}
                     onSave={handleEditorSave}
@@ -1241,7 +1512,9 @@ export function WorkingCopyEditorPage() {
                 />
 
                 <div className="mt-6">
-                  <h3 className="text-base font-semibold mb-3">{CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}</h3>
+                  <h3 className="text-base font-semibold mb-3">
+                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                  </h3>
                   <BlockEditor
                     content={editorContent}
                     onSave={handleEditorSave}
@@ -1259,7 +1532,10 @@ export function WorkingCopyEditorPage() {
                 {node && (
                   <div className="mt-6">
                     <ReferencesEditor
-                      value={getReferencesValue(validationSFSnapshot, node.templateType)}
+                      value={getReferencesValue(
+                        validationSFSnapshot,
+                        node.templateType,
+                      )}
                       onSave={canEdit ? handleSectionSave : undefined}
                       sectionKey={getReferencesKey(node.templateType)}
                       nodeId={node.id}
@@ -1281,14 +1557,19 @@ export function WorkingCopyEditorPage() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Network className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="text-sm font-semibold">Cluster & Unterseiten</h3>
+                    <h3 className="text-sm font-semibold">
+                      Cluster & Unterseiten
+                    </h3>
                   </div>
                   {canEdit && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
-                      onClick={() => { setPendingClusterId(null); setShowCreate(true); }}
+                      onClick={() => {
+                        setPendingClusterId(null);
+                        setShowCreate(true);
+                      }}
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Neue Unterseite
@@ -1306,17 +1587,27 @@ export function WorkingCopyEditorPage() {
                         displayCode: c.displayCode,
                       })),
                       ...previewLinkedNodes
-                        .filter((ln) => !(nodeChildren ?? []).find((c) => c.id === (ln.id as string)))
+                        .filter(
+                          (ln) =>
+                            !(nodeChildren ?? []).find(
+                              (c) => c.id === (ln.id as string),
+                            ),
+                        )
                         .map((ln) => ({
                           id: ln.id as string,
                           title: (ln.title as string) ?? (ln.id as string),
                           templateType: (ln.templateType as string) ?? "",
-                          displayCode: (ln.displayCode as string | null | undefined) ?? null,
+                          displayCode:
+                            (ln.displayCode as string | null | undefined) ??
+                            null,
                         })),
                     ]}
                     linkedNodeIds={
-                      Array.isArray(localStructuredFieldsRef.current._linkedNodeIds)
-                        ? (localStructuredFieldsRef.current._linkedNodeIds as string[])
+                      Array.isArray(
+                        localStructuredFieldsRef.current._linkedNodeIds,
+                      )
+                        ? (localStructuredFieldsRef.current
+                            ._linkedNodeIds as string[])
                         : []
                     }
                     onChange={handleClusterChange}
@@ -1333,11 +1624,16 @@ export function WorkingCopyEditorPage() {
               {nodeChildren && nodeChildren.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-sm font-semibold">Vorschau der Registerstruktur</h3>
+                    <h3 className="text-sm font-semibold">
+                      Vorschau der Registerstruktur
+                    </h3>
                     <Badge variant="secondary" className="text-xs">
-                      {nodeChildren.length} {nodeChildren.length === 1 ? "Seite" : "Seiten"}
+                      {nodeChildren.length}{" "}
+                      {nodeChildren.length === 1 ? "Seite" : "Seiten"}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">— Stand der Arbeitskopie</span>
+                    <span className="text-xs text-muted-foreground">
+                      — Stand der Arbeitskopie
+                    </span>
                   </div>
                   <DocRegistryView
                     clusterGroups={clusterGroupsForEditor}
@@ -1381,104 +1677,172 @@ export function WorkingCopyEditorPage() {
             <DialogTitle>Zur Prüfung einreichen</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Ihre Arbeitskopie wird in den Freigabe-Pool der zuständigen Prozessmanager übermittelt.
+            Ihre Arbeitskopie wird in den Freigabe-Pool der zuständigen
+            Prozessmanager übermittelt.
           </p>
 
-          {submitOpen && (() => {
-            const currentSF = localStructuredFieldsRef.current;
-            const currentContent = editableMetadata;
+          {submitOpen &&
+            (() => {
+              const currentSF = localStructuredFieldsRef.current;
+              const currentContent = editableMetadata;
 
-            const items: Array<{ label: string; color: string; detail?: string }> = [];
+              const items: Array<{
+                label: string;
+                color: string;
+                detail?: string;
+              }> = [];
 
-            const editorChanged = JSON.stringify(currentSF._editorContent) !== JSON.stringify(publishedSF._editorContent);
-            if (editorChanged) items.push({ label: "Seiteninhalt (Editor)", color: "bg-blue-500" });
+              const editorChanged =
+                JSON.stringify(currentSF._editorContent) !==
+                JSON.stringify(publishedSF._editorContent);
+              if (editorChanged)
+                items.push({
+                  label: "Seiteninhalt (Editor)",
+                  color: "bg-blue-500",
+                });
 
-            const allSFKeys = new Set([
-              ...Object.keys(currentSF).filter(k => k !== "_editorContent"),
-              ...Object.keys(publishedSF).filter(k => k !== "_editorContent"),
-            ]);
-            for (const key of allSFKeys) {
-              if (JSON.stringify(currentSF[key]) !== JSON.stringify(publishedSF[key])) {
-                const isNew = !publishedSF[key];
-                items.push({ label: key, color: "bg-green-500", detail: isNew ? "neu" : "geändert" });
+              const allSFKeys = new Set([
+                ...Object.keys(currentSF).filter((k) => k !== "_editorContent"),
+                ...Object.keys(publishedSF).filter(
+                  (k) => k !== "_editorContent",
+                ),
+              ]);
+              for (const key of allSFKeys) {
+                if (
+                  JSON.stringify(currentSF[key]) !==
+                  JSON.stringify(publishedSF[key])
+                ) {
+                  const isNew = !publishedSF[key];
+                  items.push({
+                    label: key,
+                    color: "bg-green-500",
+                    detail: isNew ? "neu" : "geändert",
+                  });
+                }
               }
-            }
 
-            const allMetaKeys = new Set([
-              ...Object.keys(currentContent).filter(k => !k.endsWith("_display")),
-              ...Object.keys(publishedMeta).filter(k => !k.endsWith("_display")),
-            ]);
-            const metaChanges: string[] = [];
-            for (const key of allMetaKeys) {
-              if (JSON.stringify(currentContent[key]) !== JSON.stringify(publishedMeta[key])) {
-                metaChanges.push(key);
+              const allMetaKeys = new Set([
+                ...Object.keys(currentContent).filter(
+                  (k) => !k.endsWith("_display"),
+                ),
+                ...Object.keys(publishedMeta).filter(
+                  (k) => !k.endsWith("_display"),
+                ),
+              ]);
+              const metaChanges: string[] = [];
+              for (const key of allMetaKeys) {
+                if (
+                  JSON.stringify(currentContent[key]) !==
+                  JSON.stringify(publishedMeta[key])
+                ) {
+                  metaChanges.push(key);
+                }
               }
-            }
-            if (metaChanges.length > 0) {
-              items.push({ label: `Metadaten (${metaChanges.length} Felder)`, color: "bg-orange-500" });
-            }
+              if (metaChanges.length > 0) {
+                items.push({
+                  label: `Metadaten (${metaChanges.length} Felder)`,
+                  color: "bg-orange-500",
+                });
+              }
 
-            return items.length > 0 ? (
-              <div className="rounded-md border p-3 bg-muted/30 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Änderungen gegenüber der veröffentlichten Version ({items.length})</p>
-                <div className="space-y-1 text-xs">
-                  {items.map((item) => (
-                    <div key={item.label} className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${item.color}`} />
-                      <span>{item.label}</span>
-                      {item.detail && <Badge variant="secondary" className="text-[10px] h-4 px-1">{item.detail}</Badge>}
-                    </div>
-                  ))}
+              return items.length > 0 ? (
+                <div className="rounded-md border p-3 bg-muted/30 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Änderungen gegenüber der veröffentlichten Version (
+                    {items.length})
+                  </p>
+                  <div className="space-y-1 text-xs">
+                    {items.map((item) => (
+                      <div
+                        key={item.label}
+                        className="flex items-center gap-1.5"
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full ${item.color}`}
+                        />
+                        <span>{item.label}</span>
+                        {item.detail && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] h-4 px-1"
+                          >
+                            {item.detail}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="rounded-md border p-3 bg-muted/30">
-                <p className="text-xs text-muted-foreground">
-                  {Object.keys(publishedSF).length === 0 ? "Erste Version — kein Vergleich verfügbar." : "Keine Änderungen gegenüber der veröffentlichten Version erkannt."}
-                </p>
-              </div>
-            );
-          })()}
+              ) : (
+                <div className="rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">
+                    {Object.keys(publishedSF).length === 0
+                      ? "Erste Version — kein Vergleich verfügbar."
+                      : "Keine Änderungen gegenüber der veröffentlichten Version erkannt."}
+                  </p>
+                </div>
+              );
+            })()}
 
           {submitOpen && isSetupMode && (
             <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-700 p-3 flex items-start gap-2">
               <ShieldCheck className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Anlage-Modus aktiv</p>
-                <p className="text-xs text-amber-700 dark:text-amber-400">Pflichtfeld-Pr{"ü"}fung ist deaktiviert. Seiten k{"ö"}nnen auch ohne vollst{"ä"}ndige Metadaten eingereicht werden.</p>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                  Anlage-Modus aktiv
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">
+                  Pflichtfeld-Pr{"ü"}fung ist deaktiviert. Seiten k{"ö"}nnen
+                  auch ohne vollst{"ä"}ndige Metadaten eingereicht werden.
+                </p>
               </div>
             </div>
           )}
 
-          {submitOpen && submitValidation && !submitValidation.valid && !isSetupMode && (
-            <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 p-3 space-y-2">
-              <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                Ver{"ö"}ffentlichungsanforderungen nicht erf{"ü"}llt ({submitValidation.readinessPercentage}% bereit)
-              </p>
-              <ul className="text-xs space-y-1">
-                {submitValidation.errors.map((e) => (
-                  <li key={e.field} className="flex items-start gap-1.5 text-red-600 dark:text-red-400">
-                    <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
-                    <span>{e.message}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {submitOpen &&
+            submitValidation &&
+            !submitValidation.valid &&
+            !isSetupMode && (
+              <div className="rounded-md border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 p-3 space-y-2">
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                  Ver{"ö"}ffentlichungsanforderungen nicht erf{"ü"}llt (
+                  {submitValidation.readinessPercentage}% bereit)
+                </p>
+                <ul className="text-xs space-y-1">
+                  {submitValidation.errors.map((e) => (
+                    <li
+                      key={e.field}
+                      className="flex items-start gap-1.5 text-red-600 dark:text-red-400"
+                    >
+                      <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>{e.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          {submitOpen && submitValidation && submitValidation.valid && submitValidation.warnings.length > 0 && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-3 space-y-2">
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Empfehlungen</p>
-              <ul className="text-xs space-y-1">
-                {submitValidation.warnings.map((w) => (
-                  <li key={w.field} className="flex items-start gap-1.5 text-amber-600 dark:text-amber-400">
-                    <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
-                    <span>{w.message}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {submitOpen &&
+            submitValidation &&
+            submitValidation.valid &&
+            submitValidation.warnings.length > 0 && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-3 space-y-2">
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                  Empfehlungen
+                </p>
+                <ul className="text-xs space-y-1">
+                  {submitValidation.warnings.map((w) => (
+                    <li
+                      key={w.field}
+                      className="flex items-start gap-1.5 text-amber-600 dark:text-amber-400"
+                    >
+                      <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                      <span>{w.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           <div className="space-y-4 py-2">
             <div className="space-y-1">
@@ -1515,7 +1879,10 @@ export function WorkingCopyEditorPage() {
                         );
                         setChangeSummary(result.summary);
                       } catch {
-                        toast({ variant: "destructive", title: "KI-Zusammenfassung fehlgeschlagen" });
+                        toast({
+                          variant: "destructive",
+                          title: "KI-Zusammenfassung fehlgeschlagen",
+                        });
                       } finally {
                         setAiSummaryLoading(false);
                       }
@@ -1551,8 +1918,18 @@ export function WorkingCopyEditorPage() {
             <Button variant="outline" onClick={() => setSubmitOpen(false)}>
               Abbrechen
             </Button>
-            <Button onClick={handleSubmit} disabled={submitWorkingCopy.isPending || (!isSetupMode && submitValidation !== null && !submitValidation.valid)}>
-              {submitWorkingCopy.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            <Button
+              onClick={handleSubmit}
+              disabled={
+                submitWorkingCopy.isPending ||
+                (!isSetupMode &&
+                  submitValidation !== null &&
+                  !submitValidation.valid)
+              }
+            >
+              {submitWorkingCopy.isPending && (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              )}
               Einreichen
             </Button>
           </DialogFooter>
@@ -1567,8 +1944,14 @@ export function WorkingCopyEditorPage() {
         }}
         parentNodeId={node.id}
         parentTemplateType={node.templateType}
-        onNodeCreated={pendingClusterId ? handleNodeCreatedInCluster : undefined}
-        onLinkExistingNode={pendingClusterId ? handleLinkExistingInCluster : handleLinkExistingNode}
+        onNodeCreated={
+          pendingClusterId ? handleNodeCreatedInCluster : undefined
+        }
+        onLinkExistingNode={
+          pendingClusterId
+            ? handleLinkExistingInCluster
+            : handleLinkExistingNode
+        }
       />
 
       <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
@@ -1578,7 +1961,8 @@ export function WorkingCopyEditorPage() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
-              Der Seitentyp bestimmt die verfügbaren Felder und die Struktur der Seite.
+              Der Seitentyp bestimmt die verfügbaren Felder und die Struktur der
+              Seite.
             </p>
             <Select value={typeDraft} onValueChange={setTypeDraft}>
               <SelectTrigger>
@@ -1606,7 +1990,11 @@ export function WorkingCopyEditorPage() {
                 try {
                   await updateNode.mutateAsync({
                     nodeId: node.id,
-                    data: { templateType: typeDraft as NonNullable<UpdateNodeInput["templateType"]> },
+                    data: {
+                      templateType: typeDraft as NonNullable<
+                        UpdateNodeInput["templateType"]
+                      >,
+                    },
                   });
                   setShowTypeDialog(false);
                   toast({ title: "Seitentyp geändert" });
@@ -1614,11 +2002,16 @@ export function WorkingCopyEditorPage() {
                   toast({
                     variant: "destructive",
                     title: "Fehler",
-                    description: err instanceof Error ? err.message : "Unbekannter Fehler",
+                    description:
+                      err instanceof Error ? err.message : "Unbekannter Fehler",
                   });
                 }
               }}
-              disabled={updateNode.isPending || !typeDraft || typeDraft === node.templateType}
+              disabled={
+                updateNode.isPending ||
+                !typeDraft ||
+                typeDraft === node.templateType
+              }
             >
               {updateNode.isPending ? "Wird gespeichert…" : "Speichern"}
             </Button>
@@ -1639,7 +2032,11 @@ export function WorkingCopyEditorPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              {"Die Seite \u201E"}{node.title}{"\u201C wird zur Löschung vorgeschlagen. Ein Administrator muss die Anfrage genehmigen."}
+              {"Die Seite \u201E"}
+              {node.title}
+              {
+                "\u201C wird zur Löschung vorgeschlagen. Ein Administrator muss die Anfrage genehmigen."
+              }
             </p>
             <div className="space-y-2">
               <Label htmlFor="wc-delete-reason">Begründung</Label>
@@ -1649,7 +2046,8 @@ export function WorkingCopyEditorPage() {
                 onChange={(e) => setDeleteReason(e.target.value)}
                 placeholder="Warum soll die Seite gelöscht werden?"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && deleteReason.trim()) handleDeletionRequest();
+                  if (e.key === "Enter" && deleteReason.trim())
+                    void handleDeletionRequest();
                 }}
               />
             </div>
@@ -1669,7 +2067,9 @@ export function WorkingCopyEditorPage() {
               onClick={handleDeletionRequest}
               disabled={!deleteReason.trim() || createDeletionRequest.isPending}
             >
-              {createDeletionRequest.isPending ? "Wird eingereicht…" : "Löschanfrage einreichen"}
+              {createDeletionRequest.isPending
+                ? "Wird eingereicht…"
+                : "Löschanfrage einreichen"}
             </Button>
           </DialogFooter>
         </DialogContent>

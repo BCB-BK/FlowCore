@@ -101,10 +101,15 @@ function isReviewOverdue(dateStr: string | null | undefined): boolean {
   return new Date(dateStr) < new Date();
 }
 
-export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistoryPanelProps) {
+export function VersionHistoryPanel({
+  nodeId,
+  activeWorkingCopy,
+}: VersionHistoryPanelProps) {
   const { data: revisions, isLoading } = useNodeRevisions(nodeId);
   const [selectedForDiff, setSelectedForDiff] = useState<string[]>([]);
-  const [restoreRevisionId, setRestoreRevisionId] = useState<string | null>(null);
+  const [restoreRevisionId, setRestoreRevisionId] = useState<string | null>(
+    null,
+  );
   const [showDiff, setShowDiff] = useState(false);
 
   const toggleDiffSelection = (revId: string) => {
@@ -155,21 +160,28 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
           <CardContent>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline" className="text-xs">
-                {wcStatusLabels[activeWorkingCopy.status] || activeWorkingCopy.status}
+                {wcStatusLabels[activeWorkingCopy.status] ||
+                  activeWorkingCopy.status}
               </Badge>
               {activeWorkingCopy.changeType && (
                 <Badge variant="secondary" className="text-[10px] h-4">
-                  {CHANGE_TYPE_LABELS[activeWorkingCopy.changeType] || activeWorkingCopy.changeType}
+                  {CHANGE_TYPE_LABELS[activeWorkingCopy.changeType] ||
+                    activeWorkingCopy.changeType}
                 </Badge>
               )}
               {activeWorkingCopy.title && (
-                <span className="text-sm font-medium truncate">{activeWorkingCopy.title}</span>
+                <span className="text-sm font-medium truncate">
+                  {activeWorkingCopy.title}
+                </span>
               )}
             </div>
-            {(activeWorkingCopy.authorDisplayName || activeWorkingCopy.authorId) && (
+            {(activeWorkingCopy.authorDisplayName ||
+              activeWorkingCopy.authorId) && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <User className="h-2.5 w-2.5" />
-                Autor: {activeWorkingCopy.authorDisplayName ?? `${activeWorkingCopy.authorId!.substring(0, 8)}…`}
+                Autor:{" "}
+                {activeWorkingCopy.authorDisplayName ??
+                  `${activeWorkingCopy.authorId!.substring(0, 8)}…`}
               </p>
             )}
             {activeWorkingCopy.updatedAt && (
@@ -234,10 +246,12 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
               <div className="divide-y">
                 {revisionList.map((rev, index) => {
                   const Icon = statusIcons[rev.status] || FilePen;
-                  const ChangeIcon = CHANGE_TYPE_ICONS[rev.changeType] || Pencil;
+                  const ChangeIcon =
+                    CHANGE_TYPE_ICONS[rev.changeType] || Pencil;
                   const isSelected = selectedForDiff.includes(rev.id);
                   const isLatest = index === 0;
-                  const overdue = isLatest && isReviewOverdue(rev.nextReviewDate);
+                  const overdue =
+                    isLatest && isReviewOverdue(rev.nextReviewDate);
 
                   return (
                     <div
@@ -261,24 +275,38 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
                             v{rev.revisionNo}
                           </span>
                           {rev.versionLabel && (
-                            <Badge variant="outline" className="text-[10px] h-4 font-mono">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-4 font-mono"
+                            >
                               <GitBranch className="h-2.5 w-2.5 mr-0.5" />
                               {rev.versionLabel}
                             </Badge>
                           )}
                           <StatusBadge
-                            status={rev.status as Parameters<typeof StatusBadge>[0]["status"]}
+                            status={
+                              rev.status as Parameters<
+                                typeof StatusBadge
+                              >[0]["status"]
+                            }
                             compact
                           />
                           {isLatest && (
-                            <Badge variant="secondary" className="text-[10px] h-4 bg-primary/10 text-primary">
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] h-4 bg-primary/10 text-primary"
+                            >
                               Aktuell
                             </Badge>
                           )}
                           {rev.changeType && (
-                            <Badge variant="outline" className="text-[10px] h-4 gap-0.5">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-4 gap-0.5"
+                            >
                               <ChangeIcon className="h-2.5 w-2.5" />
-                              {CHANGE_TYPE_LABELS[rev.changeType] || rev.changeType}
+                              {CHANGE_TYPE_LABELS[rev.changeType] ||
+                                rev.changeType}
                             </Badge>
                           )}
                         </div>
@@ -295,21 +323,33 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
 
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground mt-1.5">
                           {rev.authorId && (
-                            <span className="flex items-center gap-0.5" title="Autor">
+                            <span
+                              className="flex items-center gap-0.5"
+                              title="Autor"
+                            >
                               <User className="h-2.5 w-2.5" />
-                              {rev.authorDisplayName ?? `${rev.authorId.substring(0, 8)}…`}
+                              {rev.authorDisplayName ??
+                                `${rev.authorId.substring(0, 8)}…`}
                             </span>
                           )}
                           {rev.reviewerId && (
-                            <span className="flex items-center gap-0.5" title="Prüfer">
+                            <span
+                              className="flex items-center gap-0.5"
+                              title="Prüfer"
+                            >
                               <FileSearch className="h-2.5 w-2.5" />
-                              {rev.reviewerDisplayName ?? `${rev.reviewerId.substring(0, 8)}…`}
+                              {rev.reviewerDisplayName ??
+                                `${rev.reviewerId.substring(0, 8)}…`}
                             </span>
                           )}
                           {rev.approverId && (
-                            <span className="flex items-center gap-0.5" title="Genehmiger">
+                            <span
+                              className="flex items-center gap-0.5"
+                              title="Genehmiger"
+                            >
                               <Shield className="h-2.5 w-2.5" />
-                              {rev.approverDisplayName ?? `${rev.approverId.substring(0, 8)}…`}
+                              {rev.approverDisplayName ??
+                                `${rev.approverId.substring(0, 8)}…`}
                             </span>
                           )}
                         </div>
@@ -317,21 +357,32 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
                         {rev.basedOnRevisionId && (
                           <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1">
                             <RotateCcw className="h-2.5 w-2.5" />
-                            Wiederhergestellt von Rev. {revisionList.find((r) => r.id === rev.basedOnRevisionId)?.revisionNo || "?"}
+                            Wiederhergestellt von Rev.{" "}
+                            {revisionList.find(
+                              (r) => r.id === rev.basedOnRevisionId,
+                            )?.revisionNo || "?"}
                           </p>
                         )}
 
                         {rev.validFrom && (
                           <div className="text-[11px] mt-1 flex items-center gap-1 text-muted-foreground">
                             <CalendarClock className="h-2.5 w-2.5" />
-                            Gültig ab: {new Date(rev.validFrom).toLocaleDateString("de-DE")}
+                            Gültig ab:{" "}
+                            {new Date(rev.validFrom).toLocaleDateString(
+                              "de-DE",
+                            )}
                           </div>
                         )}
 
                         {isLatest && rev.nextReviewDate && (
-                          <div className={`text-[11px] mt-1 flex items-center gap-1 ${overdue ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
+                          <div
+                            className={`text-[11px] mt-1 flex items-center gap-1 ${overdue ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}
+                          >
                             <CalendarClock className="h-2.5 w-2.5" />
-                            Nächste Prüfung: {new Date(rev.nextReviewDate).toLocaleDateString("de-DE")}
+                            Nächste Prüfung:{" "}
+                            {new Date(rev.nextReviewDate).toLocaleDateString(
+                              "de-DE",
+                            )}
                             {overdue && " (überfällig)"}
                           </div>
                         )}
@@ -372,7 +423,8 @@ export function VersionHistoryPanel({ nodeId, activeWorkingCopy }: VersionHistor
         <RestoreDialog
           revisionId={restoreRevisionId}
           revisionNo={
-            revisionList.find((r) => r.id === restoreRevisionId)?.revisionNo || 0
+            revisionList.find((r) => r.id === restoreRevisionId)?.revisionNo ||
+            0
           }
           open={!!restoreRevisionId}
           onOpenChange={(open) => {

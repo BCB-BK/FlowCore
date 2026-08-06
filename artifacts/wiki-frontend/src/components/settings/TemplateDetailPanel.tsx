@@ -73,7 +73,9 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
           </h4>
           <div className="space-y-1.5">
             {template.sections.map((section) => {
-              const req = section.requirement ?? (section.required ? "required" : undefined);
+              const req =
+                section.requirement ??
+                (section.required ? "required" : undefined);
               return (
                 <div
                   key={section.key}
@@ -81,29 +83,46 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium">{section.label}</span>
+                      <span className="text-sm font-medium">
+                        {section.label}
+                      </span>
                       {req === "required" && (
-                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                        <Badge
+                          variant="destructive"
+                          className="text-[10px] px-1.5 py-0"
+                        >
                           Pflicht
                         </Badge>
                       )}
                       {req === "recommended" && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700"
+                        >
                           Empfohlen
                         </Badge>
                       )}
                       {req === "conditional" && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0"
+                        >
                           Bedingt
                         </Badge>
                       )}
                       {section.publishRequired && req !== "required" && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-600">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] px-1.5 py-0 bg-red-50 text-red-600"
+                        >
                           Publish
                         </Badge>
                       )}
                       {section.compoundType && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0 font-mono"
+                        >
                           {section.compoundType}
                         </Badge>
                       )}
@@ -119,7 +138,10 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                       </p>
                     )}
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono shrink-0 ml-2">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-mono shrink-0 ml-2"
+                  >
                     {section.key}
                   </Badge>
                 </div>
@@ -143,7 +165,9 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                 </p>
                 <div className="space-y-1">
                   {fields.map((field) => {
-                    const req = field.requirement ?? (field.required ? "required" : undefined);
+                    const req =
+                      field.requirement ??
+                      (field.required ? "required" : undefined);
                     return (
                       <div
                         key={field.key}
@@ -155,13 +179,28 @@ export function TemplateDetailPanel({ template }: TemplateDetailPanelProps) {
                             <span className="text-destructive text-xs">*</span>
                           )}
                           {req === "recommended" && (
-                            <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-amber-100 text-amber-700">Empf.</Badge>
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] px-1 py-0 bg-amber-100 text-amber-700"
+                            >
+                              Empf.
+                            </Badge>
                           )}
                           {req === "conditional" && (
-                            <Badge variant="outline" className="text-[9px] px-1 py-0">Bed.</Badge>
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] px-1 py-0"
+                            >
+                              Bed.
+                            </Badge>
                           )}
                           {field.publishRequired && req !== "required" && (
-                            <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-red-50 text-red-600">Pub</Badge>
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] px-1 py-0 bg-red-50 text-red-600"
+                            >
+                              Pub
+                            </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">

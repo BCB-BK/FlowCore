@@ -4,7 +4,10 @@ import {
   pushExternalItem,
 } from "./graph-schema-registration.service";
 import { getSyncState, upsertSyncState } from "./graph-sync-state.service";
-import { recordSyncLog, type GraphSyncOperation } from "./graph-sync-log.service";
+import {
+  recordSyncLog,
+  type GraphSyncOperation,
+} from "./graph-sync-log.service";
 import { setCopilotIndexStatus } from "./copilot-index-status.service";
 import { getGraphConnectorConfig } from "./graph-connector-config.service";
 import { isGlossarySyncEnabled } from "./system-settings.service";
@@ -55,7 +58,11 @@ export async function syncPage(
 
   if (!dryRun && !options.force) {
     const state = await getSyncState(itemId);
-    if (state && state.contentHash === contentHash && state.lastResult === "success") {
+    if (
+      state &&
+      state.contentHash === contentHash &&
+      state.lastResult === "success"
+    ) {
       await recordSyncLog({
         itemId,
         itemType: "page",
@@ -71,7 +78,12 @@ export async function syncPage(
         aclHash,
         graphConnectionId,
       });
-      return { itemId, status: "skipped", dryRun, reason: "content_hash_unchanged" };
+      return {
+        itemId,
+        status: "skipped",
+        dryRun,
+        reason: "content_hash_unchanged",
+      };
     }
   }
 
@@ -188,14 +200,27 @@ export async function syncGlossaryTerm(
       dryRun,
       actor,
     });
-    return { itemId, status: "skipped", dryRun, reason: "glossary_sync_disabled" };
+    return {
+      itemId,
+      status: "skipped",
+      dryRun,
+      reason: "glossary_sync_disabled",
+    };
   }
 
   let built;
   try {
     built = await buildGlossaryExternalItem(termId);
   } catch (err) {
-    await handleBuildFailure(err, "glossary", termId, null, operation, actor, termId);
+    await handleBuildFailure(
+      err,
+      "glossary",
+      termId,
+      null,
+      operation,
+      actor,
+      termId,
+    );
     throw err;
   }
 
@@ -205,7 +230,11 @@ export async function syncGlossaryTerm(
 
   if (!dryRun && !options.force) {
     const state = await getSyncState(itemId);
-    if (state && state.contentHash === contentHash && state.lastResult === "success") {
+    if (
+      state &&
+      state.contentHash === contentHash &&
+      state.lastResult === "success"
+    ) {
       await recordSyncLog({
         itemId,
         itemType: "glossary",
@@ -222,7 +251,12 @@ export async function syncGlossaryTerm(
         aclHash,
         graphConnectionId,
       });
-      return { itemId, status: "skipped", dryRun, reason: "content_hash_unchanged" };
+      return {
+        itemId,
+        status: "skipped",
+        dryRun,
+        reason: "content_hash_unchanged",
+      };
     }
   }
 
@@ -325,7 +359,10 @@ async function handleBuildFailure(
   const notFound = err instanceof AppError && err.status === 404;
 
   await recordSyncLog({
-    itemId: itemType === "page" ? `flowcore_page_pending_${logicalId}` : `flowcore_glossary_pending_${logicalId}`,
+    itemId:
+      itemType === "page"
+        ? `flowcore_page_pending_${logicalId}`
+        : `flowcore_glossary_pending_${logicalId}`,
     itemType,
     nodeId,
     termId,

@@ -100,7 +100,10 @@ export function WikiSidebar() {
             )}
             {permissions.has("review_working_copy") && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location === "/review-inbox"}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location === "/review-inbox"}
+                >
                   <a {...getLinkProps("/review-inbox")}>
                     <ShieldCheck className="h-4 w-4" />
                     <span>Review-Inbox</span>
@@ -139,7 +142,11 @@ export function WikiSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Wissensstruktur</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu role="tree" aria-label="Wissensstruktur" aria-busy={isLoading}>
+            <SidebarMenu
+              role="tree"
+              aria-label="Wissensstruktur"
+              aria-busy={isLoading}
+            >
               {isLoading ? (
                 <div className="space-y-2 px-2">
                   <Skeleton className="h-6 w-full" />

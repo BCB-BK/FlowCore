@@ -26,9 +26,12 @@ export async function setSystemSetting(
       .set({ value, updatedAt: new Date(), updatedBy: updatedBy ?? null })
       .where(eq(systemSettingsTable.key, key));
   } else {
-    await db
-      .insert(systemSettingsTable)
-      .values({ key, value, updatedAt: new Date(), updatedBy: updatedBy ?? null });
+    await db.insert(systemSettingsTable).values({
+      key,
+      value,
+      updatedAt: new Date(),
+      updatedBy: updatedBy ?? null,
+    });
   }
 }
 

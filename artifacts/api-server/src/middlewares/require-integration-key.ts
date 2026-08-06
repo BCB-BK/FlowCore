@@ -8,7 +8,6 @@ import { consumeRateLimit } from "./rate-limit";
 import { logger } from "../lib/logger";
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       integrationKey?: IntegrationPrincipal;

@@ -87,7 +87,10 @@ export const aiFieldProfilesTable = pgTable(
   (table) => [
     index("idx_ai_field_profiles_page_type").on(table.pageType),
     index("idx_ai_field_profiles_field_key").on(table.fieldKey),
-    uniqueIndex("idx_ai_field_profiles_page_field_unique").on(table.pageType, table.fieldKey),
+    uniqueIndex("idx_ai_field_profiles_page_field_unique").on(
+      table.pageType,
+      table.fieldKey,
+    ),
   ],
 );
 
@@ -108,10 +111,7 @@ export type InsertAiUsageLog = z.infer<typeof insertAiUsageLogSchema>;
 export const insertAiFieldProfileSchema = createInsertSchema(
   aiFieldProfilesTable,
 ).omit({ id: true, createdAt: true, updatedAt: true });
-export const selectAiFieldProfileSchema = createSelectSchema(
-  aiFieldProfilesTable,
-);
+export const selectAiFieldProfileSchema =
+  createSelectSchema(aiFieldProfilesTable);
 export type AiFieldProfile = typeof aiFieldProfilesTable.$inferSelect;
-export type InsertAiFieldProfile = z.infer<
-  typeof insertAiFieldProfileSchema
->;
+export type InsertAiFieldProfile = z.infer<typeof insertAiFieldProfileSchema>;

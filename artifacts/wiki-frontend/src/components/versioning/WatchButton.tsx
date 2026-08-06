@@ -31,7 +31,7 @@ export function WatchButton({ nodeId }: WatchButtonProps) {
   }, [apiBase, nodeId]);
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, [fetchStatus]);
 
   const toggleWatch = useCallback(async () => {

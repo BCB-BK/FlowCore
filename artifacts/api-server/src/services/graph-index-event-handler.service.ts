@@ -12,7 +12,10 @@
 import { db } from "@workspace/db";
 import { graphChangeFeedTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
-import { detectOperation, type GraphChangeFeedEventType } from "./graph-delta-detector.service";
+import {
+  detectOperation,
+  type GraphChangeFeedEventType,
+} from "./graph-delta-detector.service";
 import { enqueueSync } from "./graph-sync-queue.service";
 
 export async function processChangeFeedEntry(feedId: number): Promise<void> {
@@ -23,7 +26,9 @@ export async function processChangeFeedEntry(feedId: number): Promise<void> {
   if (!row) return;
 
   try {
-    const operation = detectOperation(row.eventType as GraphChangeFeedEventType);
+    const operation = detectOperation(
+      row.eventType as GraphChangeFeedEventType,
+    );
 
     if (operation !== "skip") {
       await enqueueSync({

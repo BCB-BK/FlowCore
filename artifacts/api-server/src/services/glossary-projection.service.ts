@@ -51,7 +51,10 @@ export interface GlossaryTermProjection {
 }
 
 function synthesizeDisplayCode(slug: string): string {
-  return `GL-${slug.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`;
+  return `GL-${slug
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
 }
 
 /**
@@ -104,7 +107,7 @@ export async function projectGlossaryTerm(
         reviewDue = revision.nextReviewDate
           ? revision.nextReviewDate.toISOString()
           : null;
-        const sf = (revision.structuredFields ?? {}) as Record<string, unknown>;
+        const sf = revision.structuredFields ?? {};
         authorityLevel =
           typeof sf.authority_level === "string" ? sf.authority_level : null;
         sourcePriority =
@@ -185,7 +188,9 @@ export async function projectGlossaryTerm(
   };
 }
 
-export async function isGlossaryTermExportable(termId: string): Promise<boolean> {
+export async function isGlossaryTermExportable(
+  termId: string,
+): Promise<boolean> {
   const projection = await projectGlossaryTerm(termId);
   return projection !== null;
 }

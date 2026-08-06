@@ -1,4 +1,11 @@
 import { Router } from "express";
+import {
+  AssignRoleBody,
+  CreatePrincipalBody,
+  GrantPagePermissionBody,
+  SetNodeOwnershipBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import {
@@ -28,7 +35,6 @@ import {
   getActiveDelegationsForPrincipal,
   getActiveDelegationsForDeputy,
   getAllDelegations,
-  type WikiPermission,
 } from "../services/rbac.service";
 import {
   searchPeople,
@@ -38,6 +44,7 @@ import {
 import { db } from "@workspace/db";
 import { auditEventsTable, roleAssignmentsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { getGraphToken } from "../lib/session-crypto";
 
 const router = Router();
 
@@ -69,6 +76,7 @@ router.post(
   "/principals",
   requireAuth,
   requirePermission("manage_permissions"),
+  validateBody(CreatePrincipalBody),
   async (req, res) => {
     const { externalId, principalType, displayName, email, upn } =
       req.body ?? {};
@@ -106,14 +114,17 @@ router.post(
     const { upsertPrincipal: upsert } =
       await import("../services/principal.service");
     const principalId = await db.transaction(async (tx) => {
-      const id = await upsert({
-        principalType: principalType as "user" | "group",
-        externalProvider: "entra",
-        externalId: externalId.trim(),
-        displayName: displayName.trim(),
-        email: typeof email === "string" ? email.trim() : undefined,
-        upn: typeof upn === "string" ? upn.trim() : undefined,
-      }, tx);
+      const id = await upsert(
+        {
+          principalType: principalType as "user" | "group",
+          externalProvider: "entra",
+          externalId: externalId.trim(),
+          displayName: displayName.trim(),
+          email: typeof email === "string" ? email.trim() : undefined,
+          upn: typeof upn === "string" ? upn.trim() : undefined,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -173,7 +184,7 @@ router.get("/principals/:id/permissions", requireAuth, async (req, res) => {
   );
   res.json({
     principalId: id,
-    permissions: Array.from(permissions) as WikiPermission[],
+    permissions: Array.from(permissions),
   });
 });
 
@@ -192,6 +203,7 @@ router.post(
   "/principals/:id/roles",
   requireAuth,
   requirePermission("manage_permissions"),
+  validateBody(AssignRoleBody),
   async (req, res) => {
     const id = req.params.id as string;
     const role = req.body?.role as string | undefined;
@@ -227,12 +239,15 @@ router.post(
     }
 
     const assignmentId = await db.transaction(async (tx) => {
-      const aId = await assignRole({
-        principalId: id,
-        role: req.body.role,
-        scope: req.body.scope,
-        grantedBy: req.user!.principalId,
-      }, tx);
+      const aId = await assignRole(
+        {
+          principalId: id,
+          role: req.body.role,
+          scope: req.body.scope,
+          grantedBy: req.user!.principalId,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -314,7 +329,7 @@ router.get("/graph/photo/:userId", requireAuth, async (req, res) => {
   const userId = req.params.userId as string;
   const sizeParam = req.query.size;
   const size = typeof sizeParam === "string" ? sizeParam : "48x48";
-  const accessToken = (req.session?.graphAccessToken as string) ?? "";
+  const accessToken = getGraphToken(req.session);
   const photo = await getPersonPhoto(accessToken, userId, size);
   if (!photo) {
     res.status(404).json({ error: "Photo not found" });
@@ -331,7 +346,7 @@ router.get(
   requirePermission("edit_content"),
   async (req, res) => {
     const q = (req.query.q as string) ?? "";
-    const accessToken = req.session?.graphAccessToken ?? "";
+    const accessToken = getGraphToken(req.session);
     const graphResults = await searchPeople(accessToken, q);
     if (graphResults.length > 0) {
       res.json(graphResults);
@@ -358,7 +373,7 @@ router.get(
   requirePermission("edit_content"),
   async (req, res) => {
     const q = (req.query.q as string) ?? "";
-    const accessToken = req.session?.graphAccessToken ?? "";
+    const accessToken = getGraphToken(req.session);
     const graphResults = await searchGroups(accessToken, q);
     if (graphResults.length > 0) {
       res.json(graphResults);
@@ -392,15 +407,19 @@ router.post(
   "/content/nodes/:nodeId/permissions",
   requireAuth,
   requirePermission("manage_permissions", (req) => req.params.nodeId),
+  validateBody(GrantPagePermissionBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const id = await db.transaction(async (tx) => {
-      const permId = await grantPagePermission({
-        nodeId,
-        principalId: req.body.principalId,
-        permission: req.body.permission,
-        grantedBy: req.user!.principalId,
-      }, tx);
+      const permId = await grantPagePermission(
+        {
+          nodeId,
+          principalId: req.body.principalId,
+          permission: req.body.permission,
+          grantedBy: req.user!.principalId,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -458,16 +477,20 @@ router.put(
   "/content/nodes/:nodeId/ownership",
   requireAuth,
   requirePermission("manage_permissions", (req) => req.params.nodeId),
+  validateBody(SetNodeOwnershipBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const id = await db.transaction(async (tx) => {
-      const ownershipId = await setNodeOwnership({
-        nodeId,
-        ownerId: req.body.ownerId,
-        deputyId: req.body.deputyId,
-        reviewerId: req.body.reviewerId,
-        approverId: req.body.approverId,
-      }, tx);
+      const ownershipId = await setNodeOwnership(
+        {
+          nodeId,
+          ownerId: req.body.ownerId,
+          deputyId: req.body.deputyId,
+          reviewerId: req.body.reviewerId,
+          approverId: req.body.approverId,
+        },
+        tx,
+      );
 
       await tx.insert(auditEventsTable).values({
         eventType: "rbac",
@@ -540,80 +563,74 @@ router.get(
   },
 );
 
-router.get(
-  "/principals/:id/delegations",
-  requireAuth,
-  async (req, res) => {
-    const id = req.params.id as string;
-    const isSelf = req.user!.principalId === id;
-    if (!isSelf) {
-      const perms = await getEffectivePermissions(req.user!.principalId);
-      if (!perms.has("manage_permissions")) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
-      }
-    }
-    const outgoing = await getActiveDelegationsForPrincipal(id);
-    const incoming = await getActiveDelegationsForDeputy(id);
-    res.json({ outgoing, incoming });
-  },
-);
-
-router.post(
-  "/principals/:id/delegations",
-  requireAuth,
-  async (req, res) => {
-    const principalId = req.params.id as string;
-    const isSelf = req.user!.principalId === principalId;
-    if (!isSelf) {
-      const perms = await getEffectivePermissions(req.user!.principalId);
-      if (!perms.has("manage_permissions")) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
-      }
-    }
-
-    const { deputyId, scope, reason, startsAt, endsAt } = req.body;
-    if (!deputyId || !startsAt) {
-      res.status(400).json({ error: "deputyId and startsAt are required" });
+router.get("/principals/:id/delegations", requireAuth, async (req, res) => {
+  const id = req.params.id as string;
+  const isSelf = req.user!.principalId === id;
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
+  }
+  const outgoing = await getActiveDelegationsForPrincipal(id);
+  const incoming = await getActiveDelegationsForDeputy(id);
+  res.json({ outgoing, incoming });
+});
 
-    if (deputyId === principalId) {
-      res.status(400).json({ error: "Cannot delegate to yourself" });
+router.post("/principals/:id/delegations", requireAuth, async (req, res) => {
+  const principalId = req.params.id as string;
+  const isSelf = req.user!.principalId === principalId;
+  if (!isSelf) {
+    const perms = await getEffectivePermissions(req.user!.principalId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
+  }
 
-    const validScope = scope ?? "global";
-    const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
-    if (!scopePattern.test(validScope)) {
-      res.status(400).json({
-        error: "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
-      });
+  const { deputyId, scope, reason, startsAt, endsAt } = req.body;
+  if (!deputyId || !startsAt) {
+    res.status(400).json({ error: "deputyId and startsAt are required" });
+    return;
+  }
+
+  if (deputyId === principalId) {
+    res.status(400).json({ error: "Cannot delegate to yourself" });
+    return;
+  }
+
+  const validScope = scope ?? "global";
+  const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
+  if (!scopePattern.test(validScope)) {
+    res.status(400).json({
+      error: "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
+    });
+    return;
+  }
+
+  const parsedStartsAt = new Date(startsAt);
+  if (isNaN(parsedStartsAt.getTime())) {
+    res.status(400).json({ error: "startsAt must be a valid date" });
+    return;
+  }
+
+  let parsedEndsAt: Date | undefined;
+  if (endsAt) {
+    parsedEndsAt = new Date(endsAt);
+    if (isNaN(parsedEndsAt.getTime())) {
+      res.status(400).json({ error: "endsAt must be a valid date" });
       return;
     }
-
-    const parsedStartsAt = new Date(startsAt);
-    if (isNaN(parsedStartsAt.getTime())) {
-      res.status(400).json({ error: "startsAt must be a valid date" });
+    if (parsedEndsAt <= parsedStartsAt) {
+      res.status(400).json({ error: "endsAt must be after startsAt" });
       return;
     }
+  }
 
-    let parsedEndsAt: Date | undefined;
-    if (endsAt) {
-      parsedEndsAt = new Date(endsAt);
-      if (isNaN(parsedEndsAt.getTime())) {
-        res.status(400).json({ error: "endsAt must be a valid date" });
-        return;
-      }
-      if (parsedEndsAt <= parsedStartsAt) {
-        res.status(400).json({ error: "endsAt must be after startsAt" });
-        return;
-      }
-    }
-
-    const delegationId = await db.transaction(async (tx) => {
-      const dId = await createDelegation({
+  const delegationId = await db.transaction(async (tx) => {
+    const dId = await createDelegation(
+      {
         principalId,
         deputyId,
         scope: validScope,
@@ -621,61 +638,58 @@ router.post(
         startsAt: parsedStartsAt,
         endsAt: parsedEndsAt,
         createdBy: req.user!.principalId,
-      }, tx);
+      },
+      tx,
+    );
 
-      await tx.insert(auditEventsTable).values({
-        eventType: "rbac",
-        action: "delegation_created",
-        actorId: req.user!.principalId,
-        resourceType: "deputy_delegation",
-        resourceId: dId,
-        details: { principalId, deputyId, scope, startsAt, endsAt, reason },
-      });
-
-      return dId;
+    await tx.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "delegation_created",
+      actorId: req.user!.principalId,
+      resourceType: "deputy_delegation",
+      resourceId: dId,
+      details: { principalId, deputyId, scope, startsAt, endsAt, reason },
     });
 
-    res.status(201).json({ id: delegationId });
-  },
-);
+    return dId;
+  });
 
-router.delete(
-  "/delegations/:delegationId",
-  requireAuth,
-  async (req, res) => {
-    const delegationId = req.params.delegationId as string;
-    const actorId = req.user!.principalId;
+  res.status(201).json({ id: delegationId });
+});
 
-    const delegation = await getDelegationById(delegationId);
-    if (!delegation) {
-      res.status(404).json({ error: "Delegation not found" });
+router.delete("/delegations/:delegationId", requireAuth, async (req, res) => {
+  const delegationId = req.params.delegationId as string;
+  const actorId = req.user!.principalId;
+
+  const delegation = await getDelegationById(delegationId);
+  if (!delegation) {
+    res.status(404).json({ error: "Delegation not found" });
+    return;
+  }
+
+  const isSelfRevoke =
+    delegation.principalId === actorId || delegation.deputyId === actorId;
+  if (!isSelfRevoke) {
+    const perms = await getEffectivePermissions(actorId);
+    if (!perms.has("manage_permissions")) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
+  }
 
-    const isSelfRevoke =
-      delegation.principalId === actorId || delegation.deputyId === actorId;
-    if (!isSelfRevoke) {
-      const perms = await getEffectivePermissions(actorId);
-      if (!perms.has("manage_permissions")) {
-        res.status(403).json({ error: "Forbidden" });
-        return;
-      }
-    }
+  await db.transaction(async (tx) => {
+    await revokeDelegation(delegationId, tx);
 
-    await db.transaction(async (tx) => {
-      await revokeDelegation(delegationId, tx);
-
-      await tx.insert(auditEventsTable).values({
-        eventType: "rbac",
-        action: "delegation_revoked",
-        actorId: req.user!.principalId,
-        resourceType: "deputy_delegation",
-        resourceId: delegationId,
-      });
+    await tx.insert(auditEventsTable).values({
+      eventType: "rbac",
+      action: "delegation_revoked",
+      actorId: req.user!.principalId,
+      resourceType: "deputy_delegation",
+      resourceId: delegationId,
     });
+  });
 
-    res.status(204).send();
-  },
-);
+  res.status(204).send();
+});
 
 export default router;

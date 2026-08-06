@@ -129,7 +129,11 @@ export function FieldAiDiffDialog({
                           : "text-muted-foreground px-1"
                     }
                   >
-                    {d.type === "removed" ? "- " : d.type === "added" ? "+ " : "  "}
+                    {d.type === "removed"
+                      ? "- "
+                      : d.type === "added"
+                        ? "+ "
+                        : "  "}
                     {d.text || " "}
                   </div>
                 ))}

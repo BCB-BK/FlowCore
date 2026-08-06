@@ -1,0 +1,96 @@
+# Automatisierte Qualitaetssicherung (Audit-Befund A4).
+#
+# Vor diesem Lauf ging jeder Stand ungeprueft nach Produktion: Es gab keine CI,
+# keine Git-Hooks, und die sechs im Repository vorhandenen Pruefskripte liefen
+# nirgends automatisch. Zwei davon schlugen zum Auditzeitpunkt fehl, ohne dass
+# es jemandem auffiel.
+#
+# Zwei Jobs, damit die Rueckmeldung eindeutig ist: `verify` prueft den Code
+# selbst, `contracts` die Vertraege und Abhaengigkeiten drumherum.
+name: CI
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typpruefung, Linter, Tests, Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pnpm bereitstellen
+        uses: pnpm/action-setup@v4
+
+      - name: Node bereitstellen
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # --frozen-lockfile: ein Lauf darf die Abhaengigkeiten nicht stillschweigend
+      # veraendern, sonst prueft die CI etwas anderes als den eingecheckten Stand.
+      - name: Abhaengigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      - name: Typpruefung
+        run: pnpm typecheck
+
+      - name: Linter (Prettier und ESLint)
+        run: pnpm lint
+
+      - name: Unit-Tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  contracts:
+    name: Vertraege und Abhaengigkeiten
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pnpm bereitstellen
+        uses: pnpm/action-setup@v4
+
+      - name: Node bereitstellen
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Abhaengigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      # Bekannte Schwachstellen in Produktivabhaengigkeiten (A1, A2). Der Lauf
+      # ist bewusst blockierend -- ein Advisory soll den Merge aufhalten, nicht
+      # in einem Bericht versanden.
+      - name: Bekannte Schwachstellen
+        run: pnpm audit --prod
+
+      - name: Keine hartkodierten Werte
+        run: pnpm --filter @workspace/scripts run no-hardcode-check
+
+      - name: Keine toten Importe
+        run: pnpm --filter @workspace/scripts run dead-import-check
+
+      - name: Umgebungsvariablen vollstaendig
+        run: pnpm --filter @workspace/scripts run env-check
+
+      - name: Schnittstellenvertrag eingehalten
+        run: pnpm --filter @workspace/scripts run route-contract-check
+
+      - name: Dokumentation vollstaendig
+        run: pnpm --filter @workspace/scripts run docs:check
+
+      - name: Selbstpruefung
+        run: pnpm --filter @workspace/scripts run senior-self-review

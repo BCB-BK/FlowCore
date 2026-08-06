@@ -45,7 +45,7 @@ class Serializer {
   linkedNodeIds: string[] = [];
 
   serializeText(node: PMNode): { plain: string; md: string } {
-    let plain = node.text ?? "";
+    const plain = node.text ?? "";
     let md = plain;
     for (const mark of node.marks ?? []) {
       switch (mark.type) {
@@ -170,9 +170,7 @@ class Serializer {
 
       case "codeBlock": {
         if (inline) return { plain: "", md: "" };
-        const code = (node.content ?? [])
-          .map((c) => c.text ?? "")
-          .join("");
+        const code = (node.content ?? []).map((c) => c.text ?? "").join("");
         this.plaintextParts.push(code);
         this.markdownParts.push(`\`\`\`\n${code}\n\`\`\``);
         return { plain: "", md: "" };
@@ -267,8 +265,12 @@ class Serializer {
             url: str(img.src, "") || null,
           });
         }
-        this.plaintextParts.push(`[Galerie: ${caption} (${images.length} Bilder)]`);
-        this.markdownParts.push(`[Galerie: ${caption} (${images.length} Bilder)]`);
+        this.plaintextParts.push(
+          `[Galerie: ${caption} (${images.length} Bilder)]`,
+        );
+        this.markdownParts.push(
+          `[Galerie: ${caption} (${images.length} Bilder)]`,
+        );
         return { plain: "", md: "" };
       }
 
@@ -314,7 +316,10 @@ class Serializer {
   }
 
   collectListItem(item: PMNode, depth: number): { plain: string; md: string } {
-    const before = { p: this.plaintextParts.length, m: this.markdownParts.length };
+    const before = {
+      p: this.plaintextParts.length,
+      m: this.markdownParts.length,
+    };
     let inlinePlain = "";
     let inlineMd = "";
     for (const child of item.content ?? []) {
@@ -377,7 +382,7 @@ export function serializeProseMirrorContent(
     return { plaintext: "", markdown: "", media: [], linkedNodeIds: [] };
   }
   const serializer = new Serializer();
-  serializer.serializeNode(doc as PMNode, 0, false);
+  serializer.serializeNode(doc, 0, false);
   return {
     plaintext: serializer.plaintextParts.join("\n\n").trim(),
     markdown: serializer.markdownParts.join("\n\n").trim(),

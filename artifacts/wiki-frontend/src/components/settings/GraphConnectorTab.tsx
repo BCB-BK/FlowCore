@@ -99,20 +99,75 @@ interface GroupMapping {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { icon: ReactElement; variant: "default" | "destructive" | "secondary" | "outline"; label: string }> = {
-    ok: { icon: <CheckCircle className="h-3 w-3" />, variant: "default", label: "OK" },
-    ready: { icon: <CheckCircle className="h-3 w-3" />, variant: "default", label: "Bereit" },
-    success: { icon: <CheckCircle className="h-3 w-3" />, variant: "default", label: "Erfolgreich" },
-    synced: { icon: <CheckCircle className="h-3 w-3" />, variant: "default", label: "Synchronisiert" },
-    warning: { icon: <AlertTriangle className="h-3 w-3" />, variant: "secondary", label: "Warnung" },
-    partial: { icon: <AlertTriangle className="h-3 w-3" />, variant: "secondary", label: "Teilweise" },
-    skipped: { icon: <AlertTriangle className="h-3 w-3" />, variant: "secondary", label: "Übersprungen" },
-    failed: { icon: <XCircle className="h-3 w-3" />, variant: "destructive", label: "Fehlgeschlagen" },
-    not_ready: { icon: <XCircle className="h-3 w-3" />, variant: "destructive", label: "Nicht bereit" },
-    not_indexed: { icon: <HelpCircle className="h-3 w-3" />, variant: "outline", label: "Nicht indexiert" },
-    not_checkable: { icon: <HelpCircle className="h-3 w-3" />, variant: "outline", label: "Nicht prüfbar" },
+  const map: Record<
+    string,
+    {
+      icon: ReactElement;
+      variant: "default" | "destructive" | "secondary" | "outline";
+      label: string;
+    }
+  > = {
+    ok: {
+      icon: <CheckCircle className="h-3 w-3" />,
+      variant: "default",
+      label: "OK",
+    },
+    ready: {
+      icon: <CheckCircle className="h-3 w-3" />,
+      variant: "default",
+      label: "Bereit",
+    },
+    success: {
+      icon: <CheckCircle className="h-3 w-3" />,
+      variant: "default",
+      label: "Erfolgreich",
+    },
+    synced: {
+      icon: <CheckCircle className="h-3 w-3" />,
+      variant: "default",
+      label: "Synchronisiert",
+    },
+    warning: {
+      icon: <AlertTriangle className="h-3 w-3" />,
+      variant: "secondary",
+      label: "Warnung",
+    },
+    partial: {
+      icon: <AlertTriangle className="h-3 w-3" />,
+      variant: "secondary",
+      label: "Teilweise",
+    },
+    skipped: {
+      icon: <AlertTriangle className="h-3 w-3" />,
+      variant: "secondary",
+      label: "Übersprungen",
+    },
+    failed: {
+      icon: <XCircle className="h-3 w-3" />,
+      variant: "destructive",
+      label: "Fehlgeschlagen",
+    },
+    not_ready: {
+      icon: <XCircle className="h-3 w-3" />,
+      variant: "destructive",
+      label: "Nicht bereit",
+    },
+    not_indexed: {
+      icon: <HelpCircle className="h-3 w-3" />,
+      variant: "outline",
+      label: "Nicht indexiert",
+    },
+    not_checkable: {
+      icon: <HelpCircle className="h-3 w-3" />,
+      variant: "outline",
+      label: "Nicht prüfbar",
+    },
   };
-  const cfg = map[status] ?? { icon: <HelpCircle className="h-3 w-3" />, variant: "outline" as const, label: status };
+  const cfg = map[status] ?? {
+    icon: <HelpCircle className="h-3 w-3" />,
+    variant: "outline" as const,
+    label: status,
+  };
   return (
     <Badge variant={cfg.variant} className="flex items-center gap-1 w-fit">
       {cfg.icon}
@@ -131,19 +186,29 @@ export function GraphConnectorTab() {
   const [loading, setLoading] = useState(true);
 
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<TestConnectionResult | null>(null);
+  const [testResult, setTestResult] = useState<TestConnectionResult | null>(
+    null,
+  );
 
   const [readiness, setReadiness] = useState<ReadinessCheckResult | null>(null);
   const [readinessLoading, setReadinessLoading] = useState(false);
 
   const [schemaRegistering, setSchemaRegistering] = useState(false);
-  const [schemaResult, setSchemaResult] = useState<{ dryRun: boolean; message?: string } | null>(null);
+  const [schemaResult, setSchemaResult] = useState<{
+    dryRun: boolean;
+    message?: string;
+  } | null>(null);
 
   const [syncBusy, setSyncBusy] = useState<string | null>(null);
-  const [syncResult, setSyncResult] = useState<{ label: string; data: unknown } | null>(null);
+  const [syncResult, setSyncResult] = useState<{
+    label: string;
+    data: unknown;
+  } | null>(null);
 
   const [pageStatus, setPageStatus] = useState<IndexStatusPage[]>([]);
-  const [glossaryStatus, setGlossaryStatus] = useState<IndexStatusGlossary[]>([]);
+  const [glossaryStatus, setGlossaryStatus] = useState<IndexStatusGlossary[]>(
+    [],
+  );
   const [statusLoading, setStatusLoading] = useState(false);
 
   const [syncLog, setSyncLog] = useState<SyncLogEntry[]>([]);
@@ -153,7 +218,9 @@ export function GraphConnectorTab() {
   const [glossarySyncEnabled, setGlossarySyncEnabled] = useState(true);
   const [glossarySyncLoading, setGlossarySyncLoading] = useState(false);
   const [singleItemId, setSingleItemId] = useState("");
-  const [singleItemType, setSingleItemType] = useState<"page" | "glossary">("page");
+  const [singleItemType, setSingleItemType] = useState<"page" | "glossary">(
+    "page",
+  );
   const [aclPreview, setAclPreview] = useState<unknown>(null);
   const [aclPreviewLoading, setAclPreviewLoading] = useState(false);
 
@@ -168,8 +235,12 @@ export function GraphConnectorTab() {
   const loadIndexStatus = () => {
     setStatusLoading(true);
     Promise.all([
-      customFetch<{ entries: IndexStatusPage[] }>("/api/graph-connector/index-status/pages"),
-      customFetch<{ entries: IndexStatusGlossary[] }>("/api/graph-connector/index-status/glossary"),
+      customFetch<{ entries: IndexStatusPage[] }>(
+        "/api/graph-connector/index-status/pages",
+      ),
+      customFetch<{ entries: IndexStatusGlossary[] }>(
+        "/api/graph-connector/index-status/glossary",
+      ),
     ])
       .then(([pages, glossary]) => {
         setPageStatus(pages.entries);
@@ -181,21 +252,29 @@ export function GraphConnectorTab() {
 
   const loadSyncLog = () => {
     setLogLoading(true);
-    customFetch<{ entries: SyncLogEntry[] }>("/api/graph-connector/sync/log?limit=50")
+    customFetch<{ entries: SyncLogEntry[] }>(
+      "/api/graph-connector/sync/log?limit=50",
+    )
       .then((res) => setSyncLog(res.entries))
       .catch(() => {})
       .finally(() => setLogLoading(false));
   };
 
   const loadGroupMappings = () => {
-    customFetch<{ mappings: GroupMapping[] }>("/api/graph-connector/group-mappings")
+    customFetch<{ mappings: GroupMapping[] }>(
+      "/api/graph-connector/group-mappings",
+    )
       .then((res) => setGroupMappings(res.mappings))
       .catch(() => {});
   };
 
   const loadGlossarySyncSetting = () => {
-    customFetch<{ settings: Record<string, string> }>("/api/admin/system-settings")
-      .then((res) => setGlossarySyncEnabled(res.settings.glossary_sync_enabled !== "false"))
+    customFetch<{ settings: Record<string, string> }>(
+      "/api/admin/system-settings",
+    )
+      .then((res) =>
+        setGlossarySyncEnabled(res.settings.glossary_sync_enabled !== "false"),
+      )
       .catch(() => {});
   };
 
@@ -211,14 +290,18 @@ export function GraphConnectorTab() {
     setTesting(true);
     setTestResult(null);
     try {
-      const result = await customFetch<TestConnectionResult>("/api/graph-connector/test-connection", {
-        method: "POST",
-      });
+      const result = await customFetch<TestConnectionResult>(
+        "/api/graph-connector/test-connection",
+        {
+          method: "POST",
+        },
+      );
       setTestResult(result);
     } catch (err) {
       setTestResult({
         success: false,
-        message: err instanceof Error ? err.message : "Verbindungstest fehlgeschlagen",
+        message:
+          err instanceof Error ? err.message : "Verbindungstest fehlgeschlagen",
         tokenAcquired: false,
         connectionExists: null,
         connection: connection ?? { id: "", name: "" },
@@ -231,7 +314,9 @@ export function GraphConnectorTab() {
   const handleReadinessCheck = async () => {
     setReadinessLoading(true);
     try {
-      const result = await customFetch<ReadinessCheckResult>("/api/graph-connector/readiness-check");
+      const result = await customFetch<ReadinessCheckResult>(
+        "/api/graph-connector/readiness-check",
+      );
       setReadiness(result);
     } catch {
       setReadiness(null);
@@ -254,7 +339,13 @@ export function GraphConnectorTab() {
       );
       setSchemaResult(result);
     } catch (err) {
-      setSchemaResult({ dryRun, message: err instanceof Error ? err.message : "Fehler bei Schema-Registrierung" });
+      setSchemaResult({
+        dryRun,
+        message:
+          err instanceof Error
+            ? err.message
+            : "Fehler bei Schema-Registrierung",
+      });
     } finally {
       setSchemaRegistering(false);
     }
@@ -274,11 +365,17 @@ export function GraphConnectorTab() {
         headers: { "Content-Type": "application/json" },
         body: kind === "full" ? JSON.stringify({ dryRun }) : undefined,
       });
-      setSyncResult({ label: `${kind === "full" ? "Vollsynchronisation" : "Delta-Synchronisation"}${dryRun ? " (Probelauf)" : ""}`, data: result });
+      setSyncResult({
+        label: `${kind === "full" ? "Vollsynchronisation" : "Delta-Synchronisation"}${dryRun ? " (Probelauf)" : ""}`,
+        data: result,
+      });
       loadIndexStatus();
       loadSyncLog();
     } catch (err) {
-      setSyncResult({ label: "Fehler", data: { error: err instanceof Error ? err.message : String(err) } });
+      setSyncResult({
+        label: "Fehler",
+        data: { error: err instanceof Error ? err.message : String(err) },
+      });
     } finally {
       setSyncBusy(null);
     }
@@ -306,7 +403,10 @@ export function GraphConnectorTab() {
       loadIndexStatus();
       loadSyncLog();
     } catch (err) {
-      setSyncResult({ label: "Fehler", data: { error: err instanceof Error ? err.message : String(err) } });
+      setSyncResult({
+        label: "Fehler",
+        data: { error: err instanceof Error ? err.message : String(err) },
+      });
     } finally {
       setSyncBusy(null);
     }
@@ -317,10 +417,14 @@ export function GraphConnectorTab() {
     setAclPreviewLoading(true);
     setAclPreview(null);
     try {
-      const result = await customFetch<unknown>(`/api/graph-connector/acl-preview/${singleItemId.trim()}`);
+      const result = await customFetch<unknown>(
+        `/api/graph-connector/acl-preview/${singleItemId.trim()}`,
+      );
       setAclPreview(result);
     } catch (err) {
-      setAclPreview({ error: err instanceof Error ? err.message : String(err) });
+      setAclPreview({
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setAclPreviewLoading(false);
     }
@@ -344,15 +448,19 @@ export function GraphConnectorTab() {
             {connection && <Badge variant="outline">{connection.id}</Badge>}
           </div>
           <CardDescription>
-            Copilot Studio / Microsoft Search Enterprise-Data-Connector für FlowCore-Inhalte.
-            Optionale, separate Funktion für die passive Hintergrund-Indexierung — erfordert eine
-            externe Verbindungs-ID aus dem Microsoft-365-Tenant, die noch nicht hinterlegt ist. Dies
-            betrifft nicht den API-Key-Custom-Connector (siehe Tab „Copilot Connector-Keys").
+            Copilot Studio / Microsoft Search Enterprise-Data-Connector für
+            FlowCore-Inhalte. Optionale, separate Funktion für die passive
+            Hintergrund-Indexierung — erfordert eine externe Verbindungs-ID aus
+            dem Microsoft-365-Tenant, die noch nicht hinterlegt ist. Dies
+            betrifft nicht den API-Key-Custom-Connector (siehe Tab „Copilot
+            Connector-Keys").
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {loading ? (
-            <div className="text-sm text-muted-foreground">Lade Konfiguration…</div>
+            <div className="text-sm text-muted-foreground">
+              Lade Konfiguration…
+            </div>
           ) : connection ? (
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
@@ -361,21 +469,39 @@ export function GraphConnectorTab() {
               </div>
               {connection.description ? (
                 <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground shrink-0">Beschreibung</span>
-                  <span className="text-right">{String(connection.description)}</span>
+                  <span className="text-muted-foreground shrink-0">
+                    Beschreibung
+                  </span>
+                  <span className="text-right">
+                    {String(connection.description)}
+                  </span>
                 </div>
               ) : null}
             </div>
           ) : (
-            <div className="text-sm text-amber-600">Verbindungskonfiguration konnte nicht geladen werden.</div>
+            <div className="text-sm text-amber-600">
+              Verbindungskonfiguration konnte nicht geladen werden.
+            </div>
           )}
 
           <div className="flex flex-wrap gap-2 pt-1">
-            <Button size="sm" variant="outline" onClick={handleTestConnection} disabled={testing}>
-              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${testing ? "animate-spin" : ""}`} />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleTestConnection}
+              disabled={testing}
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 mr-1.5 ${testing ? "animate-spin" : ""}`}
+              />
               Verbindung testen
             </Button>
-            <Button size="sm" variant="outline" onClick={handleReadinessCheck} disabled={readinessLoading}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleReadinessCheck}
+              disabled={readinessLoading}
+            >
               <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
               Copilot-Studio-Bereitschaft prüfen
             </Button>
@@ -390,12 +516,21 @@ export function GraphConnectorTab() {
               }`}
             >
               <p className="font-medium flex items-center gap-1.5">
-                {testResult.success ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                {testResult.success ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
                 {testResult.message}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Token bezogen: {testResult.tokenAcquired ? "ja" : "nein"} · Verbindung vorhanden:{" "}
-                {testResult.connectionExists === null ? "unbekannt" : testResult.connectionExists ? "ja" : "nein"}
+                Token bezogen: {testResult.tokenAcquired ? "ja" : "nein"} ·
+                Verbindung vorhanden:{" "}
+                {testResult.connectionExists === null
+                  ? "unbekannt"
+                  : testResult.connectionExists
+                    ? "ja"
+                    : "nein"}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 italic">
                 Dieser Test synchronisiert keine Inhalte.
@@ -420,11 +555,15 @@ export function GraphConnectorTab() {
                 <TableBody>
                   {readiness.checks.map((check) => (
                     <TableRow key={check.key}>
-                      <TableCell className="font-medium">{check.label}</TableCell>
+                      <TableCell className="font-medium">
+                        {check.label}
+                      </TableCell>
                       <TableCell>
                         <StatusBadge status={check.status} />
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{check.message}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {check.message}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -437,21 +576,40 @@ export function GraphConnectorTab() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Schema</CardTitle>
-          <CardDescription>Externes Schema für die Connection prüfen und registrieren</CardDescription>
+          <CardDescription>
+            Externes Schema für die Connection prüfen und registrieren
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => handleSchemaAction(true)} disabled={schemaRegistering}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleSchemaAction(true)}
+              disabled={schemaRegistering}
+            >
               Schema-Check (Probelauf)
             </Button>
-            <Button size="sm" onClick={() => handleSchemaAction(false)} disabled={schemaRegistering}>
+            <Button
+              size="sm"
+              onClick={() => handleSchemaAction(false)}
+              disabled={schemaRegistering}
+            >
               Schema registrieren
             </Button>
           </div>
           {schemaResult && (
             <div className="rounded-md border p-3 text-sm bg-muted/40">
-              <p>{schemaResult.dryRun ? "Probelauf abgeschlossen." : "Schema registriert."}</p>
-              {schemaResult.message && <p className="text-xs text-muted-foreground mt-1">{schemaResult.message}</p>}
+              <p>
+                {schemaResult.dryRun
+                  ? "Probelauf abgeschlossen."
+                  : "Schema registriert."}
+              </p>
+              {schemaResult.message && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {schemaResult.message}
+                </p>
+              )}
             </div>
           )}
         </CardContent>
@@ -461,19 +619,34 @@ export function GraphConnectorTab() {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Synchronisation</CardTitle>
           <CardDescription>
-            Vollsynchronisation, Delta-Synchronisation und Einzelitem-Synchronisation. Probeläufe schreiben nichts.
+            Vollsynchronisation, Delta-Synchronisation und
+            Einzelitem-Synchronisation. Probeläufe schreiben nichts.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => handleSync("full", true)} disabled={!!syncBusy}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleSync("full", true)}
+              disabled={!!syncBusy}
+            >
               Vollsync (Probelauf)
             </Button>
-            <Button size="sm" onClick={() => handleSync("full", false)} disabled={!!syncBusy}>
+            <Button
+              size="sm"
+              onClick={() => handleSync("full", false)}
+              disabled={!!syncBusy}
+            >
               <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
               Vollsync starten
             </Button>
-            <Button size="sm" variant="outline" onClick={() => handleSync("delta", false)} disabled={!!syncBusy}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleSync("delta", false)}
+              disabled={!!syncBusy}
+            >
               Delta-Sync ausführen
             </Button>
           </div>
@@ -482,8 +655,8 @@ export function GraphConnectorTab() {
             <div>
               <p className="text-sm font-medium">Glossar</p>
               <p className="text-xs text-muted-foreground">
-                Glossarbegriffe werden bei Voll- und Delta-Synchronisation sowie in der Copilot-Suche
-                und im Copilot-Export ber{"ü"}cksichtigt
+                Glossarbegriffe werden bei Voll- und Delta-Synchronisation sowie
+                in der Copilot-Suche und im Copilot-Export ber{"ü"}cksichtigt
               </p>
             </div>
             <Switch
@@ -492,26 +665,34 @@ export function GraphConnectorTab() {
               onCheckedChange={async (checked) => {
                 setGlossarySyncLoading(true);
                 try {
-                  await customFetch("/api/admin/system-settings/glossary_sync_enabled", {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ value: checked ? "true" : "false" }),
-                  });
+                  await customFetch(
+                    "/api/admin/system-settings/glossary_sync_enabled",
+                    {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        value: checked ? "true" : "false",
+                      }),
+                    },
+                  );
                   setGlossarySyncEnabled(checked);
-                } catch {
-                }
+                } catch {}
                 setGlossarySyncLoading(false);
               }}
             />
           </div>
 
           <div className="rounded-md border p-3 space-y-2">
-            <Label className="text-xs text-muted-foreground">Einzelitem-Synchronisation</Label>
+            <Label className="text-xs text-muted-foreground">
+              Einzelitem-Synchronisation
+            </Label>
             <div className="flex flex-wrap gap-2 items-center">
               <select
                 className="h-9 rounded-md border bg-background px-2 text-sm"
                 value={singleItemType}
-                onChange={(e) => setSingleItemType(e.target.value as "page" | "glossary")}
+                onChange={(e) =>
+                  setSingleItemType(e.target.value as "page" | "glossary")
+                }
               >
                 <option value="page">Seite (Node-ID)</option>
                 <option value="glossary">Glossarbegriff (Term-ID)</option>
@@ -522,14 +703,28 @@ export function GraphConnectorTab() {
                 value={singleItemId}
                 onChange={(e) => setSingleItemId(e.target.value)}
               />
-              <Button size="sm" variant="outline" disabled={!singleItemId.trim() || !!syncBusy} onClick={() => handleSingleItemSync(true)}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!singleItemId.trim() || !!syncBusy}
+                onClick={() => handleSingleItemSync(true)}
+              >
                 Probelauf
               </Button>
-              <Button size="sm" disabled={!singleItemId.trim() || !!syncBusy} onClick={() => handleSingleItemSync(false)}>
+              <Button
+                size="sm"
+                disabled={!singleItemId.trim() || !!syncBusy}
+                onClick={() => handleSingleItemSync(false)}
+              >
                 Synchronisieren
               </Button>
               {singleItemType === "page" && (
-                <Button size="sm" variant="ghost" disabled={!singleItemId.trim() || aclPreviewLoading} onClick={handleAclPreview}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={!singleItemId.trim() || aclPreviewLoading}
+                  onClick={handleAclPreview}
+                >
                   <FileSearch className="h-3.5 w-3.5 mr-1.5" />
                   ACL/Payload-Vorschau
                 </Button>
@@ -557,7 +752,9 @@ export function GraphConnectorTab() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">ACL-Gruppenzuordnung</CardTitle>
-          <CardDescription>Vertraulichkeitsstufen auf Entra-Gruppen abgebildet</CardDescription>
+          <CardDescription>
+            Vertraulichkeitsstufen auf Entra-Gruppen abgebildet
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -572,13 +769,18 @@ export function GraphConnectorTab() {
               {groupMappings.map((m) => (
                 <TableRow key={m.tier}>
                   <TableCell className="font-medium">{m.tier}</TableCell>
-                  <TableCell className="font-mono text-xs">{m.entraGroupId ?? "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {m.entraGroupId ?? "—"}
+                  </TableCell>
                   <TableCell>{m.label ?? "—"}</TableCell>
                 </TableRow>
               ))}
               {groupMappings.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-sm text-muted-foreground py-4">
+                  <TableCell
+                    colSpan={3}
+                    className="text-center text-sm text-muted-foreground py-4"
+                  >
                     Keine Gruppenzuordnung konfiguriert
                   </TableCell>
                 </TableRow>
@@ -595,15 +797,26 @@ export function GraphConnectorTab() {
               <Database className="h-5 w-5" />
               Indexstatus
             </CardTitle>
-            <Button size="sm" variant="ghost" onClick={loadIndexStatus} disabled={statusLoading}>
-              <RefreshCw className={`h-3.5 w-3.5 ${statusLoading ? "animate-spin" : ""}`} />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={loadIndexStatus}
+              disabled={statusLoading}
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${statusLoading ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
-          <CardDescription>Indexstatus pro Seite und Glossarbegriff</CardDescription>
+          <CardDescription>
+            Indexstatus pro Seite und Glossarbegriff
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm font-medium mb-2">Seiten ({pageStatus.length})</p>
+            <p className="text-sm font-medium mb-2">
+              Seiten ({pageStatus.length})
+            </p>
             <div className="max-h-64 overflow-auto">
               <Table>
                 <TableHeader>
@@ -619,18 +832,27 @@ export function GraphConnectorTab() {
                     <TableRow key={p.nodeId}>
                       <TableCell className="text-sm">
                         {p.title}
-                        <span className="block text-xs text-muted-foreground">{p.displayCode}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {p.displayCode}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={p.indexStatus} />
                       </TableCell>
-                      <TableCell className="text-xs">{formatDate(p.lastSyncedAt)}</TableCell>
-                      <TableCell className="text-xs text-destructive">{p.lastError ?? "—"}</TableCell>
+                      <TableCell className="text-xs">
+                        {formatDate(p.lastSyncedAt)}
+                      </TableCell>
+                      <TableCell className="text-xs text-destructive">
+                        {p.lastError ?? "—"}
+                      </TableCell>
                     </TableRow>
                   ))}
                   {pageStatus.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-4">
+                      <TableCell
+                        colSpan={4}
+                        className="text-center text-sm text-muted-foreground py-4"
+                      >
                         Keine Seiten gefunden
                       </TableCell>
                     </TableRow>
@@ -641,7 +863,9 @@ export function GraphConnectorTab() {
           </div>
 
           <div>
-            <p className="text-sm font-medium mb-2">Glossarbegriffe ({glossaryStatus.length})</p>
+            <p className="text-sm font-medium mb-2">
+              Glossarbegriffe ({glossaryStatus.length})
+            </p>
             <div className="max-h-64 overflow-auto">
               <Table>
                 <TableHeader>
@@ -659,13 +883,20 @@ export function GraphConnectorTab() {
                       <TableCell>
                         <StatusBadge status={g.indexStatus} />
                       </TableCell>
-                      <TableCell className="text-xs">{formatDate(g.lastSyncedAt)}</TableCell>
-                      <TableCell className="text-xs text-destructive">{g.lastError ?? "—"}</TableCell>
+                      <TableCell className="text-xs">
+                        {formatDate(g.lastSyncedAt)}
+                      </TableCell>
+                      <TableCell className="text-xs text-destructive">
+                        {g.lastError ?? "—"}
+                      </TableCell>
                     </TableRow>
                   ))}
                   {glossaryStatus.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-4">
+                      <TableCell
+                        colSpan={4}
+                        className="text-center text-sm text-muted-foreground py-4"
+                      >
                         Keine Glossarbegriffe gefunden
                       </TableCell>
                     </TableRow>
@@ -685,8 +916,15 @@ export function GraphConnectorTab() {
               Sync-Historie &amp; Fehlerprotokoll
             </CardTitle>
             <div className="flex gap-2">
-              <Button size="sm" variant="ghost" onClick={loadSyncLog} disabled={logLoading}>
-                <RefreshCw className={`h-3.5 w-3.5 ${logLoading ? "animate-spin" : ""}`} />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={loadSyncLog}
+                disabled={logLoading}
+              >
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${logLoading ? "animate-spin" : ""}`}
+                />
               </Button>
               <Button size="sm" variant="outline" onClick={handleExportLog}>
                 <Download className="h-3.5 w-3.5 mr-1.5" />
@@ -710,21 +948,35 @@ export function GraphConnectorTab() {
               <TableBody>
                 {syncLog.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell className="text-xs">{formatDate(entry.createdAt)}</TableCell>
-                    <TableCell className="font-mono text-xs">{entry.itemId}</TableCell>
+                    <TableCell className="text-xs">
+                      {formatDate(entry.createdAt)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {entry.itemId}
+                    </TableCell>
                     <TableCell className="text-xs">
                       {entry.operation}
-                      {entry.dryRun && <span className="text-muted-foreground"> (Probelauf)</span>}
+                      {entry.dryRun && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          (Probelauf)
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={entry.result} />
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{entry.reason ?? "—"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {entry.reason ?? "—"}
+                    </TableCell>
                   </TableRow>
                 ))}
                 {syncLog.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-4">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-sm text-muted-foreground py-4"
+                    >
                       Kein Protokoll vorhanden
                     </TableCell>
                   </TableRow>

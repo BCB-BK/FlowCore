@@ -17,16 +17,24 @@ function run(cmd: string): string {
 }
 
 function getChangedFiles(): string[] {
-  const staged = run("git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only --cached");
+  const staged = run(
+    "git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only --cached",
+  );
   const unstaged = run("git diff --name-only");
-  const all = [...new Set([...staged.split("\n"), ...unstaged.split("\n")])].filter(
-    (f) => f.trim().length > 0 && (f.endsWith(".ts") || f.endsWith(".tsx"))
+  const all = [
+    ...new Set([...staged.split("\n"), ...unstaged.split("\n")]),
+  ].filter(
+    (f) => f.trim().length > 0 && (f.endsWith(".ts") || f.endsWith(".tsx")),
   );
   return all;
 }
 
 function countImporters(filePath: string): { count: number; files: string[] } {
-  const baseName = filePath.split("/").pop()?.replace(/\.(tsx?)$/, "") ?? "";
+  const baseName =
+    filePath
+      .split("/")
+      .pop()
+      ?.replace(/\.(tsx?)$/, "") ?? "";
   if (!baseName) return { count: 0, files: [] };
   try {
     const result = execFileSync(
@@ -45,7 +53,7 @@ function countImporters(filePath: string): { count: number; files: string[] } {
         encoding: "utf-8",
         timeout: 8000,
         stdio: ["pipe", "pipe", "pipe"],
-      }
+      },
     );
     const files = result
       .trim()
@@ -67,17 +75,24 @@ console.log(divider);
 
 console.log("\n📁 Automatisch erkannte geänderte Dateien:\n");
 if (changedFiles.length === 0) {
-  console.log("  (keine geänderten .ts/.tsx-Dateien erkannt — manuell auflisten)");
+  console.log(
+    "  (keine geänderten .ts/.tsx-Dateien erkannt — manuell auflisten)",
+  );
 } else {
   for (const f of changedFiles) {
     const { count, files } = countImporters(f);
-    const importerInfo = count > 0 ? ` → importiert von ${count} Datei(en): ${files.join(", ")}` : " → keine direkten Importer gefunden";
+    const importerInfo =
+      count > 0
+        ? ` → importiert von ${count} Datei(en): ${files.join(", ")}`
+        : " → keine direkten Importer gefunden";
     console.log(`  • ${f}${importerInfo}`);
   }
 }
 
 console.log(`\n${divider}`);
-console.log("  FELDER ZUM AUSFÜLLEN (in der User-Antwort als Markdown-Block)\n");
+console.log(
+  "  FELDER ZUM AUSFÜLLEN (in der User-Antwort als Markdown-Block)\n",
+);
 
 const template = `## Senior Self-Review
 
@@ -110,9 +125,15 @@ console.log(template);
 
 console.log(divider);
 console.log("  ERINNERUNGEN\n");
-console.log("  R1 — Hast du ALLE betroffenen Dateien geprüft (nicht nur die offensichtlichen)?");
+console.log(
+  "  R1 — Hast du ALLE betroffenen Dateien geprüft (nicht nur die offensichtlichen)?",
+);
 console.log("  R2 — Jede 'Es funktioniert'-Aussage nur nach Logs/E2E belegt?");
 console.log("  R5 — openapi.yaml geändert? → Orval-Codegen laufen lassen.");
-console.log("       lib/db/src/schema/ geändert? → pnpm --filter @workspace/db push.");
-console.log("  R7 — Wurden Labels/Texte direkt in SSOT (registry.ts) geändert, nicht in Komponenten?");
+console.log(
+  "       lib/db/src/schema/ geändert? → pnpm --filter @workspace/db push.",
+);
+console.log(
+  "  R7 — Wurden Labels/Texte direkt in SSOT (registry.ts) geändert, nicht in Komponenten?",
+);
 console.log(`\n${divider}\n`);

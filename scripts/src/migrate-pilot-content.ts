@@ -106,7 +106,7 @@ async function migratePilotContent() {
     `);
 
     if (existing.rows.length > 0) {
-      const row = existing.rows[0] as Record<string, unknown>;
+      const row = existing.rows[0];
       codeToId.set(node.displayCode, row.id as string);
       console.log(`  SKIP (exists): ${node.displayCode} — ${node.title}`);
       continue;
@@ -123,8 +123,7 @@ async function migratePilotContent() {
           LIMIT 1
         `);
         if (parentResult.rows.length > 0) {
-          parentId = (parentResult.rows[0] as Record<string, unknown>)
-            .id as string;
+          parentId = parentResult.rows[0].id as string;
         }
       }
     }
@@ -143,7 +142,7 @@ async function migratePilotContent() {
       RETURNING id
     `);
 
-    const newId = (result.rows[0] as Record<string, unknown>).id as string;
+    const newId = result.rows[0].id as string;
     codeToId.set(node.displayCode, newId);
     console.log(`  CREATE: ${node.displayCode} — ${node.title} (${newId})`);
   }

@@ -18,7 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/select";
-import { Plus, Trash2, Pencil, Check, X, Map, ExternalLink, GripVertical } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  Map,
+  ExternalLink,
+  GripVertical,
+} from "lucide-react";
 
 export interface ProcessStepEntry {
   order: number;
@@ -39,7 +48,17 @@ interface ProcessStepsTableProps {
 }
 
 function emptyEntry(order: number): ProcessStepEntry {
-  return { order, title: "", processId: "", pageType: "", summary: "", role: "", organ: "", body: "", link: "" };
+  return {
+    order,
+    title: "",
+    processId: "",
+    pageType: "",
+    summary: "",
+    role: "",
+    organ: "",
+    body: "",
+    link: "",
+  };
 }
 
 function normalize(raw: unknown): ProcessStepEntry[] | null {
@@ -50,7 +69,8 @@ function normalize(raw: unknown): ProcessStepEntry[] | null {
   if (!Array.isArray(raw)) return null;
   if (raw.length === 0) return null;
   return raw.map((item: unknown, i: number) => {
-    if (typeof item !== "object" || item === null) return { ...emptyEntry(i + 1), title: String(item ?? "") };
+    if (typeof item !== "object" || item === null)
+      return { ...emptyEntry(i + 1), title: String(item ?? "") };
     const obj = item as Record<string, unknown>;
     return {
       order: typeof obj.order === "number" ? obj.order : i + 1,
@@ -77,7 +97,11 @@ const PAGE_TYPE_OPTIONS: Record<string, string> = {
   role_profile: "Rollenprofil",
 };
 
-export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableProps) {
+export function ProcessStepsTable({
+  data,
+  onSave,
+  readOnly,
+}: ProcessStepsTableProps) {
   const parsed = normalize(data);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<ProcessStepEntry[]>(parsed ?? []);
@@ -100,15 +124,26 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
     setEditing(false);
   };
 
-  const addRow = () => setDraft((prev) => [...prev, emptyEntry(prev.length + 1)]);
+  const addRow = () =>
+    setDraft((prev) => [...prev, emptyEntry(prev.length + 1)]);
 
   const removeRow = (index: number) => {
-    setDraft((prev) => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, order: i + 1 })));
+    setDraft((prev) =>
+      prev
+        .filter((_, i) => i !== index)
+        .map((e, i) => ({ ...e, order: i + 1 })),
+    );
   };
 
-  const updateField = (index: number, field: keyof ProcessStepEntry, value: string | number) => {
+  const updateField = (
+    index: number,
+    field: keyof ProcessStepEntry,
+    value: string | number,
+  ) => {
     setDraft((prev) =>
-      prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry))
+      prev.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry,
+      ),
     );
   };
 
@@ -133,18 +168,32 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
             Prozesslandkarte / Prozessschritte
           </CardTitle>
           {onSave && !readOnly && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={startEdit}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground"
+              onClick={startEdit}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
@@ -155,7 +204,9 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
       <CardContent>
         {!current || current.length === 0 ? (
           <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground mb-2">Keine Prozessschritte definiert</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Keine Prozessschritte definiert
+            </p>
             {onSave && !readOnly && (
               <Button variant="outline" size="sm" onClick={startEdit}>
                 <Plus className="h-3 w-3 mr-1" />
@@ -174,8 +225,12 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
                     <TableHead className="min-w-[90px]">Prozess-ID</TableHead>
                     <TableHead className="min-w-[120px]">Seitentyp</TableHead>
                     <TableHead className="min-w-[140px]">Kurzinhalt</TableHead>
-                    <TableHead className="min-w-[100px]">Rolle/Stelle</TableHead>
-                    <TableHead className="min-w-[100px]">Organ/Gremium</TableHead>
+                    <TableHead className="min-w-[100px]">
+                      Rolle/Stelle
+                    </TableHead>
+                    <TableHead className="min-w-[100px]">
+                      Organ/Gremium
+                    </TableHead>
                     <TableHead className="min-w-[100px]">Link</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
@@ -192,7 +247,9 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
                           >
                             <GripVertical className="h-3 w-3 rotate-180" />
                           </button>
-                          <span className="text-xs font-mono">{entry.order}</span>
+                          <span className="text-xs font-mono">
+                            {entry.order}
+                          </span>
                           <button
                             onClick={() => moveRow(idx, 1)}
                             disabled={idx === draft.length - 1}
@@ -203,38 +260,96 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Input value={entry.title} onChange={(e) => updateField(idx, "title", e.target.value)} className="h-7 text-xs" placeholder="Titel" />
+                        <Input
+                          value={entry.title}
+                          onChange={(e) =>
+                            updateField(idx, "title", e.target.value)
+                          }
+                          className="h-7 text-xs"
+                          placeholder="Titel"
+                        />
                       </TableCell>
                       <TableCell>
-                        <Input value={entry.processId} onChange={(e) => updateField(idx, "processId", e.target.value)} className="h-7 text-xs" placeholder="ID" />
+                        <Input
+                          value={entry.processId}
+                          onChange={(e) =>
+                            updateField(idx, "processId", e.target.value)
+                          }
+                          className="h-7 text-xs"
+                          placeholder="ID"
+                        />
                       </TableCell>
                       <TableCell>
-                        <Select value={entry.pageType || "_empty"} onValueChange={(v) => updateField(idx, "pageType", v === "_empty" ? "" : v)}>
+                        <Select
+                          value={entry.pageType || "_empty"}
+                          onValueChange={(v) =>
+                            updateField(
+                              idx,
+                              "pageType",
+                              v === "_empty" ? "" : v,
+                            )
+                          }
+                        >
                           <SelectTrigger className="h-7 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="_empty">—</SelectItem>
                             {Object.entries(PAGE_TYPE_OPTIONS).map(([k, v]) => (
-                              <SelectItem key={k} value={k}>{v}</SelectItem>
+                              <SelectItem key={k} value={k}>
+                                {v}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </TableCell>
                       <TableCell>
-                        <Input value={entry.summary} onChange={(e) => updateField(idx, "summary", e.target.value)} className="h-7 text-xs" placeholder="Kurzinhalt" />
+                        <Input
+                          value={entry.summary}
+                          onChange={(e) =>
+                            updateField(idx, "summary", e.target.value)
+                          }
+                          className="h-7 text-xs"
+                          placeholder="Kurzinhalt"
+                        />
                       </TableCell>
                       <TableCell>
-                        <Input value={entry.role} onChange={(e) => updateField(idx, "role", e.target.value)} className="h-7 text-xs" placeholder="Rolle" />
+                        <Input
+                          value={entry.role}
+                          onChange={(e) =>
+                            updateField(idx, "role", e.target.value)
+                          }
+                          className="h-7 text-xs"
+                          placeholder="Rolle"
+                        />
                       </TableCell>
                       <TableCell>
-                        <Input value={entry.organ} onChange={(e) => updateField(idx, "organ", e.target.value)} className="h-7 text-xs" placeholder="Gremium" />
+                        <Input
+                          value={entry.organ}
+                          onChange={(e) =>
+                            updateField(idx, "organ", e.target.value)
+                          }
+                          className="h-7 text-xs"
+                          placeholder="Gremium"
+                        />
                       </TableCell>
                       <TableCell>
-                        <Input value={entry.link} onChange={(e) => updateField(idx, "link", e.target.value)} className="h-7 text-xs" placeholder="/node/..." />
+                        <Input
+                          value={entry.link}
+                          onChange={(e) =>
+                            updateField(idx, "link", e.target.value)
+                          }
+                          className="h-7 text-xs"
+                          placeholder="/node/..."
+                        />
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => removeRow(idx)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() => removeRow(idx)}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </TableCell>
@@ -243,7 +358,12 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
                 </TableBody>
               </Table>
             </div>
-            <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={addRow}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2 text-xs"
+              onClick={addRow}
+            >
               <Plus className="h-3 w-3 mr-1" />
               Schritt hinzufügen
             </Button>
@@ -251,7 +371,10 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
         ) : (
           <div className="space-y-2">
             {current.map((entry, idx) => (
-              <div key={idx} className="flex items-start gap-3 rounded border p-3 hover:bg-muted/30 transition-colors">
+              <div
+                key={idx}
+                className="flex items-start gap-3 rounded border p-3 hover:bg-muted/30 transition-colors"
+              >
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
                   {entry.order}
                 </div>
@@ -259,7 +382,9 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">{entry.title}</span>
                     {entry.processId && (
-                      <Badge variant="outline" className="text-[10px]">{entry.processId}</Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {entry.processId}
+                      </Badge>
                     )}
                     {entry.pageType && (
                       <Badge variant="secondary" className="text-[10px]">
@@ -268,17 +393,26 @@ export function ProcessStepsTable({ data, onSave, readOnly }: ProcessStepsTableP
                     )}
                   </div>
                   {entry.summary && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{entry.summary}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {entry.summary}
+                    </p>
                   )}
                   {entry.role && (
-                    <p className="text-xs text-muted-foreground mt-0.5">Rolle: {entry.role}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Rolle: {entry.role}
+                    </p>
                   )}
                   {entry.organ && (
-                    <p className="text-xs text-muted-foreground mt-0.5">Organ/Gremium: {entry.organ}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Organ/Gremium: {entry.organ}
+                    </p>
                   )}
                 </div>
                 {entry.link && (
-                  <a href={entry.link} className="text-primary hover:underline shrink-0">
+                  <a
+                    href={entry.link}
+                    className="text-primary hover:underline shrink-0"
+                  >
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 )}

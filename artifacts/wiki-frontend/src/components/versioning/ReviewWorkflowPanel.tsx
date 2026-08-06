@@ -94,14 +94,14 @@ export function ReviewWorkflowPanel({
   }, [apiBase, revisionId]);
 
   useEffect(() => {
-    fetchWorkflow();
+    void fetchWorkflow();
   }, [fetchWorkflow]);
 
   const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: [`/api/content/nodes/${nodeId}/revisions`],
     });
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: [`/api/content/nodes/${nodeId}`],
     });
   }, [queryClient, nodeId]);
@@ -118,10 +118,14 @@ export function ReviewWorkflowPanel({
           }),
         },
       );
-      toast({ title: "Zur Prüfung eingereicht", description: "Die Revision wurde in den Freigabe-Pool der Prozessmanager übermittelt." });
+      toast({
+        title: "Zur Prüfung eingereicht",
+        description:
+          "Die Revision wurde in den Freigabe-Pool der Prozessmanager übermittelt.",
+      });
       setSubmitDialogOpen(false);
       setComment("");
-      fetchWorkflow();
+      void fetchWorkflow();
       invalidate();
     } catch (err) {
       toast({
@@ -131,14 +135,7 @@ export function ReviewWorkflowPanel({
     } finally {
       setSubmitting(false);
     }
-  }, [
-    apiBase,
-    revisionId,
-    comment,
-    toast,
-    fetchWorkflow,
-    invalidate,
-  ]);
+  }, [apiBase, revisionId, comment, toast, fetchWorkflow, invalidate]);
 
   const handleApprove = useCallback(async () => {
     setSubmitting(true);
@@ -154,7 +151,7 @@ export function ReviewWorkflowPanel({
       setApproveDialogOpen(false);
       setComment("");
       setNextReviewDate("");
-      fetchWorkflow();
+      void fetchWorkflow();
       invalidate();
     } catch {
       toast({ variant: "destructive", title: "Fehler bei der Genehmigung" });
@@ -189,7 +186,7 @@ export function ReviewWorkflowPanel({
       });
       setRejectDialogOpen(false);
       setComment("");
-      fetchWorkflow();
+      void fetchWorkflow();
       invalidate();
     } catch {
       toast({ variant: "destructive", title: "Fehler bei der Ablehnung" });
@@ -328,7 +325,8 @@ export function ReviewWorkflowPanel({
             <DialogTitle>Zur Prüfung einreichen</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Die Revision wird automatisch in den Freigabe-Pool aller zuständigen Prozessmanager übermittelt.
+            Die Revision wird automatisch in den Freigabe-Pool aller zuständigen
+            Prozessmanager übermittelt.
           </p>
           <div className="space-y-3">
             <div className="space-y-1">

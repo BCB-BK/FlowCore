@@ -19,7 +19,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="flex h-screen w-full overflow-hidden teams-embedded">
           {sidebarOpen && (
             <div id="teams-sidebar">
-              <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
+              <ErrorBoundary
+                compact
+                fallbackTitle="Sidebar-Fehler"
+                fallbackMessage="Die Seitenleiste konnte nicht geladen werden."
+              >
                 <WikiSidebar />
               </ErrorBoundary>
             </div>
@@ -53,7 +57,10 @@ export function AppLayout({ children }: AppLayoutProps) {
               </span>
             </header>
             <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 flex flex-col [scrollbar-gutter:stable]">
-              <ErrorBoundary fallbackTitle="Inhaltsfehler" fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden.">
+              <ErrorBoundary
+                fallbackTitle="Inhaltsfehler"
+                fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden."
+              >
                 {children}
               </ErrorBoundary>
             </main>
@@ -66,13 +73,20 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="flex h-screen w-full overflow-hidden">
-        <ErrorBoundary compact fallbackTitle="Sidebar-Fehler" fallbackMessage="Die Seitenleiste konnte nicht geladen werden.">
+        <ErrorBoundary
+          compact
+          fallbackTitle="Sidebar-Fehler"
+          fallbackMessage="Die Seitenleiste konnte nicht geladen werden."
+        >
           <WikiSidebar />
         </ErrorBoundary>
         <div className="flex flex-1 flex-col overflow-hidden">
           <AppHeader />
           <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 flex flex-col [scrollbar-gutter:stable]">
-            <ErrorBoundary fallbackTitle="Inhaltsfehler" fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden.">
+            <ErrorBoundary
+              fallbackTitle="Inhaltsfehler"
+              fallbackMessage="Der Seiteninhalt konnte nicht angezeigt werden."
+            >
               {children}
             </ErrorBoundary>
           </main>

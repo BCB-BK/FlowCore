@@ -12,6 +12,8 @@ const configSchema = z.object({
   entraClientSecret: z.string().optional().default(""),
   entraTenantId: z.string().optional().default(""),
   entraRedirectUri: z.string().optional().default(""),
+  /** Oeffentliche Adresse der Instanz — u. a. Rueckziel nach der Abmeldung. */
+  appPublicUrl: z.string().optional().default(""),
   sessionSecret: z.string().optional().default("dev-session-secret-change-me"),
   authDevMode: z
     .enum(["true", "false"])
@@ -50,6 +52,7 @@ function loadConfig(): AppConfig {
     entraClientSecret: process.env["ENTRA_CLIENT_SECRET"],
     entraTenantId: process.env["ENTRA_TENANT_ID"],
     entraRedirectUri: process.env["ENTRA_REDIRECT_URI"],
+    appPublicUrl: process.env["APP_PUBLIC_URL"],
     sessionSecret: process.env["SESSION_SECRET"],
     authDevMode:
       process.env["AUTH_DEV_MODE"] ??
@@ -75,6 +78,29 @@ function loadConfig(): AppConfig {
     throw new Error(
       "SESSION_SECRET must be set to a strong, unique value in production",
     );
+  }
+
+  // Fail-closed: Ohne Anmeldekonfiguration darf keine Produktivinstanz
+  // starten. Zuvor liefen solche Instanzen an und wiesen zwar jeden Zugriff
+  // ab (401), der Fehler fiel aber erst beim ersten Anmeldeversuch auf —
+  // Audit-Befund B12.
+  if (config.nodeEnv === "production") {
+    const fehlend = (
+      [
+        ["ENTRA_CLIENT_ID", config.entraClientId],
+        ["ENTRA_CLIENT_SECRET", config.entraClientSecret],
+        ["ENTRA_TENANT_ID", config.entraTenantId],
+        ["ENTRA_REDIRECT_URI", config.entraRedirectUri],
+      ] as const
+    )
+      .filter(([, wert]) => !wert)
+      .map(([name]) => name);
+
+    if (fehlend.length > 0) {
+      throw new Error(
+        `Anmeldekonfiguration unvollstaendig — in production erforderlich: ${fehlend.join(", ")}`,
+      );
+    }
   }
 
   // Fail-closed: Der Dev-Auth-Bypass ist ausschließlich in einer explizit als

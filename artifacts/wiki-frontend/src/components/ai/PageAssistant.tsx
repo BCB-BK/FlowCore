@@ -24,11 +24,7 @@ import {
   FileDiff,
   ScanSearch,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
 import { getDefaultHeaders } from "@workspace/api-client-react";
 
 type Action =
@@ -196,9 +192,7 @@ export function PageAssistant({
           });
         } catch (fetchErr) {
           if ((fetchErr as Error).name === "AbortError") throw fetchErr;
-          setResult(
-            "Server nicht erreichbar — bitte Seite neu laden.",
-          );
+          setResult("Server nicht erreichbar — bitte Seite neu laden.");
           return;
         }
 
@@ -243,9 +237,7 @@ export function PageAssistant({
               "Fehler bei der KI-Verarbeitung. Bitte versuchen Sie es erneut.",
             );
           } else {
-            setResult(
-              "Server nicht erreichbar — bitte Seite neu laden.",
-            );
+            setResult("Server nicht erreichbar — bitte Seite neu laden.");
           }
         }
       } finally {
@@ -258,7 +250,7 @@ export function PageAssistant({
 
   const handleCopy = useCallback(() => {
     if (result) {
-      navigator.clipboard.writeText(result);
+      void navigator.clipboard.writeText(result);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -349,7 +341,9 @@ export function PageAssistant({
             <ScrollArea className="max-h-60">
               <div className="rounded-md bg-muted p-3 text-sm prose prose-sm max-w-none">
                 {result ? (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {result}
+                  </ReactMarkdown>
                 ) : (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}

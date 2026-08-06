@@ -35,7 +35,10 @@ export const graphGroupMappingsTable = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [unique("uq_graph_group_mapping_tier").on(table.tier)],
+  (table) => [
+    index("idx_graph_group_mappings_updated_by").on(table.updatedBy),
+    unique("uq_graph_group_mapping_tier").on(table.tier),
+  ],
 );
 
 export type GraphGroupMapping = typeof graphGroupMappingsTable.$inferSelect;

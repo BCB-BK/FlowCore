@@ -11,6 +11,9 @@ export function sanitizeInternalError(
   message: string,
   fallback = "Interner Serverfehler",
 ): string {
-  logger.error({ message }, "Internal error returned to client (sanitized in production)");
+  logger.error(
+    { message },
+    "Internal error returned to client (sanitized in production)",
+  );
   return appConfig.nodeEnv === "production" ? fallback : message;
 }

@@ -6,6 +6,7 @@ import {
   boolean,
   uniqueIndex,
   type AnyPgColumn,
+  index,
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
 import { createInsertSchema } from "drizzle-zod";
@@ -29,7 +30,10 @@ export const organizationUnitsTable = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [uniqueIndex("idx_org_units_slug").on(table.slug)],
+  (table) => [
+    index("idx_organization_units_parent").on(table.parentId),
+    uniqueIndex("idx_org_units_slug").on(table.slug),
+  ],
 );
 
 export const brandsTable = pgTable(
@@ -89,23 +93,37 @@ export const businessFunctionsTable = pgTable(
   (table) => [uniqueIndex("idx_business_functions_slug").on(table.slug)],
 );
 
-export const contentNodeContextTable = pgTable("content_node_context", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  nodeId: uuid("node_id")
-    .notNull()
-    .references(() => contentNodesTable.id),
-  organizationUnitId: uuid("organization_unit_id").references(
-    () => organizationUnitsTable.id,
-  ),
-  brandId: uuid("brand_id").references(() => brandsTable.id),
-  locationId: uuid("location_id").references(() => locationsTable.id),
-  businessFunctionId: uuid("business_function_id").references(
-    () => businessFunctionsTable.id,
-  ),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const contentNodeContextTable = pgTable(
+  "content_node_context",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    nodeId: uuid("node_id")
+      .notNull()
+      .references(() => contentNodesTable.id),
+    organizationUnitId: uuid("organization_unit_id").references(
+      () => organizationUnitsTable.id,
+    ),
+    brandId: uuid("brand_id").references(() => brandsTable.id),
+    locationId: uuid("location_id").references(() => locationsTable.id),
+    businessFunctionId: uuid("business_function_id").references(
+      () => businessFunctionsTable.id,
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_content_node_context_brand").on(table.brandId),
+    index("idx_content_node_context_business_function").on(
+      table.businessFunctionId,
+    ),
+    index("idx_content_node_context_location").on(table.locationId),
+    index("idx_content_node_context_node").on(table.nodeId),
+    index("idx_content_node_context_organization_unit").on(
+      table.organizationUnitId,
+    ),
+  ],
+);
 
 export const insertContentNodeContextSchema = createInsertSchema(
   contentNodeContextTable,

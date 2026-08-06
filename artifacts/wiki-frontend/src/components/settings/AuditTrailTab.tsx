@@ -93,10 +93,14 @@ export function AuditTrailTab() {
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState<AuditFilters>({ actions: [], resourceTypes: [] });
+  const [filters, setFilters] = useState<AuditFilters>({
+    actions: [],
+    resourceTypes: [],
+  });
   const [page, setPage] = useState(0);
   const [selectedAction, setSelectedAction] = useState<string>("all");
-  const [selectedResourceType, setSelectedResourceType] = useState<string>("all");
+  const [selectedResourceType, setSelectedResourceType] =
+    useState<string>("all");
   const [selectedEventType, setSelectedEventType] = useState<string>("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -104,7 +108,9 @@ export function AuditTrailTab() {
 
   const loadFilters = useCallback(async () => {
     try {
-      const data = await customFetch<AuditFilters>("/api/admin/audit-events/filters");
+      const data = await customFetch<AuditFilters>(
+        "/api/admin/audit-events/filters",
+      );
       setFilters(data);
     } catch {
       // ignore
@@ -118,10 +124,13 @@ export function AuditTrailTab() {
       params.set("limit", String(PAGE_SIZE));
       params.set("offset", String(page * PAGE_SIZE));
       if (selectedAction !== "all") params.set("action", selectedAction);
-      if (selectedResourceType !== "all") params.set("resourceType", selectedResourceType);
-      if (selectedEventType !== "all") params.set("eventType", selectedEventType);
+      if (selectedResourceType !== "all")
+        params.set("resourceType", selectedResourceType);
+      if (selectedEventType !== "all")
+        params.set("eventType", selectedEventType);
       if (fromDate) params.set("from", new Date(fromDate).toISOString());
-      if (toDate) params.set("to", new Date(toDate + "T23:59:59").toISOString());
+      if (toDate)
+        params.set("to", new Date(toDate + "T23:59:59").toISOString());
 
       const data = await customFetch<AuditQueryResult>(
         `/api/admin/audit-events?${params.toString()}`,
@@ -134,21 +143,29 @@ export function AuditTrailTab() {
     } finally {
       setLoading(false);
     }
-  }, [page, selectedAction, selectedResourceType, selectedEventType, fromDate, toDate]);
+  }, [
+    page,
+    selectedAction,
+    selectedResourceType,
+    selectedEventType,
+    fromDate,
+    toDate,
+  ]);
 
   useEffect(() => {
-    loadFilters();
+    void loadFilters();
   }, [loadFilters]);
 
   useEffect(() => {
-    loadEvents();
+    void loadEvents();
   }, [loadEvents]);
 
   const handleExport = async (format: "json" | "csv") => {
     const params = new URLSearchParams();
     params.set("format", format);
     if (selectedAction !== "all") params.set("action", selectedAction);
-    if (selectedResourceType !== "all") params.set("resourceType", selectedResourceType);
+    if (selectedResourceType !== "all")
+      params.set("resourceType", selectedResourceType);
     if (selectedEventType !== "all") params.set("eventType", selectedEventType);
     if (fromDate) params.set("from", new Date(fromDate).toISOString());
     if (toDate) params.set("to", new Date(toDate + "T23:59:59").toISOString());
@@ -169,7 +186,8 @@ export function AuditTrailTab() {
           </CardTitle>
           <CardDescription>
             Vollständige Nachweiskette aller sicherheitsrelevanten Ereignisse.
-            Personenbezogene Daten werden bei Exporten ohne manage_settings-Berechtigung anonymisiert.
+            Personenbezogene Daten werden bei Exporten ohne
+            manage_settings-Berechtigung anonymisiert.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -178,7 +196,13 @@ export function AuditTrailTab() {
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <Filter className="h-3 w-3" /> Aktion
               </label>
-              <Select value={selectedAction} onValueChange={(v) => { setSelectedAction(v); setPage(0); }}>
+              <Select
+                value={selectedAction}
+                onValueChange={(v) => {
+                  setSelectedAction(v);
+                  setPage(0);
+                }}
+              >
                 <SelectTrigger className="w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -194,23 +218,41 @@ export function AuditTrailTab() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Ressource</label>
-              <Select value={selectedResourceType} onValueChange={(v) => { setSelectedResourceType(v); setPage(0); }}>
+              <label className="text-xs font-medium text-muted-foreground">
+                Ressource
+              </label>
+              <Select
+                value={selectedResourceType}
+                onValueChange={(v) => {
+                  setSelectedResourceType(v);
+                  setPage(0);
+                }}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle Ressourcen</SelectItem>
                   {filters.resourceTypes.map((rt) => (
-                    <SelectItem key={rt} value={rt}>{rt}</SelectItem>
+                    <SelectItem key={rt} value={rt}>
+                      {rt}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Typ</label>
-              <Select value={selectedEventType} onValueChange={(v) => { setSelectedEventType(v); setPage(0); }}>
+              <label className="text-xs font-medium text-muted-foreground">
+                Typ
+              </label>
+              <Select
+                value={selectedEventType}
+                onValueChange={(v) => {
+                  setSelectedEventType(v);
+                  setPage(0);
+                }}
+              >
                 <SelectTrigger className="w-[150px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -225,26 +267,41 @@ export function AuditTrailTab() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Von</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                Von
+              </label>
               <Input
                 type="date"
                 value={fromDate}
-                onChange={(e) => { setFromDate(e.target.value); setPage(0); }}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setPage(0);
+                }}
                 className="w-[150px]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Bis</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                Bis
+              </label>
               <Input
                 type="date"
                 value={toDate}
-                onChange={(e) => { setToDate(e.target.value); setPage(0); }}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setPage(0);
+                }}
                 className="w-[150px]"
               />
             </div>
 
-            <Button variant="outline" size="sm" onClick={loadEvents} className="gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadEvents}
+              className="gap-1"
+            >
               <RefreshCw className="h-3.5 w-3.5" />
               Aktualisieren
             </Button>
@@ -255,11 +312,21 @@ export function AuditTrailTab() {
               {total} Ereignis{total !== 1 ? "se" : ""} gefunden
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} className="gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExport("csv")}
+                className="gap-1"
+              >
                 <Download className="h-3.5 w-3.5" />
                 CSV
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("json")} className="gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExport("json")}
+                className="gap-1"
+              >
                 <FileText className="h-3.5 w-3.5" />
                 JSON
               </Button>
@@ -285,9 +352,14 @@ export function AuditTrailTab() {
                   tabIndex={0}
                   aria-expanded={expandedId === evt.id}
                   className="py-3 px-2 hover:bg-accent/30 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                  onClick={() => setExpandedId(expandedId === evt.id ? null : evt.id)}
+                  onClick={() =>
+                    setExpandedId(expandedId === evt.id ? null : evt.id)
+                  }
                   onKeyDown={(e) => {
-                    if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) {
+                    if (
+                      (e.key === "Enter" || e.key === " ") &&
+                      e.target === e.currentTarget
+                    ) {
                       e.preventDefault();
                       setExpandedId(expandedId === evt.id ? null : evt.id);
                     }

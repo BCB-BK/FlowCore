@@ -74,8 +74,13 @@ export const Indent = Extension.create({
           indent: {
             default: 0,
             parseHTML: (element: HTMLElement) => {
-              const raw = parseInt(element.getAttribute("data-indent") || "0", 10);
-              return Number.isFinite(raw) && raw > 0 ? Math.min(raw, MAX_INDENT) : 0;
+              const raw = parseInt(
+                element.getAttribute("data-indent") || "0",
+                10,
+              );
+              return Number.isFinite(raw) && raw > 0
+                ? Math.min(raw, MAX_INDENT)
+                : 0;
             },
             renderHTML: (attributes: Record<string, unknown>) => {
               const indent = (attributes.indent as number | undefined) ?? 0;

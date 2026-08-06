@@ -14,7 +14,10 @@ interface ErrorBoundaryState {
   showDetails: boolean;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null, showDetails: false };
@@ -56,7 +59,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               <AlertTriangle className="h-4 w-4" />
               <span className="font-medium">{fallbackTitle}</span>
             </div>
-            <p className="text-muted-foreground text-center text-xs">{fallbackMessage}</p>
+            <p className="text-muted-foreground text-center text-xs">
+              {fallbackMessage}
+            </p>
             <div className="flex gap-2">
               <button
                 onClick={this.handleReset}
@@ -75,7 +80,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="rounded-full bg-destructive/10 p-3">
               <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground">{fallbackTitle}</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              {fallbackTitle}
+            </h2>
             <p className="text-muted-foreground">{fallbackMessage}</p>
             <div className="flex gap-3 mt-2">
               <button

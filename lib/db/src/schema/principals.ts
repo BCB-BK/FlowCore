@@ -6,6 +6,7 @@ import {
   boolean,
   uniqueIndex,
   index,
+  check,
 } from "drizzle-orm/pg-core";
 import {
   principalTypeEnum,
@@ -14,6 +15,7 @@ import {
   wikiPermissionEnum,
 } from "./enums";
 import { contentNodesTable } from "./content-nodes";
+import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -37,6 +39,7 @@ export const principalsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    check("ck_principals_display_name", sql`btrim(${table.displayName}) <> ''`),
     uniqueIndex("idx_principals_external").on(
       table.externalProvider,
       table.externalId,
@@ -61,6 +64,7 @@ export const roleAssignmentsTable = pgTable(
     isActive: boolean("is_active").notNull().default(true),
   },
   (table) => [
+    index("idx_role_assignments_granted_by").on(table.grantedBy),
     index("idx_role_assignments_principal").on(table.principalId),
   ],
 );
@@ -83,6 +87,7 @@ export const pagePermissionsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_page_permissions_granted_by").on(table.grantedBy),
     index("idx_page_permissions_node").on(table.nodeId),
     index("idx_page_permissions_principal").on(table.principalId),
   ],
@@ -106,6 +111,9 @@ export const nodeOwnershipTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_node_ownership_approver").on(table.approverId),
+    index("idx_node_ownership_deputy").on(table.deputyId),
+    index("idx_node_ownership_reviewer").on(table.reviewerId),
     index("idx_node_ownership_node").on(table.nodeId),
     index("idx_node_ownership_owner").on(table.ownerId),
   ],
@@ -135,21 +143,26 @@ export const deputyDelegationsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_deputy_delegations_created_by").on(table.createdBy),
     index("idx_deputy_delegations_principal").on(table.principalId),
     index("idx_deputy_delegations_deputy").on(table.deputyId),
   ],
 );
 
-export const sodConfigTable = pgTable("sod_config", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  ruleKey: text("rule_key").notNull().unique(),
-  description: text("description"),
-  isEnabled: boolean("is_enabled").notNull().default(true),
-  updatedBy: uuid("updated_by").references(() => principalsTable.id),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const sodConfigTable = pgTable(
+  "sod_config",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ruleKey: text("rule_key").notNull().unique(),
+    description: text("description"),
+    isEnabled: boolean("is_enabled").notNull().default(true),
+    updatedBy: uuid("updated_by").references(() => principalsTable.id),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_sod_config_updated_by").on(table.updatedBy)],
+);
 
 export const insertPrincipalSchema = createInsertSchema(principalsTable).omit({
   id: true,

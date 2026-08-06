@@ -7,6 +7,7 @@
     "hello": "tsx ./src/hello.ts",
     "no-hardcode-check": "tsx ./src/no-hardcode-check.ts",
     "route-contract-check": "tsx ./src/route-contract-check.ts",
+    "openapi-scaffold": "tsx ./src/openapi-scaffold.ts",
     "env-check": "tsx ./src/env-check.ts",
     "dead-import-check": "tsx ./src/dead-import-check.ts",
     "rootfix-audit": "tsx ./src/rootfix-audit.ts",
@@ -24,7 +25,7 @@
   "dependencies": {
     "@workspace/db": "workspace:*",
     "drizzle-orm": "catalog:",
-    "xlsx": "^0.18.5"
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

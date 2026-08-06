@@ -30,11 +30,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@workspace/ui/separator";
 import { Toggle } from "@workspace/ui/toggle";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
 import { VideoBlock } from "./extensions/video-block";
 import { VideoBlockNodeView } from "./NodeViews";
 
@@ -73,7 +69,10 @@ const ResizableImage = TiptapImage.extend({
         default: null,
         renderHTML(attributes) {
           if (!attributes.width) return {};
-          return { "data-width": attributes.width, style: `width: ${attributes.width}; max-width: 100%;` };
+          return {
+            "data-width": attributes.width,
+            style: `width: ${attributes.width}; max-width: 100%;`,
+          };
         },
         parseHTML(element) {
           return element.getAttribute("data-width") || null;
@@ -131,7 +130,8 @@ function MiniToolbarButton({
 function LinkBubbleMenuContent({ editor }: { editor: Editor }) {
   const [isEditing, setIsEditing] = useState(false);
   const [urlDraft, setUrlDraft] = useState("");
-  const currentHref = editor.getAttributes("link").href as string | undefined ?? "";
+  const currentHref =
+    (editor.getAttributes("link").href as string | undefined) ?? "";
 
   const handleStartEdit = useCallback(() => {
     setUrlDraft(currentHref);
@@ -222,7 +222,11 @@ function ImageBubbleMenuContent({ editor }: { editor: Editor }) {
 
   const setFloat = useCallback(
     (f: string) =>
-      editor.chain().focus().updateAttributes("image", { "data-float": f }).run(),
+      editor
+        .chain()
+        .focus()
+        .updateAttributes("image", { "data-float": f })
+        .run(),
     [editor],
   );
 
@@ -243,7 +247,8 @@ function ImageBubbleMenuContent({ editor }: { editor: Editor }) {
     <div className="flex items-center gap-1 bg-background border rounded-md shadow-md p-1 flex-wrap">
       <span className="text-xs text-muted-foreground">Breite:</span>
       {WIDTH_OPTIONS.map(({ label, value }) => {
-        const isActive = value === null ? !currentWidth : currentWidth === value;
+        const isActive =
+          value === null ? !currentWidth : currentWidth === value;
         return (
           <button
             key={label}
@@ -280,16 +285,13 @@ function MiniToolbar({ editor }: { editor: Editor }) {
   const insertVideo = useCallback(() => {
     const url = prompt("Video-URL (YouTube, Vimeo, MP4):");
     if (url) {
-      editor
-        .chain()
-        .focus()
-        .setVideoBlock({ src: url, caption: "" })
-        .run();
+      editor.chain().focus().setVideoBlock({ src: url, caption: "" }).run();
     }
   }, [editor]);
 
   const insertOrEditLink = useCallback(() => {
-    const previous = (editor.getAttributes("link").href as string | undefined) ?? "";
+    const previous =
+      (editor.getAttributes("link").href as string | undefined) ?? "";
     const url = prompt("Link-URL:", previous);
     if (url === null) return;
     if (url.trim() === "") {
