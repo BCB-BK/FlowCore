@@ -205,8 +205,7 @@ for (const check of subChecks) {
 
 const failedChecks = subChecks.filter((c) => !c.passed).length;
 const totalChecks = subChecks.length + 1;
-const termCheckFailed =
-  terms.length > 0 && found / terms.length < 0.5 ? 1 : 0;
+const termCheckFailed = terms.length > 0 && found / terms.length < 0.5 ? 1 : 0;
 const totalViolations = failedChecks + termCheckFailed;
 const violationRatio = totalChecks > 0 ? totalViolations / totalChecks : 0;
 
@@ -229,9 +228,7 @@ if (registry.runs.length > 50) {
 saveRegistry(registry);
 
 console.log(`\n--- Summary ---`);
-console.log(
-  `Violations: ${totalViolations}/${totalChecks}`,
-);
+console.log(`Violations: ${totalViolations}/${totalChecks}`);
 console.log(
   `Ratio: ${(violationRatio * 100).toFixed(1)}% (threshold: ${FAIL_THRESHOLD * 100}%)`,
 );

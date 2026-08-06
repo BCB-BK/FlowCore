@@ -24,7 +24,9 @@ export type GraphDeltaOperation = "upsert" | "acl_update" | "delete" | "skip";
  * removed from the Graph index (deindexed) - the sync layer resolves the
  * concrete item id at process time.
  */
-export function detectOperation(eventType: GraphChangeFeedEventType): GraphDeltaOperation {
+export function detectOperation(
+  eventType: GraphChangeFeedEventType,
+): GraphDeltaOperation {
   switch (eventType) {
     case "publish":
     case "revision":

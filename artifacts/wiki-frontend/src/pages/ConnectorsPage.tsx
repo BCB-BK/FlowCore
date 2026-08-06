@@ -69,16 +69,32 @@ import {
   getGetSyncStatusQueryKey,
 } from "@workspace/api-client-react";
 
-const PURPOSE_LABELS: Record<string, { label: string; icon: typeof BookOpen; color: string }> = {
-  knowledge_source: { label: "Wissensquelle", icon: BookOpen, color: "text-blue-600" },
-  media_archive: { label: "Medienarchiv", icon: Image, color: "text-purple-600" },
-  backup_target: { label: "Backup-Ziel", icon: Archive, color: "text-amber-600" },
+const PURPOSE_LABELS: Record<
+  string,
+  { label: string; icon: typeof BookOpen; color: string }
+> = {
+  knowledge_source: {
+    label: "Wissensquelle",
+    icon: BookOpen,
+    color: "text-blue-600",
+  },
+  media_archive: {
+    label: "Medienarchiv",
+    icon: Image,
+    color: "text-purple-600",
+  },
+  backup_target: {
+    label: "Backup-Ziel",
+    icon: Archive,
+    color: "text-amber-600",
+  },
 };
 
-const ACCESS_MODE_LABELS: Record<string, { label: string; icon: typeof Lock }> = {
-  read_only: { label: "Nur Lesen", icon: Lock },
-  read_write: { label: "Lesen & Schreiben", icon: Unlock },
-};
+const ACCESS_MODE_LABELS: Record<string, { label: string; icon: typeof Lock }> =
+  {
+    read_only: { label: "Nur Lesen", icon: Lock },
+    read_write: { label: "Lesen & Schreiben", icon: Unlock },
+  };
 
 export function ConnectorsPage({ embedded }: { embedded?: boolean }) {
   const queryClient = useQueryClient();
@@ -193,7 +209,11 @@ function SourceSystemsTab({
   const [validationResult, setValidationResult] = useState<{
     systemId: string;
     valid: boolean;
-    checks: Array<{ check: string; status: "ok" | "warning" | "error"; message: string }>;
+    checks: Array<{
+      check: string;
+      status: "ok" | "warning" | "error";
+      message: string;
+    }>;
   } | null>(null);
 
   if (isLoading) {
@@ -226,11 +246,13 @@ function SourceSystemsTab({
       )}
 
       {systems?.map((system) => {
-        const purposeInfo = PURPOSE_LABELS[system.purpose ?? "knowledge_source"];
+        const purposeInfo =
+          PURPOSE_LABELS[system.purpose ?? "knowledge_source"];
         const accessInfo = ACCESS_MODE_LABELS[system.accessMode ?? "read_only"];
         const PurposeIcon = purposeInfo?.icon ?? BookOpen;
         const AccessIcon = accessInfo?.icon ?? Lock;
-        const connConfig = (system as unknown as Record<string, unknown>).connectionConfig as Record<string, string> | null;
+        const connConfig = (system as unknown as Record<string, unknown>)
+          .connectionConfig as Record<string, string> | null;
 
         return (
           <Card key={system.id}>
@@ -261,21 +283,28 @@ function SourceSystemsTab({
                     size="sm"
                     onClick={() => {
                       validateSystem.mutate(
-                        { systemId: system.id! },
+                        { systemId: system.id },
                         {
                           onSuccess: (data) => {
-                            const result = data as { valid: boolean; checks: Array<{ check: string; status: "ok" | "warning" | "error"; message: string }> };
+                            const result = data;
                             setValidationResult({
-                              systemId: system.id!,
+                              systemId: system.id,
                               valid: result.valid,
                               checks: result.checks,
                             });
                           },
                           onError: () => {
                             setValidationResult({
-                              systemId: system.id!,
+                              systemId: system.id,
                               valid: false,
-                              checks: [{ check: "connection", status: "error" as const, message: "Validierung fehlgeschlagen – bitte versuchen Sie es erneut." }],
+                              checks: [
+                                {
+                                  check: "connection",
+                                  status: "error" as const,
+                                  message:
+                                    "Validierung fehlgeschlagen – bitte versuchen Sie es erneut.",
+                                },
+                              ],
                             });
                           },
                         },
@@ -295,13 +324,13 @@ function SourceSystemsTab({
                     size="sm"
                     onClick={() => {
                       triggerSync.mutate(
-                        { systemId: system.id! },
+                        { systemId: system.id },
                         {
                           onSuccess: () => {
-                            queryClient.invalidateQueries({
+                            void queryClient.invalidateQueries({
                               queryKey: getListSourceSystemsQueryKey(),
                             });
-                            queryClient.invalidateQueries({
+                            void queryClient.invalidateQueries({
                               queryKey: getGetSyncStatusQueryKey(),
                             });
                           },
@@ -332,10 +361,10 @@ function SourceSystemsTab({
                     onClick={() => {
                       if (confirm("Quellsystem wirklich löschen?")) {
                         deleteSystem.mutate(
-                          { systemId: system.id! },
+                          { systemId: system.id },
                           {
                             onSuccess: () => {
-                              queryClient.invalidateQueries({
+                              void queryClient.invalidateQueries({
                                 queryKey: getListSourceSystemsQueryKey(),
                               });
                             },
@@ -351,12 +380,14 @@ function SourceSystemsTab({
               <CardDescription>
                 Slug: {system.slug} | Referenzen:{" "}
                 {String(
-                  (system as unknown as Record<string, unknown>).referenceCount ??
-                    0,
+                  (system as unknown as Record<string, unknown>)
+                    .referenceCount ?? 0,
                 )}
                 {connConfig?.siteName && ` | Site: ${connConfig.siteName}`}
-                {connConfig?.driveName && ` | Bibliothek: ${connConfig.driveName}`}
-                {connConfig?.folderName && ` | Ordner: ${connConfig.folderName}`}
+                {connConfig?.driveName &&
+                  ` | Bibliothek: ${connConfig.driveName}`}
+                {connConfig?.folderName &&
+                  ` | Ordner: ${connConfig.folderName}`}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -391,7 +422,9 @@ function SourceSystemsTab({
                         <XCircle className="w-4 h-4 text-red-600" />
                       )}
                       <span className="text-sm font-medium">
-                        {validationResult.valid ? "Konfiguration gültig" : "Konfigurationsprobleme gefunden"}
+                        {validationResult.valid
+                          ? "Konfiguration gültig"
+                          : "Konfigurationsprobleme gefunden"}
                       </span>
                     </div>
                     <Button
@@ -404,10 +437,24 @@ function SourceSystemsTab({
                   </div>
                   {validationResult.checks.map((check, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
-                      {check.status === "ok" && <CheckCircle className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />}
-                      {check.status === "error" && <XCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />}
-                      {check.status === "warning" && <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />}
-                      <span className={check.status === "error" ? "text-destructive" : check.status === "warning" ? "text-amber-600" : "text-muted-foreground"}>
+                      {check.status === "ok" && (
+                        <CheckCircle className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
+                      )}
+                      {check.status === "error" && (
+                        <XCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+                      )}
+                      {check.status === "warning" && (
+                        <Info className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
+                      )}
+                      <span
+                        className={
+                          check.status === "error"
+                            ? "text-destructive"
+                            : check.status === "warning"
+                              ? "text-amber-600"
+                              : "text-muted-foreground"
+                        }
+                      >
                         {check.message}
                       </span>
                     </div>
@@ -442,8 +489,12 @@ function EditSourceSystemDialog({
   const connConfig = (system.connectionConfig ?? {}) as Record<string, string>;
 
   const [name, setName] = useState(system.name as string);
-  const [purpose, setPurpose] = useState((system.purpose as string) || "knowledge_source");
-  const [accessMode, setAccessMode] = useState((system.accessMode as string) || "read_only");
+  const [purpose, setPurpose] = useState(
+    (system.purpose as string) || "knowledge_source",
+  );
+  const [accessMode, setAccessMode] = useState(
+    (system.accessMode as string) || "read_only",
+  );
   const [isActive, setIsActive] = useState(system.isActive as boolean);
   const [syncEnabled, setSyncEnabled] = useState(system.syncEnabled as boolean);
   const [syncInterval, setSyncInterval] = useState(
@@ -461,7 +512,10 @@ function EditSourceSystemDialog({
           folderPath: connConfig.folderPath ?? undefined,
           itemId: connConfig.itemId ?? undefined,
           itemName: connConfig.itemName ?? undefined,
-          isFolder: connConfig.isFolder != null ? Boolean(connConfig.isFolder) : undefined,
+          isFolder:
+            connConfig.isFolder != null
+              ? Boolean(connConfig.isFolder)
+              : undefined,
         }
       : null;
   const [spSelection, setSpSelection] = useState<SharePointSelection | null>(
@@ -500,7 +554,7 @@ function EditSourceSystemDialog({
       { systemId: system.id as string, data },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListSourceSystemsQueryKey(),
           });
           onClose();
@@ -635,7 +689,8 @@ function StorageProvidersTab({
 
       {providers?.map((provider) => {
         const purposeInfo = PURPOSE_LABELS[provider.purpose ?? "media_archive"];
-        const accessInfo = ACCESS_MODE_LABELS[provider.accessMode ?? "read_write"];
+        const accessInfo =
+          ACCESS_MODE_LABELS[provider.accessMode ?? "read_write"];
         const PurposeIcon = purposeInfo?.icon ?? Image;
         const AccessIcon = accessInfo?.icon ?? Unlock;
 
@@ -670,35 +725,35 @@ function StorageProvidersTab({
                     </Badge>
                   )}
                 </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {!provider.isDefault && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      updateProvider.mutate(
-                        {
-                          providerId: provider.id!,
-                          data: { isDefault: true },
-                        },
-                        {
-                          onSuccess: () => {
-                            queryClient.invalidateQueries({
-                              queryKey: getListStorageProvidersQueryKey(),
-                            });
+                <div className="flex flex-wrap items-center gap-2">
+                  {!provider.isDefault && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        updateProvider.mutate(
+                          {
+                            providerId: provider.id,
+                            data: { isDefault: true },
                           },
-                        },
-                      );
-                    }}
-                  >
-                    Als Standard setzen
-                  </Button>
-                )}
+                          {
+                            onSuccess: () => {
+                              void queryClient.invalidateQueries({
+                                queryKey: getListStorageProvidersQueryKey(),
+                              });
+                            },
+                          },
+                        );
+                      }}
+                    >
+                      Als Standard setzen
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-            <CardDescription>Slug: {provider.slug}</CardDescription>
-          </CardHeader>
-        </Card>
+              <CardDescription>Slug: {provider.slug}</CardDescription>
+            </CardHeader>
+          </Card>
         );
       })}
     </div>
@@ -761,7 +816,10 @@ function SyncStatusTab({
                   <CardTitle className="text-lg">{entry.systemName}</CardTitle>
                   <Badge variant="outline">{entry.systemType}</Badge>
                   {entry.purpose && PURPOSE_LABELS[entry.purpose] && (
-                    <Badge variant="outline" className={PURPOSE_LABELS[entry.purpose].color}>
+                    <Badge
+                      variant="outline"
+                      className={PURPOSE_LABELS[entry.purpose].color}
+                    >
                       {PURPOSE_LABELS[entry.purpose].label}
                     </Badge>
                   )}
@@ -785,13 +843,13 @@ function SyncStatusTab({
                   size="sm"
                   onClick={() => {
                     triggerSync.mutate(
-                      { systemId: entry.systemId! },
+                      { systemId: entry.systemId },
                       {
                         onSuccess: () => {
-                          queryClient.invalidateQueries({
+                          void queryClient.invalidateQueries({
                             queryKey: getGetSyncStatusQueryKey(),
                           });
-                          queryClient.invalidateQueries({
+                          void queryClient.invalidateQueries({
                             queryKey: getListSourceSystemsQueryKey(),
                           });
                         },
@@ -935,7 +993,7 @@ function CreateSourceSystemDialog({
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListSourceSystemsQueryKey(),
           });
           onClose();
@@ -1107,9 +1165,15 @@ function CreateStorageProviderDialog({
             driveId: spSelection.driveId,
             driveName: spSelection.driveName,
             ...(spSelection.folderId && { folderId: spSelection.folderId }),
-            ...(spSelection.folderName && { folderName: spSelection.folderName }),
-            ...(spSelection.folderPath && { folderPath: spSelection.folderPath }),
-            ...(spSelection.isFolder != null && { isFolder: spSelection.isFolder }),
+            ...(spSelection.folderName && {
+              folderName: spSelection.folderName,
+            }),
+            ...(spSelection.folderPath && {
+              folderPath: spSelection.folderPath,
+            }),
+            ...(spSelection.isFolder != null && {
+              isFolder: spSelection.isFolder,
+            }),
           }
         : undefined;
     createProvider.mutate(
@@ -1118,15 +1182,18 @@ function CreateStorageProviderDialog({
           name,
           slug,
           providerType,
-          purpose: purpose as "knowledge_source" | "media_archive" | "backup_target",
+          purpose: purpose as
+            | "knowledge_source"
+            | "media_archive"
+            | "backup_target",
           accessMode: accessMode as "read_only" | "read_write",
           isDefault,
-          config: config as Record<string, unknown> | undefined,
+          config: config,
         },
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getListStorageProvidersQueryKey(),
           });
           onClose();

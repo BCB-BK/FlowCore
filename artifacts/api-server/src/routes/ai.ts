@@ -29,8 +29,6 @@ import {
   updateFieldProfile,
   deleteFieldProfile,
   listAvailableModels,
-  type PageAssistAction,
-  type FieldAssistAction,
 } from "../services/ai.service";
 import { logger } from "../lib/logger";
 
@@ -121,7 +119,7 @@ aiRouter.post("/page-assist", requireAuth, aiRateLimit, async (req, res) => {
 
   try {
     await streamPageAssist(
-      parsed.data.action as PageAssistAction,
+      parsed.data.action,
       parsed.data.text,
       parsed.data.nodeId,
       req.user!.principalId,
@@ -144,7 +142,7 @@ aiRouter.post("/field-assist", requireAuth, aiRateLimit, async (req, res) => {
 
   try {
     await streamFieldAssist(
-      parsed.data.action as FieldAssistAction,
+      parsed.data.action,
       parsed.data.text,
       parsed.data.fieldKey,
       parsed.data.pageType,
@@ -166,8 +164,10 @@ aiRouter.get(
   requirePermission("manage_settings"),
   async (req, res) => {
     try {
-      const pageType = typeof req.query.pageType === "string" ? req.query.pageType : undefined;
-      const fieldKey = typeof req.query.fieldKey === "string" ? req.query.fieldKey : undefined;
+      const pageType =
+        typeof req.query.pageType === "string" ? req.query.pageType : undefined;
+      const fieldKey =
+        typeof req.query.fieldKey === "string" ? req.query.fieldKey : undefined;
       const profiles = await listFieldProfiles(pageType, fieldKey);
       res.json(profiles);
     } catch (err) {
@@ -213,7 +213,10 @@ aiRouter.put(
     }
 
     try {
-      const id = typeof req.params.id === "string" ? req.params.id : String(req.params.id);
+      const id =
+        typeof req.params.id === "string"
+          ? req.params.id
+          : String(req.params.id);
       const profile = await updateFieldProfile(
         id,
         parsed.data,
@@ -237,7 +240,10 @@ aiRouter.delete(
   requirePermission("manage_settings"),
   async (req, res) => {
     try {
-      const id = typeof req.params.id === "string" ? req.params.id : String(req.params.id);
+      const id =
+        typeof req.params.id === "string"
+          ? req.params.id
+          : String(req.params.id);
       await deleteFieldProfile(id);
       res.status(204).send();
     } catch (err) {

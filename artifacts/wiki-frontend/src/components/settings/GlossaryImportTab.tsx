@@ -66,7 +66,9 @@ export function GlossaryImportTab() {
   const [exportError, setExportError] = useState<string | null>(null);
 
   const [reimporting, setReimporting] = useState(false);
-  const [reimportResult, setReimportResult] = useState<ReimportResult | null>(null);
+  const [reimportResult, setReimportResult] = useState<ReimportResult | null>(
+    null,
+  );
   const [reimportError, setReimportError] = useState<string | null>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -133,9 +135,12 @@ export function GlossaryImportTab() {
     setReimportError(null);
 
     try {
-      const result = await customFetch<ReimportResult>("/api/glossary/reimport-seed", {
-        method: "POST",
-      });
+      const result = await customFetch<ReimportResult>(
+        "/api/glossary/reimport-seed",
+        {
+          method: "POST",
+        },
+      );
       setReimportResult(result);
     } catch (err) {
       setReimportError(err instanceof Error ? err.message : "Netzwerkfehler");
@@ -214,7 +219,9 @@ export function GlossaryImportTab() {
           {exportError && (
             <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 p-3 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 dark:text-red-400">{exportError}</p>
+              <p className="text-sm text-red-700 dark:text-red-400">
+                {exportError}
+              </p>
             </div>
           )}
         </CardContent>
@@ -228,16 +235,22 @@ export function GlossaryImportTab() {
           </CardTitle>
           <CardDescription>
             Importieren Sie Glossarbegriffe aus einer Excel-Datei. Bestehende
-            Begriffe (gleicher Begriff) werden aktualisiert, neue Begriffe werden
-            hinzugefügt.
+            Begriffe (gleicher Begriff) werden aktualisiert, neue Begriffe
+            werden hinzugefügt.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-md border border-dashed p-4 bg-muted/30">
-            <p className="text-sm font-medium mb-1">Erwartetes Format (Spalten):</p>
+            <p className="text-sm font-medium mb-1">
+              Erwartetes Format (Spalten):
+            </p>
             <div className="flex flex-wrap gap-2 mt-2">
               {["term", "definition", "synonyms", "abbreviation"].map((col) => (
-                <Badge key={col} variant="outline" className="font-mono text-xs">
+                <Badge
+                  key={col}
+                  variant="outline"
+                  className="font-mono text-xs"
+                >
                   {col}
                 </Badge>
               ))}
@@ -247,9 +260,8 @@ export function GlossaryImportTab() {
               Synonyme werden durch Komma oder Semikolon getrennt.
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Deutsche Spaltennamen werden ebenfalls erkannt:{" "}
-              <em>Begriff</em>, <em>Beschreibung</em>, <em>Synonyme</em>,{" "}
-              <em>Abkürzung</em>.
+              Deutsche Spaltennamen werden ebenfalls erkannt: <em>Begriff</em>,{" "}
+              <em>Beschreibung</em>, <em>Synonyme</em>, <em>Abkürzung</em>.
             </p>
           </div>
 
@@ -308,11 +320,14 @@ export function GlossaryImportTab() {
             <div className="rounded-md border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950 p-4 space-y-2">
               <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                 <CheckCircle className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-medium">{importResult.message}</span>
+                <span className="text-sm font-medium">
+                  {importResult.message}
+                </span>
               </div>
               <div className="flex gap-4 text-sm text-green-700 dark:text-green-400">
                 <span>
-                  Eingefügt/Aktualisiert: <strong>{importResult.upserted}</strong>
+                  Eingefügt/Aktualisiert:{" "}
+                  <strong>{importResult.upserted}</strong>
                 </span>
                 {importResult.skipped > 0 && (
                   <span>
@@ -326,7 +341,10 @@ export function GlossaryImportTab() {
                     Hinweise:
                   </p>
                   {importResult.errors.map((e, i) => (
-                    <p key={i} className="text-xs text-amber-700 dark:text-amber-400">
+                    <p
+                      key={i}
+                      className="text-xs text-amber-700 dark:text-amber-400"
+                    >
                       {e}
                     </p>
                   ))}
@@ -338,7 +356,9 @@ export function GlossaryImportTab() {
           {importError && (
             <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 p-3 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 dark:text-red-400">{importError}</p>
+              <p className="text-sm text-red-700 dark:text-red-400">
+                {importError}
+              </p>
             </div>
           )}
         </CardContent>
@@ -391,13 +411,21 @@ export function GlossaryImportTab() {
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {dryRunResult.sampleAdded.map((t) => (
-                      <Badge key={t} variant="outline" className="text-xs text-green-700 dark:text-green-400 border-green-300 dark:border-green-700">
+                      <Badge
+                        key={t}
+                        variant="outline"
+                        className="text-xs text-green-700 dark:text-green-400 border-green-300 dark:border-green-700"
+                      >
                         {t}
                       </Badge>
                     ))}
                     {dryRunResult.added > dryRunResult.sampleAdded.length && (
-                      <Badge variant="outline" className="text-xs text-muted-foreground">
-                        +{dryRunResult.added - dryRunResult.sampleAdded.length} weitere
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-muted-foreground"
+                      >
+                        +{dryRunResult.added - dryRunResult.sampleAdded.length}{" "}
+                        weitere
                       </Badge>
                     )}
                   </div>
@@ -411,13 +439,24 @@ export function GlossaryImportTab() {
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {dryRunResult.sampleUpdated.map((t) => (
-                      <Badge key={t} variant="outline" className="text-xs text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700">
+                      <Badge
+                        key={t}
+                        variant="outline"
+                        className="text-xs text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700"
+                      >
                         {t}
                       </Badge>
                     ))}
-                    {dryRunResult.updated > dryRunResult.sampleUpdated.length && (
-                      <Badge variant="outline" className="text-xs text-muted-foreground">
-                        +{dryRunResult.updated - dryRunResult.sampleUpdated.length} weitere
+                    {dryRunResult.updated >
+                      dryRunResult.sampleUpdated.length && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-muted-foreground"
+                      >
+                        +
+                        {dryRunResult.updated -
+                          dryRunResult.sampleUpdated.length}{" "}
+                        weitere
                       </Badge>
                     )}
                   </div>
@@ -430,7 +469,10 @@ export function GlossaryImportTab() {
                     Hinweise ({dryRunResult.errors.length}):
                   </p>
                   {dryRunResult.errors.slice(0, 5).map((e, i) => (
-                    <p key={i} className="text-xs text-amber-700 dark:text-amber-400">
+                    <p
+                      key={i}
+                      className="text-xs text-amber-700 dark:text-amber-400"
+                    >
                       {e}
                     </p>
                   ))}
@@ -476,8 +518,8 @@ export function GlossaryImportTab() {
           </CardTitle>
           <CardDescription>
             Stellt die ursprünglichen BCB-Glossarbegriffe wieder her bzw.
-            aktualisiert bestehende Begriffe auf die aktuellen Seed-Daten. Manuell
-            hinzugefügte oder importierte Begriffe bleiben erhalten.
+            aktualisiert bestehende Begriffe auf die aktuellen Seed-Daten.
+            Manuell hinzugefügte oder importierte Begriffe bleiben erhalten.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -516,7 +558,9 @@ export function GlossaryImportTab() {
           {reimportError && (
             <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950 p-3 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 dark:text-red-400">{reimportError}</p>
+              <p className="text-sm text-red-700 dark:text-red-400">
+                {reimportError}
+              </p>
             </div>
           )}
         </CardContent>

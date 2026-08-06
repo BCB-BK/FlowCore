@@ -2555,3 +2555,329 @@ export type MarkNotificationAsRead200 = {
 export type MarkAllNotificationsAsRead200 = {
   count?: number;
 };
+
+export type GetAdminAuditEvents200 = { [key: string]: unknown };
+
+export type GetAdminAuditEventsExport200 = { [key: string]: unknown };
+
+export type GetAdminAuditEventsFilters200 = { [key: string]: unknown };
+
+export type GetAdminFlowcoreAccount200 = { [key: string]: unknown };
+
+export type PutAdminFlowcoreAccountBody = { [key: string]: unknown };
+
+export type PutAdminFlowcoreAccount200 = { [key: string]: unknown };
+
+export type PostAdminFlowcoreAccountTestBody = { [key: string]: unknown };
+
+export type PostAdminFlowcoreAccountTest200 = { [key: string]: unknown };
+
+export type PostAdminMigrateWorkingCopiesBody = { [key: string]: unknown };
+
+export type PostAdminMigrateWorkingCopies200 = { [key: string]: unknown };
+
+export type GetAdminNotificationRules200 = { [key: string]: unknown };
+
+export type PostAdminNotificationRulesBody = { [key: string]: unknown };
+
+export type PostAdminNotificationRules200 = { [key: string]: unknown };
+
+export type PostAdminNotificationRulesSeedBody = { [key: string]: unknown };
+
+export type PostAdminNotificationRulesSeed200 = { [key: string]: unknown };
+
+export type PutAdminNotificationRulesByIdBody = { [key: string]: unknown };
+
+export type PutAdminNotificationRulesById200 = { [key: string]: unknown };
+
+export type DeleteAdminNotificationRulesById200 = { [key: string]: unknown };
+
+export type GetAdminSetupMode200 = { [key: string]: unknown };
+
+export type GetAdminSystemSettings200 = { [key: string]: unknown };
+
+export type PutAdminSystemSettingsByKeyBody = { [key: string]: unknown };
+
+export type PutAdminSystemSettingsByKey200 = { [key: string]: unknown };
+
+export type GetAdminWorkflowAssignments200 = { [key: string]: unknown };
+
+export type PutAdminWorkflowAssignmentsByPageTypeBody = {
+  [key: string]: unknown;
+};
+
+export type PutAdminWorkflowAssignmentsByPageType200 = {
+  [key: string]: unknown;
+};
+
+export type DeleteAdminWorkflowAssignmentsByPageType200 = {
+  [key: string]: unknown;
+};
+
+export type GetAdminWorkflows200 = { [key: string]: unknown };
+
+export type PostAdminWorkflowsBody = { [key: string]: unknown };
+
+export type PostAdminWorkflows200 = { [key: string]: unknown };
+
+export type GetAdminWorkflowsById200 = { [key: string]: unknown };
+
+export type PutAdminWorkflowsByIdBody = { [key: string]: unknown };
+
+export type PutAdminWorkflowsById200 = { [key: string]: unknown };
+
+export type DeleteAdminWorkflowsById200 = { [key: string]: unknown };
+
+export type GetAiModels200 = { [key: string]: unknown };
+
+export type GetAuthConfig200 = { [key: string]: unknown };
+
+export type GetConfidentialityConfig200 = { [key: string]: unknown };
+
+export type PostConfidentialityConfigAssignBody = { [key: string]: unknown };
+
+export type PostConfidentialityConfigAssign200 = { [key: string]: unknown };
+
+export type DeleteConfidentialityConfigAssign200 = { [key: string]: unknown };
+
+export type GetConnectorsSharepointTeams200 = { [key: string]: unknown };
+
+export type GetConnectorsSharepointTeamsByGroupIdDrives200 = {
+  [key: string]: unknown;
+};
+
+export type GetContentV1Changes200 = { [key: string]: unknown };
+
+export type GetContentV1Glossary200 = { [key: string]: unknown };
+
+export type GetContentV1OpenapiJson200 = { [key: string]: unknown };
+
+export type GetContentV1Pages200 = { [key: string]: unknown };
+
+export type GetContentV1PagesById200 = { [key: string]: unknown };
+
+export type GetContentV1Scope200 = { [key: string]: unknown };
+
+export type PostContentV1SearchBody = { [key: string]: unknown };
+
+export type PostContentV1Search200 = { [key: string]: unknown };
+
+export type PostContentWorkingCopiesByIdCommentBody = {
+  [key: string]: unknown;
+};
+
+export type PostContentWorkingCopiesByIdComment200 = { [key: string]: unknown };
+
+export type PostContentWorkingCopiesByIdGenerateSummaryBody = {
+  [key: string]: unknown;
+};
+
+export type PostContentWorkingCopiesByIdGenerateSummary200 = {
+  [key: string]: unknown;
+};
+
+export type PutContentWorkingCopiesByIdSummaryBody = { [key: string]: unknown };
+
+export type PutContentWorkingCopiesByIdSummary200 = { [key: string]: unknown };
+
+export type GetCopilotAdminKeys200 = { [key: string]: unknown };
+
+export type PostCopilotAdminKeysBody = { [key: string]: unknown };
+
+export type PostCopilotAdminKeys200 = { [key: string]: unknown };
+
+export type DeleteCopilotAdminKeysById200 = { [key: string]: unknown };
+
+export type GetCopilotGlossary200 = { [key: string]: unknown };
+
+export type GetCopilotGlossaryById200 = { [key: string]: unknown };
+
+export type GetCopilotNodesById200 = { [key: string]: unknown };
+
+export type GetCopilotOpenapiJson200 = { [key: string]: unknown };
+
+export type GetCopilotPages200 = { [key: string]: unknown };
+
+export type GetCopilotPagesById200 = { [key: string]: unknown };
+
+export type PatchCopilotPagesByIdIndexStatusBody = { [key: string]: unknown };
+
+export type PatchCopilotPagesByIdIndexStatus200 = { [key: string]: unknown };
+
+export type PostCopilotSearchBody = { [key: string]: unknown };
+
+export type PostCopilotSearch200 = { [key: string]: unknown };
+
+export type GetCopilotSwaggerJson200 = { [key: string]: unknown };
+
+export type GetDelegations200 = { [key: string]: unknown };
+
+export type DeleteDelegationsByDelegationId200 = { [key: string]: unknown };
+
+export type GetDocs200 = { [key: string]: unknown };
+
+export type GetDocsExportAll200 = { [key: string]: unknown };
+
+export type GetDocsByFilename200 = { [key: string]: unknown };
+
+export type GetGlossaryExport200 = { [key: string]: unknown };
+
+export type PostGlossaryImportBody = { [key: string]: unknown };
+
+export type PostGlossaryImport200 = { [key: string]: unknown };
+
+export type PostGlossaryReimportSeedBody = { [key: string]: unknown };
+
+export type PostGlossaryReimportSeed200 = { [key: string]: unknown };
+
+export type GetGraphConnectorAclPreviewByNodeId200 = { [key: string]: unknown };
+
+export type GetGraphConnectorChangeFeed200 = { [key: string]: unknown };
+
+export type GetGraphConnectorConnection200 = { [key: string]: unknown };
+
+export type PostGraphConnectorConnectionRegisterBody = {
+  [key: string]: unknown;
+};
+
+export type PostGraphConnectorConnectionRegister200 = {
+  [key: string]: unknown;
+};
+
+export type GetGraphConnectorExternalItemsGlossaryById200 = {
+  [key: string]: unknown;
+};
+
+export type PostGraphConnectorExternalItemsGlossaryByIdRegisterBody = {
+  [key: string]: unknown;
+};
+
+export type PostGraphConnectorExternalItemsGlossaryByIdRegister200 = {
+  [key: string]: unknown;
+};
+
+export type GetGraphConnectorExternalItemsPagesById200 = {
+  [key: string]: unknown;
+};
+
+export type PostGraphConnectorExternalItemsPagesByIdRegisterBody = {
+  [key: string]: unknown;
+};
+
+export type PostGraphConnectorExternalItemsPagesByIdRegister200 = {
+  [key: string]: unknown;
+};
+
+export type GetGraphConnectorGroupMappings200 = { [key: string]: unknown };
+
+export type GetGraphConnectorGroupMappingsByTier200 = {
+  [key: string]: unknown;
+};
+
+export type PutGraphConnectorGroupMappingsByTierBody = {
+  [key: string]: unknown;
+};
+
+export type PutGraphConnectorGroupMappingsByTier200 = {
+  [key: string]: unknown;
+};
+
+export type DeleteGraphConnectorGroupMappingsByTier200 = {
+  [key: string]: unknown;
+};
+
+export type GetGraphConnectorIndexStatusGlossary200 = {
+  [key: string]: unknown;
+};
+
+export type GetGraphConnectorIndexStatusPages200 = { [key: string]: unknown };
+
+export type GetGraphConnectorReadinessCheck200 = { [key: string]: unknown };
+
+export type GetGraphConnectorSchema200 = { [key: string]: unknown };
+
+export type GetGraphConnectorSchemaDryRun200 = { [key: string]: unknown };
+
+export type PostGraphConnectorSchemaRegisterBody = { [key: string]: unknown };
+
+export type PostGraphConnectorSchemaRegister200 = { [key: string]: unknown };
+
+export type GetGraphConnectorSearchResultTemplate200 = {
+  [key: string]: unknown;
+};
+
+export type GetGraphConnectorSyncLog200 = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncDeltaBody = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncDelta200 = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncFullBody = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncFull200 = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncGlossaryByIdBody = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncGlossaryById200 = { [key: string]: unknown };
+
+export type GetGraphConnectorSyncLog2200 = { [key: string]: unknown };
+
+export type GetGraphConnectorSyncLogExport200 = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncPagesByIdBody = { [key: string]: unknown };
+
+export type PostGraphConnectorSyncPagesById200 = { [key: string]: unknown };
+
+export type GetGraphConnectorSyncQueue200 = { [key: string]: unknown };
+
+export type PostGraphConnectorTestConnectionBody = { [key: string]: unknown };
+
+export type PostGraphConnectorTestConnection200 = { [key: string]: unknown };
+
+export type GetIntegrationKeys200 = { [key: string]: unknown };
+
+export type PostIntegrationKeysBody = { [key: string]: unknown };
+
+export type PostIntegrationKeys200 = { [key: string]: unknown };
+
+export type PostIntegrationKeysPreviewBody = { [key: string]: unknown };
+
+export type PostIntegrationKeysPreview200 = { [key: string]: unknown };
+
+export type PatchIntegrationKeysByIdBody = { [key: string]: unknown };
+
+export type PatchIntegrationKeysById200 = { [key: string]: unknown };
+
+export type DeleteIntegrationKeysById200 = { [key: string]: unknown };
+
+export type PostIntegrationKeysByIdRotateBody = { [key: string]: unknown };
+
+export type PostIntegrationKeysByIdRotate200 = { [key: string]: unknown };
+
+export type PostMediaImportSharepointBody = { [key: string]: unknown };
+
+export type PostMediaImportSharepoint200 = { [key: string]: unknown };
+
+export type PostMediaValidateEmbedBody = { [key: string]: unknown };
+
+export type PostMediaValidateEmbed200 = { [key: string]: unknown };
+
+export type GetPrincipalsByIdDelegations200 = { [key: string]: unknown };
+
+export type PostPrincipalsByIdDelegationsBody = { [key: string]: unknown };
+
+export type PostPrincipalsByIdDelegations200 = { [key: string]: unknown };
+
+export type GetRbacSodConfig200 = { [key: string]: unknown };
+
+export type PutRbacSodConfigByRuleKeyBody = { [key: string]: unknown };
+
+export type PutRbacSodConfigByRuleKey200 = { [key: string]: unknown };
+
+export type GetTokens200 = { [key: string]: unknown };
+
+export type PostTokensBody = { [key: string]: unknown };
+
+export type PostTokens200 = { [key: string]: unknown };
+
+export type DeleteTokensById200 = { [key: string]: unknown };

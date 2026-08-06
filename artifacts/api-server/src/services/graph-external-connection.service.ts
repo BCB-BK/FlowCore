@@ -43,9 +43,11 @@ async function getGraphClient(): Promise<Client> {
  * möglich") rather than creating a duplicate. In dry-run mode, no network
  * call is made.
  */
-export async function ensureExternalConnection(
-  dryRun = true,
-): Promise<{ dryRun: boolean; connection: ExternalConnectionPayload; created?: boolean }> {
+export async function ensureExternalConnection(dryRun = true): Promise<{
+  dryRun: boolean;
+  connection: ExternalConnectionPayload;
+  created?: boolean;
+}> {
   const connection = buildExternalConnectionPayload();
 
   if (dryRun) {
@@ -61,11 +63,18 @@ export async function ensureExternalConnection(
   } catch (err) {
     const status = (err as { statusCode?: number })?.statusCode;
     if (status !== 404) {
-      logger.error({ err, connectionId }, "Failed to look up Graph external connection");
-      throw new AppError(502, "Abfrage der Graph External Connection fehlgeschlagen", {
-        details: err instanceof Error ? err.message : String(err),
-        exposeDetails: true,
-      });
+      logger.error(
+        { err, connectionId },
+        "Failed to look up Graph external connection",
+      );
+      throw new AppError(
+        502,
+        "Abfrage der Graph External Connection fehlgeschlagen",
+        {
+          details: err instanceof Error ? err.message : String(err),
+          exposeDetails: true,
+        },
+      );
     }
   }
 
@@ -76,11 +85,18 @@ export async function ensureExternalConnection(
       description: connection.description,
     });
   } catch (err) {
-    logger.error({ err, connectionId }, "Failed to create Graph external connection");
-    throw new AppError(502, "Anlegen der Graph External Connection fehlgeschlagen", {
-      details: err instanceof Error ? err.message : String(err),
-      exposeDetails: true,
-    });
+    logger.error(
+      { err, connectionId },
+      "Failed to create Graph external connection",
+    );
+    throw new AppError(
+      502,
+      "Anlegen der Graph External Connection fehlgeschlagen",
+      {
+        details: err instanceof Error ? err.message : String(err),
+        exposeDetails: true,
+      },
+    );
   }
 
   return { dryRun: false, connection, created: true };
@@ -136,7 +152,8 @@ export async function testExternalConnection(): Promise<TestConnectionResult> {
       connection,
       tokenAcquired: true,
       connectionExists: true,
-      message: "Verbindung erfolgreich getestet — External Connection ist erreichbar.",
+      message:
+        "Verbindung erfolgreich getestet — External Connection ist erreichbar.",
     };
   } catch (err) {
     const status = (err as { statusCode?: number })?.statusCode;

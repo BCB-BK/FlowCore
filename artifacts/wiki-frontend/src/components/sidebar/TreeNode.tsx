@@ -8,10 +8,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@workspace/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-} from "@workspace/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@workspace/ui/collapsible";
 import { ChevronRight, FileText, FolderOpen } from "lucide-react";
 import type { ContentNode } from "@/lib/types";
 import { PAGE_TYPE_LABELS } from "@/lib/types";
@@ -88,23 +85,23 @@ export function TreeNode({ node, level }: TreeNodeProps) {
       onOpenChange={setOpen}
       className="group/collapsible"
     >
-      <SidebarMenuItem role="treeitem" aria-expanded={open} aria-selected={isActive}>
+      <SidebarMenuItem
+        role="treeitem"
+        aria-expanded={open}
+        aria-selected={isActive}
+      >
         <div className="flex items-center">
           <button
             type="button"
-            aria-label={open ? "Unterseiten einklappen" : "Unterseiten ausklappen"}
+            aria-label={
+              open ? "Unterseiten einklappen" : "Unterseiten ausklappen"
+            }
             className="flex items-center justify-center shrink-0 h-8 w-5 bg-transparent border-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             onClick={() => setOpen(!open)}
           >
-            <ChevronRight
-              className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-            />
+            <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </button>
-          <SidebarMenuButton
-            asChild
-            isActive={isActive}
-            className="flex-1"
-          >
+          <SidebarMenuButton asChild isActive={isActive} className="flex-1">
             <a {...getLinkProps(`/node/${node.id}`)}>
               <Icon className="h-4 w-4 shrink-0" />
               <span className="truncate">{node.title}</span>

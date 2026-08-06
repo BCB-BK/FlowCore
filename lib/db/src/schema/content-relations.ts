@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import { relationTypeEnum } from "./enums";
 import { contentNodesTable } from "./content-nodes";
@@ -28,6 +29,7 @@ export const contentRelationsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_content_relations_target_node").on(table.targetNodeId),
     uniqueIndex("idx_content_relations_unique").on(
       table.sourceNodeId,
       table.targetNodeId,

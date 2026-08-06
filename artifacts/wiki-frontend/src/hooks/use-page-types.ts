@@ -62,21 +62,29 @@ export function usePublicationReadiness(
   sectionData: Record<string, unknown>,
 ) {
   return useMemo(() => {
-    if (!templateType) return { ready: false, percentage: 0, missingRequired: [], missingRecommended: [] };
+    if (!templateType)
+      return {
+        ready: false,
+        percentage: 0,
+        missingRequired: [],
+        missingRecommended: [],
+      };
     return getPublicationReadiness(templateType, metadata, sectionData);
   }, [templateType, metadata, sectionData]);
 }
 
 export function useFieldsByRequirement(templateType: string | undefined) {
   return useMemo(() => {
-    if (!templateType) return { required: [], recommended: [], conditional: [] };
+    if (!templateType)
+      return { required: [], recommended: [], conditional: [] };
     return getFieldsByRequirement(templateType);
   }, [templateType]);
 }
 
 export function useSectionsByRequirement(templateType: string | undefined) {
   return useMemo(() => {
-    if (!templateType) return { required: [], recommended: [], conditional: [] };
+    if (!templateType)
+      return { required: [], recommended: [], conditional: [] };
     return getSectionsByRequirement(templateType);
   }, [templateType]);
 }

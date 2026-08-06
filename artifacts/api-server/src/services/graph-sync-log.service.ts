@@ -1,7 +1,10 @@
 import { db } from "@workspace/db";
 import { graphSyncLogTable } from "@workspace/db/schema";
 import { desc, eq, and, type SQL } from "drizzle-orm";
-import type { GraphSyncItemType, GraphSyncResult } from "./graph-sync-state.service";
+import type {
+  GraphSyncItemType,
+  GraphSyncResult,
+} from "./graph-sync-state.service";
 
 export type GraphSyncOperation =
   | "full_sync"
@@ -65,9 +68,12 @@ export interface ListSyncLogFilter {
 
 export async function listSyncLog(filter: ListSyncLogFilter = {}) {
   const conditions: SQL[] = [];
-  if (filter.itemId) conditions.push(eq(graphSyncLogTable.itemId, filter.itemId));
-  if (filter.operation) conditions.push(eq(graphSyncLogTable.operation, filter.operation));
-  if (filter.result) conditions.push(eq(graphSyncLogTable.result, filter.result));
+  if (filter.itemId)
+    conditions.push(eq(graphSyncLogTable.itemId, filter.itemId));
+  if (filter.operation)
+    conditions.push(eq(graphSyncLogTable.operation, filter.operation));
+  if (filter.result)
+    conditions.push(eq(graphSyncLogTable.result, filter.result));
 
   const limit = Math.min(filter.limit ?? 50, 200);
 

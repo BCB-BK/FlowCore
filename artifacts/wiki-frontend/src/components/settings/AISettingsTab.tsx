@@ -21,7 +21,13 @@ import {
 } from "@workspace/ui/select";
 import { Badge } from "@workspace/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
-import { Save, BarChart3, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import {
+  Save,
+  BarChart3,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 import {
   useGetAiSettings,
   useUpdateAiSettings,
@@ -105,7 +111,7 @@ export function AISettingsTab() {
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetAiSettingsQueryKey(),
           });
           toast({
@@ -157,7 +163,8 @@ export function AISettingsTab() {
             <div>
               <Label htmlFor="ai-enabled">FlowCore-Assistent aktivieren</Label>
               <p className="text-sm text-muted-foreground">
-                Aktiviert den FlowCore-Assistenten und den FlowCore-Schreibassistenten
+                Aktiviert den FlowCore-Assistenten und den
+                FlowCore-Schreibassistenten
               </p>
             </div>
             <Switch
@@ -180,7 +187,11 @@ export function AISettingsTab() {
                   </Badge>
                 )}
               </div>
-              <Select value={model} onValueChange={setModel} disabled={modelsLoading}>
+              <Select
+                value={model}
+                onValueChange={setModel}
+                disabled={modelsLoading}
+              >
                 <SelectTrigger id="model">
                   <SelectValue placeholder="Modell wählen…" />
                 </SelectTrigger>
@@ -202,17 +213,21 @@ export function AISettingsTab() {
               </Select>
               {!modelsLoading && availableModels.length === 0 && (
                 <p className="text-xs text-amber-600">
-                  Modelle konnten nicht von der API abgerufen werden – Fallback-Liste aktiv
+                  Modelle konnten nicht von der API abgerufen werden –
+                  Fallback-Liste aktiv
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="source-mode">Quellmodus</Label>
-              <Select value={sourceMode} onValueChange={(v) => {
-                if (v === "wiki_connectors_web") return;
-                setSourceMode(v);
-              }}>
+              <Select
+                value={sourceMode}
+                onValueChange={(v) => {
+                  if (v === "wiki_connectors_web") return;
+                  setSourceMode(v);
+                }}
+              >
                 <SelectTrigger id="source-mode">
                   <SelectValue />
                 </SelectTrigger>
@@ -221,7 +236,11 @@ export function AISettingsTab() {
                   <SelectItem value="wiki_and_connectors">
                     Wiki + Konnektoren
                   </SelectItem>
-                  <SelectItem value="wiki_connectors_web" disabled className="opacity-40 cursor-not-allowed">
+                  <SelectItem
+                    value="wiki_connectors_web"
+                    disabled
+                    className="opacity-40 cursor-not-allowed"
+                  >
                     Wiki + Konnektoren + Web (demnächst)
                   </SelectItem>
                 </SelectContent>
@@ -233,16 +252,14 @@ export function AISettingsTab() {
             <TooltipTrigger asChild>
               <div className="flex items-center justify-between opacity-40 cursor-not-allowed select-none">
                 <div>
-                  <Label className="cursor-not-allowed">Web-Suche erlauben</Label>
+                  <Label className="cursor-not-allowed">
+                    Web-Suche erlauben
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     Web-Suche ist noch nicht freigegeben
                   </p>
                 </div>
-                <Switch
-                  id="web-search"
-                  checked={false}
-                  disabled
-                />
+                <Switch id="web-search" checked={false} disabled />
               </div>
             </TooltipTrigger>
             <TooltipContent>

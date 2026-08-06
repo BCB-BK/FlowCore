@@ -29,7 +29,10 @@ export interface GraphConnectionSchema {
  */
 export function buildGraphConnectionSchema(): GraphConnectionSchema {
   const byName = new Map<string, GraphSchemaProperty>();
-  for (const prop of [...COMMON_SCHEMA_PROPERTIES, ...GLOSSARY_SCHEMA_PROPERTIES]) {
+  for (const prop of [
+    ...COMMON_SCHEMA_PROPERTIES,
+    ...GLOSSARY_SCHEMA_PROPERTIES,
+  ]) {
     byName.set(prop.name, prop);
   }
   return {
@@ -71,7 +74,11 @@ export function dryRunValidateSchema(): SchemaValidationResult {
     }
   }
 
-  return { valid: errors.length === 0, errors, propertyCount: schema.properties.length };
+  return {
+    valid: errors.length === 0,
+    errors,
+    propertyCount: schema.properties.length,
+  };
 }
 
 async function getGraphClient(): Promise<Client> {
@@ -93,9 +100,11 @@ async function getGraphClient(): Promise<Client> {
  * the built + validated schema is returned instead — errors are never
  * swallowed, a failed validation throws.
  */
-export async function registerConnectionSchema(
-  dryRun = true,
-): Promise<{ dryRun: boolean; schema: GraphConnectionSchema; status?: string }> {
+export async function registerConnectionSchema(dryRun = true): Promise<{
+  dryRun: boolean;
+  schema: GraphConnectionSchema;
+  status?: string;
+}> {
   const validation = dryRunValidateSchema();
   if (!validation.valid) {
     throw new AppError(400, "Schema-Validierung fehlgeschlagen", {
@@ -118,14 +127,24 @@ export async function registerConnectionSchema(
       .api(`/external/connections/${connectionId}/schema`)
       .patch(schema);
   } catch (err) {
-    logger.error({ err, connectionId }, "Failed to register Graph connection schema");
-    throw new AppError(502, "Schema-Registrierung bei Microsoft Graph fehlgeschlagen", {
-      details: err instanceof Error ? err.message : String(err),
-      exposeDetails: true,
-    });
+    logger.error(
+      { err, connectionId },
+      "Failed to register Graph connection schema",
+    );
+    throw new AppError(
+      502,
+      "Schema-Registrierung bei Microsoft Graph fehlgeschlagen",
+      {
+        details: err instanceof Error ? err.message : String(err),
+        exposeDetails: true,
+      },
+    );
   }
 
-  await setSystemSetting(GRAPH_SCHEMA_REGISTERED_AT_KEY, new Date().toISOString());
+  await setSystemSetting(
+    GRAPH_SCHEMA_REGISTERED_AT_KEY,
+    new Date().toISOString(),
+  );
 
   return { dryRun: false, schema, status: "registered" };
 }

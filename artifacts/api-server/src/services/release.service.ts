@@ -24,10 +24,7 @@ export async function createRelease(data: InsertRelease) {
   return rows[0];
 }
 
-export async function updateRelease(
-  id: string,
-  data: Partial<InsertRelease>,
-) {
+export async function updateRelease(id: string, data: Partial<InsertRelease>) {
   const rows = await db
     .update(releasesTable)
     .set({ ...data, updatedAt: new Date() })

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { HelpCircle, Lightbulb, AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/popover";
+  HelpCircle,
+  Lightbulb,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/popover";
 import { Button } from "@workspace/ui/button";
 
 interface FieldHelpTooltipProps {
@@ -26,7 +27,13 @@ export function FieldHelpTooltip({
 }: FieldHelpTooltipProps) {
   const [open, setOpen] = useState(false);
 
-  const hasContent = fillHelp || example || badExample || expectedFormat || helpText || (guidingQuestions && guidingQuestions.length > 0);
+  const hasContent =
+    fillHelp ||
+    example ||
+    badExample ||
+    expectedFormat ||
+    helpText ||
+    (guidingQuestions && guidingQuestions.length > 0);
   if (!hasContent) return null;
 
   return (
@@ -41,7 +48,11 @@ export function FieldHelpTooltip({
           <HelpCircle className="h-3.5 w-3.5" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 text-sm space-y-3" side="right" align="start">
+      <PopoverContent
+        className="w-80 text-sm space-y-3"
+        side="right"
+        align="start"
+      >
         {(fillHelp || helpText) && (
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -54,7 +65,9 @@ export function FieldHelpTooltip({
 
         {guidingQuestions && guidingQuestions.length > 0 && (
           <div className="space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">Leitfragen</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              Leitfragen
+            </div>
             <ul className="text-xs space-y-0.5 text-muted-foreground">
               {guidingQuestions.map((q, i) => (
                 <li key={i} className="flex items-start gap-1">
@@ -68,8 +81,12 @@ export function FieldHelpTooltip({
 
         {expectedFormat && (
           <div className="space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">Erwartetes Format</div>
-            <code className="block text-xs bg-muted p-1.5 rounded font-mono">{expectedFormat}</code>
+            <div className="text-xs font-medium text-muted-foreground">
+              Erwartetes Format
+            </div>
+            <code className="block text-xs bg-muted p-1.5 rounded font-mono">
+              {expectedFormat}
+            </code>
           </div>
         )}
 
@@ -79,7 +96,9 @@ export function FieldHelpTooltip({
               <CheckCircle2 className="h-3 w-3" />
               Gutes Beispiel
             </div>
-            <p className="text-xs text-green-700 dark:text-green-300">{example}</p>
+            <p className="text-xs text-green-700 dark:text-green-300">
+              {example}
+            </p>
           </div>
         )}
 
@@ -89,7 +108,9 @@ export function FieldHelpTooltip({
               <AlertTriangle className="h-3 w-3" />
               Vermeiden
             </div>
-            <p className="text-xs text-red-700 dark:text-red-300">{badExample}</p>
+            <p className="text-xs text-red-700 dark:text-red-300">
+              {badExample}
+            </p>
           </div>
         )}
       </PopoverContent>

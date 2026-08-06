@@ -23,7 +23,9 @@ const DEFAULT_CONNECTION_DESCRIPTION =
  * without a live connection configured.
  */
 export function getGraphConnectorConfig(): GraphConnectorConfig {
-  const connectionId = (process.env["GRAPH_EXTERNAL_CONNECTION_ID"] ?? "").trim();
+  const connectionId = (
+    process.env["GRAPH_EXTERNAL_CONNECTION_ID"] ?? ""
+  ).trim();
   const connectionName = (
     process.env["GRAPH_EXTERNAL_CONNECTION_NAME"] ?? DEFAULT_CONNECTION_NAME
   ).trim();

@@ -5,6 +5,10 @@ packages:
   - scripts
   - e2e
 
+allowBuilds:
+  core-js: true
+  esbuild: true
+
 autoInstallPeers: false
 
 catalog:
@@ -19,7 +23,7 @@ catalog:
   '@vitejs/plugin-react': ^5.0.4
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
-  drizzle-orm: ^0.45.1
+  drizzle-orm: ^0.45.2
   framer-motion: ^12.23.24
   lucide-react: ^0.545.0
   react: 19.1.0
@@ -43,6 +47,19 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # --- Sicherheits-Anhebungen (Audit-Befund A2, 05.08.2026) -------------------
+  # Transitive Pakete mit bekannten Schwachstellen. Jeweils die kleinste
+  # Version, die das Advisory behebt; Major-Stand bleibt unveraendert.
+  body-parser: ^2.3.0        # DoS bei ungueltigem limit-Wert
+  path-to-regexp: ^8.4.0     # ReDoS / DoS ueber optionale Segmente
+  qs: ^6.15.2                # DoS in qs.stringify
+  uuid: ^11.1.1              # fehlende Puffergrenzenpruefung in v3/v5/v6
+  multer: ^2.2.0             # DoS ueber tief verschachtelte Feldnamen
+  markdown-it: ^14.1.2       # quadratische Komplexitaet in smartquotes
+  linkify-it: ^5.0.2         # quadratische Komplexitaet im mailto-Validator
+  dompurify: ^3.4.12         # CUSTOM_ELEMENT_HANDLING umgeht Sanitizer-Hook
+  # Nur die 2.x-Linie anheben (1.x wird von anderen Paketen benoetigt):
+  brace-expansion@^2: ^2.1.4 # mehrere DoS-Varianten in der Expansion
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
   '@expo/ngrok-bin>@expo/ngrok-bin-darwin-arm64': '-'
   '@expo/ngrok-bin>@expo/ngrok-bin-darwin-x64': '-'

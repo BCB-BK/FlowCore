@@ -8,7 +8,11 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { workingCopyStatusEnum, changeTypeEnum, workingCopyEventTypeEnum } from "./enums";
+import {
+  workingCopyStatusEnum,
+  changeTypeEnum,
+  workingCopyEventTypeEnum,
+} from "./enums";
 import { contentNodesTable } from "./content-nodes";
 import { contentRevisionsTable } from "./content-revisions";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -27,7 +31,8 @@ export const contentWorkingCopiesTable = pgTable(
     status: workingCopyStatusEnum("status").notNull().default("draft"),
     title: text("title").notNull(),
     content: jsonb("content").$type<Record<string, unknown>>(),
-    structuredFields: jsonb("structured_fields").$type<Record<string, unknown>>(),
+    structuredFields:
+      jsonb("structured_fields").$type<Record<string, unknown>>(),
     editorSnapshot: jsonb("editor_snapshot").$type<Record<string, unknown>>(),
     changeType: changeTypeEnum("change_type").notNull().default("editorial"),
     changeSummary: text("change_summary"),
@@ -53,26 +58,30 @@ export const contentWorkingCopiesTable = pgTable(
     index("idx_working_copies_status").on(table.status),
     uniqueIndex("idx_working_copies_active_per_node")
       .on(table.nodeId)
-      .where(
-        sql`status NOT IN ('cancelled', 'published')`,
-      ),
+      .where(sql`status NOT IN ('cancelled', 'published')`),
     index("idx_working_copies_base_rev").on(table.baseRevisionId),
   ],
 );
 
-export const workingCopyEventsTable = pgTable("working_copy_events", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  workingCopyId: uuid("working_copy_id")
-    .notNull()
-    .references(() => contentWorkingCopiesTable.id, { onDelete: "cascade" }),
-  eventType: workingCopyEventTypeEnum("event_type").notNull(),
-  actorId: text("actor_id"),
-  comment: text("comment"),
-  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const workingCopyEventsTable = pgTable(
+  "working_copy_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workingCopyId: uuid("working_copy_id")
+      .notNull()
+      .references(() => contentWorkingCopiesTable.id, { onDelete: "cascade" }),
+    eventType: workingCopyEventTypeEnum("event_type").notNull(),
+    actorId: text("actor_id"),
+    comment: text("comment"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_working_copy_events_working_copy").on(table.workingCopyId),
+  ],
+);
 
 export const insertWorkingCopySchema = createInsertSchema(
   contentWorkingCopiesTable,

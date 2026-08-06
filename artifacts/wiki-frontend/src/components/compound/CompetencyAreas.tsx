@@ -17,7 +17,13 @@ interface CompetencyAreasProps {
   value: string;
   onSave?: (key: string, value: string) => void;
   sectionKey: string;
-  help?: { fillHelp?: string; example?: string; badExample?: string; placeholder?: string; expectedFormat?: string };
+  help?: {
+    fillHelp?: string;
+    example?: string;
+    badExample?: string;
+    placeholder?: string;
+    expectedFormat?: string;
+  };
   helpText?: string;
   guidingQuestions?: string[];
 }
@@ -31,13 +37,20 @@ function parseAreas(raw: string): CompetencyArea[] {
   return [{ area: "", tasks: raw }];
 }
 
-export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, guidingQuestions }: CompetencyAreasProps) {
+export function CompetencyAreas({
+  value,
+  onSave,
+  sectionKey,
+  help,
+  helpText,
+  guidingQuestions,
+}: CompetencyAreasProps) {
   const [editing, setEditing] = useState(false);
   const [areas, setAreas] = useState<CompetencyArea[]>(() => parseAreas(value));
   const rowKeys = useRowKeys(areas.length);
 
   const handleSave = () => {
-    const filtered = areas.filter(a => a.area.trim() || a.tasks.trim());
+    const filtered = areas.filter((a) => a.area.trim() || a.tasks.trim());
     onSave?.(sectionKey, JSON.stringify(filtered));
     setEditing(false);
   };
@@ -57,8 +70,12 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
     rowKeys.remove(index);
   };
 
-  const updateArea = (index: number, field: keyof CompetencyArea, val: string) => {
-    setAreas(areas.map((a, i) => i === index ? { ...a, [field]: val } : a));
+  const updateArea = (
+    index: number,
+    field: keyof CompetencyArea,
+    val: string,
+  ) => {
+    setAreas(areas.map((a, i) => (i === index ? { ...a, [field]: val } : a)));
   };
 
   const displayAreas = parseAreas(value);
@@ -71,7 +88,12 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
             <CardTitle className="text-sm flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-primary" />
               Aufgaben & Verantwortlichkeiten
-              <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>
+              <Badge
+                variant="destructive"
+                className="text-[9px] px-1 py-0 h-4 leading-none"
+              >
+                Pflicht
+              </Badge>
             </CardTitle>
             <FieldHelpTooltip
               fillHelp={help?.fillHelp}
@@ -82,34 +104,63 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
             />
           </div>
           {onSave && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => { setAreas(parseAreas(value)); setEditing(true); }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setAreas(parseAreas(value));
+                setEditing(true);
+              }}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">Gegliedert nach Kompetenzbereichen</p>
+        <p className="text-xs text-muted-foreground">
+          Gegliedert nach Kompetenzbereichen
+        </p>
       </CardHeader>
       <CardContent>
         {editing ? (
           <div className="space-y-3">
             {areas.map((area, i) => (
-              <div key={rowKeys.keys[i]} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+              <div
+                key={rowKeys.keys[i]}
+                className="border rounded-lg p-3 space-y-2 bg-muted/20"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Kompetenzbereich {i + 1}</span>
-                  <Button variant="ghost" size="sm" className="h-6 px-1.5 text-destructive" onClick={() => removeArea(i)}>
+                  <span className="text-xs text-muted-foreground">
+                    Kompetenzbereich {i + 1}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-1.5 text-destructive"
+                    onClick={() => removeArea(i)}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -127,7 +178,12 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
                 />
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full" onClick={addArea}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={addArea}
+            >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
               Kompetenzbereich hinzufügen
             </Button>
@@ -137,7 +193,9 @@ export function CompetencyAreas({ value, onSave, sectionKey, help, helpText, gui
             {displayAreas.map((area, i) => (
               <div key={i} className="border-l-2 border-primary/30 pl-3">
                 <p className="text-sm font-semibold">{area.area || "—"}</p>
-                <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">{area.tasks}</p>
+                <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap">
+                  {area.tasks}
+                </p>
               </div>
             ))}
           </div>

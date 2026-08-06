@@ -46,24 +46,30 @@ export function RestoreDialog({
         description: `Eine Arbeitskopie mit dem Inhalt von Revision ${revisionNo} wurde erstellt. Die Änderungen müssen geprüft und freigegeben werden, bevor sie veröffentlicht werden.`,
       });
 
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}/revisions`],
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}`],
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: [`/api/content/nodes/${nodeId}/working-copy`],
       });
       onOpenChange(false);
       navigate(`/nodes/${nodeId}/edit`);
     } catch (err) {
-      const errObj = err as { code?: string; message?: string; data?: { code?: string; error?: string } };
+      const errObj = err as {
+        code?: string;
+        message?: string;
+        data?: { code?: string; error?: string };
+      };
       const isConflict =
         errObj.code === "WORKING_COPY_ACTIVE" ||
         errObj.data?.code === "WORKING_COPY_ACTIVE" ||
         (typeof (errObj.data?.error ?? errObj.message) === "string" &&
-          (errObj.data?.error ?? errObj.message ?? "").includes("aktive Arbeitskopie"));
+          (errObj.data?.error ?? errObj.message ?? "").includes(
+            "aktive Arbeitskopie",
+          ));
       toast({
         variant: "destructive",
         title: isConflict
@@ -92,9 +98,9 @@ export function RestoreDialog({
           <AlertDialogTitle>Revision wiederherstellen?</AlertDialogTitle>
           <AlertDialogDescription>
             Der Inhalt von Revision <strong>{revisionNo}</strong> wird als neue
-            Arbeitskopie erstellt. Diese muss anschließend den regulären
-            Prüf- und Freigabeprozess durchlaufen, bevor sie veröffentlicht
-            werden kann. Die bestehende Versionshistorie bleibt unverändert.
+            Arbeitskopie erstellt. Diese muss anschließend den regulären Prüf-
+            und Freigabeprozess durchlaufen, bevor sie veröffentlicht werden
+            kann. Die bestehende Versionshistorie bleibt unverändert.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

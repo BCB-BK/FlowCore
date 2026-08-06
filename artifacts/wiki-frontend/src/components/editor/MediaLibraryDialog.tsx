@@ -10,7 +10,15 @@ import { Input } from "@workspace/ui/input";
 import { Label } from "@workspace/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Search, Image, FileText, Video, Loader2, Globe } from "lucide-react";
+import {
+  Upload,
+  Search,
+  Image,
+  FileText,
+  Video,
+  Loader2,
+  Globe,
+} from "lucide-react";
 import { SharePointMediaBrowser } from "./SharePointMediaBrowser";
 
 interface MediaAsset {
@@ -159,7 +167,7 @@ export function MediaLibraryDialog({
           value={activeTab}
           onValueChange={(v) => {
             setActiveTab(v);
-            if (v === "browse") loadAssets();
+            if (v === "browse") void loadAssets();
           }}
         >
           <TabsList className="w-full">
@@ -277,7 +285,7 @@ export function MediaLibraryDialog({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") loadAssets();
+                  if (e.key === "Enter") void loadAssets();
                 }}
               />
               <Button variant="outline" onClick={loadAssets}>

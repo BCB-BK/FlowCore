@@ -5,8 +5,7 @@ import { InputRule, PasteRule } from "@tiptap/core";
 //   https://flowcore.bildungscampus-backnang.de/node/<uuid>
 //   flowcore.bildungscampus-backnang.de/node/<uuid>
 //   /node/<uuid>
-const UUID_SEG =
-  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const UUID_SEG = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 const HOST_SEG = "(?:https?:\\/\\/)?(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}";
 export const WIKI_NODE_URL_PATTERN = new RegExp(
   `(?:${HOST_SEG})?\\/node\\/(${UUID_SEG})`,
@@ -94,22 +93,23 @@ export const WikiLink = Node.create({
   addInputRules() {
     return [
       new InputRule({
-        find: new RegExp(
-          `(?:${HOST_SEG})?\\/node\\/(${UUID_SEG})\\s$`,
-        ),
+        find: new RegExp(`(?:${HOST_SEG})?\\/node\\/(${UUID_SEG})\\s$`),
         handler: ({ chain, range, match }) => {
           const nodeId = match[1];
           if (!nodeId) return null;
           chain()
-            .insertContentAt({ from: range.from, to: range.to }, {
-              type: this.name,
-              attrs: {
-                nodeId,
-                title: nodeId.substring(0, 8) + "…",
-                displayCode: null,
-                templateType: null,
+            .insertContentAt(
+              { from: range.from, to: range.to },
+              {
+                type: this.name,
+                attrs: {
+                  nodeId,
+                  title: nodeId.substring(0, 8) + "…",
+                  displayCode: null,
+                  templateType: null,
+                },
               },
-            })
+            )
             .run();
           return null;
         },
@@ -125,15 +125,18 @@ export const WikiLink = Node.create({
           const nodeId = match[1];
           if (!nodeId) return null;
           chain()
-            .insertContentAt({ from: range.from, to: range.to }, {
-              type: this.name,
-              attrs: {
-                nodeId,
-                title: nodeId.substring(0, 8) + "…",
-                displayCode: null,
-                templateType: null,
+            .insertContentAt(
+              { from: range.from, to: range.to },
+              {
+                type: this.name,
+                attrs: {
+                  nodeId,
+                  title: nodeId.substring(0, 8) + "…",
+                  displayCode: null,
+                  templateType: null,
+                },
               },
-            })
+            )
             .run();
           return null;
         },

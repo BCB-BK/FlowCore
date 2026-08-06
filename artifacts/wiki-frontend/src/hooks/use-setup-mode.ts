@@ -36,7 +36,7 @@ export function useSetupMode() {
       setLoading(false);
       return;
     }
-    fetchSetupMode().then((val) => {
+    void fetchSetupMode().then((val) => {
       setSetupMode(val);
       setLoading(false);
     });

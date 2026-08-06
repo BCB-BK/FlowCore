@@ -16,6 +16,8 @@ import {
 } from "./rbac.service";
 import { checkConfidentialityAccessBatch } from "./confidentiality.service";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
+import nodePath from "path";
+import nodeFs from "fs";
 
 let _openaiClient: OpenAI | null = null;
 
@@ -31,13 +33,19 @@ async function getOpenAI(): Promise<OpenAI> {
     const mod = await import("@workspace/integrations-openai-ai-server");
     _openaiClient = mod.openai;
   }
-  return _openaiClient!;
+  return _openaiClient;
 }
 
 // Chat-fähige Modell-Prefixe die von OpenAI unterstützt werden
 const CHAT_MODEL_PREFIXES = ["gpt-", "o1", "o3", "o4", "chatgpt-"];
 const EXCLUDED_SUFFIXES = [
-  "instruct", "embedding", "whisper", "tts", "dall-e", "babbage", "davinci",
+  "instruct",
+  "embedding",
+  "whisper",
+  "tts",
+  "dall-e",
+  "babbage",
+  "davinci",
 ];
 
 export interface AvailableModel {
@@ -167,46 +175,205 @@ const DOCS_KB: Array<{
   {
     filename: "10-ADMIN-HANDBOOK.md",
     title: "Administrationshandbuch",
-    keywords: ["admin", "konfiguration", "einstellungen", "benutzer", "rollen", "backup", "sicherheit", "wartung", "installation", "deployment"],
+    keywords: [
+      "admin",
+      "konfiguration",
+      "einstellungen",
+      "benutzer",
+      "rollen",
+      "backup",
+      "sicherheit",
+      "wartung",
+      "installation",
+      "deployment",
+    ],
     isHandbook: true,
   },
-  { filename: "22-QUICK-START.md", title: "Quick-Start", keywords: ["start", "anmelden", "login", "einstieg", "erste", "schritte", "anfang"] },
-  { filename: "20-EDITOR-GUIDE.md", title: "Editor-Leitfaden", keywords: ["editor", "bpmn", "block", "inhalt", "erstellen", "bearbeiten", "sharepoint", "ki", "assistent"] },
-  { filename: "21-REVIEWER-GUIDE.md", title: "Reviewer-Leitfaden", keywords: ["review", "prüfen", "freigabe", "genehmigung", "kommentar"] },
-  { filename: "01-ARCHITECTURE.md", title: "Systemarchitektur", keywords: ["architektur", "stack", "technologie", "react", "express", "postgresql", "deployment", "infrastruktur"] },
-  { filename: "02-DATA-MODEL.md", title: "Datenmodell", keywords: ["datenbank", "schema", "tabelle", "modell", "entität", "relation"] },
-  { filename: "03-BENCHMARK-FEATURE-REGISTER.md", title: "Feature-Register", keywords: ["feature", "funktion", "implementiert", "status", "register", "roadmap"] },
-  { filename: "05-CONFIG-ENV.md", title: "Konfiguration & Umgebungsvariablen", keywords: ["umgebungsvariable", "env", "config", "secret", "entra", "azure", "openai", "sharepoint", "port"] },
-  { filename: "06-LOGGING-AUDIT.md", title: "Logging & Audit", keywords: ["log", "audit", "protokoll", "pino", "fehler", "debug"] },
-  { filename: "11-RUNBOOKS.md", title: "Runbooks", keywords: ["runbook", "neustart", "fehler", "problem", "ausfall", "wiederherstellung", "rollback"] },
-  { filename: "12-BACKUP-RESTORE.md", title: "Backup & Wiederherstellung", keywords: ["backup", "sicherung", "restore", "wiederherstellung", "export", "sharepoint"] },
-  { filename: "13-PERFORMANCE.md", title: "Performance & Kapazität", keywords: ["performance", "leistung", "kapazität", "optimierung", "cache", "geschwindigkeit"] },
-  { filename: "14-GO-LIVE-CHECKLIST.md", title: "Go-Live-Checkliste", keywords: ["go-live", "produktiv", "checkliste", "launch", "abnahme", "produktion"] },
-  { filename: "15-SOURCE-OF-TRUTH.md", title: "Source of Truth", keywords: ["datenquelle", "konsistenz", "wahrheit", "referenz", "master"] },
-  { filename: "23-UAT-PROTOCOL.md", title: "UAT-Protokoll", keywords: ["uat", "abnahmetest", "akzeptanz", "test", "testfall", "protokoll"] },
-  { filename: "00-INDEX.md", title: "Dokumentations-Index", keywords: ["index", "übersicht", "dokumentation", "alle", "liste"] },
+  {
+    filename: "22-QUICK-START.md",
+    title: "Quick-Start",
+    keywords: [
+      "start",
+      "anmelden",
+      "login",
+      "einstieg",
+      "erste",
+      "schritte",
+      "anfang",
+    ],
+  },
+  {
+    filename: "20-EDITOR-GUIDE.md",
+    title: "Editor-Leitfaden",
+    keywords: [
+      "editor",
+      "bpmn",
+      "block",
+      "inhalt",
+      "erstellen",
+      "bearbeiten",
+      "sharepoint",
+      "ki",
+      "assistent",
+    ],
+  },
+  {
+    filename: "21-REVIEWER-GUIDE.md",
+    title: "Reviewer-Leitfaden",
+    keywords: ["review", "prüfen", "freigabe", "genehmigung", "kommentar"],
+  },
+  {
+    filename: "01-ARCHITECTURE.md",
+    title: "Systemarchitektur",
+    keywords: [
+      "architektur",
+      "stack",
+      "technologie",
+      "react",
+      "express",
+      "postgresql",
+      "deployment",
+      "infrastruktur",
+    ],
+  },
+  {
+    filename: "02-DATA-MODEL.md",
+    title: "Datenmodell",
+    keywords: [
+      "datenbank",
+      "schema",
+      "tabelle",
+      "modell",
+      "entität",
+      "relation",
+    ],
+  },
+  {
+    filename: "03-BENCHMARK-FEATURE-REGISTER.md",
+    title: "Feature-Register",
+    keywords: [
+      "feature",
+      "funktion",
+      "implementiert",
+      "status",
+      "register",
+      "roadmap",
+    ],
+  },
+  {
+    filename: "05-CONFIG-ENV.md",
+    title: "Konfiguration & Umgebungsvariablen",
+    keywords: [
+      "umgebungsvariable",
+      "env",
+      "config",
+      "secret",
+      "entra",
+      "azure",
+      "openai",
+      "sharepoint",
+      "port",
+    ],
+  },
+  {
+    filename: "06-LOGGING-AUDIT.md",
+    title: "Logging & Audit",
+    keywords: ["log", "audit", "protokoll", "pino", "fehler", "debug"],
+  },
+  {
+    filename: "11-RUNBOOKS.md",
+    title: "Runbooks",
+    keywords: [
+      "runbook",
+      "neustart",
+      "fehler",
+      "problem",
+      "ausfall",
+      "wiederherstellung",
+      "rollback",
+    ],
+  },
+  {
+    filename: "12-BACKUP-RESTORE.md",
+    title: "Backup & Wiederherstellung",
+    keywords: [
+      "backup",
+      "sicherung",
+      "restore",
+      "wiederherstellung",
+      "export",
+      "sharepoint",
+    ],
+  },
+  {
+    filename: "13-PERFORMANCE.md",
+    title: "Performance & Kapazität",
+    keywords: [
+      "performance",
+      "leistung",
+      "kapazität",
+      "optimierung",
+      "cache",
+      "geschwindigkeit",
+    ],
+  },
+  {
+    filename: "14-GO-LIVE-CHECKLIST.md",
+    title: "Go-Live-Checkliste",
+    keywords: [
+      "go-live",
+      "produktiv",
+      "checkliste",
+      "launch",
+      "abnahme",
+      "produktion",
+    ],
+  },
+  {
+    filename: "15-SOURCE-OF-TRUTH.md",
+    title: "Source of Truth",
+    keywords: ["datenquelle", "konsistenz", "wahrheit", "referenz", "master"],
+  },
+  {
+    filename: "23-UAT-PROTOCOL.md",
+    title: "UAT-Protokoll",
+    keywords: [
+      "uat",
+      "abnahmetest",
+      "akzeptanz",
+      "test",
+      "testfall",
+      "protokoll",
+    ],
+  },
+  {
+    filename: "00-INDEX.md",
+    title: "Dokumentations-Index",
+    keywords: ["index", "übersicht", "dokumentation", "alle", "liste"],
+  },
 ];
 
 function getDocsRootForAi(): string {
-  const replHome = process.env["REPL_HOME"] ?? "";
+  // WORKSPACE_ROOT ist der Pfad auf dem Server; REPL_HOME bleibt als
+  // Rueckfallebene erhalten, solange die Replit-Instanz parallel laeuft.
+  const wurzel =
+    process.env["WORKSPACE_ROOT"] ?? process.env["REPL_HOME"] ?? "";
   const candidates = [
-    require("path").join(replHome, "docs"),
-    require("path").join(process.cwd(), "docs"),
-    require("path").join(process.cwd(), "../../../docs"),
-    require("path").join(process.cwd(), "../../../../docs"),
+    nodePath.join(wurzel, "docs"),
+    nodePath.join(process.cwd(), "docs"),
+    nodePath.join(process.cwd(), "../../../docs"),
+    nodePath.join(process.cwd(), "../../../../docs"),
   ];
   for (const c of candidates) {
-    if (require("fs").existsSync(c)) return c;
+    if (nodeFs.existsSync(c)) return c;
   }
-  return require("path").join(replHome, "docs");
+  return nodePath.join(wurzel, "docs");
 }
 
 function readDocForAi(docsRoot: string, filename: string): string | null {
-  const fs = require("fs");
-  const path = require("path");
-  const filePath = path.join(docsRoot, path.basename(filename));
-  if (!fs.existsSync(filePath)) return null;
-  return fs.readFileSync(filePath, "utf-8") as string;
+  const filePath = nodePath.join(docsRoot, nodePath.basename(filename));
+  if (!nodeFs.existsSync(filePath)) return null;
+  return nodeFs.readFileSync(filePath, "utf-8") as string;
 }
 
 function buildDocsContext(query: string): string {
@@ -230,15 +397,14 @@ function buildDocsContext(query: string): string {
     .slice(0, 3)
     .map((s) => s.doc);
 
-  const docsToInclude = [
-    ...(handbook ? [handbook] : []),
-    ...topOthers,
-  ];
+  const docsToInclude = [...(handbook ? [handbook] : []), ...topOthers];
 
   const sections: string[] = [];
 
   // Brief index so the AI knows what docs exist
-  const index = DOCS_KB.map((d) => `- **${d.title}** (${d.filename})`).join("\n");
+  const index = DOCS_KB.map((d) => `- **${d.title}** (${d.filename})`).join(
+    "\n",
+  );
   sections.push(`### Verfügbare Dokumentation (Übersicht)\n${index}`);
 
   // Full content of selected docs (capped per doc to avoid token bloat)
@@ -249,9 +415,11 @@ function buildDocsContext(query: string): string {
     const content = readDocForAi(docsRoot, doc.filename);
     if (!content) continue;
     const cap = doc.isHandbook ? CAP_HANDBOOK : CAP_OTHER;
-    const truncated = content.length > cap
-      ? content.slice(0, cap) + "\n\n[... Inhalt gekürzt – vollständig unter /docs abrufbar ...]"
-      : content;
+    const truncated =
+      content.length > cap
+        ? content.slice(0, cap) +
+          "\n\n[... Inhalt gekürzt – vollständig unter /docs abrufbar ...]"
+        : content;
     sections.push(`### ${doc.title} (${doc.filename})\n\n${truncated}`);
   }
 
@@ -414,7 +582,7 @@ async function searchWikiContent(
 
   return filtered.map((r) => {
     let snippet = "";
-    const sf = r.structuredFields as Record<string, unknown> | null;
+    const sf = r.structuredFields;
     if (sf) {
       const editorContent = sf._editorContent;
       if (typeof editorContent === "object" && editorContent !== null) {
@@ -432,7 +600,7 @@ async function searchWikiContent(
       displayCode: r.displayCode,
       templateType: r.templateType,
       snippet,
-      sourceType: "wiki" as SourceType,
+      sourceType: "wiki",
       contentStatus: r.status,
     };
   });
@@ -466,7 +634,7 @@ async function searchConnectorSources(
       AND ss.is_active = true
       AND cn.is_deleted = false
       AND (lower(sr.external_title) LIKE ${queryLower} OR lower(cn.title) LIKE ${queryLower})
-    LIMIT ${sql.raw(String(limit * overFetchFactor))}
+    LIMIT ${limit * overFetchFactor}
   `);
 
   const rows = results.rows;
@@ -479,7 +647,9 @@ async function searchConnectorSources(
     rows.map((r) => r.node_id),
   );
   const filtered = rows
-    .filter((r, i) => permChecks[i] && confidentialityMap.get(r.node_id) !== false)
+    .filter(
+      (r, i) => permChecks[i] && confidentialityMap.get(r.node_id) !== false,
+    )
     .slice(0, limit);
 
   return filtered.map((r) => ({
@@ -488,7 +658,7 @@ async function searchConnectorSources(
     displayCode: r.node_display_code,
     templateType: r.node_template_type,
     snippet: `Externe Quelle: ${r.system_name}`,
-    sourceType: "connector" as SourceType,
+    sourceType: "connector",
     externalUrl: r.external_url || undefined,
     sourceSystemName: r.system_name,
   }));
@@ -515,9 +685,10 @@ function buildContextFromSources(sources: AiSource[]): string {
           : s.sourceType === "connector"
             ? `Connector: ${s.sourceSystemName || "extern"}`
             : "Web";
-      const statusLabel = s.contentStatus && s.contentStatus !== "published"
-        ? ` [Status: ${s.contentStatus}]`
-        : "";
+      const statusLabel =
+        s.contentStatus && s.contentStatus !== "published"
+          ? ` [Status: ${s.contentStatus}]`
+          : "";
       return `[Quelle ${i + 1} – ${typeLabel}${statusLabel}] ${s.displayCode} – ${s.title} (${s.templateType})\n${s.snippet}`;
     })
     .join("\n\n");
@@ -621,9 +792,10 @@ export async function streamAskAnswer(
 
   const roleContext = `\n\n## Benutzerkontext\nDie Rolle des Benutzers ist: ${highestRole}.`;
 
-  const publishedWarning = effectiveVisibility !== "published_only"
-    ? "\n\nHINWEIS: Einige Quellen sind möglicherweise nicht veröffentlicht (Status: in_review, approved). Kennzeichne solche Inhalte klar als 'In Überprüfung' oder 'Genehmigt' und weise darauf hin, dass diese noch nicht endgültig freigegeben sind."
-    : "\n\nHINWEIS: Alle verwendeten Quellen stammen aus veröffentlichten, freigegebenen Inhalten.";
+  const publishedWarning =
+    effectiveVisibility !== "published_only"
+      ? "\n\nHINWEIS: Einige Quellen sind möglicherweise nicht veröffentlicht (Status: in_review, approved). Kennzeichne solche Inhalte klar als 'In Überprüfung' oder 'Genehmigt' und weise darauf hin, dass diese noch nicht endgültig freigegeben sind."
+      : "\n\nHINWEIS: Alle verwendeten Quellen stammen aus veröffentlichten, freigegebenen Inhalten.";
 
   const qualityHints = `\n\n## Qualitätshinweise
 - Wenn du Widersprüche zwischen verschiedenen Quellen erkennst, weise explizit darauf hin.
@@ -732,14 +904,12 @@ export async function streamAskAnswer(
   res.end();
 }
 
-export async function generateChangeSummary(
-  diff: {
-    titleChanged?: boolean;
-    metadataChanges: Record<string, { old: unknown; new: unknown }>;
-    structuredFieldChanges: Record<string, { old: unknown; new: unknown }>;
-    contentChanged: boolean;
-  },
-): Promise<string> {
+export async function generateChangeSummary(diff: {
+  titleChanged?: boolean;
+  metadataChanges: Record<string, { old: unknown; new: unknown }>;
+  structuredFieldChanges: Record<string, { old: unknown; new: unknown }>;
+  contentChanged: boolean;
+}): Promise<string> {
   const settings = await getAiSettings();
   if (!settings.enabled) {
     throw new Error("FlowCore-Assistent ist deaktiviert.");
@@ -765,11 +935,15 @@ export async function generateChangeSummary(
     const oldLen = change.old ? String(change.old).length : 0;
     const newLen = change.new ? String(change.new).length : 0;
     if (!change.old) {
-      parts.push(`- Strukturiertes Feld "${key}" wurde neu angelegt (${newLen} Zeichen)`);
+      parts.push(
+        `- Strukturiertes Feld "${key}" wurde neu angelegt (${newLen} Zeichen)`,
+      );
     } else if (!change.new) {
       parts.push(`- Strukturiertes Feld "${key}" wurde entfernt`);
     } else {
-      parts.push(`- Strukturiertes Feld "${key}" wurde geändert (${oldLen} → ${newLen} Zeichen)`);
+      parts.push(
+        `- Strukturiertes Feld "${key}" wurde geändert (${oldLen} → ${newLen} Zeichen)`,
+      );
     }
   }
 
@@ -794,7 +968,8 @@ Antworte NUR mit der Zusammenfassung, ohne Einleitungssatz.`,
     max_output_tokens: 200,
   });
 
-  const text = response.output_text?.trim() || "Änderungen an der Seite vorgenommen.";
+  const text =
+    response.output_text?.trim() || "Änderungen an der Seite vorgenommen.";
   return text;
 }
 
@@ -955,11 +1130,16 @@ const FIELD_ACTION_PROMPTS: Record<FieldAssistAction, string> = {
 const DEFAULT_FIELD_GUARDRAILS: Record<string, string> = {
   raci: "Du darfst die Rollen-/Verantwortungslogik strukturieren, aber KEINE konkreten Personen erfinden oder halluzinieren. Verwende nur die im Text genannten Personen und Rollen.",
   kpis: "Du darfst Definitionen sprachlich verbessern, aber KEINE neuen Kennzahlen, Zielwerte oder Messformeln erfinden. Verwende nur die im Text genannten KPIs.",
-  risks: "Du darfst Formulierungen verbessern, aber KEINE falschen Kontrollen, Maßnahmen oder Risikobewertungen ergänzen. Bleibe bei den im Text genannten Risiken und Kontrollen.",
-  responsibilities: "Du darfst Stichpunkte zu Fließtext ausformulieren, aber KEINE neuen Verantwortlichkeiten, Befugnisse oder Organisationsstrukturen erfinden.",
-  role_profile: "Du darfst Stichpunkte strukturieren und sprachlich verbessern, aber KEINE HR-Daten, Gehaltsangaben, Qualifikationen oder Personalinformationen erfinden.",
-  compliance: "Du darfst Normbezüge sprachlich verbessern, aber KEINE neuen Normen, Gesetze oder Compliance-Anforderungen erfinden.",
-  sipoc: "Du darfst die SIPOC-Struktur sprachlich verbessern, aber KEINE neuen Supplier, Inputs, Outputs oder Customers erfinden.",
+  risks:
+    "Du darfst Formulierungen verbessern, aber KEINE falschen Kontrollen, Maßnahmen oder Risikobewertungen ergänzen. Bleibe bei den im Text genannten Risiken und Kontrollen.",
+  responsibilities:
+    "Du darfst Stichpunkte zu Fließtext ausformulieren, aber KEINE neuen Verantwortlichkeiten, Befugnisse oder Organisationsstrukturen erfinden.",
+  role_profile:
+    "Du darfst Stichpunkte strukturieren und sprachlich verbessern, aber KEINE HR-Daten, Gehaltsangaben, Qualifikationen oder Personalinformationen erfinden.",
+  compliance:
+    "Du darfst Normbezüge sprachlich verbessern, aber KEINE neuen Normen, Gesetze oder Compliance-Anforderungen erfinden.",
+  sipoc:
+    "Du darfst die SIPOC-Struktur sprachlich verbessern, aber KEINE neuen Supplier, Inputs, Outputs oder Customers erfinden.",
 };
 
 /**
@@ -982,8 +1162,8 @@ function getDefaultGuardrailForField(
   pageType?: string,
 ): string | undefined {
   if (pageType && PAGE_TYPE_GUARDRAILS[pageType]) {
-    const fieldRule = Object.entries(DEFAULT_FIELD_GUARDRAILS).find(([pattern]) =>
-      fieldKey.toLowerCase().includes(pattern),
+    const fieldRule = Object.entries(DEFAULT_FIELD_GUARDRAILS).find(
+      ([pattern]) => fieldKey.toLowerCase().includes(pattern),
     );
     return fieldRule
       ? `${PAGE_TYPE_GUARDRAILS[pageType]} ${fieldRule[1]}`
@@ -1029,9 +1209,15 @@ export async function streamFieldAssist(
 
   const profile = await getFieldProfile(pageType, fieldKey);
 
-  if (profile && Array.isArray(profile.allowedOperations) && profile.allowedOperations.length > 0) {
+  if (
+    profile &&
+    Array.isArray(profile.allowedOperations) &&
+    profile.allowedOperations.length > 0
+  ) {
     if (!profile.allowedOperations.includes(action)) {
-      res.status(400).json({ error: `Action "${action}" is not allowed for this field profile` });
+      res.status(400).json({
+        error: `Action "${action}" is not allowed for this field profile`,
+      });
       return;
     }
   }
@@ -1115,7 +1301,9 @@ export async function streamFieldAssist(
       zeroResults: false,
       nodeId,
     })
-    .catch((e) => logger.error({ err: e }, "Failed to log AI field-assist usage"));
+    .catch((e) =>
+      logger.error({ err: e }, "Failed to log AI field-assist usage"),
+    );
 
   res.write(`data: ${JSON.stringify({ type: "done", done: true })}\n\n`);
   res.end();
@@ -1212,9 +1400,7 @@ export async function updateFieldProfile(
 }
 
 export async function deleteFieldProfile(id: string) {
-  await db
-    .delete(aiFieldProfilesTable)
-    .where(eq(aiFieldProfilesTable.id, id));
+  await db.delete(aiFieldProfilesTable).where(eq(aiFieldProfilesTable.id, id));
 }
 
 export async function getUsageStats(days = 30) {

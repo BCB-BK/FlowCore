@@ -1,5 +1,10 @@
 import { useState, useMemo } from "react";
-import { calculateCompleteness, getFieldsByRequirement, getSectionsByRequirement, validateForPublication } from "@/lib/types";
+import {
+  calculateCompleteness,
+  getFieldsByRequirement,
+  getSectionsByRequirement,
+  validateForPublication,
+} from "@/lib/types";
 import { useSetupMode } from "@/hooks/use-setup-mode";
 import { Progress } from "@workspace/ui/progress";
 import { Badge } from "@workspace/ui/badge";
@@ -9,7 +14,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/tooltip";
-import { CheckCircle2, AlertCircle, AlertTriangle, Info, Construction, ChevronDown } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Construction,
+  ChevronDown,
+} from "lucide-react";
 
 interface CompletenessIndicatorProps {
   templateType: string;
@@ -43,13 +55,19 @@ export function CompletenessIndicator({
     normalizedSectionData,
   );
 
-  const validation = validateForPublication(templateType, metadata, normalizedSectionData);
+  const validation = validateForPublication(
+    templateType,
+    metadata,
+    normalizedSectionData,
+  );
   const fieldReqs = getFieldsByRequirement(templateType);
   const sectionReqs = getSectionsByRequirement(templateType);
 
   const requiredCount = fieldReqs.required.length + sectionReqs.required.length;
-  const recommendedCount = fieldReqs.recommended.length + sectionReqs.recommended.length;
-  const conditionalCount = fieldReqs.conditional.length + sectionReqs.conditional.length;
+  const recommendedCount =
+    fieldReqs.recommended.length + sectionReqs.recommended.length;
+  const conditionalCount =
+    fieldReqs.conditional.length + sectionReqs.conditional.length;
 
   if (total === 0) return null;
 
@@ -69,12 +87,18 @@ export function CompletenessIndicator({
               )}
               <span className="text-xs font-medium">{percentage}%</span>
               {setupMode && !validation.valid && (
-                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-amber-600 border-amber-200">
+                <Badge
+                  variant="outline"
+                  className="text-[9px] px-1 py-0 h-4 text-amber-600 border-amber-200"
+                >
                   Anlage-Modus
                 </Badge>
               )}
               {!publishReady && (
-                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-red-600 border-red-200">
+                <Badge
+                  variant="outline"
+                  className="text-[9px] px-1 py-0 h-4 text-red-600 border-red-200"
+                >
                   Nicht publizierbar
                 </Badge>
               )}
@@ -104,7 +128,11 @@ export function CompletenessIndicator({
     );
   }
 
-  const hasDetails = !isComplete || !publishReady || validation.warnings.length > 0 || missing.length > 0;
+  const hasDetails =
+    !isComplete ||
+    !publishReady ||
+    validation.warnings.length > 0 ||
+    missing.length > 0;
 
   return (
     <div className="space-y-2">
@@ -115,9 +143,13 @@ export function CompletenessIndicator({
       >
         <div className="flex items-center gap-2">
           {hasDetails && (
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${detailsOpen ? "" : "-rotate-90"}`} />
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform ${detailsOpen ? "" : "-rotate-90"}`}
+            />
           )}
-          <span className="text-sm font-medium">{"\u0056ollst\u00E4ndigkeit"}</span>
+          <span className="text-sm font-medium">
+            {"\u0056ollst\u00E4ndigkeit"}
+          </span>
         </div>
         <span className="text-sm text-muted-foreground">
           {filled}/{total} Pflichtfelder ({percentage}%)
@@ -130,16 +162,22 @@ export function CompletenessIndicator({
           <div className="flex flex-wrap gap-2 text-xs">
             <div className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-muted-foreground">Pflicht: {requiredCount}</span>
+              <span className="text-muted-foreground">
+                Pflicht: {requiredCount}
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-muted-foreground">Empfohlen: {recommendedCount}</span>
+              <span className="text-muted-foreground">
+                Empfohlen: {recommendedCount}
+              </span>
             </div>
             {conditionalCount > 0 && (
               <div className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-400" />
-                <span className="text-muted-foreground">Bedingt: {conditionalCount}</span>
+                <span className="text-muted-foreground">
+                  Bedingt: {conditionalCount}
+                </span>
               </div>
             )}
           </div>
@@ -160,12 +198,16 @@ export function CompletenessIndicator({
               <div className="flex items-center gap-1.5">
                 <AlertCircle className="h-3.5 w-3.5 text-red-600" />
                 <span className="text-xs font-medium text-red-700 dark:text-red-400">
-                  Nicht ver{"ö"}ffentlichungsbereit ({validation.readinessPercentage}%)
+                  Nicht ver{"ö"}ffentlichungsbereit (
+                  {validation.readinessPercentage}%)
                 </span>
               </div>
               <ul className="text-xs space-y-0.5">
                 {validation.errors.map((e) => (
-                  <li key={e.field} className="text-red-600 dark:text-red-400 flex items-start gap-1">
+                  <li
+                    key={e.field}
+                    className="text-red-600 dark:text-red-400 flex items-start gap-1"
+                  >
                     <span className="shrink-0 mt-0.5">&bull;</span>
                     <span>{e.message}</span>
                   </li>
@@ -184,7 +226,10 @@ export function CompletenessIndicator({
               </div>
               <ul className="text-xs space-y-0.5">
                 {validation.warnings.map((w) => (
-                  <li key={w.field} className="text-amber-600 dark:text-amber-400 flex items-start gap-1">
+                  <li
+                    key={w.field}
+                    className="text-amber-600 dark:text-amber-400 flex items-start gap-1"
+                  >
                     <Info className="h-3 w-3 shrink-0 mt-0.5" />
                     <span>{w.message}</span>
                   </li>

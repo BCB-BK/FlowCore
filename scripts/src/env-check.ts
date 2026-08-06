@@ -35,6 +35,12 @@ const WELL_KNOWN_VARS = new Set([
   "REPL_SLUG",
   "REPL_HOME",
   "WORKSPACE_ROOT",
+  // Von Vite selbst bereitgestellt, nicht aus der .env: import.meta.env.DEV usw.
+  "BASE_URL",
+  "DEV",
+  "PROD",
+  "MODE",
+  "SSR",
 ]);
 
 function collectEnvRefs(dir: string): Map<string, string[]> {
@@ -49,7 +55,12 @@ function collectEnvRefs(dir: string): Map<string, string[]> {
         scan(fullPath);
       } else if (EXTENSIONS.has(extname(entry))) {
         const content = readFileSync(fullPath, "utf-8");
-        const matches = content.matchAll(/process\.env(?:\.([A-Z_][A-Z0-9_]*)|\[["']([A-Z_][A-Z0-9_]*)["']\])/g);
+        // Neben process.env auch import.meta.env erfassen: Vite-Variablen
+        // (VITE_*) werden ausschliesslich so gelesen und galten dem Pruefer
+        // bisher faelschlich als ungenutzt.
+        const matches = content.matchAll(
+          /(?:process\.env|import\.meta\.env\??)(?:\.([A-Z_][A-Z0-9_]*)|\[["']([A-Z_][A-Z0-9_]*)["']\])/g,
+        );
         for (const m of matches) {
           const varName = m[1] || m[2];
           if (!varName) continue;
@@ -145,7 +156,9 @@ for (const [varName, files] of [...codeRefs.entries()].sort()) {
 
 console.log("\n--- Declared in .env.example but NOT used in code ---");
 for (const varName of [...envExample].sort()) {
-  if (!codeRefs.has(varName)) {
+  // Wohlbekannte Variablen (PORT, NODE_ENV, ...) werden beim Einlesen bewusst
+  // uebersprungen -- sie duerfen deshalb hier nicht als ungenutzt gelten.
+  if (!codeRefs.has(varName) && !WELL_KNOWN_VARS.has(varName)) {
     console.warn(`  UNUSED: ${varName}`);
     issues++;
   }

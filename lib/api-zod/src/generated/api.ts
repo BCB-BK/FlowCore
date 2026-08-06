@@ -4330,3 +4330,1218 @@ export const MarkNotificationAsReadResponse = zod.object({
 export const MarkAllNotificationsAsReadResponse = zod.object({
   count: zod.number().optional(),
 });
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/audit-events
+ */
+export const GetAdminAuditEventsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/audit-events/export
+ */
+export const GetAdminAuditEventsExportResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/audit-events/filters
+ */
+export const GetAdminAuditEventsFiltersResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/flowcore-account
+ */
+export const GetAdminFlowcoreAccountResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/flowcore-account
+ */
+export const PutAdminFlowcoreAccountBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutAdminFlowcoreAccountResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/flowcore-account/test
+ */
+export const PostAdminFlowcoreAccountTestBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostAdminFlowcoreAccountTestResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/migrate-working-copies
+ */
+export const PostAdminMigrateWorkingCopiesBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostAdminMigrateWorkingCopiesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/notification-rules
+ */
+export const GetAdminNotificationRulesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/notification-rules
+ */
+export const PostAdminNotificationRulesBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostAdminNotificationRulesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/notification-rules/seed
+ */
+export const PostAdminNotificationRulesSeedBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostAdminNotificationRulesSeedResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/notification-rules/{id}
+ */
+export const PutAdminNotificationRulesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PutAdminNotificationRulesByIdBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutAdminNotificationRulesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /admin/notification-rules/{id}
+ */
+export const DeleteAdminNotificationRulesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteAdminNotificationRulesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/setup-mode
+ */
+export const GetAdminSetupModeResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/system-settings
+ */
+export const GetAdminSystemSettingsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/system-settings/{key}
+ */
+export const PutAdminSystemSettingsByKeyParams = zod.object({
+  key: zod.coerce.string(),
+});
+
+export const PutAdminSystemSettingsByKeyBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutAdminSystemSettingsByKeyResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/workflow-assignments
+ */
+export const GetAdminWorkflowAssignmentsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/workflow-assignments/{pageType}
+ */
+export const PutAdminWorkflowAssignmentsByPageTypeParams = zod.object({
+  pageType: zod.coerce.string(),
+});
+
+export const PutAdminWorkflowAssignmentsByPageTypeBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutAdminWorkflowAssignmentsByPageTypeResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /admin/workflow-assignments/{pageType}
+ */
+export const DeleteAdminWorkflowAssignmentsByPageTypeParams = zod.object({
+  pageType: zod.coerce.string(),
+});
+
+export const DeleteAdminWorkflowAssignmentsByPageTypeResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/workflows
+ */
+export const GetAdminWorkflowsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/workflows
+ */
+export const PostAdminWorkflowsBody = zod.record(zod.string(), zod.unknown());
+
+export const PostAdminWorkflowsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/workflows/{id}
+ */
+export const GetAdminWorkflowsByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetAdminWorkflowsByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/workflows/{id}
+ */
+export const PutAdminWorkflowsByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PutAdminWorkflowsByIdBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutAdminWorkflowsByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /admin/workflows/{id}
+ */
+export const DeleteAdminWorkflowsByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteAdminWorkflowsByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /ai/models
+ */
+export const GetAiModelsResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /auth/config
+ */
+export const GetAuthConfigResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /confidentiality-config/
+ */
+export const GetConfidentialityConfigResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /confidentiality-config/assign
+ */
+export const PostConfidentialityConfigAssignBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostConfidentialityConfigAssignResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /confidentiality-config/assign
+ */
+export const DeleteConfidentialityConfigAssignResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /connectors/sharepoint/teams
+ */
+export const GetConnectorsSharepointTeamsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /connectors/sharepoint/teams/{groupId}/drives
+ */
+export const GetConnectorsSharepointTeamsByGroupIdDrivesParams = zod.object({
+  groupId: zod.coerce.string(),
+});
+
+export const GetConnectorsSharepointTeamsByGroupIdDrivesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/changes
+ */
+export const GetContentV1ChangesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/glossary
+ */
+export const GetContentV1GlossaryResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/openapi.json
+ */
+export const GetContentV1OpenapiJsonResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/pages
+ */
+export const GetContentV1PagesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/pages/{id}
+ */
+export const GetContentV1PagesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetContentV1PagesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/scope
+ */
+export const GetContentV1ScopeResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /content/v1/search
+ */
+export const PostContentV1SearchBody = zod.record(zod.string(), zod.unknown());
+
+export const PostContentV1SearchResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /content/working-copies/{id}/comment
+ */
+export const PostContentWorkingCopiesByIdCommentParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PostContentWorkingCopiesByIdCommentBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostContentWorkingCopiesByIdCommentResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /content/working-copies/{id}/generate-summary
+ */
+export const PostContentWorkingCopiesByIdGenerateSummaryParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PostContentWorkingCopiesByIdGenerateSummaryBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostContentWorkingCopiesByIdGenerateSummaryResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /content/working-copies/{id}/summary
+ */
+export const PutContentWorkingCopiesByIdSummaryParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PutContentWorkingCopiesByIdSummaryBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutContentWorkingCopiesByIdSummaryResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/admin/keys
+ */
+export const GetCopilotAdminKeysResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /copilot/admin/keys
+ */
+export const PostCopilotAdminKeysBody = zod.record(zod.string(), zod.unknown());
+
+export const PostCopilotAdminKeysResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /copilot/admin/keys/{id}
+ */
+export const DeleteCopilotAdminKeysByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteCopilotAdminKeysByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/glossary
+ */
+export const GetCopilotGlossaryResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/glossary/{id}
+ */
+export const GetCopilotGlossaryByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetCopilotGlossaryByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/nodes/{id}
+ */
+export const GetCopilotNodesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetCopilotNodesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/openapi.json
+ */
+export const GetCopilotOpenapiJsonResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/pages
+ */
+export const GetCopilotPagesResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/pages/{id}
+ */
+export const GetCopilotPagesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetCopilotPagesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PATCH /copilot/pages/{id}/index-status
+ */
+export const PatchCopilotPagesByIdIndexStatusParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PatchCopilotPagesByIdIndexStatusBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PatchCopilotPagesByIdIndexStatusResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /copilot/search
+ */
+export const PostCopilotSearchBody = zod.record(zod.string(), zod.unknown());
+
+export const PostCopilotSearchResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/swagger.json
+ */
+export const GetCopilotSwaggerJsonResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /delegations
+ */
+export const GetDelegationsResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /delegations/{delegationId}
+ */
+export const DeleteDelegationsByDelegationIdParams = zod.object({
+  delegationId: zod.coerce.string(),
+});
+
+export const DeleteDelegationsByDelegationIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /docs
+ */
+export const GetDocsResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /docs-export/all
+ */
+export const GetDocsExportAllResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /docs/{filename}
+ */
+export const GetDocsByFilenameParams = zod.object({
+  filename: zod.coerce.string(),
+});
+
+export const GetDocsByFilenameResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /glossary/export
+ */
+export const GetGlossaryExportResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /glossary/import
+ */
+export const PostGlossaryImportBody = zod.record(zod.string(), zod.unknown());
+
+export const PostGlossaryImportResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /glossary/reimport-seed
+ */
+export const PostGlossaryReimportSeedBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGlossaryReimportSeedResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/acl-preview/{nodeId}
+ */
+export const GetGraphConnectorAclPreviewByNodeIdParams = zod.object({
+  nodeId: zod.coerce.string(),
+});
+
+export const GetGraphConnectorAclPreviewByNodeIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/change-feed
+ */
+export const GetGraphConnectorChangeFeedResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/connection
+ */
+export const GetGraphConnectorConnectionResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/connection/register
+ */
+export const PostGraphConnectorConnectionRegisterBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorConnectionRegisterResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/external-items/glossary/{id}
+ */
+export const GetGraphConnectorExternalItemsGlossaryByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetGraphConnectorExternalItemsGlossaryByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/external-items/glossary/{id}/register
+ */
+export const PostGraphConnectorExternalItemsGlossaryByIdRegisterParams =
+  zod.object({
+    id: zod.coerce.string(),
+  });
+
+export const PostGraphConnectorExternalItemsGlossaryByIdRegisterBody =
+  zod.record(zod.string(), zod.unknown());
+
+export const PostGraphConnectorExternalItemsGlossaryByIdRegisterResponse =
+  zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/external-items/pages/{id}
+ */
+export const GetGraphConnectorExternalItemsPagesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetGraphConnectorExternalItemsPagesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/external-items/pages/{id}/register
+ */
+export const PostGraphConnectorExternalItemsPagesByIdRegisterParams =
+  zod.object({
+    id: zod.coerce.string(),
+  });
+
+export const PostGraphConnectorExternalItemsPagesByIdRegisterBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorExternalItemsPagesByIdRegisterResponse =
+  zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/group-mappings
+ */
+export const GetGraphConnectorGroupMappingsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/group-mappings/{tier}
+ */
+export const GetGraphConnectorGroupMappingsByTierParams = zod.object({
+  tier: zod.coerce.string(),
+});
+
+export const GetGraphConnectorGroupMappingsByTierResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /graph-connector/group-mappings/{tier}
+ */
+export const PutGraphConnectorGroupMappingsByTierParams = zod.object({
+  tier: zod.coerce.string(),
+});
+
+export const PutGraphConnectorGroupMappingsByTierBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutGraphConnectorGroupMappingsByTierResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /graph-connector/group-mappings/{tier}
+ */
+export const DeleteGraphConnectorGroupMappingsByTierParams = zod.object({
+  tier: zod.coerce.string(),
+});
+
+export const DeleteGraphConnectorGroupMappingsByTierResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/index-status/glossary
+ */
+export const GetGraphConnectorIndexStatusGlossaryResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/index-status/pages
+ */
+export const GetGraphConnectorIndexStatusPagesResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/readiness-check
+ */
+export const GetGraphConnectorReadinessCheckResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/schema
+ */
+export const GetGraphConnectorSchemaResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/schema/dry-run
+ */
+export const GetGraphConnectorSchemaDryRunResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/schema/register
+ */
+export const PostGraphConnectorSchemaRegisterBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorSchemaRegisterResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/search-result-template
+ */
+export const GetGraphConnectorSearchResultTemplateResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync-log
+ */
+export const GetGraphConnectorSyncLogResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/delta
+ */
+export const PostGraphConnectorSyncDeltaBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorSyncDeltaResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/full
+ */
+export const PostGraphConnectorSyncFullBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorSyncFullResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/glossary/{id}
+ */
+export const PostGraphConnectorSyncGlossaryByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PostGraphConnectorSyncGlossaryByIdBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorSyncGlossaryByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync/log
+ */
+export const GetGraphConnectorSyncLog2Response = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync/log/export
+ */
+export const GetGraphConnectorSyncLogExportResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/pages/{id}
+ */
+export const PostGraphConnectorSyncPagesByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PostGraphConnectorSyncPagesByIdBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorSyncPagesByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync/queue
+ */
+export const GetGraphConnectorSyncQueueResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/test-connection
+ */
+export const PostGraphConnectorTestConnectionBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostGraphConnectorTestConnectionResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /integration-keys/
+ */
+export const GetIntegrationKeysResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /integration-keys/
+ */
+export const PostIntegrationKeysBody = zod.record(zod.string(), zod.unknown());
+
+export const PostIntegrationKeysResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /integration-keys/preview
+ */
+export const PostIntegrationKeysPreviewBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostIntegrationKeysPreviewResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PATCH /integration-keys/{id}
+ */
+export const PatchIntegrationKeysByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PatchIntegrationKeysByIdBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PatchIntegrationKeysByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /integration-keys/{id}
+ */
+export const DeleteIntegrationKeysByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteIntegrationKeysByIdResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /integration-keys/{id}/rotate
+ */
+export const PostIntegrationKeysByIdRotateParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PostIntegrationKeysByIdRotateBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostIntegrationKeysByIdRotateResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /media/import-sharepoint
+ */
+export const PostMediaImportSharepointBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostMediaImportSharepointResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /media/validate-embed
+ */
+export const PostMediaValidateEmbedBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostMediaValidateEmbedResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /principals/{id}/delegations
+ */
+export const GetPrincipalsByIdDelegationsParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetPrincipalsByIdDelegationsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /principals/{id}/delegations
+ */
+export const PostPrincipalsByIdDelegationsParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const PostPrincipalsByIdDelegationsBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PostPrincipalsByIdDelegationsResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /rbac/sod-config
+ */
+export const GetRbacSodConfigResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /rbac/sod-config/{ruleKey}
+ */
+export const PutRbacSodConfigByRuleKeyParams = zod.object({
+  ruleKey: zod.coerce.string(),
+});
+
+export const PutRbacSodConfigByRuleKeyBody = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+export const PutRbacSodConfigByRuleKeyResponse = zod.record(
+  zod.string(),
+  zod.unknown(),
+);
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /tokens
+ */
+export const GetTokensResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /tokens
+ */
+export const PostTokensBody = zod.record(zod.string(), zod.unknown());
+
+export const PostTokensResponse = zod.record(zod.string(), zod.unknown());
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /tokens/{id}
+ */
+export const DeleteTokensByIdParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteTokensByIdResponse = zod.record(zod.string(), zod.unknown());

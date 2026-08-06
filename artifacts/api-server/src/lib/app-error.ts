@@ -14,6 +14,6 @@ export class AppError extends Error {
     this.status = status;
     this.code = options?.code;
     this.details = options?.details;
-    this.exposeDetails = options?.exposeDetails ?? (status < 500);
+    this.exposeDetails = options?.exposeDetails ?? status < 500;
   }
 }

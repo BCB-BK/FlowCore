@@ -32,11 +32,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@workspace/ui/separator";
 import { Toggle } from "@workspace/ui/toggle";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
 
 interface EditorToolbarProps {
   editor: Editor;
@@ -325,7 +321,11 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       </ToolbarButton>
       <ToolbarButton
         onClick={() =>
-          editor.chain().focus().setGalleryBlock({ images: [], columns: 3 }).run()
+          editor
+            .chain()
+            .focus()
+            .setGalleryBlock({ images: [], columns: 3 })
+            .run()
         }
         title="Bildergalerie"
       >

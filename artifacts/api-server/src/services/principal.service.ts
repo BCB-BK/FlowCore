@@ -8,20 +8,27 @@ import {
 import { eq, and, ilike, or, inArray, sql } from "drizzle-orm";
 import { logger } from "../lib/logger";
 
-export async function upsertPrincipal(input: {
-  principalType: InsertPrincipal["principalType"];
-  externalProvider: string;
-  externalId: string;
-  displayName: string;
-  email?: string;
-  upn?: string;
-}, txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db): Promise<string> {
+export async function upsertPrincipal(
+  input: {
+    principalType: InsertPrincipal["principalType"];
+    externalProvider: string;
+    externalId: string;
+    displayName: string;
+    email?: string;
+    upn?: string;
+  },
+  txOrDb: Pick<typeof db, "select" | "insert" | "update"> = db,
+): Promise<string> {
   const providerVariants = [input.externalProvider];
   if (input.externalProvider === "entra") providerVariants.push("entra_id");
-  else if (input.externalProvider === "entra_id") providerVariants.push("entra");
+  else if (input.externalProvider === "entra_id")
+    providerVariants.push("entra");
 
   const matches = await txOrDb
-    .select({ id: principalsTable.id, externalProvider: principalsTable.externalProvider })
+    .select({
+      id: principalsTable.id,
+      externalProvider: principalsTable.externalProvider,
+    })
     .from(principalsTable)
     .where(
       and(
@@ -30,7 +37,9 @@ export async function upsertPrincipal(input: {
       ),
     );
 
-  const canonical = matches.find((m) => m.externalProvider === input.externalProvider);
+  const canonical = matches.find(
+    (m) => m.externalProvider === input.externalProvider,
+  );
   const existing = canonical ?? matches[0];
 
   if (existing) {
@@ -67,7 +76,14 @@ export async function upsertPrincipal(input: {
         .update(principalsTable)
         .set({ status: "inactive", updatedAt: new Date() })
         .where(eq(principalsTable.id, dup.id));
-      logger.info({ duplicateId: dup.id, canonicalId: existing.id, mergedGrants: dupGrants.length }, "Deactivated duplicate principal");
+      logger.info(
+        {
+          duplicateId: dup.id,
+          canonicalId: existing.id,
+          mergedGrants: dupGrants.length,
+        },
+        "Deactivated duplicate principal",
+      );
     }
 
     return existing.id;
@@ -156,7 +172,8 @@ export async function getRolesForPrincipal(principalId: string) {
 }
 
 export async function getRolesForPrincipalsBatch(principalIds: string[]) {
-  if (principalIds.length === 0) return new Map<string, typeof roleAssignmentsTable.$inferSelect[]>();
+  if (principalIds.length === 0)
+    return new Map<string, (typeof roleAssignmentsTable.$inferSelect)[]>();
 
   const allRoles = await db
     .select()
@@ -168,7 +185,10 @@ export async function getRolesForPrincipalsBatch(principalIds: string[]) {
       ),
     );
 
-  const grouped = new Map<string, typeof roleAssignmentsTable.$inferSelect[]>();
+  const grouped = new Map<
+    string,
+    (typeof roleAssignmentsTable.$inferSelect)[]
+  >();
   for (const id of principalIds) {
     grouped.set(id, []);
   }
@@ -181,21 +201,24 @@ export async function getRolesForPrincipalsBatch(principalIds: string[]) {
   return grouped;
 }
 
-export async function assignRole(input: {
-  principalId: string;
-  role: InsertPrincipal["principalType"] extends never
-    ? string
-    :
-        | "system_admin"
-        | "process_manager"
-        | "editor"
-        | "reviewer"
-        | "approver"
-        | "viewer"
-        | "compliance_manager";
-  scope?: string;
-  grantedBy?: string;
-}, txOrDb: Pick<typeof db, "select" | "insert"> = db) {
+export async function assignRole(
+  input: {
+    principalId: string;
+    role: InsertPrincipal["principalType"] extends never
+      ? string
+      :
+          | "system_admin"
+          | "process_manager"
+          | "editor"
+          | "reviewer"
+          | "approver"
+          | "viewer"
+          | "compliance_manager";
+    scope?: string;
+    grantedBy?: string;
+  },
+  txOrDb: Pick<typeof db, "select" | "insert"> = db,
+) {
   const existing = await txOrDb
     .select({ id: roleAssignmentsTable.id })
     .from(roleAssignmentsTable)
@@ -259,7 +282,10 @@ export async function principalHasActiveRole(
   return rows.length > 0;
 }
 
-export async function revokeRole(assignmentId: string, txOrDb: Pick<typeof db, "update"> = db) {
+export async function revokeRole(
+  assignmentId: string,
+  txOrDb: Pick<typeof db, "update"> = db,
+) {
   await txOrDb
     .update(roleAssignmentsTable)
     .set({ isActive: false })

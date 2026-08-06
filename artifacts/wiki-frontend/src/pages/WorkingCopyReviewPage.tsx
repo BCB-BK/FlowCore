@@ -53,7 +53,7 @@ interface RevisionRecord {
 
 function extractEditorContent(sf: Record<string, unknown>): JSONContent | null {
   if (sf._editorContent && typeof sf._editorContent === "object") {
-    return sf._editorContent as JSONContent;
+    return sf._editorContent;
   }
   return null;
 }
@@ -115,11 +115,14 @@ export function WorkingCopyReviewPage() {
   const [editableSummary, setEditableSummary] = useState<string | null>(null);
   const [savingSummary, setSavingSummary] = useState(false);
   const [generatingAiSummary, setGeneratingAiSummary] = useState(false);
-  const [lastReturnComment, setLastReturnComment] = useState<string | null>(null);
+  const [lastReturnComment, setLastReturnComment] = useState<string | null>(
+    null,
+  );
   const { toast } = useToast();
   const apiBase = import.meta.env.BASE_URL + "api";
 
-  const hasReviewPermission = currentUser?.permissions?.includes("review_working_copy") ?? false;
+  const hasReviewPermission =
+    currentUser?.permissions?.includes("review_working_copy") ?? false;
 
   useEffect(() => {
     if (!activeWC?.id) return;
@@ -134,7 +137,10 @@ export function WorkingCopyReviewPage() {
         const returnEvents = events.filter(
           (e) => e.eventType === "returned_for_changes" && e.comment,
         );
-        const lastReturn = returnEvents.length > 0 ? returnEvents[returnEvents.length - 1] : null;
+        const lastReturn =
+          returnEvents.length > 0
+            ? returnEvents[returnEvents.length - 1]
+            : null;
         setLastReturnComment(lastReturn?.comment ?? null);
       })
       .catch(() => setLastReturnComment(null));
@@ -149,7 +155,7 @@ export function WorkingCopyReviewPage() {
         { method: "POST" },
       );
       toast({ title: "KI-Zusammenfassung generiert" });
-      activeWCQuery.refetch();
+      void activeWCQuery.refetch();
       if (result.summary) {
         setEditableSummary(result.summary);
       }
@@ -164,11 +170,13 @@ export function WorkingCopyReviewPage() {
   const publishedRevision = useMemo<RevisionRecord | null>(() => {
     if (!revisions || !Array.isArray(revisions) || revisions.length === 0)
       return null;
-    return revisions[0] as RevisionRecord;
+    return revisions[0];
   }, [revisions]);
 
   const publishedSF = useMemo<Record<string, unknown>>(() => {
-    return (publishedRevision?.structuredFields as Record<string, unknown>) ?? {};
+    return (
+      (publishedRevision?.structuredFields as Record<string, unknown>) ?? {}
+    );
   }, [publishedRevision]);
 
   const publishedEditorContent = useMemo(
@@ -176,12 +184,12 @@ export function WorkingCopyReviewPage() {
     [publishedSF],
   );
 
-  const publishedSections = useMemo(
+  const _publishedSections = useMemo(
     () => extractSections(publishedSF),
     [publishedSF],
   );
 
-  const publishedMetadata = useMemo(
+  const _publishedMetadata = useMemo(
     () =>
       extractMetadata(
         (publishedRevision?.content as Record<string, unknown>) ?? {},
@@ -199,14 +207,13 @@ export function WorkingCopyReviewPage() {
     [wcStructuredFields],
   );
 
-  const wcSections = useMemo(
+  const _wcSections = useMemo(
     () => extractSections(wcStructuredFields),
     [wcStructuredFields],
   );
 
   const wcMetadata = useMemo(
-    () =>
-      extractMetadata((activeWC?.content as Record<string, unknown>) ?? {}),
+    () => extractMetadata((activeWC?.content as Record<string, unknown>) ?? {}),
     [activeWC],
   );
 
@@ -263,8 +270,7 @@ export function WorkingCopyReviewPage() {
 
   const editorChanged = useMemo(() => {
     return (
-      JSON.stringify(publishedEditorContent) !==
-      JSON.stringify(wcEditorContent)
+      JSON.stringify(publishedEditorContent) !== JSON.stringify(wcEditorContent)
     );
   }, [publishedEditorContent, wcEditorContent]);
 
@@ -310,7 +316,8 @@ export function WorkingCopyReviewPage() {
     );
   }
 
-  const isReviewPhase = activeWC.status === "submitted" || activeWC.status === "in_review";
+  const isReviewPhase =
+    activeWC.status === "submitted" || activeWC.status === "in_review";
   const isApprovedPhase = activeWC.status === "approved_for_publish";
   const canReview = isReviewPhase;
   const showActions = isReviewPhase || isApprovedPhase;
@@ -335,9 +342,7 @@ export function WorkingCopyReviewPage() {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <PageTypeIcon iconName={node.templateType} />
             <Badge variant="outline">{statusLabel}</Badge>
-            {!showActions && (
-              <Badge variant="secondary">Nur Ansicht</Badge>
-            )}
+            {!showActions && <Badge variant="secondary">Nur Ansicht</Badge>}
           </div>
           <h1 className="text-2xl font-bold tracking-tight break-words">
             {activeWC.title || node.title}
@@ -390,17 +395,23 @@ export function WorkingCopyReviewPage() {
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              {activeWC.lastAiSummary && <Sparkles className="h-4 w-4 text-amber-500" />}
+              {activeWC.lastAiSummary && (
+                <Sparkles className="h-4 w-4 text-amber-500" />
+              )}
               Zusammenfassung
               {activeWC.changeType && (
-                <Badge variant="outline" className="text-xs">{activeWC.changeType}</Badge>
+                <Badge variant="outline" className="text-xs">
+                  {activeWC.changeType}
+                </Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {activeWC.changeSummary && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">Beschreibung des Autors</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Beschreibung des Autors
+                </p>
                 <p className="text-sm">{activeWC.changeSummary}</p>
               </div>
             )}
@@ -427,7 +438,9 @@ export function WorkingCopyReviewPage() {
                     </Button>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{activeWC.lastAiSummary}</p>
+                <p className="text-sm text-muted-foreground">
+                  {activeWC.lastAiSummary}
+                </p>
               </div>
             )}
 
@@ -437,7 +450,13 @@ export function WorkingCopyReviewPage() {
                   Finale Zusammenfassung (wird mit der Version veröffentlicht)
                 </p>
                 <Textarea
-                  value={editableSummary ?? activeWC.lastManualSummary ?? activeWC.lastAiSummary ?? activeWC.changeSummary ?? ""}
+                  value={
+                    editableSummary ??
+                    activeWC.lastManualSummary ??
+                    activeWC.lastAiSummary ??
+                    activeWC.changeSummary ??
+                    ""
+                  }
                   onChange={(e) => setEditableSummary(e.target.value)}
                   placeholder="Zusammenfassung bearbeiten oder übernehmen..."
                   rows={3}
@@ -451,22 +470,32 @@ export function WorkingCopyReviewPage() {
                     if (editableSummary === null) return;
                     setSavingSummary(true);
                     try {
-                      await customFetch(`${apiBase}/content/working-copies/${activeWC.id}/summary`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ summary: editableSummary }),
-                      });
+                      await customFetch(
+                        `${apiBase}/content/working-copies/${activeWC.id}/summary`,
+                        {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ summary: editableSummary }),
+                        },
+                      );
                       toast({ title: "Zusammenfassung gespeichert" });
-                      activeWCQuery.refetch();
+                      void activeWCQuery.refetch();
                     } catch {
-                      toast({ variant: "destructive", title: "Speichern fehlgeschlagen" });
+                      toast({
+                        variant: "destructive",
+                        title: "Speichern fehlgeschlagen",
+                      });
                     } finally {
                       setSavingSummary(false);
                       setEditableSummary(null);
                     }
                   }}
                 >
-                  {savingSummary ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                  {savingSummary ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Save className="h-3 w-3" />
+                  )}
                   Zusammenfassung speichern
                 </Button>
               </div>
@@ -491,9 +520,13 @@ export function WorkingCopyReviewPage() {
               </div>
             )}
 
-            {!activeWC.changeSummary && !activeWC.lastAiSummary && !hasReviewPermission && (
-              <p className="text-sm text-muted-foreground italic">Keine Zusammenfassung vorhanden.</p>
-            )}
+            {!activeWC.changeSummary &&
+              !activeWC.lastAiSummary &&
+              !hasReviewPermission && (
+                <p className="text-sm text-muted-foreground italic">
+                  Keine Zusammenfassung vorhanden.
+                </p>
+              )}
           </CardContent>
         </Card>
         <div>
@@ -511,7 +544,10 @@ export function WorkingCopyReviewPage() {
               <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
               Änderungen
             </TabsTrigger>
-            <TabsTrigger value="before_after" className="gap-1.5 whitespace-nowrap">
+            <TabsTrigger
+              value="before_after"
+              className="gap-1.5 whitespace-nowrap"
+            >
               <Eye className="h-3.5 w-3.5 shrink-0" />
               Vorher / Nachher
             </TabsTrigger>
@@ -525,9 +561,7 @@ export function WorkingCopyReviewPage() {
         <TabsContent value="changes" className="mt-4 space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                Geänderte Bereiche
-              </CardTitle>
+              <CardTitle className="text-base">Geänderte Bereiche</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {editorChanged && (
@@ -557,12 +591,16 @@ export function WorkingCopyReviewPage() {
               {diffSections.map((diff) => {
                 const oldStr = formatValueForDisplay(diff.oldVal);
                 const newStr = formatValueForDisplay(diff.newVal);
-                const isTextual = typeof diff.oldVal === "string" || typeof diff.newVal === "string";
+                const isTextual =
+                  typeof diff.oldVal === "string" ||
+                  typeof diff.newVal === "string";
                 return (
                   <div key={diff.key} className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-green-500" />
-                      <span className="text-sm font-medium">{formatFieldLabel(diff.key)}</span>
+                      <span className="text-sm font-medium">
+                        {formatFieldLabel(diff.key)}
+                      </span>
                       <Badge variant="secondary" className="text-xs">
                         {diff.oldVal ? "geändert" : "neu"}
                       </Badge>
@@ -599,13 +637,20 @@ export function WorkingCopyReviewPage() {
                     {diffMetadata.map((m) => {
                       const oldStr = formatValueForDisplay(m.oldVal);
                       const newStr = formatValueForDisplay(m.newVal);
-                      const isTextual = typeof m.oldVal === "string" && typeof m.newVal === "string";
+                      const isTextual =
+                        typeof m.oldVal === "string" &&
+                        typeof m.newVal === "string";
                       return (
                         <div key={m.key} className="px-3 py-2 text-sm">
-                          <span className="font-medium">{formatFieldLabel(m.key)}</span>
+                          <span className="font-medium">
+                            {formatFieldLabel(m.key)}
+                          </span>
                           {isTextual && m.oldVal != null && m.newVal != null ? (
                             <div className="mt-1">
-                              <InlineTextDiff oldText={oldStr} newText={newStr} />
+                              <InlineTextDiff
+                                oldText={oldStr}
+                                newText={newStr}
+                              />
                             </div>
                           ) : (
                             <div className="grid grid-cols-2 gap-2 mt-1">
@@ -667,7 +712,6 @@ export function WorkingCopyReviewPage() {
                 )}
             </CardContent>
           </Card>
-
         </TabsContent>
 
         <TabsContent value="before_after" className="mt-4 space-y-4">
@@ -683,18 +727,13 @@ export function WorkingCopyReviewPage() {
 
           {!isFirstVersion && (
             <>
-              {(editorChanged ||
-                publishedEditorContent ||
-                wcEditorContent) && (
+              {(editorChanged || publishedEditorContent || wcEditorContent) && (
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base">
                       Seiteninhalt (Editor)
                       {editorChanged && (
-                        <Badge
-                          variant="secondary"
-                          className="ml-2 text-xs"
-                        >
+                        <Badge variant="secondary" className="ml-2 text-xs">
                           geändert
                         </Badge>
                       )}

@@ -16,9 +16,10 @@ function stableStringify(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map((v) => stableStringify(v)).join(",")}]`;
   }
-  const keys = Object.keys(value as Record<string, unknown>).sort();
+  const keys = Object.keys(value).sort();
   const entries = keys.map(
-    (k) => `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`,
+    (k) =>
+      `${JSON.stringify(k)}:${stableStringify((value as Record<string, unknown>)[k])}`,
   );
   return `{${entries.join(",")}}`;
 }

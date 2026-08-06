@@ -36,8 +36,7 @@ export function requireConnectorKey(
   const key = extractKey(req);
   if (!key) {
     res.status(401).json({
-      error:
-        "API key required. Provide it via the X-FlowCore-Api-Key header.",
+      error: "API key required. Provide it via the X-FlowCore-Api-Key header.",
     });
     return;
   }

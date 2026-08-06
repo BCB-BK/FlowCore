@@ -115,7 +115,11 @@ export async function publishRevision(
           actorId,
           resourceType: "revision",
           resourceId: archived.id,
-          details: { nodeId: revision.nodeId, reason: "superseded_by_publish", newRevisionId: revisionId },
+          details: {
+            nodeId: revision.nodeId,
+            reason: "superseded_by_publish",
+            newRevisionId: revisionId,
+          },
         });
       }
     }
@@ -266,16 +270,20 @@ export async function getVersionTree(nodeId: string) {
       .from(principalsTable)
       .where(inArray(principalsTable.id, Array.from(principalIds)));
     nameMap = new Map(
-      principals
-        .filter((p) => p.displayName)
-        .map((p) => [p.id, p.displayName as string]),
+      principals.filter((p) => p.displayName).map((p) => [p.id, p.displayName]),
     );
   }
 
   return revisions.map((rev) => ({
     ...rev,
-    authorDisplayName: rev.authorId ? (nameMap.get(rev.authorId) ?? null) : null,
-    reviewerDisplayName: rev.reviewerId ? (nameMap.get(rev.reviewerId) ?? null) : null,
-    approverDisplayName: rev.approverId ? (nameMap.get(rev.approverId) ?? null) : null,
+    authorDisplayName: rev.authorId
+      ? (nameMap.get(rev.authorId) ?? null)
+      : null,
+    reviewerDisplayName: rev.reviewerId
+      ? (nameMap.get(rev.reviewerId) ?? null)
+      : null,
+    approverDisplayName: rev.approverId
+      ? (nameMap.get(rev.approverId) ?? null)
+      : null,
   }));
 }

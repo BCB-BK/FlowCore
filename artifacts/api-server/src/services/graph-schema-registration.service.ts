@@ -12,11 +12,16 @@ import {
 import type { ConfidentialityLevel } from "./confidentiality.service";
 import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
-import { isGraphSyncMockMode, getGraphFaultInjection } from "./system-settings.service";
+import {
+  isGraphSyncMockMode,
+  getGraphFaultInjection,
+} from "./system-settings.service";
 import { createHash } from "node:crypto";
 
 function combineWithAclHash(contentHash: string, acl: unknown): string {
-  const aclHash = createHash("sha256").update(JSON.stringify(acl ?? [])).digest("hex");
+  const aclHash = createHash("sha256")
+    .update(JSON.stringify(acl ?? []))
+    .digest("hex");
   return `${contentHash}:${aclHash}`;
 }
 
@@ -61,14 +66,21 @@ export async function pushExternalItem(
       { itemId: item.id },
       "Graph sync failed: fault injection simulating Graph API error (dev/test only)",
     );
-    throw new AppError(502, "Simulierter Microsoft Graph API Fehler (Fault Injection)", {
-      details: { graphResponseCode: 500 },
-      exposeDetails: true,
-    });
+    throw new AppError(
+      502,
+      "Simulierter Microsoft Graph API Fehler (Fault Injection)",
+      {
+        details: { graphResponseCode: 500 },
+        exposeDetails: true,
+      },
+    );
   }
 
   if (await isGraphSyncMockMode()) {
-    logger.info({ itemId: item.id }, "Graph sync mock mode active - simulating confirmed push");
+    logger.info(
+      { itemId: item.id },
+      "Graph sync mock mode active - simulating confirmed push",
+    );
     return {
       dryRun: false,
       item,
@@ -91,10 +103,14 @@ export async function pushExternalItem(
       { err, connectionId, itemId: item.id },
       "Failed to push Graph externalItem",
     );
-    throw new AppError(502, "Übertragung des externalItem an Microsoft Graph fehlgeschlagen", {
-      details: err instanceof Error ? err.message : String(err),
-      exposeDetails: true,
-    });
+    throw new AppError(
+      502,
+      "Übertragung des externalItem an Microsoft Graph fehlgeschlagen",
+      {
+        details: err instanceof Error ? err.message : String(err),
+        exposeDetails: true,
+      },
+    );
   }
 
   return {
@@ -128,19 +144,35 @@ export async function deleteExternalItem(
 
   const fault = await getGraphFaultInjection();
   if (fault === "auth_unconfigured") {
-    logger.error({ itemId }, "Graph deindex blocked: fault injection simulating missing Graph credentials (dev/test only)");
-    throw new AppError(502, "Kein gültiges Microsoft Graph Access Token verfügbar (Entra-Konfiguration/Secret fehlt)");
+    logger.error(
+      { itemId },
+      "Graph deindex blocked: fault injection simulating missing Graph credentials (dev/test only)",
+    );
+    throw new AppError(
+      502,
+      "Kein gültiges Microsoft Graph Access Token verfügbar (Entra-Konfiguration/Secret fehlt)",
+    );
   }
   if (fault === "api_error") {
-    logger.error({ itemId }, "Graph deindex failed: fault injection simulating Graph API error (dev/test only)");
-    throw new AppError(502, "Simulierter Microsoft Graph API Fehler (Fault Injection)", {
-      details: { graphResponseCode: 500 },
-      exposeDetails: true,
-    });
+    logger.error(
+      { itemId },
+      "Graph deindex failed: fault injection simulating Graph API error (dev/test only)",
+    );
+    throw new AppError(
+      502,
+      "Simulierter Microsoft Graph API Fehler (Fault Injection)",
+      {
+        details: { graphResponseCode: 500 },
+        exposeDetails: true,
+      },
+    );
   }
 
   if (await isGraphSyncMockMode()) {
-    logger.info({ itemId }, "Graph sync mock mode active - simulating confirmed delete");
+    logger.info(
+      { itemId },
+      "Graph sync mock mode active - simulating confirmed delete",
+    );
     return {
       dryRun: false,
       itemId,
@@ -171,11 +203,18 @@ export async function deleteExternalItem(
         graphResponseCode: 404,
       };
     }
-    logger.error({ err, connectionId, itemId }, "Failed to delete Graph externalItem");
-    throw new AppError(502, "Löschen des externalItem in Microsoft Graph fehlgeschlagen", {
-      details: err instanceof Error ? err.message : String(err),
-      exposeDetails: true,
-    });
+    logger.error(
+      { err, connectionId, itemId },
+      "Failed to delete Graph externalItem",
+    );
+    throw new AppError(
+      502,
+      "Löschen des externalItem in Microsoft Graph fehlgeschlagen",
+      {
+        details: err instanceof Error ? err.message : String(err),
+        exposeDetails: true,
+      },
+    );
   }
 
   return {
@@ -201,7 +240,9 @@ export interface BuiltExternalItem {
 }
 
 function hashAcl(acl: unknown): string {
-  return createHash("sha256").update(JSON.stringify(acl ?? [])).digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify(acl ?? []))
+    .digest("hex");
 }
 
 export async function buildPageExternalItem(
@@ -215,7 +256,8 @@ export async function buildPageExternalItem(
     );
   }
 
-  const level = (projection.confidentiality ?? "public") as ConfidentialityLevel;
+  const level = (projection.confidentiality ??
+    "public") as ConfidentialityLevel;
   const itemId = `flowcore_page_${projection.immutableId}`;
 
   let acl;
@@ -249,7 +291,10 @@ export async function buildGlossaryExternalItem(
 ): Promise<BuiltExternalItem> {
   const projection = await projectGlossaryTerm(termId);
   if (!projection) {
-    throw new AppError(404, "Glossarbegriff nicht gefunden oder nicht exportierbar");
+    throw new AppError(
+      404,
+      "Glossarbegriff nicht gefunden oder nicht exportierbar",
+    );
   }
 
   const itemId = `flowcore_glossary_${projection.termId}`;
@@ -260,7 +305,7 @@ export async function buildGlossaryExternalItem(
       itemId,
       itemType: "glossary",
       nodeId: null,
-      level: "internal" as ConfidentialityLevel,
+      level: "internal",
     });
   } catch (err) {
     mapAclErrorToAppError(err, `Glossarbegriff ${termId}`);
@@ -286,11 +331,14 @@ function mapAclErrorToAppError(err: unknown, context: string): never {
   if (err instanceof AppError) throw err;
   const reason =
     err && typeof err === "object" && "reason" in err
-      ? String((err as { reason: unknown }).reason)
+      ? String(err.reason)
       : "unknown_error";
   const message =
     err instanceof Error ? err.message : `ACL für ${context} nicht ermittelbar`;
-  throw new AppError(422, message, { details: { reason }, exposeDetails: true });
+  throw new AppError(422, message, {
+    details: { reason },
+    exposeDetails: true,
+  });
 }
 
 export async function registerPageExternalItem(

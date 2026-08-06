@@ -21,7 +21,14 @@ import { PageTypeIcon } from "@/components/PageTypeIcon";
 import { CreateNodeDialog } from "@/components/CreateNodeDialog";
 import { useState, useMemo } from "react";
 
-const IA_CATEGORY_ORDER = ["process", "documentation", "governance", "knowledge", "quality", "system"];
+const IA_CATEGORY_ORDER = [
+  "process",
+  "documentation",
+  "governance",
+  "knowledge",
+  "quality",
+  "system",
+];
 
 const IA_CATEGORY_LABELS: Record<string, string> = {
   process: "Prozesse & Bereiche",
@@ -90,27 +97,29 @@ export function Hub() {
         </Card>
 
         {(user?.permissions ?? []).includes("view_dashboard") && (
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => navigate("/dashboard")}
-        >
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
-              <BarChart3 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Dashboard</p>
-              <p className="text-xs text-muted-foreground">
-                Qualitätsübersicht
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate("/dashboard")}
+          >
+            <CardContent className="flex items-center gap-3 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Dashboard</p>
+                <p className="text-xs text-muted-foreground">
+                  Qualitätsübersicht
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => window.dispatchEvent(new CustomEvent(OPEN_ASSISTANT_EVENT))}
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent(OPEN_ASSISTANT_EVENT))
+          }
         >
           <CardContent className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-4/10 text-chart-4">
@@ -159,7 +168,10 @@ export function Hub() {
                               className="flex h-10 w-10 items-center justify-center rounded-lg text-white shrink-0"
                               style={{ backgroundColor: pageDef.color }}
                             >
-                              <PageTypeIcon iconName={pageDef.icon} className="h-5 w-5" />
+                              <PageTypeIcon
+                                iconName={pageDef.icon}
+                                className="h-5 w-5"
+                              />
                             </div>
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
@@ -171,25 +183,27 @@ export function Hub() {
                               {node.title}
                             </p>
                             <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                              <span className="font-mono">{node.displayCode}</span>
+                              <span className="font-mono">
+                                {node.displayCode}
+                              </span>
                               <span className="hidden sm:inline">·</span>
-                              <span className="hidden sm:inline">{PAGE_TYPE_LABELS[node.templateType] || node.templateType}</span>
+                              <span className="hidden sm:inline">
+                                {PAGE_TYPE_LABELS[node.templateType] ||
+                                  node.templateType}
+                              </span>
                             </div>
                           </div>
                           <div className="hidden sm:flex items-center gap-6 shrink-0 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1.5">
                               <Calendar className="h-3.5 w-3.5" />
-                              <span>{new Date(node.updatedAt).toLocaleDateString("de-DE")}</span>
+                              <span>
+                                {new Date(node.updatedAt).toLocaleDateString(
+                                  "de-DE",
+                                )}
+                              </span>
                             </div>
                           </div>
-                          <StatusBadge
-                            status={
-                              node.status as Parameters<
-                                typeof StatusBadge
-                              >[0]["status"]
-                            }
-                            compact
-                          />
+                          <StatusBadge status={node.status} compact />
                           <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                         </CardContent>
                       </Card>
@@ -212,14 +226,14 @@ export function Hub() {
               aufzubauen.
             </p>
             {(user?.permissions ?? []).includes("create_page") && (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => setShowCreate(true)}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Kernprozess anlegen
-            </Button>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => setShowCreate(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Kernprozess anlegen
+              </Button>
             )}
           </CardContent>
         </Card>

@@ -28,7 +28,10 @@ const ALLOWLIST: Array<{ file: RegExp; line: RegExp }> = [
   { file: /vite\.config\.ts$/, line: /localhost/ },
   { file: /main\.tsx$/, line: /X-Dev-Principal-Id/ },
   { file: /orval\.config\.ts$/, line: /.*/ },
-  { file: /notification\.service\.ts$/, line: /00000000-0000-0000-0000-000000000000/ },
+  {
+    file: /notification\.service\.ts$/,
+    line: /00000000-0000-0000-0000-000000000000/,
+  },
   { file: /drizzle\.config\.ts$/, line: /.*/ },
   { file: /apply-triggers\.ts$/, line: /.*/ },
 ];
@@ -49,15 +52,17 @@ const PATTERNS: Array<{ regex: RegExp; description: string }> = [
     description: "Hardcoded PostgreSQL URI",
   },
   {
-    regex: /['"][0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['"]/,
+    regex:
+      /['"][0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['"]/,
     description: "Hardcoded UUID (potential dev principal ID or secret)",
   },
   {
-    regex: /['"]Bearer\s+[A-Za-z0-9._~+\/=-]{20,}['"]/,
+    regex: /['"]Bearer\s+[A-Za-z0-9._~+/=-]{20,}['"]/,
     description: "Hardcoded Bearer token",
   },
   {
-    regex: /['"]https?:\/\/[^'"]*\.(azurewebsites|sharepoint|graph\.microsoft)\.com[^'"]*['"]/,
+    regex:
+      /['"]https?:\/\/[^'"]*\.(azurewebsites|sharepoint|graph\.microsoft)\.com[^'"]*['"]/,
     description: "Hardcoded Azure/SharePoint URL",
   },
   {

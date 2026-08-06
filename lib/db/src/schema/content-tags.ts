@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import { contentNodesTable } from "./content-nodes";
 import { createInsertSchema } from "drizzle-zod";
@@ -34,6 +35,7 @@ export const contentNodeTagsTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    index("idx_content_node_tags_tag").on(table.tagId),
     uniqueIndex("idx_content_node_tags_unique").on(table.nodeId, table.tagId),
   ],
 );

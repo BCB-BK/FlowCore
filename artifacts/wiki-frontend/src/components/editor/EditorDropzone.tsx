@@ -1,6 +1,14 @@
 import { useState, useCallback, useRef } from "react";
 import type { Editor } from "@tiptap/react";
-import { Upload, Image, Video, FileText, Loader2, X, AlertCircle } from "lucide-react";
+import {
+  Upload,
+  Image,
+  Video,
+  FileText,
+  Loader2,
+  X,
+  AlertCircle,
+} from "lucide-react";
 import { EDITOR_CONFIG } from "@/lib/editor-config";
 
 interface UploadProgress {
@@ -19,9 +27,7 @@ interface EditorDropzoneProps {
   children: React.ReactNode;
 }
 
-function detectMediaType(
-  file: File,
-): "image" | "video" | "file" {
+function detectMediaType(file: File): "image" | "video" | "file" {
   if (file.type.startsWith("image/")) return "image";
   if (file.type.startsWith("video/")) return "video";
   return "file";
@@ -66,7 +72,13 @@ export function EditorDropzone({
 
       setUploads((prev) => [
         ...prev,
-        { id: uploadId, filename: file.name, mediaType, progress: 0, status: "uploading" },
+        {
+          id: uploadId,
+          filename: file.name,
+          mediaType,
+          progress: 0,
+          status: "uploading",
+        },
       ]);
 
       try {

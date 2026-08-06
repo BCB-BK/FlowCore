@@ -9,11 +9,17 @@ function tokenize(text: string): string[] {
 
 const MAX_DIFF_TOKENS = 500;
 
-export function computeWordDiff(oldText: string, newText: string): DiffSegment[] {
+export function computeWordDiff(
+  oldText: string,
+  newText: string,
+): DiffSegment[] {
   const oldTokens = tokenize(oldText);
   const newTokens = tokenize(newText);
 
-  if (oldTokens.length > MAX_DIFF_TOKENS || newTokens.length > MAX_DIFF_TOKENS) {
+  if (
+    oldTokens.length > MAX_DIFF_TOKENS ||
+    newTokens.length > MAX_DIFF_TOKENS
+  ) {
     const segments: DiffSegment[] = [];
     if (oldText) segments.push({ type: "removed", text: oldText });
     if (newText) segments.push({ type: "added", text: newText });
@@ -23,7 +29,9 @@ export function computeWordDiff(oldText: string, newText: string): DiffSegment[]
   const n = oldTokens.length;
   const m = newTokens.length;
 
-  const dp: number[][] = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+  const dp: number[][] = Array.from({ length: n + 1 }, () =>
+    Array(m + 1).fill(0),
+  );
   for (let i = 1; i <= n; i++) {
     for (let j = 1; j <= m; j++) {
       if (oldTokens[i - 1] === newTokens[j - 1]) {
@@ -125,10 +133,19 @@ export function formatFieldLabel(key: string): string {
     procedure_steps: "Verfahrensschritte",
     documents: "Dokumente",
   };
-  return labels[key] || key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return (
+    labels[key] ||
+    key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
 }
 
-export type CompoundType = "sipoc_cards" | "raci_matrix" | "qa_repeater" | "term_repeater" | "check_items" | "competency_areas";
+export type CompoundType =
+  | "sipoc_cards"
+  | "raci_matrix"
+  | "qa_repeater"
+  | "term_repeater"
+  | "check_items"
+  | "competency_areas";
 
 export function detectCompoundType(val: unknown): CompoundType | null {
   if (typeof val === "string") {
@@ -143,12 +160,24 @@ export function detectCompoundType(val: unknown): CompoundType | null {
 
   if (!Array.isArray(val)) {
     const obj = val as Record<string, unknown>;
-    const sipocKeys = ["suppliers", "inputs", "process", "outputs", "customers"];
-    const hasSipocKey = sipocKeys.some((k) => k in obj && (typeof obj[k] === "string" || Array.isArray(obj[k])));
+    const sipocKeys = [
+      "suppliers",
+      "inputs",
+      "process",
+      "outputs",
+      "customers",
+    ];
+    const hasSipocKey = sipocKeys.some(
+      (k) => k in obj && (typeof obj[k] === "string" || Array.isArray(obj[k])),
+    );
     if (hasSipocKey) return "sipoc_cards";
 
-    if ("roles" in obj && Array.isArray(obj.roles)
-      && "entries" in obj && Array.isArray(obj.entries)) {
+    if (
+      "roles" in obj &&
+      Array.isArray(obj.roles) &&
+      "entries" in obj &&
+      Array.isArray(obj.entries)
+    ) {
       return "raci_matrix";
     }
     return null;
@@ -161,7 +190,14 @@ export function detectCompoundType(val: unknown): CompoundType | null {
 
   if ("question" in f && "answer" in f) return "qa_repeater";
   if ("term" in f && "definition" in f) return "term_repeater";
-  if ("text" in f && typeof f.text === "string" && !("question" in f) && !("term" in f) && !("area" in f)) return "check_items";
+  if (
+    "text" in f &&
+    typeof f.text === "string" &&
+    !("question" in f) &&
+    !("term" in f) &&
+    !("area" in f)
+  )
+    return "check_items";
   if ("area" in f && "tasks" in f) return "competency_areas";
 
   return null;
@@ -180,10 +216,17 @@ interface RaciData {
   entries: Array<{ activity: string; assignments: Record<string, string> }>;
 }
 
-export function formatCompoundForDisplay(val: unknown, compoundType: CompoundType): string {
+export function formatCompoundForDisplay(
+  val: unknown,
+  compoundType: CompoundType,
+): string {
   let data = val;
   if (typeof val === "string") {
-    try { data = JSON.parse(val); } catch { return val; }
+    try {
+      data = JSON.parse(val);
+    } catch {
+      return val;
+    }
   }
   if (!data || typeof data !== "object") return formatValueForDisplay(val);
 
@@ -194,66 +237,92 @@ export function formatCompoundForDisplay(val: unknown, compoundType: CompoundTyp
         const parts: string[] = [];
         const fmt = (label: string, v: unknown) => {
           if (typeof v === "string" && v.trim()) return `${label}: ${v.trim()}`;
-          if (Array.isArray(v) && v.length > 0) return `${label}: ${v.map((item) => (typeof item === "object" && item ? ((item as Record<string, unknown>).title || (item as Record<string, unknown>).description || JSON.stringify(item)) : String(item))).join(", ")}`;
+          if (Array.isArray(v) && v.length > 0)
+            return `${label}: ${v.map((item) => (typeof item === "object" && item ? (item as Record<string, unknown>).title || (item as Record<string, unknown>).description || JSON.stringify(item) : String(item))).join(", ")}`;
           return null;
         };
-        const s = fmt("S", sipoc.suppliers); if (s) parts.push(s);
-        const i = fmt("I", sipoc.inputs); if (i) parts.push(i);
-        const p = fmt("P", sipoc.process); if (p) parts.push(p);
-        const o = fmt("O", sipoc.outputs); if (o) parts.push(o);
-        const c = fmt("C", sipoc.customers); if (c) parts.push(c);
+        const s = fmt("S", sipoc.suppliers);
+        if (s) parts.push(s);
+        const i = fmt("I", sipoc.inputs);
+        if (i) parts.push(i);
+        const p = fmt("P", sipoc.process);
+        if (p) parts.push(p);
+        const o = fmt("O", sipoc.outputs);
+        if (o) parts.push(o);
+        const c = fmt("C", sipoc.customers);
+        if (c) parts.push(c);
         return parts.length > 0 ? parts.join("\n") : "(leer)";
       }
       case "raci_matrix": {
         const raci = data as RaciData;
-        if (!Array.isArray(raci.entries) || raci.entries.length === 0) return "(leer)";
+        if (!Array.isArray(raci.entries) || raci.entries.length === 0)
+          return "(leer)";
         const header = `Rollen: ${Array.isArray(raci.roles) ? raci.roles.join(", ") : "(keine)"}`;
         const rows = raci.entries.map((e) => {
           if (!e || typeof e !== "object") return "(ungültiger Eintrag)";
-          const assigns = Object.entries(e.assignments || {}).filter(([, v]) => v).map(([role, v]) => `${role}=${v}`).join(", ");
+          const assigns = Object.entries(e.assignments || {})
+            .filter(([, v]) => v)
+            .map(([role, v]) => `${role}=${v}`)
+            .join(", ");
           return `${e.activity || "(ohne Aktivität)"}: ${assigns || "(keine Zuordnung)"}`;
         });
         return [header, ...rows].join("\n");
       }
       case "qa_repeater": {
         if (!Array.isArray(data) || data.length === 0) return "(leer)";
-        return data.map((item, i) => {
-          if (!item || typeof item !== "object") return `${i + 1}. (ungültiger Eintrag)`;
-          const q = (item as Record<string, unknown>).question;
-          const a = (item as Record<string, unknown>).answer;
-          return `${i + 1}. F: ${typeof q === "string" ? q : "(leer)"}\n   A: ${typeof a === "string" ? a : "(leer)"}`;
-        }).join("\n");
+        return data
+          .map((item, i) => {
+            if (!item || typeof item !== "object")
+              return `${i + 1}. (ungültiger Eintrag)`;
+            const q = (item as Record<string, unknown>).question;
+            const a = (item as Record<string, unknown>).answer;
+            return `${i + 1}. F: ${typeof q === "string" ? q : "(leer)"}\n   A: ${typeof a === "string" ? a : "(leer)"}`;
+          })
+          .join("\n");
       }
       case "term_repeater": {
         if (!Array.isArray(data) || data.length === 0) return "(leer)";
-        return data.map((item) => {
-          if (!item || typeof item !== "object") return "(ungültiger Eintrag)";
-          const obj = item as Record<string, unknown>;
-          let line = `${typeof obj.term === "string" ? obj.term : "(leer)"}: ${typeof obj.definition === "string" ? obj.definition : "(leer)"}`;
-          if (typeof obj.synonyms === "string" && obj.synonyms.trim()) line += ` (Syn: ${obj.synonyms})`;
-          return line;
-        }).join("\n");
+        return data
+          .map((item) => {
+            if (!item || typeof item !== "object")
+              return "(ungültiger Eintrag)";
+            const obj = item as Record<string, unknown>;
+            let line = `${typeof obj.term === "string" ? obj.term : "(leer)"}: ${typeof obj.definition === "string" ? obj.definition : "(leer)"}`;
+            if (typeof obj.synonyms === "string" && obj.synonyms.trim())
+              line += ` (Syn: ${obj.synonyms})`;
+            return line;
+          })
+          .join("\n");
       }
       case "check_items": {
         if (!Array.isArray(data) || data.length === 0) return "(leer)";
-        return data.map((item, i) => {
-          if (!item || typeof item !== "object") return `${i + 1}. (ungültiger Eintrag)`;
-          const obj = item as Record<string, unknown>;
-          let line = `${i + 1}. ${typeof obj.text === "string" ? obj.text : "(leer)"}`;
-          if (typeof obj.category === "string" && obj.category.trim()) line += ` [${obj.category}]`;
-          if (typeof obj.note === "string" && obj.note.trim()) line += ` – ${obj.note}`;
-          return line;
-        }).join("\n");
+        return data
+          .map((item, i) => {
+            if (!item || typeof item !== "object")
+              return `${i + 1}. (ungültiger Eintrag)`;
+            const obj = item as Record<string, unknown>;
+            let line = `${i + 1}. ${typeof obj.text === "string" ? obj.text : "(leer)"}`;
+            if (typeof obj.category === "string" && obj.category.trim())
+              line += ` [${obj.category}]`;
+            if (typeof obj.note === "string" && obj.note.trim())
+              line += ` – ${obj.note}`;
+            return line;
+          })
+          .join("\n");
       }
       case "competency_areas": {
         if (!Array.isArray(data) || data.length === 0) return "(leer)";
-        return data.map((item) => {
-          if (!item || typeof item !== "object") return "(ungültiger Eintrag)";
-          const obj = item as Record<string, unknown>;
-          const area = typeof obj.area === "string" ? obj.area : "(leer)";
-          const tasks = typeof obj.tasks === "string" ? obj.tasks : "(keine Aufgaben)";
-          return `${area}: ${tasks}`;
-        }).join("\n");
+        return data
+          .map((item) => {
+            if (!item || typeof item !== "object")
+              return "(ungültiger Eintrag)";
+            const obj = item as Record<string, unknown>;
+            const area = typeof obj.area === "string" ? obj.area : "(leer)";
+            const tasks =
+              typeof obj.tasks === "string" ? obj.tasks : "(keine Aufgaben)";
+            return `${area}: ${tasks}`;
+          })
+          .join("\n");
       }
       default:
         return formatValueForDisplay(val);
@@ -265,7 +334,8 @@ export function formatCompoundForDisplay(val: unknown, compoundType: CompoundTyp
 
 function formatArrayItem(item: unknown): string {
   if (typeof item === "string") return item;
-  if (typeof item === "number" || typeof item === "boolean") return String(item);
+  if (typeof item === "number" || typeof item === "boolean")
+    return String(item);
   if (typeof item === "object" && item !== null) {
     const obj = item as Record<string, unknown>;
     if (obj.title && obj.id) return `${obj.title}`;
@@ -279,9 +349,13 @@ function formatArrayItem(item: unknown): string {
     if (obj.type === "doc" && Array.isArray(obj.content)) {
       return extractPlainText(obj);
     }
-    const keys = Object.keys(obj).filter((k) => !k.startsWith("_") && k !== "id");
+    const keys = Object.keys(obj).filter(
+      (k) => !k.startsWith("_") && k !== "id",
+    );
     if (keys.length <= 3) {
-      return keys.map((k) => `${formatFieldLabel(k)}: ${formatValueForDisplay(obj[k])}`).join(", ");
+      return keys
+        .map((k) => `${formatFieldLabel(k)}: ${formatValueForDisplay(obj[k])}`)
+        .join(", ");
     }
   }
   return JSON.stringify(item);
@@ -308,7 +382,9 @@ export function formatValueForDisplay(val: unknown): string {
       .filter(([k]) => !k.startsWith("_") && k !== "id")
       .map(([k, v]) => `${formatFieldLabel(k)}: ${formatValueForDisplay(v)}`);
     if (entries.length <= 5) return entries.join("\n");
-    return entries.slice(0, 5).join("\n") + `\n… (${entries.length - 5} weitere)`;
+    return (
+      entries.slice(0, 5).join("\n") + `\n… (${entries.length - 5} weitere)`
+    );
   }
   return String(val);
 }

@@ -39,7 +39,10 @@ import { AppError } from "../lib/app-error";
 import { logger } from "../lib/logger";
 import { runFullSync } from "../services/graph-full-sync.service";
 import { runDeltaSync } from "../services/graph-delta-sync.service";
-import { syncPage, syncGlossaryTerm } from "../services/graph-single-item-sync.service";
+import {
+  syncPage,
+  syncGlossaryTerm,
+} from "../services/graph-single-item-sync.service";
 import { listQueue } from "../services/graph-sync-queue.service";
 import { listSyncLog } from "../services/graph-sync-log.service";
 import { listChangeFeed } from "../services/graph-change-feed.service";
@@ -53,7 +56,11 @@ const GroupMappingBody = z.object({
   label: z.string().optional(),
 });
 
-function handleError(res: import("express").Response, err: unknown, fallback: string) {
+function handleError(
+  res: import("express").Response,
+  err: unknown,
+  fallback: string,
+) {
   if (err instanceof AppError) {
     res.status(err.status).json({
       error: err.message,
@@ -211,7 +218,10 @@ graphConnectorRouter.get(
   requirePermission("manage_graph_connector"),
   async (req, res) => {
     try {
-      const result = await registerPageExternalItem(String(req.params.id), true);
+      const result = await registerPageExternalItem(
+        String(req.params.id),
+        true,
+      );
       res.json(result);
     } catch (err) {
       handleError(res, err, "Failed to build page externalItem");
@@ -243,7 +253,10 @@ graphConnectorRouter.get(
   requirePermission("manage_graph_connector"),
   async (req, res) => {
     try {
-      const result = await registerGlossaryExternalItem(String(req.params.id), true);
+      const result = await registerGlossaryExternalItem(
+        String(req.params.id),
+        true,
+      );
       res.json(result);
     } catch (err) {
       handleError(res, err, "Failed to build glossary externalItem");
@@ -437,7 +450,8 @@ graphConnectorRouter.get(
   requirePermission("manage_graph_connector"),
   async (req, res) => {
     try {
-      const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
       const rows = await listChangeFeed(status);
       res.json({ entries: rows });
     } catch (err) {
@@ -452,7 +466,8 @@ graphConnectorRouter.get(
   requirePermission("manage_graph_connector"),
   async (req, res) => {
     try {
-      const status = typeof req.query.status === "string" ? req.query.status : undefined;
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
       const rows = await listQueue(status);
       res.json({ entries: rows });
     } catch (err) {
@@ -468,7 +483,8 @@ graphConnectorRouter.get(
   async (req, res) => {
     try {
       const rows = await listSyncLog({
-        itemId: typeof req.query.itemId === "string" ? req.query.itemId : undefined,
+        itemId:
+          typeof req.query.itemId === "string" ? req.query.itemId : undefined,
         result:
           typeof req.query.result === "string"
             ? (req.query.result as "success" | "failed" | "skipped" | "deleted")
@@ -498,7 +514,8 @@ graphConnectorRouter.get(
   async (req, res) => {
     try {
       const rows = await listSyncLog({
-        itemId: typeof req.query.itemId === "string" ? req.query.itemId : undefined,
+        itemId:
+          typeof req.query.itemId === "string" ? req.query.itemId : undefined,
         result:
           typeof req.query.result === "string"
             ? (req.query.result as "success" | "failed" | "skipped" | "deleted")

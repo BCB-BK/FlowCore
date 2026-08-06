@@ -21,7 +21,10 @@ function startCleanup() {
       const result = await db
         .delete(rateLimitHitsTable)
         .where(lt(rateLimitHitsTable.resetAt, new Date()));
-      logger.debug({ deleted: result.rowCount }, "Rate limit cleanup completed");
+      logger.debug(
+        { deleted: result.rowCount },
+        "Rate limit cleanup completed",
+      );
     } catch (err) {
       logger.error({ err }, "Rate limit cleanup failed");
     }
@@ -36,7 +39,10 @@ startCleanup();
 // jeden Request blockiert.
 const memoryHits = new Map<string, { hits: number; resetAt: number }>();
 
-function countInMemory(key: string, windowMs: number): { hits: number; resetAtMs: number } {
+function countInMemory(
+  key: string,
+  windowMs: number,
+): { hits: number; resetAtMs: number } {
   const now = Date.now();
   const entry = memoryHits.get(key);
   if (!entry || entry.resetAt < now) {
@@ -113,7 +119,11 @@ export async function consumeRateLimit(
 export function rateLimit(options: RateLimitOptions) {
   const { windowMs, maxRequests, keyPrefix = "rl" } = options;
 
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     const clientIp = req.ip || "unknown";
     const key = `${keyPrefix}:${clientIp}`;
 
@@ -127,7 +137,10 @@ export function rateLimit(options: RateLimitOptions) {
     );
 
     if (!decision.allowed) {
-      logger.warn({ clientIp, key, count: decision.hits }, "Rate limit exceeded");
+      logger.warn(
+        { clientIp, key, count: decision.hits },
+        "Rate limit exceeded",
+      );
       res.setHeader("Retry-After", String(decision.retryAfterSec));
       res.status(429).json({
         error: "Too many requests. Please try again later.",

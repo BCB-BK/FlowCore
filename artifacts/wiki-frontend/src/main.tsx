@@ -1,6 +1,9 @@
 import "./polyfills";
 import { createRoot } from "react-dom/client";
-import { setDefaultHeaders, setSessionExpiredHandler } from "@workspace/api-client-react";
+import {
+  setDefaultHeaders,
+  setSessionExpiredHandler,
+} from "@workspace/api-client-react";
 import App from "./App";
 import "./index.css";
 

@@ -1,0 +1,69 @@
+# End-to-End-Tests gegen eine laufende Umgebung (Audit-Befund A4).
+#
+# Bewusst getrennt von der CI: Die 17 Playwright-Spezifikationen brauchen einen
+# erreichbaren Server samt Datenbank. In der Pull-Request-Pruefung waere das
+# entweder unzuverlaessig oder es zwaenge dazu, Zugangsdaten fuer DEV in
+# GitHub zu hinterlegen. Deshalb laeuft dieser Ablauf nachts und auf Zuruf --
+# und nur, wenn das Ziel als Secret hinterlegt ist.
+#
+# Einrichtung: Repository → Settings → Secrets and variables → Actions →
+# New repository secret, Name `E2E_BASE_URL`, Wert z. B.
+# https://flowcore-dev.bildungscampus-backnang.de
+name: E2E
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 03:15 UTC, taeglich -- ausserhalb der Arbeitszeit.
+    - cron: "15 3 * * *"
+
+jobs:
+  e2e:
+    name: Playwright gegen DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ziel pruefen
+        id: target
+        run: |
+          if [ -z "${{ secrets.E2E_BASE_URL }}" ]; then
+            echo "E2E_BASE_URL ist nicht hinterlegt -- Lauf wird uebersprungen."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: pnpm bereitstellen
+        if: steps.target.outputs.configured == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Node bereitstellen
+        if: steps.target.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Abhaengigkeiten installieren
+        if: steps.target.outputs.configured == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Browser installieren
+        if: steps.target.outputs.configured == 'true'
+        run: pnpm --filter @workspace/e2e exec playwright install --with-deps chromium
+
+      - name: E2E-Tests
+        if: steps.target.outputs.configured == 'true'
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+        run: pnpm test:e2e
+
+      - name: Bericht sichern
+        if: always() && steps.target.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 7

@@ -1,15 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Button } from "@workspace/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@workspace/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
 import {
   Wand2,
   RefreshCw,
@@ -133,9 +125,7 @@ export function FieldAiButton({
           });
         } catch (fetchErr) {
           if ((fetchErr as Error).name === "AbortError") throw fetchErr;
-          setSuggestion(
-            "Server nicht erreichbar — bitte Seite neu laden.",
-          );
+          setSuggestion("Server nicht erreichbar — bitte Seite neu laden.");
           return;
         }
 
@@ -180,9 +170,7 @@ export function FieldAiButton({
               "Fehler bei der KI-Verarbeitung. Bitte versuchen Sie es erneut.",
             );
           } else {
-            setSuggestion(
-              "Server nicht erreichbar — bitte Seite neu laden.",
-            );
+            setSuggestion("Server nicht erreichbar — bitte Seite neu laden.");
           }
         }
       } finally {
@@ -268,8 +256,8 @@ export function FieldAiButton({
         isStreaming={isStreaming}
         actionLabel={
           activeAction
-            ? availableActions.find((a) => a.key === activeAction)?.label ??
-              activeAction
+            ? (availableActions.find((a) => a.key === activeAction)?.label ??
+              activeAction)
             : ""
         }
         onApply={handleApply}

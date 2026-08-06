@@ -1,10 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import { Skeleton } from "@workspace/ui/skeleton";
 import { Button } from "@workspace/ui/button";
@@ -41,7 +36,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { useGetMyWork, useListDeletionRequests, useReviewDeletionRequest, getListDeletionRequestsQueryKey } from "@workspace/api-client-react";
+import {
+  useGetMyWork,
+  useListDeletionRequests,
+  useReviewDeletionRequest,
+  getListDeletionRequestsQueryKey,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -53,9 +53,19 @@ type StatusFilter = "all" | "submitted" | "in_review" | "approved_for_publish";
 const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  submitted: { label: "Eingereicht", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  in_review: { label: "In Prüfung", color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-  approved_for_publish: { label: "Freigegeben", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  submitted: {
+    label: "Eingereicht",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  },
+  in_review: {
+    label: "In Prüfung",
+    color:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  },
+  approved_for_publish: {
+    label: "Freigegeben",
+    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  },
 };
 
 const TEMPLATE_LABELS: Record<string, string> = {
@@ -88,12 +98,28 @@ function getAge(dateStr: string): { label: string; days: number } {
 
 function PriorityBadge({ priority }: { priority: string }) {
   const config: Record<string, { label: string; className: string }> = {
-    high: { label: "Hoch", className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200 dark:border-red-800" },
-    medium: { label: "Mittel", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800" },
-    low: { label: "Niedrig", className: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700" },
+    high: {
+      label: "Hoch",
+      className:
+        "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200 dark:border-red-800",
+    },
+    medium: {
+      label: "Mittel",
+      className:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800",
+    },
+    low: {
+      label: "Niedrig",
+      className:
+        "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700",
+    },
   };
   const c = config[priority] || config.low;
-  return <Badge variant="outline" className={c.className}>{c.label}</Badge>;
+  return (
+    <Badge variant="outline" className={c.className}>
+      {c.label}
+    </Badge>
+  );
 }
 
 function truncateId(id?: string): string {
@@ -111,7 +137,8 @@ export function ReviewInboxPage() {
   const [sortField, setSortField] = useState<SortField>("priority");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const hasReviewPermission = currentUser?.permissions?.includes("review_working_copy") ?? false;
+  const hasReviewPermission =
+    currentUser?.permissions?.includes("review_working_copy") ?? false;
 
   if (!isLoading && !hasReviewPermission) {
     return (
@@ -119,7 +146,8 @@ export function ReviewInboxPage() {
         <ShieldCheck className="h-12 w-12 mx-auto text-muted-foreground" />
         <h2 className="text-xl font-semibold">Kein Zugriff</h2>
         <p className="text-muted-foreground">
-          Sie benötigen die Berechtigung zum Prüfen von Arbeitskopien, um auf den Review-Inbox zuzugreifen.
+          Sie benötigen die Berechtigung zum Prüfen von Arbeitskopien, um auf
+          den Review-Inbox zuzugreifen.
         </p>
         <Button variant="outline" onClick={() => navigate("/my-work")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -169,10 +197,14 @@ export function ReviewInboxPage() {
       let cmp = 0;
       switch (sortField) {
         case "priority":
-          cmp = (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2);
+          cmp =
+            (PRIORITY_ORDER[a.priority] ?? 2) -
+            (PRIORITY_ORDER[b.priority] ?? 2);
           break;
         case "age":
-          cmp = new Date(a.submittedAt || a.updatedAt).getTime() - new Date(b.submittedAt || b.updatedAt).getTime();
+          cmp =
+            new Date(a.submittedAt || a.updatedAt).getTime() -
+            new Date(b.submittedAt || b.updatedAt).getTime();
           break;
         case "title":
           cmp = a.title.localeCompare(b.title, "de");
@@ -196,13 +228,17 @@ export function ReviewInboxPage() {
     }
   };
 
-  const stats = useMemo(() => ({
-    total: reviewItems.length,
-    submitted: reviewItems.filter((i) => i.status === "submitted").length,
-    inReview: reviewItems.filter((i) => i.status === "in_review").length,
-    approved: reviewItems.filter((i) => i.status === "approved_for_publish").length,
-    highPriority: reviewItems.filter((i) => i.priority === "high").length,
-  }), [reviewItems]);
+  const stats = useMemo(
+    () => ({
+      total: reviewItems.length,
+      submitted: reviewItems.filter((i) => i.status === "submitted").length,
+      inReview: reviewItems.filter((i) => i.status === "in_review").length,
+      approved: reviewItems.filter((i) => i.status === "approved_for_publish")
+        .length,
+      highPriority: reviewItems.filter((i) => i.priority === "high").length,
+    }),
+    [reviewItems],
+  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -286,7 +322,10 @@ export function ReviewInboxPage() {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -294,7 +333,9 @@ export function ReviewInboxPage() {
                 <SelectItem value="all">Alle Status</SelectItem>
                 <SelectItem value="submitted">Eingereicht</SelectItem>
                 <SelectItem value="in_review">In Prüfung</SelectItem>
-                <SelectItem value="approved_for_publish">Freigegeben</SelectItem>
+                <SelectItem value="approved_for_publish">
+                  Freigegeben
+                </SelectItem>
               </SelectContent>
             </Select>
             <Select value={areaFilter} onValueChange={setAreaFilter}>
@@ -426,24 +467,39 @@ export function ReviewInboxPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
-                          {TEMPLATE_LABELS[item.templateType] || item.templateType}
+                          {TEMPLATE_LABELS[item.templateType] ||
+                            item.templateType}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5 text-sm">
                           <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className={age.days > 14 ? "text-red-600 font-medium" : age.days > 7 ? "text-orange-600 font-medium" : ""}>
+                          <span
+                            className={
+                              age.days > 14
+                                ? "text-red-600 font-medium"
+                                : age.days > 7
+                                  ? "text-orange-600 font-medium"
+                                  : ""
+                            }
+                          >
                             {age.label}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-muted-foreground font-mono" title={item.authorId || ""}>
+                        <span
+                          className="text-xs text-muted-foreground font-mono"
+                          title={item.authorId || ""}
+                        >
                           {truncateId(item.authorId)}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs text-muted-foreground font-mono" title={item.reviewerId || ""}>
+                        <span
+                          className="text-xs text-muted-foreground font-mono"
+                          title={item.reviewerId || ""}
+                        >
                           {truncateId(item.reviewerId)}
                         </span>
                       </TableCell>
@@ -464,24 +520,30 @@ export function ReviewInboxPage() {
 }
 
 function DeletionRequestsSection() {
-  const { data: requests, isLoading } = useListDeletionRequests({ status: "pending" });
+  const { data: requests, isLoading } = useListDeletionRequests({
+    status: "pending",
+  });
   const reviewMutation = useReviewDeletionRequest();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  const handleReview = async (requestId: string, decision: "approved" | "rejected") => {
+  const handleReview = async (
+    requestId: string,
+    decision: "approved" | "rejected",
+  ) => {
     try {
       await reviewMutation.mutateAsync({
         requestId,
         data: { decision },
       });
       toast({
-        title: decision === "approved"
-          ? "L\u00F6schanfrage genehmigt \u2013 Seite archiviert"
-          : "L\u00F6schanfrage abgelehnt",
+        title:
+          decision === "approved"
+            ? "L\u00F6schanfrage genehmigt \u2013 Seite archiviert"
+            : "L\u00F6schanfrage abgelehnt",
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: getListDeletionRequestsQueryKey(),
       });
     } catch (err) {
@@ -502,7 +564,9 @@ function DeletionRequestsSection() {
         <div className="flex items-center gap-2">
           <Trash2 className="h-5 w-5 text-destructive" />
           <CardTitle className="text-base">{"L\u00F6schanfragen"}</CardTitle>
-          <Badge variant="destructive" className="ml-1">{requests.length}</Badge>
+          <Badge variant="destructive" className="ml-1">
+            {requests.length}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent>
@@ -518,25 +582,36 @@ function DeletionRequestsSection() {
           </TableHeader>
           <TableBody>
             {requests.map((req) => (
-              <TableRow key={req.id} className="cursor-pointer" onClick={() => navigate(`/node/${req.nodeId}`)}>
+              <TableRow
+                key={req.id}
+                className="cursor-pointer"
+                onClick={() => navigate(`/node/${req.nodeId}`)}
+              >
                 <TableCell>
                   <div>
                     <p className="font-medium text-sm">{req.nodeTitle}</p>
-                    <p className="text-xs text-muted-foreground">{req.nodeDisplayCode}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {req.nodeDisplayCode}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell>
                   <p className="text-sm max-w-[200px] truncate">{req.reason}</p>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{req.requestedByName || req.requestedBy}</span>
+                  <span className="text-sm">
+                    {req.requestedByName || req.requestedBy}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <span className="text-xs text-muted-foreground">
                     {new Date(req.createdAt).toLocaleDateString("de-DE")}
                   </span>
                 </TableCell>
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell
+                  className="text-right"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="outline"

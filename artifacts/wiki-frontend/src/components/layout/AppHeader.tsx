@@ -86,7 +86,11 @@ export function AppHeader() {
               {user.roles && user.roles.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                   {user.roles.map((r) => (
-                    <Badge key={r.role} variant="secondary" className="text-[10px] px-1.5 py-0">
+                    <Badge
+                      key={r.role}
+                      variant="secondary"
+                      className="text-[10px] px-1.5 py-0"
+                    >
                       <Shield className="mr-0.5 h-2.5 w-2.5" />
                       {ROLE_LABELS[r.role ?? ""] ?? r.role}
                     </Badge>

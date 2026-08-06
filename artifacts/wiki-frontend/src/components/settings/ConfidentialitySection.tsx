@@ -38,8 +38,10 @@ const LEVEL_META: Record<
 > = {
   internal: {
     label: "Intern",
-    description: "Inhalte nur f\u00FCr zugewiesene Benutzer und Gruppen sichtbar",
-    color: "border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/30",
+    description:
+      "Inhalte nur f\u00FCr zugewiesene Benutzer und Gruppen sichtbar",
+    color:
+      "border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/30",
     badgeClass:
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   },
@@ -47,7 +49,8 @@ const LEVEL_META: Record<
     label: "Vertraulich",
     description:
       "Eingeschr\u00E4nkter Zugang \u2014 nur ausgew\u00E4hlte Personen/Gruppen",
-    color: "border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/30",
+    color:
+      "border-orange-200 bg-orange-50/50 dark:border-orange-900 dark:bg-orange-950/30",
     badgeClass:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
   },
@@ -55,8 +58,7 @@ const LEVEL_META: Record<
     label: "Streng vertraulich",
     description: "H\u00F6chste Stufe \u2014 minimaler Personenkreis",
     color: "border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/30",
-    badgeClass:
-      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    badgeClass: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
   },
 };
 
@@ -101,7 +103,7 @@ export function ConfidentialitySection() {
   }, [toast]);
 
   useEffect(() => {
-    loadConfig();
+    void loadConfig();
   }, [loadConfig]);
 
   if (loading) {
@@ -120,8 +122,8 @@ export function ConfidentialitySection() {
           Vertraulichkeitsstufen
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Weisen Sie Benutzer und Gruppen den Vertraulichkeitsstufen zu.
-          Nur zugewiesene Personen k{"\u00F6"}nnen Seiten dieser Stufe sehen.
+          Weisen Sie Benutzer und Gruppen den Vertraulichkeitsstufen zu. Nur
+          zugewiesene Personen k{"\u00F6"}nnen Seiten dieser Stufe sehen.
         </p>
       </div>
 
@@ -230,11 +232,7 @@ function LevelCard({
             onCancel={() => setIsAdding(false)}
           />
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAdding(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsAdding(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Benutzer / Gruppe hinzuf{"\u00FC"}gen
           </Button>

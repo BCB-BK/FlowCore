@@ -153,7 +153,10 @@ async function getActiveWorkingCopy(nodeId: string) {
     .where(
       and(
         eq(contentWorkingCopiesTable.nodeId, nodeId),
-        notInArray(contentWorkingCopiesTable.status, ["cancelled", "published"]),
+        notInArray(contentWorkingCopiesTable.status, [
+          "cancelled",
+          "published",
+        ]),
       ),
     );
   return wc || null;
@@ -168,7 +171,10 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
     );
 
     const [existing] = await tx
-      .select({ id: contentWorkingCopiesTable.id, authorId: contentWorkingCopiesTable.authorId })
+      .select({
+        id: contentWorkingCopiesTable.id,
+        authorId: contentWorkingCopiesTable.authorId,
+      })
       .from(contentWorkingCopiesTable)
       .where(
         and(
@@ -182,7 +188,10 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
 
     if (existing) {
       if (existing.authorId === authorId) {
-        return { workingCopy: await getWorkingCopyById(existing.id), created: false };
+        return {
+          workingCopy: await getWorkingCopyById(existing.id),
+          created: false,
+        };
       }
       throw new Error(
         `Eine aktive Arbeitskopie existiert bereits für diese Seite (von einem anderen Benutzer).`,
@@ -214,8 +223,8 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
         .where(eq(contentRevisionsTable.id, node.publishedRevisionId));
       if (pubRev) {
         title = pubRev.title;
-        content = pubRev.content as Record<string, unknown> | null;
-        structuredFields = pubRev.structuredFields as Record<string, unknown> | null;
+        content = pubRev.content;
+        structuredFields = pubRev.structuredFields;
         baseRevisionId = pubRev.id;
       }
     } else {
@@ -227,8 +236,8 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
         .limit(1);
       if (latestRev) {
         title = latestRev.title;
-        content = latestRev.content as Record<string, unknown> | null;
-        structuredFields = latestRev.structuredFields as Record<string, unknown> | null;
+        content = latestRev.content;
+        structuredFields = latestRev.structuredFields;
         baseRevisionId = latestRev.id;
       }
     }
@@ -237,12 +246,18 @@ export async function createWorkingCopy(input: CreateWorkingCopyInput) {
     // "internal" vorbelegen, statt sie unklassifiziert zu lassen. Bereits
     // gesetzte Stufen (aus der Basisrevision) bleiben unangetastet.
     if (!structuredFields?.confidentiality) {
-      structuredFields = { ...(structuredFields ?? {}), confidentiality: "internal" };
+      structuredFields = {
+        ...(structuredFields ?? {}),
+        confidentiality: "internal",
+      };
     }
 
     // Seitentyp-spezifische Vorbelegungen (registry: metadataFields.defaultValue),
     // z. B. "Führende Quelle = FlowCore" beim Markenprofil. Nur leere Felder.
-    const metadataDefaults = getMetadataDefaults(node.templateType, structuredFields);
+    const metadataDefaults = getMetadataDefaults(
+      node.templateType,
+      structuredFields,
+    );
     if (Object.keys(metadataDefaults).length > 0) {
       structuredFields = { ...(structuredFields ?? {}), ...metadataDefaults };
     }
@@ -305,7 +320,12 @@ export async function updateWorkingCopy(
 ) {
   const wc = await getWorkingCopyById(id);
   if (!wc) throw new Error("Working copy not found");
-  const editableStatuses = ["draft", "changes_requested", "submitted", "in_review"];
+  const editableStatuses = [
+    "draft",
+    "changes_requested",
+    "submitted",
+    "in_review",
+  ];
   if (!editableStatuses.includes(wc.status)) {
     throw new Error(
       `Arbeitskopie kann im Status '${wc.status}' nicht bearbeitet werden.`,
@@ -411,7 +431,11 @@ export async function submitWorkingCopy(
   if (node && !(await isSetupMode())) {
     const metadata = (wc.content as Record<string, unknown>) ?? {};
     const sectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
-    const validation = validateForPublication(node.templateType, metadata, sectionData);
+    const validation = validateForPublication(
+      node.templateType,
+      metadata,
+      sectionData,
+    );
     if (validation && !validation.valid) {
       const errorMessages = validation.errors.map((e) => e.message).join("; ");
       throw new Error(
@@ -465,7 +489,10 @@ export async function submitWorkingCopy(
     return result;
   });
 
-  logger.info({ workingCopyId: id, actorId }, "Working copy submitted for review");
+  logger.info(
+    { workingCopyId: id, actorId },
+    "Working copy submitted for review",
+  );
   return updated;
 }
 
@@ -475,101 +502,117 @@ async function autoPublishWorkingCopy(
   input: SubmitWorkingCopyInput,
   actorId: string,
 ) {
-  const summary = wc.lastManualSummary || wc.lastAiSummary || wc.changeSummary || input.changeSummary || "";
+  const summary =
+    wc.lastManualSummary ||
+    wc.lastAiSummary ||
+    wc.changeSummary ||
+    input.changeSummary ||
+    "";
 
-  return await db.transaction(async (tx) => {
-    await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
-    );
-
-    const maxResult = await tx
-      .select({
-        maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
-      })
-      .from(contentRevisionsTable)
-      .where(eq(contentRevisionsTable.nodeId, wc.nodeId));
-    const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
-
-    const versionLabel = `${revisionNo}.0`;
-
-    const [newRevision] = await tx
-      .insert(contentRevisionsTable)
-      .values({
-        nodeId: wc.nodeId,
-        revisionNo,
-        versionLabel,
-        title: wc.title,
-        content: wc.content,
-        structuredFields: wc.structuredFields,
-        changeType: input.changeType || "minor",
-        changeSummary: summary,
-        basedOnRevisionId: wc.baseRevisionId,
-        authorId: wc.authorId ?? actorId,
-        status: "published",
-      })
-      .returning();
-
-    await tx
-      .update(contentRevisionsTable)
-      .set({ status: "archived" })
-      .where(
-        and(
-          eq(contentRevisionsTable.nodeId, wc.nodeId),
-          eq(contentRevisionsTable.status, "published"),
-          sql`${contentRevisionsTable.id} != ${newRevision.id}`,
-        ),
+  return await db
+    .transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
       );
 
-    await tx
-      .update(contentNodesTable)
-      .set({
-        publishedRevisionId: newRevision.id,
-        title: wc.title,
-        status: "published",
-        updatedAt: new Date(),
-      })
-      .where(eq(contentNodesTable.id, wc.nodeId));
+      const maxResult = await tx
+        .select({
+          maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
+        })
+        .from(contentRevisionsTable)
+        .where(eq(contentRevisionsTable.nodeId, wc.nodeId));
+      const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
 
-    const [result] = await tx
-      .update(contentWorkingCopiesTable)
-      .set({
-        status: "published",
-        submittedBy: actorId,
-        submittedAt: new Date(),
-        updatedAt: new Date(),
-        changeType: input.changeType || "minor",
-        changeSummary: input.changeSummary || null,
-      })
-      .where(eq(contentWorkingCopiesTable.id, id))
-      .returning();
+      const versionLabel = `${revisionNo}.0`;
 
-    await tx.insert(workingCopyEventsTable).values({
-      workingCopyId: id,
-      eventType: "published",
-      actorId,
-      comment: input.comment || null,
-      metadata: { changeType: input.changeType, autoPublish: true },
+      const [newRevision] = await tx
+        .insert(contentRevisionsTable)
+        .values({
+          nodeId: wc.nodeId,
+          revisionNo,
+          versionLabel,
+          title: wc.title,
+          content: wc.content,
+          structuredFields: wc.structuredFields,
+          changeType: input.changeType || "minor",
+          changeSummary: summary,
+          basedOnRevisionId: wc.baseRevisionId,
+          authorId: wc.authorId ?? actorId,
+          status: "published",
+        })
+        .returning();
+
+      await tx
+        .update(contentRevisionsTable)
+        .set({ status: "archived" })
+        .where(
+          and(
+            eq(contentRevisionsTable.nodeId, wc.nodeId),
+            eq(contentRevisionsTable.status, "published"),
+            sql`${contentRevisionsTable.id} != ${newRevision.id}`,
+          ),
+        );
+
+      await tx
+        .update(contentNodesTable)
+        .set({
+          publishedRevisionId: newRevision.id,
+          title: wc.title,
+          status: "published",
+          updatedAt: new Date(),
+        })
+        .where(eq(contentNodesTable.id, wc.nodeId));
+
+      const [result] = await tx
+        .update(contentWorkingCopiesTable)
+        .set({
+          status: "published",
+          submittedBy: actorId,
+          submittedAt: new Date(),
+          updatedAt: new Date(),
+          changeType: input.changeType || "minor",
+          changeSummary: input.changeSummary || null,
+        })
+        .where(eq(contentWorkingCopiesTable.id, id))
+        .returning();
+
+      await tx.insert(workingCopyEventsTable).values({
+        workingCopyId: id,
+        eventType: "published",
+        actorId,
+        comment: input.comment || null,
+        metadata: { changeType: input.changeType, autoPublish: true },
+      });
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "working_copy_auto_published",
+        actorId,
+        resourceType: "working_copy",
+        resourceId: id,
+        details: {
+          nodeId: wc.nodeId,
+          revisionNo,
+          versionLabel,
+          autoPublish: true,
+        },
+      });
+
+      logger.info(
+        { workingCopyId: id, actorId, revisionNo, versionLabel },
+        "Working copy auto-published (workflow inactive)",
+      );
+
+      return result;
+    })
+    .then(async (result) => {
+      await recordEvent({
+        itemType: "page",
+        nodeId: wc.nodeId,
+        eventType: "publish",
+      });
+      return result;
     });
-
-    await tx.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "working_copy_auto_published",
-      actorId,
-      resourceType: "working_copy",
-      resourceId: id,
-      details: { nodeId: wc.nodeId, revisionNo, versionLabel, autoPublish: true },
-    });
-
-    logger.info(
-      { workingCopyId: id, actorId, revisionNo, versionLabel },
-      "Working copy auto-published (workflow inactive)",
-    );
-
-    return result;
-  }).then(async (result) => {
-    await recordEvent({ itemType: "page", nodeId: wc.nodeId, eventType: "publish" });
-    return result;
-  });
 }
 
 export async function returnWorkingCopyForChanges(
@@ -702,15 +745,21 @@ export async function publishWorkingCopy(
 
   if (pubNode && !(await isSetupMode())) {
     const metadata = (wc.content as Record<string, unknown>) ?? {};
-    const rawSectionData = (wc.structuredFields as Record<string, unknown>) ?? {};
+    const rawSectionData =
+      (wc.structuredFields as Record<string, unknown>) ?? {};
     const sectionData =
       pubNode.templateType === "meeting_protocol"
         ? {
             ...rawSectionData,
-            discussion: rawSectionData._editorContent ?? rawSectionData.discussion,
+            discussion:
+              rawSectionData._editorContent ?? rawSectionData.discussion,
           }
         : rawSectionData;
-    const validation = validateForPublication(pubNode.templateType, metadata, sectionData);
+    const validation = validateForPublication(
+      pubNode.templateType,
+      metadata,
+      sectionData,
+    );
     if (validation && !validation.valid) {
       const errorMessages = validation.errors.map((e) => e.message).join("; ");
       throw new Error(
@@ -722,68 +771,57 @@ export async function publishWorkingCopy(
   const summary =
     wc.lastManualSummary || wc.lastAiSummary || wc.changeSummary || "";
 
-  return await db.transaction(async (tx) => {
-    await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
-    );
-
-    // Status nach Erhalt des Locks erneut prüfen: Die Vorprüfung oben liest
-    // außerhalb der Transaktion — ohne diesen Guard würde ein zweiter,
-    // paralleler Publish-Request eine weitere Revision erzeugen.
-    const [currentWc] = await tx
-      .select({ status: contentWorkingCopiesTable.status })
-      .from(contentWorkingCopiesTable)
-      .where(eq(contentWorkingCopiesTable.id, id))
-      .for("update");
-    if (!currentWc || currentWc.status !== "approved_for_publish") {
-      throw new Error(
-        `Arbeitskopie kann im Status '${currentWc?.status ?? "unbekannt"}' nicht veröffentlicht werden. Nur freigegebene Arbeitskopien können veröffentlicht werden.`,
-      );
-    }
-
-    const maxResult = await tx
-      .select({
-        maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
-      })
-      .from(contentRevisionsTable)
-      .where(eq(contentRevisionsTable.nodeId, wc.nodeId));
-    const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
-
-    const [newRevision] = await tx
-      .insert(contentRevisionsTable)
-      .values({
-        nodeId: wc.nodeId,
-        revisionNo,
-        versionLabel,
-        title: wc.title,
-        content: wc.content,
-        structuredFields: wc.structuredFields,
-        changeType: wc.changeType,
-        changeSummary: summary,
-        basedOnRevisionId: wc.baseRevisionId,
-        authorId: wc.authorId,
-        reviewerId: wc.reviewerId,
-        approverId: actorId,
-        status: "published",
-        validFrom: new Date(),
-      })
-      .returning();
-
-    const priorPublished = await tx
-      .select({ id: contentRevisionsTable.id })
-      .from(contentRevisionsTable)
-      .where(
-        and(
-          eq(contentRevisionsTable.nodeId, wc.nodeId),
-          eq(contentRevisionsTable.status, "published"),
-          sql`${contentRevisionsTable.id} != ${newRevision.id}`,
-        ),
+  return await db
+    .transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext(${wc.nodeId}))`,
       );
 
-    if (priorPublished.length > 0) {
-      await tx
-        .update(contentRevisionsTable)
-        .set({ status: "archived" })
+      // Status nach Erhalt des Locks erneut prüfen: Die Vorprüfung oben liest
+      // außerhalb der Transaktion — ohne diesen Guard würde ein zweiter,
+      // paralleler Publish-Request eine weitere Revision erzeugen.
+      const [currentWc] = await tx
+        .select({ status: contentWorkingCopiesTable.status })
+        .from(contentWorkingCopiesTable)
+        .where(eq(contentWorkingCopiesTable.id, id))
+        .for("update");
+      if (!currentWc || currentWc.status !== "approved_for_publish") {
+        throw new Error(
+          `Arbeitskopie kann im Status '${currentWc?.status ?? "unbekannt"}' nicht veröffentlicht werden. Nur freigegebene Arbeitskopien können veröffentlicht werden.`,
+        );
+      }
+
+      const maxResult = await tx
+        .select({
+          maxNo: sql<number>`coalesce(max(revision_no), 0)::int`,
+        })
+        .from(contentRevisionsTable)
+        .where(eq(contentRevisionsTable.nodeId, wc.nodeId));
+      const revisionNo = (maxResult[0]?.maxNo ?? 0) + 1;
+
+      const [newRevision] = await tx
+        .insert(contentRevisionsTable)
+        .values({
+          nodeId: wc.nodeId,
+          revisionNo,
+          versionLabel,
+          title: wc.title,
+          content: wc.content,
+          structuredFields: wc.structuredFields,
+          changeType: wc.changeType,
+          changeSummary: summary,
+          basedOnRevisionId: wc.baseRevisionId,
+          authorId: wc.authorId,
+          reviewerId: wc.reviewerId,
+          approverId: actorId,
+          status: "published",
+          validFrom: new Date(),
+        })
+        .returning();
+
+      const priorPublished = await tx
+        .select({ id: contentRevisionsTable.id })
+        .from(contentRevisionsTable)
         .where(
           and(
             eq(contentRevisionsTable.nodeId, wc.nodeId),
@@ -792,96 +830,117 @@ export async function publishWorkingCopy(
           ),
         );
 
-      for (const archived of priorPublished) {
-        await tx.insert(auditEventsTable).values({
-          eventType: "content",
-          action: "revision_archived",
-          actorId,
-          resourceType: "revision",
-          resourceId: archived.id,
-          details: { nodeId: wc.nodeId, reason: "superseded_by_publish", newRevisionId: newRevision.id },
-        });
+      if (priorPublished.length > 0) {
+        await tx
+          .update(contentRevisionsTable)
+          .set({ status: "archived" })
+          .where(
+            and(
+              eq(contentRevisionsTable.nodeId, wc.nodeId),
+              eq(contentRevisionsTable.status, "published"),
+              sql`${contentRevisionsTable.id} != ${newRevision.id}`,
+            ),
+          );
+
+        for (const archived of priorPublished) {
+          await tx.insert(auditEventsTable).values({
+            eventType: "content",
+            action: "revision_archived",
+            actorId,
+            resourceType: "revision",
+            resourceId: archived.id,
+            details: {
+              nodeId: wc.nodeId,
+              reason: "superseded_by_publish",
+              newRevisionId: newRevision.id,
+            },
+          });
+        }
       }
-    }
 
-    await tx
-      .update(contentRevisionsTable)
-      .set({ status: "published", validFrom: new Date() })
-      .where(eq(contentRevisionsTable.id, newRevision.id));
+      await tx
+        .update(contentRevisionsTable)
+        .set({ status: "published", validFrom: new Date() })
+        .where(eq(contentRevisionsTable.id, newRevision.id));
 
-    await tx
-      .update(contentNodesTable)
-      .set({
-        publishedRevisionId: newRevision.id,
-        title: wc.title,
-        status: "published",
-        updatedAt: new Date(),
-      })
-      .where(eq(contentNodesTable.id, wc.nodeId));
+      await tx
+        .update(contentNodesTable)
+        .set({
+          publishedRevisionId: newRevision.id,
+          title: wc.title,
+          status: "published",
+          updatedAt: new Date(),
+        })
+        .where(eq(contentNodesTable.id, wc.nodeId));
 
-    await tx
-      .update(contentWorkingCopiesTable)
-      .set({
-        status: "published",
-        updatedAt: new Date(),
-      })
-      .where(eq(contentWorkingCopiesTable.id, id));
+      await tx
+        .update(contentWorkingCopiesTable)
+        .set({
+          status: "published",
+          updatedAt: new Date(),
+        })
+        .where(eq(contentWorkingCopiesTable.id, id));
 
-    await tx.insert(workingCopyEventsTable).values({
-      workingCopyId: id,
-      eventType: "published",
-      actorId,
-      metadata: { versionLabel, revisionId: newRevision.id },
-    });
-
-    await tx.insert(contentRevisionEventsTable).values({
-      revisionId: newRevision.id,
-      eventType: "published",
-      actorId,
-      metadata: { versionLabel, fromWorkingCopyId: id },
-    });
-
-    await tx.insert(auditEventsTable).values({
-      eventType: "content",
-      action: "working_copy_published",
-      actorId,
-      resourceType: "working_copy",
-      resourceId: id,
-      details: {
-        nodeId: wc.nodeId,
-        revisionId: newRevision.id,
-        versionLabel,
-      },
-    });
-
-    logger.info(
-      {
+      await tx.insert(workingCopyEventsTable).values({
         workingCopyId: id,
+        eventType: "published",
+        actorId,
+        metadata: { versionLabel, revisionId: newRevision.id },
+      });
+
+      await tx.insert(contentRevisionEventsTable).values({
         revisionId: newRevision.id,
+        eventType: "published",
+        actorId,
+        metadata: { versionLabel, fromWorkingCopyId: id },
+      });
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "content",
+        action: "working_copy_published",
+        actorId,
+        resourceType: "working_copy",
+        resourceId: id,
+        details: {
+          nodeId: wc.nodeId,
+          revisionId: newRevision.id,
+          versionLabel,
+        },
+      });
+
+      logger.info(
+        {
+          workingCopyId: id,
+          revisionId: newRevision.id,
+          nodeId: wc.nodeId,
+          versionLabel,
+        },
+        "Working copy published as new version",
+      );
+
+      const updatedWc = await tx
+        .select()
+        .from(contentWorkingCopiesTable)
+        .where(eq(contentWorkingCopiesTable.id, id))
+        .then((rows) => rows[0]);
+
+      return {
+        workingCopy: updatedWc,
+        revision: {
+          id: newRevision.id,
+          revisionNo,
+          versionLabel,
+        },
+      };
+    })
+    .then(async (result) => {
+      await recordEvent({
+        itemType: "page",
         nodeId: wc.nodeId,
-        versionLabel,
-      },
-      "Working copy published as new version",
-    );
-
-    const updatedWc = await tx
-      .select()
-      .from(contentWorkingCopiesTable)
-      .where(eq(contentWorkingCopiesTable.id, id))
-      .then((rows) => rows[0]);
-
-    return {
-      workingCopy: updatedWc,
-      revision: {
-        id: newRevision.id,
-        revisionNo,
-        versionLabel,
-      },
-    };
-  }).then(async (result) => {
-    await recordEvent({ itemType: "page", nodeId: wc.nodeId, eventType: "revision" });
-    return result;
-  });
+        eventType: "revision",
+      });
+      return result;
+    });
 }
 
 export async function cancelWorkingCopy(
@@ -930,10 +989,7 @@ export async function cancelWorkingCopy(
   return updated;
 }
 
-export async function unlockWorkingCopy(
-  id: string,
-  actorId: string,
-) {
+export async function unlockWorkingCopy(id: string, actorId: string) {
   const wc = await getWorkingCopyById(id);
   if (!wc) throw new Error("Working copy not found");
 
@@ -991,12 +1047,18 @@ export async function restoreAsWorkingCopy(
     );
 
     const [existing] = await tx
-      .select({ id: contentWorkingCopiesTable.id, authorId: contentWorkingCopiesTable.authorId })
+      .select({
+        id: contentWorkingCopiesTable.id,
+        authorId: contentWorkingCopiesTable.authorId,
+      })
       .from(contentWorkingCopiesTable)
       .where(
         and(
           eq(contentWorkingCopiesTable.nodeId, nodeId),
-          notInArray(contentWorkingCopiesTable.status, ["cancelled", "published"]),
+          notInArray(contentWorkingCopiesTable.status, [
+            "cancelled",
+            "published",
+          ]),
         ),
       );
 
@@ -1021,8 +1083,8 @@ export async function restoreAsWorkingCopy(
         nodeId,
         baseRevisionId,
         title: source.title,
-        content: source.content as Record<string, unknown> | null,
-        structuredFields: source.structuredFields as Record<string, unknown> | null,
+        content: source.content,
+        structuredFields: source.structuredFields,
         authorId: actorId,
         lockedBy: actorId,
         status: "draft",
@@ -1112,16 +1174,20 @@ export async function getWorkingCopyDiff(id: string) {
       .from(contentRevisionsTable)
       .where(eq(contentRevisionsTable.id, wc.baseRevisionId));
     if (baseRev) {
-      baseContent = baseRev.content as Record<string, unknown> | null;
-      baseStructuredFields = baseRev.structuredFields as Record<string, unknown> | null;
+      baseContent = baseRev.content;
+      baseStructuredFields = baseRev.structuredFields;
       baseTitle = baseRev.title;
     }
   }
 
-  const wcFields = (wc.structuredFields || {}) as Record<string, unknown>;
-  const baseFields = (baseStructuredFields || {}) as Record<string, unknown>;
-  const structuredFieldChanges: Record<string, { old: unknown; new: unknown }> = {};
-  const allKeys = new Set([...Object.keys(wcFields), ...Object.keys(baseFields)]);
+  const wcFields = wc.structuredFields || {};
+  const baseFields = baseStructuredFields || {};
+  const structuredFieldChanges: Record<string, { old: unknown; new: unknown }> =
+    {};
+  const allKeys = new Set([
+    ...Object.keys(wcFields),
+    ...Object.keys(baseFields),
+  ]);
   for (const key of allKeys) {
     if (JSON.stringify(wcFields[key]) !== JSON.stringify(baseFields[key])) {
       structuredFieldChanges[key] = {

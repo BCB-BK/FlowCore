@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createHmac, randomUUID } from "crypto";
+import { randomUUID } from "crypto";
 import { appConfig } from "../lib/config";
 import { authRateLimit } from "../middlewares/rate-limit";
 import {
@@ -16,37 +16,17 @@ import { requireAuth } from "../middlewares/require-auth";
 import {
   getEffectivePermissions,
   getSodConfig,
-  type WikiPermission,
 } from "../services/rbac.service";
 import { checkGroupMembership } from "../services/graph-client.service";
 import { db } from "@workspace/db";
 import { auditEventsTable } from "@workspace/db/schema";
 import { logger } from "../lib/logger";
-
-const STATE_MAX_AGE_MS = 10 * 60 * 1000;
-
-function signOAuthState(nonce: string): string {
-  const ts = Date.now().toString(36);
-  const payload = `${nonce}.${ts}`;
-  const sig = createHmac("sha256", appConfig.sessionSecret)
-    .update(payload)
-    .digest("base64url");
-  return `${payload}.${sig}`;
-}
-
-function verifyOAuthState(state: string): boolean {
-  const parts = state.split(".");
-  if (parts.length !== 3) return false;
-  const [nonce, ts, sig] = parts;
-  const payload = `${nonce}.${ts}`;
-  const expected = createHmac("sha256", appConfig.sessionSecret)
-    .update(payload)
-    .digest("base64url");
-  if (sig !== expected) return false;
-  const created = parseInt(ts, 36);
-  if (isNaN(created) || Date.now() - created > STATE_MAX_AGE_MS) return false;
-  return true;
-}
+import {
+  signOAuthState,
+  verifyOAuthState,
+  nonceAusState,
+} from "../lib/oauth-state";
+import { setGraphToken } from "../lib/session-crypto";
 
 const router = Router();
 
@@ -75,7 +55,7 @@ router.get("/auth/login", authRateLimit, async (req, res) => {
 
   try {
     const nonce = randomUUID();
-    const state = signOAuthState(nonce);
+    const state = signOAuthState(nonce, appConfig.sessionSecret);
     // Nonce an die Browser-Session binden — der Callback akzeptiert nur den
     // State, der aus DIESER Session heraus erzeugt wurde (Schutz vor
     // Login-CSRF mit fremdem, aber gültig signiertem State).
@@ -101,7 +81,7 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
     return;
   }
 
-  if (!state || !verifyOAuthState(state)) {
+  if (!state || !verifyOAuthState(state, appConfig.sessionSecret)) {
     logger.warn(
       {
         hasState: !!state,
@@ -115,7 +95,7 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
 
   // Session-Bindung prüfen: Der Nonce im State muss dem in dieser Session
   // beim Login-Start hinterlegten Nonce entsprechen.
-  const stateNonce = state.split(".")[0];
+  const stateNonce = nonceAusState(state);
   const sessionNonce = req.session.oauthState;
   delete req.session.oauthState;
   if (!sessionNonce || sessionNonce !== stateNonce) {
@@ -123,7 +103,9 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
       { sessionId: req.sessionID, hasSessionNonce: !!sessionNonce },
       "OAuth state not bound to this session (possible login CSRF)",
     );
-    res.status(400).json({ error: "State parameter not bound to this session" });
+    res
+      .status(400)
+      .json({ error: "State parameter not bound to this session" });
     return;
   }
 
@@ -151,7 +133,10 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
 
       if (!isMember) {
         logger.warn(
-          { externalId: tokenResult.externalId, groupId: appConfig.entraRequiredGroupId },
+          {
+            externalId: tokenResult.externalId,
+            groupId: appConfig.entraRequiredGroupId,
+          },
           "Login rejected: user not in required Entra group",
         );
         await db.insert(auditEventsTable).values({
@@ -210,7 +195,10 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
     // (Session-Fixation-Schutz), erst danach Benutzerdaten setzen.
     req.session.regenerate((regenErr) => {
       if (regenErr) {
-        logger.error({ err: regenErr }, "Failed to regenerate session after login");
+        logger.error(
+          { err: regenErr },
+          "Failed to regenerate session after login",
+        );
         res.redirect("/?auth_error=1");
         return;
       }
@@ -221,7 +209,7 @@ router.get("/auth/callback", authRateLimit, async (req, res) => {
         displayName: tokenResult.displayName,
         email: tokenResult.email,
       };
-      req.session.graphAccessToken = tokenResult.accessToken;
+      setGraphToken(req.session, tokenResult.accessToken);
 
       req.session.save((saveErr) => {
         if (saveErr) {
@@ -248,7 +236,7 @@ router.get("/auth/me", requireAuth, async (req, res) => {
       role: r.role,
       scope: r.scope,
     })),
-    permissions: Array.from(permissions) as WikiPermission[],
+    permissions: Array.from(permissions),
     sodRules: sodConfig.reduce(
       (acc, rule) => {
         acc[rule.ruleKey] = rule.isEnabled;
@@ -271,11 +259,23 @@ router.post("/auth/logout", requireAuth, async (req, res) => {
     ipAddress: Array.isArray(req.ip) ? req.ip[0] : req.ip,
   });
 
+  // Zusaetzlich die Abmelde-Adresse von Entra mitgeben. Ohne sie bleibt der
+  // Benutzer bei Microsoft angemeldet und wird beim naechsten Aufruf wortlos
+  // wieder eingeloggt (Audit-Befund C2). Ob die Oberflaeche dorthin
+  // weiterleitet, entscheidet sie selbst — an Geraeten mit einem Konto ist
+  // die lokale Abmeldung oft das gewuenschte Verhalten.
+  const entraLogoutUrl = appConfig.entraTenantId
+    ? `https://login.microsoftonline.com/${appConfig.entraTenantId}/oauth2/v2.0/logout` +
+      (appConfig.appPublicUrl
+        ? `?post_logout_redirect_uri=${encodeURIComponent(appConfig.appPublicUrl)}`
+        : "")
+    : null;
+
   req.session.destroy((err) => {
     if (err) {
       logger.warn({ err }, "Session destroy failed");
     }
-    res.json({ message: "Logged out" });
+    res.json({ message: "Logged out", entraLogoutUrl });
   });
 });
 

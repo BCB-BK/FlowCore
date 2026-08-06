@@ -6,8 +6,11 @@ import {
 } from "@workspace/db/schema";
 import { sql, eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import XLSX from "xlsx";
+import { readWorkbook } from "./lib/spreadsheet";
 import path from "path";
+
+/** Zulaessige Seitentypen -- direkt aus dem Datenbankschema abgeleitet. */
+type TemplateType = typeof contentNodesTable.$inferInsert.templateType;
 
 const EXCEL_PATH = path.resolve(
   import.meta.dirname,
@@ -97,8 +100,8 @@ function detectLayout(data: unknown[][]): TabLayout | null {
       levelCols.push(c);
     }
 
-    const hasLevel0 = firstLevelCol > 0 &&
-      String(row[firstLevelCol - 1] ?? "").trim() === "#0";
+    const hasLevel0 =
+      firstLevelCol > 0 && String(row[firstLevelCol - 1] ?? "").trim() === "#0";
     if (hasLevel0) {
       levelCols.unshift(firstLevelCol - 1);
     }
@@ -119,11 +122,16 @@ function detectLayout(data: unknown[][]): TabLayout | null {
     let rollenCol = bezeichnungCol + 2;
     let erwartetesErgebnisCol = bezeichnungCol + 3;
 
-    for (let c = bezeichnungCol + 1; c < Math.min(row.length, bezeichnungCol + 6); c++) {
+    for (
+      let c = bezeichnungCol + 1;
+      c < Math.min(row.length, bezeichnungCol + 6);
+      c++
+    ) {
       const val = String(row[c]).toLowerCase().trim();
       if (val.includes("beschreibung")) beschreibungCol = c;
       if (val.includes("rolle")) rollenCol = c;
-      if (val.includes("ergebnis") || val.includes("erwartetes")) erwartetesErgebnisCol = c;
+      if (val.includes("ergebnis") || val.includes("erwartetes"))
+        erwartetesErgebnisCol = c;
     }
 
     return {
@@ -139,19 +147,23 @@ function detectLayout(data: unknown[][]): TabLayout | null {
   return null;
 }
 
-function parseTab(tabName: string, sheet: XLSX.WorkSheet): ParsedRow[] {
-  const data: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    defval: "",
-  });
-
+function parseTab(tabName: string, data: string[][]): ParsedRow[] {
   const layout = detectLayout(data);
   if (!layout) {
-    console.warn(`  WARNING: No header row found in tab "${tabName}", skipping`);
+    console.warn(
+      `  WARNING: No header row found in tab "${tabName}", skipping`,
+    );
     return [];
   }
 
-  const { headerRow, levelCols, bezeichnungCol, beschreibungCol, rollenCol, erwartetesErgebnisCol } = layout;
+  const {
+    headerRow,
+    levelCols,
+    bezeichnungCol,
+    beschreibungCol,
+    rollenCol,
+    erwartetesErgebnisCol,
+  } = layout;
   const rows: ParsedRow[] = [];
 
   for (let i = headerRow + 1; i < data.length; i++) {
@@ -167,10 +179,7 @@ function parseTab(tabName: string, sheet: XLSX.WorkSheet): ParsedRow[] {
 
       const level = lvlIdx + 1;
 
-      if (
-        cellVal.toLowerCase() === "x" ||
-        /^\d+$/.test(cellVal)
-      ) {
+      if (cellVal.toLowerCase() === "x" || /^\d+$/.test(cellVal)) {
         detectedLevel = level;
         for (let nextIdx = lvlIdx + 1; nextIdx < levelCols.length; nextIdx++) {
           const nextVal = String(row[levelCols[nextIdx]] ?? "").trim();
@@ -196,9 +205,7 @@ function parseTab(tabName: string, sheet: XLSX.WorkSheet): ParsedRow[] {
 
     const beschreibung = String(row[beschreibungCol] ?? "").trim();
     const rollen = String(row[rollenCol] ?? "").trim();
-    const erwartetesErgebnis = String(
-      row[erwartetesErgebnisCol] ?? "",
-    ).trim();
+    const erwartetesErgebnis = String(row[erwartetesErgebnisCol] ?? "").trim();
 
     rows.push({
       level: detectedLevel,
@@ -212,7 +219,9 @@ function parseTab(tabName: string, sheet: XLSX.WorkSheet): ParsedRow[] {
   return rows;
 }
 
-function getTemplateType(level: number): "core_process_overview" | "process_page_text" | "use_case" {
+function getTemplateType(
+  level: number,
+): "core_process_overview" | "process_page_text" | "use_case" {
   if (level === 1) return "core_process_overview";
   if (level === 2) return "process_page_text";
   return "use_case";
@@ -226,13 +235,20 @@ function buildTitle(
   return `${bezeichnung} (${tabShortName})`;
 }
 
-function buildEditorContent(row: ParsedRow, tabName: string): Record<string, unknown> {
+function buildEditorContent(
+  row: ParsedRow,
+  tabName: string,
+): Record<string, unknown> {
   const nodes: Record<string, unknown>[] = [];
 
   nodes.push({
     type: "paragraph",
     content: [
-      { type: "text", marks: [{ type: "bold" }], text: "Quelle (Arbeitsmappe): " },
+      {
+        type: "text",
+        marks: [{ type: "bold" }],
+        text: "Quelle (Arbeitsmappe): ",
+      },
       { type: "text", text: tabName },
     ],
   });
@@ -269,7 +285,11 @@ function buildEditorContent(row: ParsedRow, tabName: string): Record<string, unk
     nodes.push({
       type: "paragraph",
       content: [
-        { type: "text", marks: [{ type: "bold" }], text: "Erwartetes Ergebnis: " },
+        {
+          type: "text",
+          marks: [{ type: "bold" }],
+          text: "Erwartetes Ergebnis: ",
+        },
         { type: "text", text: row.erwartetesErgebnis },
       ],
     });
@@ -292,7 +312,7 @@ async function findExistingNodeByTitle(
 ): Promise<string | null> {
   const conditions = [
     eq(contentNodesTable.title, title),
-    eq(contentNodesTable.templateType, templateType as any),
+    eq(contentNodesTable.templateType, templateType as TemplateType),
     eq(contentNodesTable.isDeleted, false),
   ];
 
@@ -322,7 +342,11 @@ async function createNodeWithRevision(
   const immutableId = `import-kp-${randomUUID()}`;
 
   const nodeId = await db.transaction(async (tx) => {
-    const displayCode = await generateDisplayCode(tx, templateType, parentNodeId);
+    const displayCode = await generateDisplayCode(
+      tx,
+      templateType,
+      parentNodeId,
+    );
 
     const [node] = await tx
       .insert(contentNodesTable)
@@ -415,7 +439,7 @@ async function generateDisplayCode(
       and(
         sql`${contentNodesTable.parentNodeId} IS NULL`,
         eq(contentNodesTable.isDeleted, false),
-        eq(contentNodesTable.templateType, templateType as any),
+        eq(contentNodesTable.templateType, templateType as TemplateType),
       ),
     );
 
@@ -423,8 +447,11 @@ async function generateDisplayCode(
   return `${prefix}-${String(nextNum).padStart(3, "0")}`;
 }
 
-async function importTab(tabName: string, sheet: XLSX.WorkSheet): Promise<{ created: number; skipped: number }> {
-  const rows = parseTab(tabName, sheet);
+async function importTab(
+  tabName: string,
+  data: string[][],
+): Promise<{ created: number; skipped: number }> {
+  const rows = parseTab(tabName, data);
   const tabShort = getTabShortName(tabName);
 
   console.log(`\n  Tab "${tabName}" — ${rows.length} rows parsed`);
@@ -465,7 +492,14 @@ async function importTab(tabName: string, sheet: XLSX.WorkSheet): Promise<{ crea
 
     const content = buildRevisionContent(row);
     const editor = buildEditorContent(row, tabName);
-    const nodeId = await createNodeWithRevision(title, templateType, parentNodeId, i + 1, content, editor);
+    const nodeId = await createNodeWithRevision(
+      title,
+      templateType,
+      parentNodeId,
+      i + 1,
+      content,
+      editor,
+    );
 
     parentStack.push({ level: row.level, nodeId });
     created++;
@@ -482,8 +516,8 @@ async function main() {
   console.log("=== Kernprozess-Struktur Import ===");
   console.log(`Reading: ${EXCEL_PATH}\n`);
 
-  const workbook = XLSX.readFile(EXCEL_PATH);
-  const availableTabs = workbook.SheetNames;
+  const workbook = await readWorkbook(EXCEL_PATH);
+  const availableTabs = workbook.sheetNames;
 
   let totalCreated = 0;
   let totalSkipped = 0;
@@ -501,15 +535,15 @@ async function main() {
       continue;
     }
 
-    const sheet = workbook.Sheets[matchedTab];
-    const { created, skipped } = await importTab(tabName, sheet);
+    const { created, skipped } = await importTab(
+      tabName,
+      workbook.rows(matchedTab),
+    );
 
     totalCreated += created;
     totalSkipped += skipped;
 
-    console.log(
-      `  → ${tabName}: ${created} created, ${skipped} skipped`,
-    );
+    console.log(`  → ${tabName}: ${created} created, ${skipped} skipped`);
   }
 
   console.log("\n=== Import Summary ===");
@@ -526,5 +560,5 @@ main()
   .then(() => process.exit(0))
   .catch((err) => {
     console.error("Import failed:", err);
-    pool.end().then(() => process.exit(1));
+    void pool.end().then(() => process.exit(1));
   });

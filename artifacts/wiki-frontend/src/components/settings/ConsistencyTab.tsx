@@ -64,9 +64,7 @@ export function ConsistencyTab() {
       );
       setReport(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Prüfung fehlgeschlagen",
-      );
+      setError(err instanceof Error ? err.message : "Prüfung fehlgeschlagen");
     } finally {
       setLoading(false);
     }
@@ -211,8 +209,8 @@ export function ConsistencyTab() {
       {!report && !loading && !error && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            Klicken Sie auf &quot;Prüfung starten&quot;, um die
-            Systemkonsistenz zu prüfen.
+            Klicken Sie auf &quot;Prüfung starten&quot;, um die Systemkonsistenz
+            zu prüfen.
           </CardContent>
         </Card>
       )}

@@ -3,7 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/card";
 import { Badge } from "@workspace/ui/badge";
 import { Button } from "@workspace/ui/button";
 import { Input } from "@workspace/ui/input";
-import { CheckSquare, Plus, Trash2, Pencil, Check, X, GripVertical } from "lucide-react";
+import {
+  CheckSquare,
+  Plus,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  GripVertical,
+} from "lucide-react";
 import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 
 interface CheckItem {
@@ -16,7 +24,13 @@ interface CheckItemsEditorProps {
   value: string;
   onSave?: (key: string, value: string) => void;
   sectionKey: string;
-  help?: { fillHelp?: string; example?: string; badExample?: string; placeholder?: string; expectedFormat?: string };
+  help?: {
+    fillHelp?: string;
+    example?: string;
+    badExample?: string;
+    placeholder?: string;
+    expectedFormat?: string;
+  };
   helpText?: string;
   guidingQuestions?: string[];
 }
@@ -27,16 +41,23 @@ function parseItems(raw: string): CheckItem[] {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed;
   } catch {}
-  const lines = raw.split("\n").filter(l => l.trim());
-  return lines.map(l => ({ text: l.replace(/^[-•☐]\s*/, "").trim() }));
+  const lines = raw.split("\n").filter((l) => l.trim());
+  return lines.map((l) => ({ text: l.replace(/^[-•☐]\s*/, "").trim() }));
 }
 
-export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, guidingQuestions }: CheckItemsEditorProps) {
+export function CheckItemsEditor({
+  value,
+  onSave,
+  sectionKey,
+  help,
+  helpText,
+  guidingQuestions,
+}: CheckItemsEditorProps) {
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState<CheckItem[]>(() => parseItems(value));
 
   const handleSave = () => {
-    const filtered = items.filter(item => item.text.trim());
+    const filtered = items.filter((item) => item.text.trim());
     onSave?.(sectionKey, JSON.stringify(filtered));
     setEditing(false);
   };
@@ -55,7 +76,9 @@ export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, gu
   };
 
   const updateItem = (index: number, field: keyof CheckItem, val: string) => {
-    setItems(items.map((item, i) => i === index ? { ...item, [field]: val } : item));
+    setItems(
+      items.map((item, i) => (i === index ? { ...item, [field]: val } : item)),
+    );
   };
 
   const displayItems = parseItems(value);
@@ -68,7 +91,12 @@ export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, gu
             <CardTitle className="text-sm flex items-center gap-2">
               <CheckSquare className="h-4 w-4 text-green-600" />
               Prüfpunkte
-              <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 leading-none">Pflicht</Badge>
+              <Badge
+                variant="destructive"
+                className="text-[9px] px-1 py-0 h-4 leading-none"
+              >
+                Pflicht
+              </Badge>
             </CardTitle>
             <FieldHelpTooltip
               fillHelp={help?.fillHelp}
@@ -79,31 +107,53 @@ export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, gu
             />
           </div>
           {onSave && !editing && (
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => { setItems(parseItems(value)); setEditing(true); }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setItems(parseItems(value));
+                setEditing(true);
+              }}
+            >
               <Pencil className="h-3 w-3 mr-1" />
               Bearbeiten
             </Button>
           )}
           {editing && (
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleCancel}
+              >
                 <X className="h-3 w-3 mr-1" />
                 Abbrechen
               </Button>
-              <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleSave}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Speichern
               </Button>
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">Strukturierte Prüfpunkte mit optionaler Kategorisierung</p>
+        <p className="text-xs text-muted-foreground">
+          Strukturierte Prüfpunkte mit optionaler Kategorisierung
+        </p>
       </CardHeader>
       <CardContent>
         {editing ? (
           <div className="space-y-2">
             {items.map((item, i) => (
-              <div key={i} className="flex items-start gap-2 border rounded p-2 bg-muted/20">
+              <div
+                key={i}
+                className="flex items-start gap-2 border rounded p-2 bg-muted/20"
+              >
                 <GripVertical className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />
                 <div className="flex-1 space-y-1.5">
                   <Input
@@ -115,7 +165,9 @@ export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, gu
                   <div className="flex gap-2">
                     <Input
                       value={item.category ?? ""}
-                      onChange={(e) => updateItem(i, "category", e.target.value)}
+                      onChange={(e) =>
+                        updateItem(i, "category", e.target.value)
+                      }
                       placeholder="Kategorie (optional)"
                       className="text-xs flex-1"
                     />
@@ -127,12 +179,22 @@ export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, gu
                     />
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="h-6 px-1.5 text-destructive shrink-0" onClick={() => removeItem(i)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-1.5 text-destructive shrink-0"
+                  onClick={() => removeItem(i)}
+                >
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full" onClick={addItem}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={addItem}
+            >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
               Prüfpunkt hinzufügen
             </Button>
@@ -145,10 +207,14 @@ export function CheckItemsEditor({ value, onSave, sectionKey, help, helpText, gu
                 <div className="flex-1">
                   <span>{item.text}</span>
                   {item.category && (
-                    <Badge variant="outline" className="ml-2 text-[10px]">{item.category}</Badge>
+                    <Badge variant="outline" className="ml-2 text-[10px]">
+                      {item.category}
+                    </Badge>
                   )}
                   {item.note && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.note}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {item.note}
+                    </p>
                   )}
                 </div>
               </div>

@@ -5,7 +5,10 @@ import { useState } from "react";
 // werden NICHT in die persistierten structuredFields geschrieben.
 
 function makeKey(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
   // Fallback für Umgebungen ohne crypto.randomUUID (z.B. ältere Browser)
@@ -48,11 +51,16 @@ export function useRowKeys(itemCount: number): RowKeys {
     keys,
     add: (count = 1) => setKeys((prev) => [...prev, ...makeKeys(count)]),
     insertAt: (index) =>
-      setKeys((prev) => [...prev.slice(0, index), makeKey(), ...prev.slice(index)]),
+      setKeys((prev) => [
+        ...prev.slice(0, index),
+        makeKey(),
+        ...prev.slice(index),
+      ]),
     remove: (index) => setKeys((prev) => prev.filter((_, i) => i !== index)),
     move: (from, to) =>
       setKeys((prev) => {
-        if (to < 0 || to >= prev.length || from < 0 || from >= prev.length) return prev;
+        if (to < 0 || to >= prev.length || from < 0 || from >= prev.length)
+          return prev;
         const next = [...prev];
         [next[from], next[to]] = [next[to], next[from]];
         return next;

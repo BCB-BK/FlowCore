@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { TrackSearchClickBody } from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   contentNodesTable,
@@ -20,7 +22,13 @@ import { checkConfidentialityAccessBatch } from "../services/confidentiality.ser
 
 const router: IRouter = Router();
 
-type NodeStatus = "draft" | "in_review" | "approved" | "published" | "archived" | "deleted";
+type NodeStatus =
+  | "draft"
+  | "in_review"
+  | "approved"
+  | "published"
+  | "archived"
+  | "deleted";
 
 const REVIEW_STATUSES: NodeStatus[] = ["published", "in_review", "approved"];
 
@@ -82,7 +90,11 @@ router.get(
 
     const conditions = [eq(contentNodesTable.isDeleted, false)];
 
-    const statusCond = buildStatusCondition(visibility, status, includeUnpublished);
+    const statusCond = buildStatusCondition(
+      visibility,
+      status,
+      includeUnpublished,
+    );
     if (statusCond) {
       conditions.push(statusCond);
     }
@@ -199,7 +211,11 @@ router.get(
 
     const baseConditions = [eq(contentNodesTable.isDeleted, false)];
 
-    const facetStatusCond = buildStatusCondition(visibility, status, includeUnpublished);
+    const facetStatusCond = buildStatusCondition(
+      visibility,
+      status,
+      includeUnpublished,
+    );
     if (facetStatusCond) {
       baseConditions.push(facetStatusCond);
     }
@@ -333,7 +349,11 @@ router.get(
     const principalId = req.user?.principalId || "";
     const highestRole = await getHighestRole(principalId);
     const visibility = getSearchVisibilityForRole(highestRole);
-    const statusCond = buildStatusCondition(visibility, undefined, includeUnpublished);
+    const statusCond = buildStatusCondition(
+      visibility,
+      undefined,
+      includeUnpublished,
+    );
 
     const suggestionConditions = [
       eq(contentNodesTable.isDeleted, false),
@@ -362,7 +382,11 @@ router.get(
       ilike(contentAliasesTable.previousDisplayCode, `%${q}%`),
       eq(contentNodesTable.isDeleted, false),
     ];
-    const aliasStatusCond = buildStatusCondition(visibility, undefined, includeUnpublished);
+    const aliasStatusCond = buildStatusCondition(
+      visibility,
+      undefined,
+      includeUnpublished,
+    );
     if (aliasStatusCond) {
       aliasConditions.push(aliasStatusCond);
     }
@@ -439,6 +463,7 @@ router.post(
   "/click",
   requireAuth,
   requirePermission("read_page"),
+  validateBody(TrackSearchClickBody),
   async (req, res) => {
     const { queryId, nodeId, position } = req.body;
 

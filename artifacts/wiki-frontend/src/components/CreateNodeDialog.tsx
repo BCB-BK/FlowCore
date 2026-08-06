@@ -89,7 +89,14 @@ interface CreateNodeDialogProps {
   presetType?: string;
   initialMode?: "create" | "link";
   onNodeCreated?: (nodeId: string) => void;
-  onLinkExistingNode?: (nodeId: string, nodeData?: { title: string; templateType: string; displayCode?: string | null }) => void;
+  onLinkExistingNode?: (
+    nodeId: string,
+    nodeData?: {
+      title: string;
+      templateType: string;
+      displayCode?: string | null;
+    },
+  ) => void;
 }
 
 export function CreateNodeDialog({
@@ -118,7 +125,7 @@ export function CreateNodeDialog({
   const { data: rootNodes } = useRootNodes();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   const [showAllTypes, setShowAllTypes] = useState(false);
   const [linkQuery, setLinkQuery] = useState("");
@@ -159,15 +166,27 @@ export function CreateNodeDialog({
     );
   }, [linkResults, parentNodeId, parentTemplateType]);
 
-  const handleLinkPage = useCallback((nodeId: string, nodeTitle: string, nodeTemplateType: string, nodeDisplayCode?: string | null) => {
-    if (!onLinkExistingNode) return;
-    onLinkExistingNode(nodeId, { title: nodeTitle, templateType: nodeTemplateType, displayCode: nodeDisplayCode });
-    resetAndClose();
-    toast({
-      title: "Seite verlinkt",
-      description: `"${nodeTitle}" wurde als Verknüpfung hinzugefügt.`,
-    });
-  }, [onLinkExistingNode, toast]);
+  const handleLinkPage = useCallback(
+    (
+      nodeId: string,
+      nodeTitle: string,
+      nodeTemplateType: string,
+      nodeDisplayCode?: string | null,
+    ) => {
+      if (!onLinkExistingNode) return;
+      onLinkExistingNode(nodeId, {
+        title: nodeTitle,
+        templateType: nodeTemplateType,
+        displayCode: nodeDisplayCode,
+      });
+      resetAndClose();
+      toast({
+        title: "Seite verlinkt",
+        description: `"${nodeTitle}" wurde als Verknüpfung hinzugefügt.`,
+      });
+    },
+    [onLinkExistingNode, toast],
+  );
 
   const allowedTypes = useMemo(() => {
     let types: TemplateType[];
@@ -191,18 +210,21 @@ export function CreateNodeDialog({
       setTemplateType(presetType as CreateNodeInput["templateType"]);
       setStep(1);
     } else if (allowedTypes.length > 0) {
-      const firstRecommended = recommendedTypes.length > 0 ? recommendedTypes[0] : allowedTypes[0];
-      setTemplateType(firstRecommended as CreateNodeInput["templateType"]);
+      const firstRecommended =
+        recommendedTypes.length > 0 ? recommendedTypes[0] : allowedTypes[0];
+      setTemplateType(firstRecommended);
     }
   }, [allowedTypes, presetType, recommendedTypes]);
 
   useEffect(() => {
-    const def = PAGE_TYPE_REGISTRY[templateType as TemplateType];
+    const def = PAGE_TYPE_REGISTRY[templateType];
     if (def?.variants?.length) {
-      const standardVariant = def.variants.find((v) => v.variantCategory === "standard");
+      const standardVariant = def.variants.find(
+        (v) => v.variantCategory === "standard",
+      );
       const hasBlank = def.variants.some((v) => v.key === "blank");
       setSelectedVariant(
-        standardVariant?.key ?? (hasBlank ? "blank" : def.variants[0].key)
+        standardVariant?.key ?? (hasBlank ? "blank" : def.variants[0].key),
       );
     }
   }, [templateType]);
@@ -212,7 +234,13 @@ export function CreateNodeDialog({
     const suitable = new Set(
       parentTemplateType ? getSuitableChildTypes(parentTemplateType) : [],
     );
-    const groups: Record<string, { types: TemplateType[]; tier: "recommended" | "suitable" | "all" | "category" }> = {};
+    const groups: Record<
+      string,
+      {
+        types: TemplateType[];
+        tier: "recommended" | "suitable" | "all" | "category";
+      }
+    > = {};
 
     if (recommended.size > 0) {
       const recTypes = allowedTypes.filter((t) => recommended.has(t));
@@ -222,13 +250,17 @@ export function CreateNodeDialog({
     }
 
     if (suitable.size > 0) {
-      const suitableTypes = allowedTypes.filter((t) => !recommended.has(t) && suitable.has(t));
+      const suitableTypes = allowedTypes.filter(
+        (t) => !recommended.has(t) && suitable.has(t),
+      );
       if (suitableTypes.length > 0) {
         groups["__suitable__"] = { types: suitableTypes, tier: "suitable" };
       }
     }
 
-    const remaining = allowedTypes.filter((t) => !recommended.has(t) && !suitable.has(t));
+    const remaining = allowedTypes.filter(
+      (t) => !recommended.has(t) && !suitable.has(t),
+    );
     if (remaining.length > 0) {
       groups["__all__"] = { types: remaining, tier: "all" };
     }
@@ -237,7 +269,13 @@ export function CreateNodeDialog({
   }, [allowedTypes, recommendedTypes, parentTemplateType]);
 
   const allGroupedTypes = useMemo(() => {
-    const groups: Record<string, { types: TemplateType[]; tier: "recommended" | "suitable" | "all" | "category" }> = {};
+    const groups: Record<
+      string,
+      {
+        types: TemplateType[];
+        tier: "recommended" | "suitable" | "all" | "category";
+      }
+    > = {};
     for (const [key, def] of Object.entries(PAGE_TYPE_REGISTRY)) {
       const t = key as TemplateType;
       if (DISABLED_TEMPLATE_TYPES.has(t)) continue;
@@ -252,12 +290,18 @@ export function CreateNodeDialog({
     setShowAllTypes(false);
   }, [parentTemplateType]);
 
-  const selectedDef = PAGE_TYPE_REGISTRY[templateType as TemplateType];
+  const selectedDef = PAGE_TYPE_REGISTRY[templateType];
 
   const variantsByCat = useMemo(() => {
     if (!selectedDef) return [];
-    const grouped = getVariantsByCategory(templateType as string);
-    const order: VariantCategory[] = ["schlank", "standard", "qm_detail", "grafisch", "container"];
+    const grouped = getVariantsByCategory(templateType);
+    const order: VariantCategory[] = [
+      "schlank",
+      "standard",
+      "qm_detail",
+      "grafisch",
+      "container",
+    ];
     return order
       .filter((c) => grouped[c].length > 0)
       .map((c) => ({ category: c, variants: grouped[c] }));
@@ -327,12 +371,8 @@ export function CreateNodeDialog({
 
   const effectiveParentId = parentNodeId ?? selectedParentId;
 
-  const { data: parentAncestors } = useNodeAncestors(
-    parentNodeId ?? undefined,
-  );
-  const newNodeDepth = parentNodeId
-    ? (parentAncestors?.length ?? 0) + 2
-    : 1;
+  const { data: parentAncestors } = useNodeAncestors(parentNodeId ?? undefined);
+  const newNodeDepth = parentNodeId ? (parentAncestors?.length ?? 0) + 2 : 1;
   const showDepthWarning = newNodeDepth >= 5;
 
   const resetAndClose = () => {
@@ -393,7 +433,10 @@ export function CreateNodeDialog({
                 size="sm"
                 variant={mode === "create" ? "default" : "outline"}
                 className="flex-1 text-xs"
-                onClick={() => { setMode("create"); setLinkQuery(""); }}
+                onClick={() => {
+                  setMode("create");
+                  setLinkQuery("");
+                }}
               >
                 <Plus className="h-3.5 w-3.5 mr-1" />
                 Neue Seite
@@ -402,7 +445,10 @@ export function CreateNodeDialog({
                 size="sm"
                 variant={mode === "link" ? "default" : "outline"}
                 className="flex-1 text-xs"
-                onClick={() => { setMode("link"); setStep(0); }}
+                onClick={() => {
+                  setMode("link");
+                  setStep(0);
+                }}
               >
                 <Link2 className="h-3.5 w-3.5 mr-1" />
                 Bestehende verlinken
@@ -424,305 +470,252 @@ export function CreateNodeDialog({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto">
-        {mode === "create" && showDepthWarning && (
-          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-800 dark:bg-amber-950/30">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-            <div>
-              <p className="font-medium text-amber-800 dark:text-amber-300">
-                Tiefe Hierarchie (Ebene {newNodeDepth})
-              </p>
-              <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">
-                Ab Ebene&nbsp;5 wird die Navigation f\u00FCr Nutzer schwerer.
-                Erw\u00E4gen Sie stattdessen, diesen Inhalt \u00FCber eine{" "}
-                <strong>Verlinkung</strong> an einem h\u00F6heren Knoten
-                einzuh\u00E4ngen, oder f\u00FCgen Sie ihn als{" "}
-                <strong>mitgeltendes Dokument</strong> bei.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {mode === "link" && (
-          <div className="space-y-3 py-2">
-            <DialogDescription>
-              Suchen Sie nach Titel oder Kennung einer bestehenden Seite. Sie verbleibt an ihrem Ursprungsort – es wird nur eine Verknüpfung hergestellt.
-            </DialogDescription>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Titel oder Kennung eingeben..."
-                value={linkQuery}
-                onChange={(e) => setLinkQuery(e.target.value)}
-                className="pl-9"
-                autoFocus
-              />
-            </div>
-
-            <div className="max-h-[350px] overflow-y-auto space-y-1">
-              {linkSearching && debouncedLinkQuery.length >= 2 && (
-                <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Suche...
-                </div>
-              )}
-
-              {!linkSearching && debouncedLinkQuery.length >= 2 && filteredLinkResults.length === 0 && (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  Keine Ergebnisse f\u00FCr \u201E{debouncedLinkQuery}\u201C
-                </div>
-              )}
-
-              {debouncedLinkQuery.length < 2 && (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  Mindestens 2 Zeichen eingeben, um zu suchen
-                </div>
-              )}
-
-              {filteredLinkResults.map((result) => {
-                const pageDef = getPageType(result.templateType);
-                return (
-                  <Card
-                    key={result.id}
-                    role="button"
-                    tabIndex={0}
-                    aria-disabled={linking}
-                    className={`transition-colors ${linking ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"}`}
-                    onClick={() => handleLinkPage(result.id, result.title, result.templateType, result.displayCode)}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleLinkPage(result.id, result.title, result.templateType, result.displayCode); } }}
-                  >
-                    <CardContent className="flex items-center gap-3 p-3">
-                      {pageDef ? (
-                        <div
-                          className="flex h-8 w-8 items-center justify-center rounded text-white shrink-0"
-                          style={{ backgroundColor: pageDef.color }}
-                        >
-                          <PageTypeIcon iconName={pageDef.icon} className="h-4 w-4" />
-                        </div>
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-muted shrink-0">
-                          <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm truncate">{result.title}</span>
-                          {result.displayCode && (
-                            <span className="text-[10px] font-mono text-muted-foreground shrink-0">
-                              {result.displayCode}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">
-                            {PAGE_TYPE_LABELS[result.templateType] || result.templateType}
-                          </span>
-                          <Badge variant={result.status === "published" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-                            {result.status === "published" ? "Ver\u00F6ffentlicht" : result.status === "draft" ? "Entwurf" : result.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {linking && (
-              <div className="flex items-center justify-center py-3 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Seite wird eingeordnet...
-              </div>
-            )}
-          </div>
-        )}
-
-        {mode === "create" && step === 0 && (
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground">
-              Wählen Sie den Seitentyp für die neue Seite.
-            </p>
-            {showAllTypes && (
-              <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30 px-3 py-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-orange-500 shrink-0" />
-                <p className="text-xs text-orange-700 dark:text-orange-400">
-                  <strong>Sonderfall:</strong> Alle Seitentypen werden angezeigt – unabhängig von der Parent-Hierarchie. Nur für Ausnahmesituationen verwenden.
+          {mode === "create" && showDepthWarning && (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-800 dark:bg-amber-950/30">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <div>
+                <p className="font-medium text-amber-800 dark:text-amber-300">
+                  Tiefe Hierarchie (Ebene {newNodeDepth})
+                </p>
+                <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">
+                  Ab Ebene&nbsp;5 wird die Navigation f\u00FCr Nutzer schwerer.
+                  Erw\u00E4gen Sie stattdessen, diesen Inhalt \u00FCber eine{" "}
+                  <strong>Verlinkung</strong> an einem h\u00F6heren Knoten
+                  einzuh\u00E4ngen, oder f\u00FCgen Sie ihn als{" "}
+                  <strong>mitgeltendes Dokument</strong> bei.
                 </p>
               </div>
-            )}
-            {Object.entries(showAllTypes ? allGroupedTypes : groupedTypes).map(([category, { types, tier }]) => (
-              <div key={category}>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                  {tier === "recommended" ? (
-                    <>
-                      <Star className="h-3 w-3 text-amber-500" />
-                      <span className="text-amber-700 dark:text-amber-400">Empfohlen</span>
-                    </>
-                  ) : tier === "suitable" ? (
-                    <>
-                      <Layers className="h-3 w-3 text-blue-500" />
-                      <span className="text-blue-700 dark:text-blue-400">Weitere passende Typen</span>
-                    </>
-                  ) : tier === "category" ? (
-                    <>
-                      <List className="h-3 w-3" />
-                      <span>{PAGE_TYPE_CATEGORIES[category as keyof typeof PAGE_TYPE_CATEGORIES]?.labelDe ?? category}</span>
-                    </>
-                  ) : (
-                    <>
-                      <List className="h-3 w-3" />
-                      <span>Alle zulässigen Typen</span>
-                    </>
+            </div>
+          )}
+
+          {mode === "link" && (
+            <div className="space-y-3 py-2">
+              <DialogDescription>
+                Suchen Sie nach Titel oder Kennung einer bestehenden Seite. Sie
+                verbleibt an ihrem Ursprungsort – es wird nur eine Verknüpfung
+                hergestellt.
+              </DialogDescription>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Titel oder Kennung eingeben..."
+                  value={linkQuery}
+                  onChange={(e) => setLinkQuery(e.target.value)}
+                  className="pl-9"
+                  autoFocus
+                />
+              </div>
+
+              <div className="max-h-[350px] overflow-y-auto space-y-1">
+                {linkSearching && debouncedLinkQuery.length >= 2 && (
+                  <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Suche...
+                  </div>
+                )}
+
+                {!linkSearching &&
+                  debouncedLinkQuery.length >= 2 &&
+                  filteredLinkResults.length === 0 && (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      Keine Ergebnisse f\u00FCr \u201E{debouncedLinkQuery}\u201C
+                    </div>
                   )}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {types.map((t) => {
-                    const def = PAGE_TYPE_REGISTRY[t];
-                    if (!def) return null;
-                    const isSelected = templateType === t;
-                    return (
-                      <Card
-                        key={t}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={isSelected}
-                        className={`cursor-pointer transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                          isSelected
-                            ? "ring-2 ring-primary border-primary"
-                            : "hover:border-primary/40"
-                        }`}
-                        onClick={() =>
-                          setTemplateType(t as CreateNodeInput["templateType"])
+
+                {debouncedLinkQuery.length < 2 && (
+                  <div className="py-8 text-center text-sm text-muted-foreground">
+                    Mindestens 2 Zeichen eingeben, um zu suchen
+                  </div>
+                )}
+
+                {filteredLinkResults.map((result) => {
+                  const pageDef = getPageType(result.templateType);
+                  return (
+                    <Card
+                      key={result.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-disabled={linking}
+                      className={`transition-colors ${linking ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-muted/50"}`}
+                      onClick={() =>
+                        handleLinkPage(
+                          result.id,
+                          result.title,
+                          result.templateType,
+                          result.displayCode,
+                        )
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleLinkPage(
+                            result.id,
+                            result.title,
+                            result.templateType,
+                            result.displayCode,
+                          );
                         }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setTemplateType(t as CreateNodeInput["templateType"]);
-                          }
-                        }}
-                      >
-                        <CardContent className="flex items-start gap-3 p-3">
+                      }}
+                    >
+                      <CardContent className="flex items-center gap-3 p-3">
+                        {pageDef ? (
                           <div
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
-                            style={{ backgroundColor: def.color }}
+                            className="flex h-8 w-8 items-center justify-center rounded text-white shrink-0"
+                            style={{ backgroundColor: pageDef.color }}
                           >
                             <PageTypeIcon
-                              iconName={def.icon}
+                              iconName={pageDef.icon}
                               className="h-4 w-4"
                             />
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm flex items-center gap-1.5">
-                              {def.labelDe}
-                            </p>
-                            <p className="text-xs text-muted-foreground line-clamp-2">
-                              {(def as { usageHint?: string }).usageHint ?? def.descriptionDe}
-                            </p>
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-muted shrink-0">
+                            <FolderOpen className="h-4 w-4 text-muted-foreground" />
                           </div>
-                          {isSelected && (
-                            <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm truncate">
+                              {result.title}
+                            </span>
+                            {result.displayCode && (
+                              <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                                {result.displayCode}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-muted-foreground">
+                              {PAGE_TYPE_LABELS[result.templateType] ||
+                                result.templateType}
+                            </span>
+                            <Badge
+                              variant={
+                                result.status === "published"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {result.status === "published"
+                                ? "Ver\u00F6ffentlicht"
+                                : result.status === "draft"
+                                  ? "Entwurf"
+                                  : result.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => setShowAllTypes((v) => !v)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-1"
-            >
-              {showAllTypes ? (
-                <>
-                  <ChevronUp className="h-3.5 w-3.5" />
-                  Nur passende Typen anzeigen
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-3.5 w-3.5" />
-                  Alle Seitentypen anzeigen (Sonderfall)
-                </>
-              )}
-            </button>
-          </div>
-        )}
 
-        {mode === "create" && step === 1 && selectedDef && (
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground">
-              Wählen Sie eine Vorlage für <strong>{selectedDef.labelDe}</strong>.
-            </p>
-            <div className="space-y-4">
-              {variantsByCat.map(({ category, variants }) => (
+              {linking && (
+                <div className="flex items-center justify-center py-3 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Seite wird eingeordnet...
+                </div>
+              )}
+            </div>
+          )}
+
+          {mode === "create" && step === 0 && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">
+                Wählen Sie den Seitentyp für die neue Seite.
+              </p>
+              {showAllTypes && (
+                <div className="flex items-center gap-2 rounded-md border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30 px-3 py-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                  <p className="text-xs text-orange-700 dark:text-orange-400">
+                    <strong>Sonderfall:</strong> Alle Seitentypen werden
+                    angezeigt – unabhängig von der Parent-Hierarchie. Nur für
+                    Ausnahmesituationen verwenden.
+                  </p>
+                </div>
+              )}
+              {Object.entries(
+                showAllTypes ? allGroupedTypes : groupedTypes,
+              ).map(([category, { types, tier }]) => (
                 <div key={category}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-muted-foreground">
-                      {VARIANT_CATEGORY_ICONS[category]}
-                    </span>
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {VARIANT_CATEGORY_LABELS[category].label}
-                    </h4>
-                    <span className="text-[10px] text-muted-foreground">
-                      — {VARIANT_CATEGORY_LABELS[category].description}
-                    </span>
-                  </div>
-                  <div className="grid gap-2">
-                    {variants.map((variant) => {
-                      const isActive = selectedVariant === variant.key;
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    {tier === "recommended" ? (
+                      <>
+                        <Star className="h-3 w-3 text-amber-500" />
+                        <span className="text-amber-700 dark:text-amber-400">
+                          Empfohlen
+                        </span>
+                      </>
+                    ) : tier === "suitable" ? (
+                      <>
+                        <Layers className="h-3 w-3 text-blue-500" />
+                        <span className="text-blue-700 dark:text-blue-400">
+                          Weitere passende Typen
+                        </span>
+                      </>
+                    ) : tier === "category" ? (
+                      <>
+                        <List className="h-3 w-3" />
+                        <span>
+                          {PAGE_TYPE_CATEGORIES[
+                            category as keyof typeof PAGE_TYPE_CATEGORIES
+                          ]?.labelDe ?? category}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <List className="h-3 w-3" />
+                        <span>Alle zulässigen Typen</span>
+                      </>
+                    )}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {types.map((t) => {
+                      const def = PAGE_TYPE_REGISTRY[t];
+                      if (!def) return null;
+                      const isSelected = templateType === t;
                       return (
                         <Card
-                          key={variant.key}
+                          key={t}
                           role="button"
                           tabIndex={0}
-                          aria-pressed={isActive}
-                          className={`cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                            isActive
-                              ? "border-primary ring-1 ring-primary"
-                              : "hover:border-muted-foreground/30"
+                          aria-pressed={isSelected}
+                          className={`cursor-pointer transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            isSelected
+                              ? "ring-2 ring-primary border-primary"
+                              : "hover:border-primary/40"
                           }`}
-                          onClick={() => setSelectedVariant(variant.key)}
+                          onClick={() => setTemplateType(t)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              setSelectedVariant(variant.key);
+                              setTemplateType(t);
                             }
                           }}
                         >
-                          <CardContent className="flex items-center gap-3 p-3">
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm">{variant.label}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {variant.description}
-                              </p>
-                              {variant.prefilledSections &&
-                                variant.prefilledSections.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-1.5">
-                                    {variant.prefilledSections.map((sKey) => {
-                                      const sec = selectedDef.sections.find(
-                                        (s) => s.key === sKey,
-                                      );
-                                      return (
-                                        <Badge
-                                          key={sKey}
-                                          variant="secondary"
-                                          className="text-xs"
-                                        >
-                                          {sec?.label ?? sKey}
-                                        </Badge>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              {variant.initialBlocks && variant.initialBlocks.length > 0 && (
-                                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
-                                  ✓ Vorstrukturierte Blöcke werden angelegt
-                                </p>
-                              )}
+                          <CardContent className="flex items-start gap-3 p-3">
+                            <div
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
+                              style={{ backgroundColor: def.color }}
+                            >
+                              <PageTypeIcon
+                                iconName={def.icon}
+                                className="h-4 w-4"
+                              />
                             </div>
-                            {isActive && (
-                              <Check className="h-4 w-4 text-primary shrink-0" />
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm flex items-center gap-1.5">
+                                {def.labelDe}
+                              </p>
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {(def as { usageHint?: string }).usageHint ??
+                                  def.descriptionDe}
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                             )}
                           </CardContent>
                         </Card>
@@ -731,227 +724,340 @@ export function CreateNodeDialog({
                   </div>
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={() => setShowAllTypes((v) => !v)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-1"
+              >
+                {showAllTypes ? (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Nur passende Typen anzeigen
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Alle Seitentypen anzeigen (Sonderfall)
+                  </>
+                )}
+              </button>
             </div>
+          )}
 
-            {selectedDef.helpText && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-200">
-                <p className="font-medium mb-1">Hinweis zur Erstellung</p>
-                <p className="text-xs">{selectedDef.helpText}</p>
+          {mode === "create" && step === 1 && selectedDef && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">
+                Wählen Sie eine Vorlage für{" "}
+                <strong>{selectedDef.labelDe}</strong>.
+              </p>
+              <div className="space-y-4">
+                {variantsByCat.map(({ category, variants }) => (
+                  <div key={category}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-muted-foreground">
+                        {VARIANT_CATEGORY_ICONS[category]}
+                      </span>
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {VARIANT_CATEGORY_LABELS[category].label}
+                      </h4>
+                      <span className="text-[10px] text-muted-foreground">
+                        — {VARIANT_CATEGORY_LABELS[category].description}
+                      </span>
+                    </div>
+                    <div className="grid gap-2">
+                      {variants.map((variant) => {
+                        const isActive = selectedVariant === variant.key;
+                        return (
+                          <Card
+                            key={variant.key}
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={isActive}
+                            className={`cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              isActive
+                                ? "border-primary ring-1 ring-primary"
+                                : "hover:border-muted-foreground/30"
+                            }`}
+                            onClick={() => setSelectedVariant(variant.key)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setSelectedVariant(variant.key);
+                              }
+                            }}
+                          >
+                            <CardContent className="flex items-center gap-3 p-3">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-sm">
+                                  {variant.label}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {variant.description}
+                                </p>
+                                {variant.prefilledSections &&
+                                  variant.prefilledSections.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                      {variant.prefilledSections.map((sKey) => {
+                                        const sec = selectedDef.sections.find(
+                                          (s) => s.key === sKey,
+                                        );
+                                        return (
+                                          <Badge
+                                            key={sKey}
+                                            variant="secondary"
+                                            className="text-xs"
+                                          >
+                                            {sec?.label ?? sKey}
+                                          </Badge>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                {variant.initialBlocks &&
+                                  variant.initialBlocks.length > 0 && (
+                                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
+                                      ✓ Vorstrukturierte Blöcke werden angelegt
+                                    </p>
+                                  )}
+                              </div>
+                              {isActive && (
+                                <Check className="h-4 w-4 text-primary shrink-0" />
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        )}
 
-        {mode === "create" && step === 2 && (
-          <div className="space-y-4 py-2">
-            {selectedDef && (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white"
-                  style={{ backgroundColor: selectedDef.color }}
-                >
-                  <PageTypeIcon
-                    iconName={selectedDef.icon}
-                    className="h-4 w-4"
-                  />
+              {selectedDef.helpText && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-200">
+                  <p className="font-medium mb-1">Hinweis zur Erstellung</p>
+                  <p className="text-xs">{selectedDef.helpText}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{selectedDef.labelDe}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedDef.descriptionDe}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="title">Titel *</Label>
-              <Input
-                id="title"
-                placeholder={
-                  templateType === "core_process_overview"
-                    ? "z.B. Kernprozess Personal"
-                    : templateType === "policy"
-                      ? "z.B. Datenschutzrichtlinie"
-                      : "Titel eingeben..."
-                }
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && title.trim()) setStep(3);
-                }}
-                autoFocus
-              />
+              )}
             </div>
+          )}
 
-            <Separator />
-
-            <PeoplePicker
-              label="Prozesseigner / Verantwortlicher"
-              description="Verantwortliche Person für diesen Inhalt"
-              value={ownerId}
-              displayValue={ownerName}
-              onChange={(id, name) => {
-                setOwnerId(id);
-                setOwnerName(name);
-              }}
-              required={
-                selectedDef?.metadataFields.some(
-                  (f) => f.key === "owner" && f.required,
-                ) ?? false
-              }
-              includeGroups
-            />
-
-            {!parentNodeId && rootNodes && rootNodes.length > 0 && (
-              <>
-                <Separator />
-                <div className="space-y-2">
-                  <Label>Übergeordnete Seite (optional)</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Wählen Sie eine übergeordnete Seite oder lassen Sie das Feld
-                    leer für eine Stammseite.
-                  </p>
-                  <Select
-                    value={selectedParentId ?? "__none__"}
-                    onValueChange={(v) =>
-                      setSelectedParentId(v === "__none__" ? null : v)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Stammebene (keine Elternseite)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">
-                        Stammebene (keine Elternseite)
-                      </SelectItem>
-                      {rootNodes.map((n) => (
-                        <SelectItem key={n.id} value={n.id}>
-                          {n.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {mode === "create" && step === 3 && (
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground">
-              Überprüfen Sie die Angaben und erstellen Sie die Seite.
-            </p>
-
-            <div className="rounded-lg border p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                {selectedDef && (
+          {mode === "create" && step === 2 && (
+            <div className="space-y-4 py-2">
+              {selectedDef && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                   <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white"
                     style={{ backgroundColor: selectedDef.color }}
                   >
                     <PageTypeIcon
                       iconName={selectedDef.icon}
-                      className="h-5 w-5"
+                      className="h-4 w-4"
                     />
                   </div>
-                )}
-                <div>
-                  <h3 className="font-semibold">{title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedDef?.labelDe}
-                  </p>
+                  <div>
+                    <p className="text-sm font-medium">{selectedDef.labelDe}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedDef.descriptionDe}
+                    </p>
+                  </div>
                 </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="title">Titel *</Label>
+                <Input
+                  id="title"
+                  placeholder={
+                    templateType === "core_process_overview"
+                      ? "z.B. Kernprozess Personal"
+                      : templateType === "policy"
+                        ? "z.B. Datenschutzrichtlinie"
+                        : "Titel eingeben..."
+                  }
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && title.trim()) setStep(3);
+                  }}
+                  autoFocus
+                />
               </div>
 
               <Separator />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Status</span>
-                  <div className="mt-0.5">
-                    <Badge
-                      variant="outline"
-                      className="bg-yellow-100 text-yellow-800"
-                    >
-                      Entwurf
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Elternseite</span>
-                  <p className="mt-0.5 font-medium">
-                    {effectiveParentId
-                      ? (rootNodes?.find((n) => n.id === effectiveParentId)
-                          ?.title ?? "Wird zugeordnet")
-                      : "Stammebene"}
-                  </p>
-                </div>
-                {ownerName && (
-                  <div>
-                    <span className="text-muted-foreground">
-                      Verantwortlicher
-                    </span>
-                    <p className="mt-0.5 font-medium">{ownerName}</p>
-                  </div>
-                )}
-                <div>
-                  <span className="text-muted-foreground">Vorlage</span>
-                  <p className="mt-0.5 font-medium">
-                    {selectedDef?.variants.find(
-                      (v) => v.key === selectedVariant,
-                    )?.label ?? selectedVariant}
-                  </p>
-                </div>
-              </div>
+              <PeoplePicker
+                label="Prozesseigner / Verantwortlicher"
+                description="Verantwortliche Person für diesen Inhalt"
+                value={ownerId}
+                displayValue={ownerName}
+                onChange={(id, name) => {
+                  setOwnerId(id);
+                  setOwnerName(name);
+                }}
+                required={
+                  selectedDef?.metadataFields.some(
+                    (f) => f.key === "owner" && f.required,
+                  ) ?? false
+                }
+                includeGroups
+              />
 
-              {selectedDef && selectedDef.sections.length > 0 && (
+              {!parentNodeId && rootNodes && rootNodes.length > 0 && (
                 <>
                   <Separator />
-                  <div>
-                    <span className="text-sm text-muted-foreground">
-                      Vordefinierte Abschnitte
-                    </span>
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {selectedDef.sections.map((s) => (
-                        <Badge
-                          key={s.key}
-                          variant={s.required ? "default" : "outline"}
-                          className="text-xs"
-                        >
-                          {s.label}
-                          {s.required && " *"}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Übergeordnete Seite (optional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Wählen Sie eine übergeordnete Seite oder lassen Sie das
+                      Feld leer für eine Stammseite.
+                    </p>
+                    <Select
+                      value={selectedParentId ?? "__none__"}
+                      onValueChange={(v) =>
+                        setSelectedParentId(v === "__none__" ? null : v)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Stammebene (keine Elternseite)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">
+                          Stammebene (keine Elternseite)
+                        </SelectItem>
+                        {rootNodes.map((n) => (
+                          <SelectItem key={n.id} value={n.id}>
+                            {n.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
-
-              {(() => {
-                const variantDef = selectedDef?.variants.find((v) => v.key === selectedVariant);
-                if (variantDef?.initialBlocks && variantDef.initialBlocks.length > 0) {
-                  return (
-                    <>
-                      <Separator />
-                      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
-                        <p className="font-medium mb-1">Vorstrukturierter Inhalt</p>
-                        <p className="text-xs">
-                          Die Seite wird mit {variantDef.initialBlocks.length} vorbereiteten
-                          Inhaltsbausteinen angelegt (Überschriften, Listen, Tabellen).
-                          Sie können sofort mit dem Ausfüllen beginnen.
-                        </p>
-                      </div>
-                    </>
-                  );
-                }
-                return null;
-              })()}
             </div>
-          </div>
-        )}
+          )}
 
+          {mode === "create" && step === 3 && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">
+                Überprüfen Sie die Angaben und erstellen Sie die Seite.
+              </p>
+
+              <div className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  {selectedDef && (
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white"
+                      style={{ backgroundColor: selectedDef.color }}
+                    >
+                      <PageTypeIcon
+                        iconName={selectedDef.icon}
+                        className="h-5 w-5"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-semibold">{title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedDef?.labelDe}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Status</span>
+                    <div className="mt-0.5">
+                      <Badge
+                        variant="outline"
+                        className="bg-yellow-100 text-yellow-800"
+                      >
+                        Entwurf
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Elternseite</span>
+                    <p className="mt-0.5 font-medium">
+                      {effectiveParentId
+                        ? (rootNodes?.find((n) => n.id === effectiveParentId)
+                            ?.title ?? "Wird zugeordnet")
+                        : "Stammebene"}
+                    </p>
+                  </div>
+                  {ownerName && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Verantwortlicher
+                      </span>
+                      <p className="mt-0.5 font-medium">{ownerName}</p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-muted-foreground">Vorlage</span>
+                    <p className="mt-0.5 font-medium">
+                      {selectedDef?.variants.find(
+                        (v) => v.key === selectedVariant,
+                      )?.label ?? selectedVariant}
+                    </p>
+                  </div>
+                </div>
+
+                {selectedDef && selectedDef.sections.length > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <span className="text-sm text-muted-foreground">
+                        Vordefinierte Abschnitte
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {selectedDef.sections.map((s) => (
+                          <Badge
+                            key={s.key}
+                            variant={s.required ? "default" : "outline"}
+                            className="text-xs"
+                          >
+                            {s.label}
+                            {s.required && " *"}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {(() => {
+                  const variantDef = selectedDef?.variants.find(
+                    (v) => v.key === selectedVariant,
+                  );
+                  if (
+                    variantDef?.initialBlocks &&
+                    variantDef.initialBlocks.length > 0
+                  ) {
+                    return (
+                      <>
+                        <Separator />
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
+                          <p className="font-medium mb-1">
+                            Vorstrukturierter Inhalt
+                          </p>
+                          <p className="text-xs">
+                            Die Seite wird mit {variantDef.initialBlocks.length}{" "}
+                            vorbereiteten Inhaltsbausteinen angelegt
+                            (Überschriften, Listen, Tabellen). Sie können sofort
+                            mit dem Ausfüllen beginnen.
+                          </p>
+                        </div>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            </div>
+          )}
         </div>
 
         {mode === "create" && (
@@ -991,8 +1097,12 @@ export function CreateNodeDialog({
                   onClick={() => handleCreate(true)}
                   disabled={!title.trim() || createNode.isPending}
                 >
-                  {createNode.isPending ? "Wird erstellt..." : "Speichern & \u00F6ffnen"}
-                  {!createNode.isPending && <ExternalLink className="ml-1 h-4 w-4" />}
+                  {createNode.isPending
+                    ? "Wird erstellt..."
+                    : "Speichern & \u00F6ffnen"}
+                  {!createNode.isPending && (
+                    <ExternalLink className="ml-1 h-4 w-4" />
+                  )}
                 </Button>
               </div>
             )}

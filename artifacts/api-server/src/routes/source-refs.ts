@@ -9,6 +9,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { hasPermission } from "../services/rbac.service";
+import { getGraphToken, type TokenSitzung } from "../lib/session-crypto";
 import {
   getDriveItemMeta,
   checkDriveItemAccess,
@@ -21,12 +22,12 @@ const UUID_RE =
 
 function resolveGraphToken(req: {
   headers: Record<string, string | string[] | undefined>;
-  session?: { graphAccessToken?: string };
+  session?: TokenSitzung;
 }): string {
+  // Sitzungstoken liegt verschluesselt (Audit A3); der Header-Weg bleibt fuer
+  // Aufrufer, die ihr eigenes Graph-Token mitbringen.
   return (
-    (req.headers["x-graph-token"] as string) ||
-    req.session?.graphAccessToken ||
-    ""
+    (req.headers["x-graph-token"] as string) || getGraphToken(req.session) || ""
   );
 }
 
@@ -46,7 +47,10 @@ async function filterBySharePointAccess<
     metadata: unknown;
     systemType: string;
   },
->(refs: T[], userGraphToken: string): Promise<(T & { accessCheck?: string })[]> {
+>(
+  refs: T[],
+  userGraphToken: string,
+): Promise<(T & { accessCheck?: string })[]> {
   const spRefs = refs.filter((r) => r.systemType === "sharepoint");
   if (spRefs.length === 0) return refs;
 

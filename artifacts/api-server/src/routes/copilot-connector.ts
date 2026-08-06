@@ -4,7 +4,10 @@ import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { requireConnectorKey } from "../middlewares/require-connector-key";
 import { validateBody } from "../middlewares/validate-body";
-import { buildConnectorOpenApiSpec, buildConnectorSwagger2Spec } from "../lib/copilot-connector-openapi";
+import {
+  buildConnectorOpenApiSpec,
+  buildConnectorSwagger2Spec,
+} from "../lib/copilot-connector-openapi";
 import {
   searchForConnector,
   getNodeForConnector,
@@ -62,14 +65,20 @@ copilotConnectorRouter.post(
   validateBody(SearchBody),
   async (req, res) => {
     const key = req.connectorKey!;
-    const agentCheck = validateRequestedScope(req.body.agentScope, key.agentScopes);
+    const agentCheck = validateRequestedScope(
+      req.body.agentScope,
+      key.agentScopes,
+    );
     if (!agentCheck.ok) {
       res.status(400).json({
         error: `API-Key nicht berechtigt für agentScope: ${agentCheck.disallowed.join(", ")}`,
       });
       return;
     }
-    const brandCheck = validateRequestedScope(req.body.brandScope, key.brandScopes);
+    const brandCheck = validateRequestedScope(
+      req.body.brandScope,
+      key.brandScopes,
+    );
     if (!brandCheck.ok) {
       res.status(400).json({
         error: `API-Key nicht berechtigt für brandScope: ${brandCheck.disallowed.join(", ")}`,
@@ -105,12 +114,15 @@ copilotConnectorRouter.get(
         req.connectorKey!,
       );
       if (result === null) {
-        res.status(404).json({ error: "Seite nicht gefunden oder nicht veröffentlicht" });
+        res
+          .status(404)
+          .json({ error: "Seite nicht gefunden oder nicht veröffentlicht" });
         return;
       }
       if (result === "forbidden") {
         res.status(403).json({
-          error: "API-Key ist für diese Seite nicht berechtigt (agent_scope/brand_scope/Vertraulichkeit)",
+          error:
+            "API-Key ist für diese Seite nicht berechtigt (agent_scope/brand_scope/Vertraulichkeit)",
         });
         return;
       }
@@ -128,9 +140,9 @@ const CreateKeyBody = z.object({
   name: z.string().min(1).max(100),
   agentScopes: z.array(z.enum(AGENT_SCOPES)).default([]),
   brandScopes: z.array(z.enum(BRAND_SCOPES)).default([]),
-  maxConfidentialityLevel: z.enum(
-    CONFIDENTIALITY_LEVELS as [string, ...string[]],
-  ).default("internal"),
+  maxConfidentialityLevel: z
+    .enum(CONFIDENTIALITY_LEVELS as [string, ...string[]])
+    .default("internal"),
 });
 
 copilotConnectorRouter.get(

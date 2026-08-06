@@ -20,7 +20,12 @@ import { ParticipantsEditor } from "@/components/compound/ParticipantsEditor";
 import { AgendaEditor } from "@/components/compound/AgendaEditor";
 import { SectionBlockEditor } from "@/components/compound/SectionBlockEditor";
 import { isFieldEmpty } from "@/lib/field-empty";
-import type { LayoutConfig, LayoutField, LayoutRow, PageTypeSection } from "./types";
+import type {
+  LayoutConfig,
+  LayoutField,
+  LayoutRow,
+  PageTypeSection,
+} from "./types";
 
 interface GenericLayoutProps {
   config: LayoutConfig;
@@ -63,15 +68,29 @@ function FieldRenderer({
     case "kpi_table":
       return <KPITable data={data} onSave={saveFn} readOnly={readOnly} />;
     case "risks_controls_table":
-      return <RisksControlsTable data={data} onSave={saveFn} readOnly={readOnly} />;
+      return (
+        <RisksControlsTable data={data} onSave={saveFn} readOnly={readOnly} />
+      );
     case "interfaces_systems_table":
-      return <InterfacesSystemsTable data={data} onSave={saveFn} readOnly={readOnly} />;
+      return (
+        <InterfacesSystemsTable
+          data={data}
+          onSave={saveFn}
+          readOnly={readOnly}
+        />
+      );
     case "process_steps_table":
-      return <ProcessStepsTable data={data} onSave={saveFn} readOnly={readOnly} />;
+      return (
+        <ProcessStepsTable data={data} onSave={saveFn} readOnly={readOnly} />
+      );
     case "swimlane_diagram":
-      return <SwimlaneDiagram data={data} onSave={saveFn} readOnly={readOnly} />;
+      return (
+        <SwimlaneDiagram data={data} onSave={saveFn} readOnly={readOnly} />
+      );
     case "bpmn_diagram":
-      return <BpmnDiagramSection data={data} onSave={saveFn} readOnly={readOnly} />;
+      return (
+        <BpmnDiagramSection data={data} onSave={saveFn} readOnly={readOnly} />
+      );
     case "raci_matrix":
       return <RACIMatrix data={data} onSave={saveFn} readOnly={readOnly} />;
     case "competency_areas":
@@ -177,7 +196,13 @@ function FieldRenderer({
           label={field.label ?? field.key}
           description={field.description}
           required={field.required}
-          icon={Icon ? <Icon className={`h-4 w-4 ${field.iconColor ?? "text-muted-foreground"}`} /> : undefined}
+          icon={
+            Icon ? (
+              <Icon
+                className={`h-4 w-4 ${field.iconColor ?? "text-muted-foreground"}`}
+              />
+            ) : undefined
+          }
           value={str(data)}
           onSave={onSectionSave}
           pageType={pageType}
@@ -243,14 +268,14 @@ function RowRenderer({
             key={field.key}
             className={field.colSpan ? COL_SPAN[field.colSpan] : undefined}
           >
-          <FieldRenderer
-            field={field}
-            structuredFields={structuredFields}
-            onSectionSave={onSectionSave}
-            pageType={pageType}
-            nodeId={nodeId}
-            sectionDef={sectionDefs.get(field.key)}
-          />
+            <FieldRenderer
+              field={field}
+              structuredFields={structuredFields}
+              onSectionSave={onSectionSave}
+              pageType={pageType}
+              nodeId={nodeId}
+              sectionDef={sectionDefs.get(field.key)}
+            />
           </div>
         ))}
       </div>
@@ -269,7 +294,10 @@ function RowRenderer({
   );
 }
 
-function isRowEmpty(row: LayoutRow, structuredFields: Record<string, unknown>): boolean {
+function isRowEmpty(
+  row: LayoutRow,
+  structuredFields: Record<string, unknown>,
+): boolean {
   if (Array.isArray(row)) {
     return row.every((field) => isFieldEmpty(structuredFields[field.key]));
   }
@@ -313,7 +341,9 @@ export function GenericLayout({
   return (
     <div className="space-y-4">
       {visibleRows.map((row, idx) => {
-        const key = Array.isArray(row) ? row.map((f) => f.key).join("-") : row.key;
+        const key = Array.isArray(row)
+          ? row.map((f) => f.key).join("-")
+          : row.key;
         // Gruppenüberschrift nur beim ersten Feld einer Gruppe ausgeben
         const group = rowGroup(row);
         const showGroupHeading =
@@ -322,7 +352,9 @@ export function GenericLayout({
           <Fragment key={key || idx}>
             {showGroupHeading && (
               <div className="pt-3 first:pt-0">
-                <h3 className="text-sm font-semibold tracking-tight">{group}</h3>
+                <h3 className="text-sm font-semibold tracking-tight">
+                  {group}
+                </h3>
                 <div className="mt-2 h-px bg-border" />
               </div>
             )}

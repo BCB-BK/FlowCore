@@ -171,7 +171,7 @@ router.get("/docs/:filename", requireAuth, (req, res) => {
 });
 
 router.get("/docs-export/all", requireAuth, async (req, res) => {
-  const docsRoot = getDocsRoot();
+  const _docsRoot = getDocsRoot();
   const docs: Record<string, string> = {};
 
   for (const entry of DOCS_CATALOG) {
@@ -181,7 +181,11 @@ router.get("/docs-export/all", requireAuth, async (req, res) => {
     }
   }
 
-  const extraFiles = ["TECH-LOG.md", "MIGRATION-MATRIX.md", "E2E-ACCEPTANCE.md"];
+  const extraFiles = [
+    "TECH-LOG.md",
+    "MIGRATION-MATRIX.md",
+    "E2E-ACCEPTANCE.md",
+  ];
   for (const f of extraFiles) {
     const content = readDoc(f);
     if (content !== null) docs[f] = content;
@@ -189,7 +193,8 @@ router.get("/docs-export/all", requireAuth, async (req, res) => {
 
   let settings: Record<string, unknown> = {};
   try {
-    const { getAllSystemSettings } = await import("../services/system-settings.service");
+    const { getAllSystemSettings } =
+      await import("../services/system-settings.service");
     settings = await getAllSystemSettings();
   } catch {
     settings = { error: "Einstellungen konnten nicht geladen werden" };

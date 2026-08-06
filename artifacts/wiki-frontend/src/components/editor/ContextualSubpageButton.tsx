@@ -5,7 +5,10 @@ import { Plus, FileText } from "lucide-react";
 interface ContextualSubpageButtonProps {
   editor: Editor;
   nodeId?: string;
-  onCreateSubpage?: (context: { headingText: string; afterPos: number }) => void;
+  onCreateSubpage?: (context: {
+    headingText: string;
+    afterPos: number;
+  }) => void;
 }
 
 interface HeadingSlot {

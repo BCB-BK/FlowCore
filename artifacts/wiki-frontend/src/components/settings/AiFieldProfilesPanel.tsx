@@ -135,7 +135,7 @@ export function AiFieldProfilesPanel() {
   const deleteMutation = useDeleteAiFieldProfile();
 
   const invalidate = () => {
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: getGetAiFieldProfilesQueryKey(),
     });
   };
@@ -250,9 +250,7 @@ export function AiFieldProfilesPanel() {
             <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
             <Select
               value={filterPageType || "__all__"}
-              onValueChange={(v) =>
-                setFilterPageType(v === "__all__" ? "" : v)
-              }
+              onValueChange={(v) => setFilterPageType(v === "__all__" ? "" : v)}
             >
               <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue placeholder="Alle Seitentypen" />

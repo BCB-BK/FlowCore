@@ -27,13 +27,41 @@ export interface SearchResultTemplatePrep {
 }
 
 const FIELDS: SearchResultTemplateField[] = [
-  { label: "Titel", schemaProperty: "title", description: "Seiten- bzw. Glossartitel" },
-  { label: "Kurzbeschreibung", schemaProperty: "summary", description: "Kurzfassung des Inhalts (nur Seiten)" },
-  { label: "FlowCore-ID", schemaProperty: "immutableId", description: "Stabile FlowCore-Kennung (displayCode bei Glossarbegriffen)" },
-  { label: "Version", schemaProperty: "version", description: "Versionsbezeichner der veröffentlichten Revision" },
-  { label: "Owner", schemaProperty: "owner", description: "Verantwortlicher Fachbereich/Person" },
-  { label: "ReviewDue", schemaProperty: "reviewDue", description: "Fälligkeitsdatum der nächsten Review" },
-  { label: "SourceUrl", schemaProperty: "sourceUrl", description: "Link zurück auf die FlowCore-Quelle" },
+  {
+    label: "Titel",
+    schemaProperty: "title",
+    description: "Seiten- bzw. Glossartitel",
+  },
+  {
+    label: "Kurzbeschreibung",
+    schemaProperty: "summary",
+    description: "Kurzfassung des Inhalts (nur Seiten)",
+  },
+  {
+    label: "FlowCore-ID",
+    schemaProperty: "immutableId",
+    description: "Stabile FlowCore-Kennung (displayCode bei Glossarbegriffen)",
+  },
+  {
+    label: "Version",
+    schemaProperty: "version",
+    description: "Versionsbezeichner der veröffentlichten Revision",
+  },
+  {
+    label: "Owner",
+    schemaProperty: "owner",
+    description: "Verantwortlicher Fachbereich/Person",
+  },
+  {
+    label: "ReviewDue",
+    schemaProperty: "reviewDue",
+    description: "Fälligkeitsdatum der nächsten Review",
+  },
+  {
+    label: "SourceUrl",
+    schemaProperty: "sourceUrl",
+    description: "Link zurück auf die FlowCore-Quelle",
+  },
 ];
 
 /**
@@ -49,6 +77,7 @@ export function getSearchResultTemplatePrep(): SearchResultTemplatePrep {
     reason:
       "Microsoft Search Result Types werden im Search & Intelligence Admin Center pro Tenant konfiguriert; es gibt keine verlässliche, tenant-unabhängige Graph-API, um dies automatisiert zu registrieren.",
     fields: FIELDS,
-    adminCenterUrl: "https://admin.microsoft.com/AdminPortal/Home#/MicrosoftSearch/resultTypes",
+    adminCenterUrl:
+      "https://admin.microsoft.com/AdminPortal/Home#/MicrosoftSearch/resultTypes",
   };
 }

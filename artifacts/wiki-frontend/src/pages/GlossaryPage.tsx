@@ -93,7 +93,7 @@ export function GlossaryPage() {
   const createMutation = useCreateGlossaryTerm({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
         closeDialog();
       },
     },
@@ -102,7 +102,7 @@ export function GlossaryPage() {
   const updateMutation = useUpdateGlossaryTerm({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
         closeDialog();
       },
     },
@@ -111,7 +111,7 @@ export function GlossaryPage() {
   const deleteMutation = useDeleteGlossaryTerm({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
+        void queryClient.invalidateQueries({ queryKey: ["/api/glossary"] });
       },
     },
   });
@@ -169,7 +169,7 @@ export function GlossaryPage() {
     for (const t of terms) {
       const letter = t.term[0]?.toUpperCase() || "#";
       if (!grouped[letter]) grouped[letter] = [];
-      grouped[letter]!.push(t);
+      grouped[letter].push(t);
     }
   }
 
@@ -256,7 +256,9 @@ export function GlossaryPage() {
                           </div>
                           <div
                             className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5"
-                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(t.definition) }}
+                            dangerouslySetInnerHTML={{
+                              __html: sanitizeHtml(t.definition),
+                            }}
                           />
                           {t.synonyms && t.synonyms.length > 0 && (
                             <p className="text-xs text-muted-foreground mt-1">

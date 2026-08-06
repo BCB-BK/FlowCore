@@ -124,7 +124,8 @@ export const DiagramBlock = Node.create<DiagramBlockOptions>({
       },
       showLegend: {
         default: false as boolean,
-        parseHTML: (el: HTMLElement) => el.getAttribute("data-show-legend") === "true",
+        parseHTML: (el: HTMLElement) =>
+          el.getAttribute("data-show-legend") === "true",
         renderHTML: (attrs: { showLegend?: boolean }) =>
           attrs.showLegend ? { "data-show-legend": "true" } : {},
       },

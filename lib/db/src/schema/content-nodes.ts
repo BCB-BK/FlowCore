@@ -9,6 +9,7 @@ import {
   index,
   customType,
   type AnyPgColumn,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -58,6 +59,13 @@ export const contentNodesTable = pgTable(
       .defaultNow(),
   },
   (table) => [
+    check("ck_content_nodes_sort_order", sql`${table.sortOrder} >= 0`),
+    check("ck_content_nodes_title", sql`btrim(${table.title}) <> ''`),
+    check(
+      "ck_content_nodes_display_code",
+      sql`btrim(${table.displayCode}) <> ''`,
+    ),
+    index("idx_content_nodes_template").on(table.templateId),
     uniqueIndex("idx_content_nodes_display_code")
       .on(table.displayCode)
       .where(sql`is_deleted = false`),

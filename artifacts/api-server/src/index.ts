@@ -106,4 +106,10 @@ async function start() {
   process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
-start();
+// Fehler beim Hochfahren duerfen nicht still verschluckt werden: ohne
+// .catch() endet der Prozess bei einer abgelehnten Promise ohne verwertbares
+// Protokoll (Audit-Befund B3, no-floating-promises).
+start().catch((err) => {
+  logger.fatal({ err }, "Server konnte nicht gestartet werden");
+  process.exit(1);
+});

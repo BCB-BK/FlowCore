@@ -58,6 +58,15 @@ import type {
   CreateSourceSystemInput,
   CreateStorageProviderInput,
   CreateTag,
+  DeleteAdminNotificationRulesById200,
+  DeleteAdminWorkflowAssignmentsByPageType200,
+  DeleteAdminWorkflowsById200,
+  DeleteConfidentialityConfigAssign200,
+  DeleteCopilotAdminKeysById200,
+  DeleteDelegationsByDelegationId200,
+  DeleteGraphConnectorGroupMappingsByTier200,
+  DeleteIntegrationKeysById200,
+  DeleteTokensById200,
   DeletionRequest,
   DeletionRequestOrNull,
   DryRunRestore200,
@@ -65,18 +74,73 @@ import type {
   EffectivePermissions,
   ErrorResponse,
   ForwardLink,
+  GetAdminAuditEvents200,
+  GetAdminAuditEventsExport200,
+  GetAdminAuditEventsFilters200,
+  GetAdminFlowcoreAccount200,
+  GetAdminNotificationRules200,
+  GetAdminSetupMode200,
+  GetAdminSystemSettings200,
+  GetAdminWorkflowAssignments200,
+  GetAdminWorkflows200,
+  GetAdminWorkflowsById200,
   GetAiFieldProfilesParams,
+  GetAiModels200,
   GetAiUsageStatsParams,
+  GetAuthConfig200,
+  GetConfidentialityConfig200,
+  GetConnectorsSharepointTeams200,
+  GetConnectorsSharepointTeamsByGroupIdDrives200,
+  GetContentV1Changes200,
+  GetContentV1Glossary200,
+  GetContentV1OpenapiJson200,
+  GetContentV1Pages200,
+  GetContentV1PagesById200,
+  GetContentV1Scope200,
+  GetCopilotAdminKeys200,
+  GetCopilotGlossary200,
+  GetCopilotGlossaryById200,
+  GetCopilotNodesById200,
+  GetCopilotOpenapiJson200,
+  GetCopilotPages200,
+  GetCopilotPagesById200,
+  GetCopilotSwaggerJson200,
+  GetDelegations200,
+  GetDocs200,
+  GetDocsByFilename200,
+  GetDocsExportAll200,
+  GetGlossaryExport200,
+  GetGraphConnectorAclPreviewByNodeId200,
+  GetGraphConnectorChangeFeed200,
+  GetGraphConnectorConnection200,
+  GetGraphConnectorExternalItemsGlossaryById200,
+  GetGraphConnectorExternalItemsPagesById200,
+  GetGraphConnectorGroupMappings200,
+  GetGraphConnectorGroupMappingsByTier200,
+  GetGraphConnectorIndexStatusGlossary200,
+  GetGraphConnectorIndexStatusPages200,
+  GetGraphConnectorReadinessCheck200,
+  GetGraphConnectorSchema200,
+  GetGraphConnectorSchemaDryRun200,
+  GetGraphConnectorSearchResultTemplate200,
+  GetGraphConnectorSyncLog200,
+  GetGraphConnectorSyncLog2200,
+  GetGraphConnectorSyncLogExport200,
+  GetGraphConnectorSyncQueue200,
+  GetIntegrationKeys200,
   GetNotificationsParams,
   GetOwnershipMonitorParams,
   GetPersonPhotoParams,
   GetPrincipalPermissionsParams,
+  GetPrincipalsByIdDelegations200,
   GetQualityPagesParams,
+  GetRbacSodConfig200,
   GetReviewDashboardParams,
   GetRolePermissionMatrix200,
   GetSearchAnalyticsParams,
   GetSearchInsightsParams,
   GetSearchSuggestionsParams,
+  GetTokens200,
   GetUnreadNotificationCount200,
   GetWatchStatus200,
   GlossaryTerm,
@@ -109,13 +173,91 @@ import type {
   PageQualityList,
   PageTypeDefinition,
   PageWatcher,
+  PatchCopilotPagesByIdIndexStatus200,
+  PatchCopilotPagesByIdIndexStatusBody,
+  PatchIntegrationKeysById200,
+  PatchIntegrationKeysByIdBody,
   PersonalWorkItem,
+  PostAdminFlowcoreAccountTest200,
+  PostAdminFlowcoreAccountTestBody,
+  PostAdminMigrateWorkingCopies200,
+  PostAdminMigrateWorkingCopiesBody,
+  PostAdminNotificationRules200,
+  PostAdminNotificationRulesBody,
+  PostAdminNotificationRulesSeed200,
+  PostAdminNotificationRulesSeedBody,
+  PostAdminWorkflows200,
+  PostAdminWorkflowsBody,
+  PostConfidentialityConfigAssign200,
+  PostConfidentialityConfigAssignBody,
+  PostContentV1Search200,
+  PostContentV1SearchBody,
+  PostContentWorkingCopiesByIdComment200,
+  PostContentWorkingCopiesByIdCommentBody,
+  PostContentWorkingCopiesByIdGenerateSummary200,
+  PostContentWorkingCopiesByIdGenerateSummaryBody,
+  PostCopilotAdminKeys200,
+  PostCopilotAdminKeysBody,
+  PostCopilotSearch200,
+  PostCopilotSearchBody,
+  PostGlossaryImport200,
+  PostGlossaryImportBody,
+  PostGlossaryReimportSeed200,
+  PostGlossaryReimportSeedBody,
+  PostGraphConnectorConnectionRegister200,
+  PostGraphConnectorConnectionRegisterBody,
+  PostGraphConnectorExternalItemsGlossaryByIdRegister200,
+  PostGraphConnectorExternalItemsGlossaryByIdRegisterBody,
+  PostGraphConnectorExternalItemsPagesByIdRegister200,
+  PostGraphConnectorExternalItemsPagesByIdRegisterBody,
+  PostGraphConnectorSchemaRegister200,
+  PostGraphConnectorSchemaRegisterBody,
+  PostGraphConnectorSyncDelta200,
+  PostGraphConnectorSyncDeltaBody,
+  PostGraphConnectorSyncFull200,
+  PostGraphConnectorSyncFullBody,
+  PostGraphConnectorSyncGlossaryById200,
+  PostGraphConnectorSyncGlossaryByIdBody,
+  PostGraphConnectorSyncPagesById200,
+  PostGraphConnectorSyncPagesByIdBody,
+  PostGraphConnectorTestConnection200,
+  PostGraphConnectorTestConnectionBody,
+  PostIntegrationKeys200,
+  PostIntegrationKeysBody,
+  PostIntegrationKeysByIdRotate200,
+  PostIntegrationKeysByIdRotateBody,
+  PostIntegrationKeysPreview200,
+  PostIntegrationKeysPreviewBody,
+  PostMediaImportSharepoint200,
+  PostMediaImportSharepointBody,
+  PostMediaValidateEmbed200,
+  PostMediaValidateEmbedBody,
+  PostPrincipalsByIdDelegations200,
+  PostPrincipalsByIdDelegationsBody,
+  PostTokens200,
+  PostTokensBody,
   Principal,
   PrincipalWithRoles,
   ProcessQualityRow,
   PublishRevisionInput,
   PublishWorkingCopyBody,
   PublishWorkingCopyResult,
+  PutAdminFlowcoreAccount200,
+  PutAdminFlowcoreAccountBody,
+  PutAdminNotificationRulesById200,
+  PutAdminNotificationRulesByIdBody,
+  PutAdminSystemSettingsByKey200,
+  PutAdminSystemSettingsByKeyBody,
+  PutAdminWorkflowAssignmentsByPageType200,
+  PutAdminWorkflowAssignmentsByPageTypeBody,
+  PutAdminWorkflowsById200,
+  PutAdminWorkflowsByIdBody,
+  PutContentWorkingCopiesByIdSummary200,
+  PutContentWorkingCopiesByIdSummaryBody,
+  PutGraphConnectorGroupMappingsByTier200,
+  PutGraphConnectorGroupMappingsByTierBody,
+  PutRbacSodConfigByRuleKey200,
+  PutRbacSodConfigByRuleKeyBody,
   QualityOverview,
   RejectRevisionBody,
   Release,
@@ -14250,4 +14392,8988 @@ export const useMarkAllNotificationsAsRead = <
   TContext
 > => {
   return useMutation(getMarkAllNotificationsAsReadMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/audit-events
+ */
+export const getGetAdminAuditEventsUrl = () => {
+  return `/api/admin/audit-events`;
+};
+
+export const getAdminAuditEvents = async (
+  options?: RequestInit,
+): Promise<GetAdminAuditEvents200> => {
+  return customFetch<GetAdminAuditEvents200>(getGetAdminAuditEventsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAdminAuditEventsQueryKey = () => {
+  return [`/api/admin/audit-events`] as const;
+};
+
+export const getGetAdminAuditEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminAuditEvents>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAdminAuditEventsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminAuditEvents>>
+  > = ({ signal }) => getAdminAuditEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminAuditEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminAuditEvents>>
+>;
+export type GetAdminAuditEventsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/audit-events
+ */
+
+export function useGetAdminAuditEvents<
+  TData = Awaited<ReturnType<typeof getAdminAuditEvents>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminAuditEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/audit-events/export
+ */
+export const getGetAdminAuditEventsExportUrl = () => {
+  return `/api/admin/audit-events/export`;
+};
+
+export const getAdminAuditEventsExport = async (
+  options?: RequestInit,
+): Promise<GetAdminAuditEventsExport200> => {
+  return customFetch<GetAdminAuditEventsExport200>(
+    getGetAdminAuditEventsExportUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminAuditEventsExportQueryKey = () => {
+  return [`/api/admin/audit-events/export`] as const;
+};
+
+export const getGetAdminAuditEventsExportQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminAuditEventsExport>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEventsExport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminAuditEventsExportQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminAuditEventsExport>>
+  > = ({ signal }) => getAdminAuditEventsExport({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEventsExport>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminAuditEventsExportQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminAuditEventsExport>>
+>;
+export type GetAdminAuditEventsExportQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/audit-events/export
+ */
+
+export function useGetAdminAuditEventsExport<
+  TData = Awaited<ReturnType<typeof getAdminAuditEventsExport>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEventsExport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminAuditEventsExportQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/audit-events/filters
+ */
+export const getGetAdminAuditEventsFiltersUrl = () => {
+  return `/api/admin/audit-events/filters`;
+};
+
+export const getAdminAuditEventsFilters = async (
+  options?: RequestInit,
+): Promise<GetAdminAuditEventsFilters200> => {
+  return customFetch<GetAdminAuditEventsFilters200>(
+    getGetAdminAuditEventsFiltersUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminAuditEventsFiltersQueryKey = () => {
+  return [`/api/admin/audit-events/filters`] as const;
+};
+
+export const getGetAdminAuditEventsFiltersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminAuditEventsFilters>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEventsFilters>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminAuditEventsFiltersQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminAuditEventsFilters>>
+  > = ({ signal }) => getAdminAuditEventsFilters({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEventsFilters>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminAuditEventsFiltersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminAuditEventsFilters>>
+>;
+export type GetAdminAuditEventsFiltersQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/audit-events/filters
+ */
+
+export function useGetAdminAuditEventsFilters<
+  TData = Awaited<ReturnType<typeof getAdminAuditEventsFilters>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminAuditEventsFilters>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminAuditEventsFiltersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/flowcore-account
+ */
+export const getGetAdminFlowcoreAccountUrl = () => {
+  return `/api/admin/flowcore-account`;
+};
+
+export const getAdminFlowcoreAccount = async (
+  options?: RequestInit,
+): Promise<GetAdminFlowcoreAccount200> => {
+  return customFetch<GetAdminFlowcoreAccount200>(
+    getGetAdminFlowcoreAccountUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminFlowcoreAccountQueryKey = () => {
+  return [`/api/admin/flowcore-account`] as const;
+};
+
+export const getGetAdminFlowcoreAccountQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminFlowcoreAccount>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminFlowcoreAccount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminFlowcoreAccountQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminFlowcoreAccount>>
+  > = ({ signal }) => getAdminFlowcoreAccount({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminFlowcoreAccount>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminFlowcoreAccountQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminFlowcoreAccount>>
+>;
+export type GetAdminFlowcoreAccountQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/flowcore-account
+ */
+
+export function useGetAdminFlowcoreAccount<
+  TData = Awaited<ReturnType<typeof getAdminFlowcoreAccount>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminFlowcoreAccount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminFlowcoreAccountQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/flowcore-account
+ */
+export const getPutAdminFlowcoreAccountUrl = () => {
+  return `/api/admin/flowcore-account`;
+};
+
+export const putAdminFlowcoreAccount = async (
+  putAdminFlowcoreAccountBody?: PutAdminFlowcoreAccountBody,
+  options?: RequestInit,
+): Promise<PutAdminFlowcoreAccount200> => {
+  return customFetch<PutAdminFlowcoreAccount200>(
+    getPutAdminFlowcoreAccountUrl(),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putAdminFlowcoreAccountBody),
+    },
+  );
+};
+
+export const getPutAdminFlowcoreAccountMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminFlowcoreAccount>>,
+    TError,
+    { data: BodyType<PutAdminFlowcoreAccountBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putAdminFlowcoreAccount>>,
+  TError,
+  { data: BodyType<PutAdminFlowcoreAccountBody> },
+  TContext
+> => {
+  const mutationKey = ["putAdminFlowcoreAccount"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putAdminFlowcoreAccount>>,
+    { data: BodyType<PutAdminFlowcoreAccountBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return putAdminFlowcoreAccount(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutAdminFlowcoreAccountMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putAdminFlowcoreAccount>>
+>;
+export type PutAdminFlowcoreAccountMutationBody =
+  BodyType<PutAdminFlowcoreAccountBody>;
+export type PutAdminFlowcoreAccountMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /admin/flowcore-account
+ */
+export const usePutAdminFlowcoreAccount = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminFlowcoreAccount>>,
+    TError,
+    { data: BodyType<PutAdminFlowcoreAccountBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putAdminFlowcoreAccount>>,
+  TError,
+  { data: BodyType<PutAdminFlowcoreAccountBody> },
+  TContext
+> => {
+  return useMutation(getPutAdminFlowcoreAccountMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/flowcore-account/test
+ */
+export const getPostAdminFlowcoreAccountTestUrl = () => {
+  return `/api/admin/flowcore-account/test`;
+};
+
+export const postAdminFlowcoreAccountTest = async (
+  postAdminFlowcoreAccountTestBody?: PostAdminFlowcoreAccountTestBody,
+  options?: RequestInit,
+): Promise<PostAdminFlowcoreAccountTest200> => {
+  return customFetch<PostAdminFlowcoreAccountTest200>(
+    getPostAdminFlowcoreAccountTestUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postAdminFlowcoreAccountTestBody),
+    },
+  );
+};
+
+export const getPostAdminFlowcoreAccountTestMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminFlowcoreAccountTest>>,
+    TError,
+    { data: BodyType<PostAdminFlowcoreAccountTestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminFlowcoreAccountTest>>,
+  TError,
+  { data: BodyType<PostAdminFlowcoreAccountTestBody> },
+  TContext
+> => {
+  const mutationKey = ["postAdminFlowcoreAccountTest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminFlowcoreAccountTest>>,
+    { data: BodyType<PostAdminFlowcoreAccountTestBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminFlowcoreAccountTest(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminFlowcoreAccountTestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminFlowcoreAccountTest>>
+>;
+export type PostAdminFlowcoreAccountTestMutationBody =
+  BodyType<PostAdminFlowcoreAccountTestBody>;
+export type PostAdminFlowcoreAccountTestMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /admin/flowcore-account/test
+ */
+export const usePostAdminFlowcoreAccountTest = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminFlowcoreAccountTest>>,
+    TError,
+    { data: BodyType<PostAdminFlowcoreAccountTestBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminFlowcoreAccountTest>>,
+  TError,
+  { data: BodyType<PostAdminFlowcoreAccountTestBody> },
+  TContext
+> => {
+  return useMutation(getPostAdminFlowcoreAccountTestMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/migrate-working-copies
+ */
+export const getPostAdminMigrateWorkingCopiesUrl = () => {
+  return `/api/admin/migrate-working-copies`;
+};
+
+export const postAdminMigrateWorkingCopies = async (
+  postAdminMigrateWorkingCopiesBody?: PostAdminMigrateWorkingCopiesBody,
+  options?: RequestInit,
+): Promise<PostAdminMigrateWorkingCopies200> => {
+  return customFetch<PostAdminMigrateWorkingCopies200>(
+    getPostAdminMigrateWorkingCopiesUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postAdminMigrateWorkingCopiesBody),
+    },
+  );
+};
+
+export const getPostAdminMigrateWorkingCopiesMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminMigrateWorkingCopies>>,
+    TError,
+    { data: BodyType<PostAdminMigrateWorkingCopiesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminMigrateWorkingCopies>>,
+  TError,
+  { data: BodyType<PostAdminMigrateWorkingCopiesBody> },
+  TContext
+> => {
+  const mutationKey = ["postAdminMigrateWorkingCopies"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminMigrateWorkingCopies>>,
+    { data: BodyType<PostAdminMigrateWorkingCopiesBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminMigrateWorkingCopies(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminMigrateWorkingCopiesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminMigrateWorkingCopies>>
+>;
+export type PostAdminMigrateWorkingCopiesMutationBody =
+  BodyType<PostAdminMigrateWorkingCopiesBody>;
+export type PostAdminMigrateWorkingCopiesMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /admin/migrate-working-copies
+ */
+export const usePostAdminMigrateWorkingCopies = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminMigrateWorkingCopies>>,
+    TError,
+    { data: BodyType<PostAdminMigrateWorkingCopiesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminMigrateWorkingCopies>>,
+  TError,
+  { data: BodyType<PostAdminMigrateWorkingCopiesBody> },
+  TContext
+> => {
+  return useMutation(getPostAdminMigrateWorkingCopiesMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/notification-rules
+ */
+export const getGetAdminNotificationRulesUrl = () => {
+  return `/api/admin/notification-rules`;
+};
+
+export const getAdminNotificationRules = async (
+  options?: RequestInit,
+): Promise<GetAdminNotificationRules200> => {
+  return customFetch<GetAdminNotificationRules200>(
+    getGetAdminNotificationRulesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminNotificationRulesQueryKey = () => {
+  return [`/api/admin/notification-rules`] as const;
+};
+
+export const getGetAdminNotificationRulesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminNotificationRules>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminNotificationRules>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminNotificationRulesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminNotificationRules>>
+  > = ({ signal }) => getAdminNotificationRules({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminNotificationRules>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminNotificationRulesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminNotificationRules>>
+>;
+export type GetAdminNotificationRulesQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/notification-rules
+ */
+
+export function useGetAdminNotificationRules<
+  TData = Awaited<ReturnType<typeof getAdminNotificationRules>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminNotificationRules>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminNotificationRulesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/notification-rules
+ */
+export const getPostAdminNotificationRulesUrl = () => {
+  return `/api/admin/notification-rules`;
+};
+
+export const postAdminNotificationRules = async (
+  postAdminNotificationRulesBody?: PostAdminNotificationRulesBody,
+  options?: RequestInit,
+): Promise<PostAdminNotificationRules200> => {
+  return customFetch<PostAdminNotificationRules200>(
+    getPostAdminNotificationRulesUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postAdminNotificationRulesBody),
+    },
+  );
+};
+
+export const getPostAdminNotificationRulesMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminNotificationRules>>,
+    TError,
+    { data: BodyType<PostAdminNotificationRulesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminNotificationRules>>,
+  TError,
+  { data: BodyType<PostAdminNotificationRulesBody> },
+  TContext
+> => {
+  const mutationKey = ["postAdminNotificationRules"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminNotificationRules>>,
+    { data: BodyType<PostAdminNotificationRulesBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminNotificationRules(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminNotificationRulesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminNotificationRules>>
+>;
+export type PostAdminNotificationRulesMutationBody =
+  BodyType<PostAdminNotificationRulesBody>;
+export type PostAdminNotificationRulesMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /admin/notification-rules
+ */
+export const usePostAdminNotificationRules = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminNotificationRules>>,
+    TError,
+    { data: BodyType<PostAdminNotificationRulesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminNotificationRules>>,
+  TError,
+  { data: BodyType<PostAdminNotificationRulesBody> },
+  TContext
+> => {
+  return useMutation(getPostAdminNotificationRulesMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/notification-rules/seed
+ */
+export const getPostAdminNotificationRulesSeedUrl = () => {
+  return `/api/admin/notification-rules/seed`;
+};
+
+export const postAdminNotificationRulesSeed = async (
+  postAdminNotificationRulesSeedBody?: PostAdminNotificationRulesSeedBody,
+  options?: RequestInit,
+): Promise<PostAdminNotificationRulesSeed200> => {
+  return customFetch<PostAdminNotificationRulesSeed200>(
+    getPostAdminNotificationRulesSeedUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postAdminNotificationRulesSeedBody),
+    },
+  );
+};
+
+export const getPostAdminNotificationRulesSeedMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminNotificationRulesSeed>>,
+    TError,
+    { data: BodyType<PostAdminNotificationRulesSeedBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminNotificationRulesSeed>>,
+  TError,
+  { data: BodyType<PostAdminNotificationRulesSeedBody> },
+  TContext
+> => {
+  const mutationKey = ["postAdminNotificationRulesSeed"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminNotificationRulesSeed>>,
+    { data: BodyType<PostAdminNotificationRulesSeedBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminNotificationRulesSeed(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminNotificationRulesSeedMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminNotificationRulesSeed>>
+>;
+export type PostAdminNotificationRulesSeedMutationBody =
+  BodyType<PostAdminNotificationRulesSeedBody>;
+export type PostAdminNotificationRulesSeedMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /admin/notification-rules/seed
+ */
+export const usePostAdminNotificationRulesSeed = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminNotificationRulesSeed>>,
+    TError,
+    { data: BodyType<PostAdminNotificationRulesSeedBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminNotificationRulesSeed>>,
+  TError,
+  { data: BodyType<PostAdminNotificationRulesSeedBody> },
+  TContext
+> => {
+  return useMutation(getPostAdminNotificationRulesSeedMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/notification-rules/{id}
+ */
+export const getPutAdminNotificationRulesByIdUrl = (id: string) => {
+  return `/api/admin/notification-rules/${id}`;
+};
+
+export const putAdminNotificationRulesById = async (
+  id: string,
+  putAdminNotificationRulesByIdBody?: PutAdminNotificationRulesByIdBody,
+  options?: RequestInit,
+): Promise<PutAdminNotificationRulesById200> => {
+  return customFetch<PutAdminNotificationRulesById200>(
+    getPutAdminNotificationRulesByIdUrl(id),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putAdminNotificationRulesByIdBody),
+    },
+  );
+};
+
+export const getPutAdminNotificationRulesByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminNotificationRulesById>>,
+    TError,
+    { id: string; data: BodyType<PutAdminNotificationRulesByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putAdminNotificationRulesById>>,
+  TError,
+  { id: string; data: BodyType<PutAdminNotificationRulesByIdBody> },
+  TContext
+> => {
+  const mutationKey = ["putAdminNotificationRulesById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putAdminNotificationRulesById>>,
+    { id: string; data: BodyType<PutAdminNotificationRulesByIdBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return putAdminNotificationRulesById(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutAdminNotificationRulesByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putAdminNotificationRulesById>>
+>;
+export type PutAdminNotificationRulesByIdMutationBody =
+  BodyType<PutAdminNotificationRulesByIdBody>;
+export type PutAdminNotificationRulesByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /admin/notification-rules/{id}
+ */
+export const usePutAdminNotificationRulesById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminNotificationRulesById>>,
+    TError,
+    { id: string; data: BodyType<PutAdminNotificationRulesByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putAdminNotificationRulesById>>,
+  TError,
+  { id: string; data: BodyType<PutAdminNotificationRulesByIdBody> },
+  TContext
+> => {
+  return useMutation(getPutAdminNotificationRulesByIdMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /admin/notification-rules/{id}
+ */
+export const getDeleteAdminNotificationRulesByIdUrl = (id: string) => {
+  return `/api/admin/notification-rules/${id}`;
+};
+
+export const deleteAdminNotificationRulesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DeleteAdminNotificationRulesById200 | void> => {
+  return customFetch<DeleteAdminNotificationRulesById200 | void>(
+    getDeleteAdminNotificationRulesByIdUrl(id),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteAdminNotificationRulesByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminNotificationRulesById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAdminNotificationRulesById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteAdminNotificationRulesById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAdminNotificationRulesById>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteAdminNotificationRulesById(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAdminNotificationRulesByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteAdminNotificationRulesById>>
+>;
+
+export type DeleteAdminNotificationRulesByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /admin/notification-rules/{id}
+ */
+export const useDeleteAdminNotificationRulesById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminNotificationRulesById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAdminNotificationRulesById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteAdminNotificationRulesByIdMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/setup-mode
+ */
+export const getGetAdminSetupModeUrl = () => {
+  return `/api/admin/setup-mode`;
+};
+
+export const getAdminSetupMode = async (
+  options?: RequestInit,
+): Promise<GetAdminSetupMode200> => {
+  return customFetch<GetAdminSetupMode200>(getGetAdminSetupModeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAdminSetupModeQueryKey = () => {
+  return [`/api/admin/setup-mode`] as const;
+};
+
+export const getGetAdminSetupModeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminSetupMode>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminSetupMode>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAdminSetupModeQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminSetupMode>>
+  > = ({ signal }) => getAdminSetupMode({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminSetupMode>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminSetupModeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminSetupMode>>
+>;
+export type GetAdminSetupModeQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/setup-mode
+ */
+
+export function useGetAdminSetupMode<
+  TData = Awaited<ReturnType<typeof getAdminSetupMode>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminSetupMode>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminSetupModeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/system-settings
+ */
+export const getGetAdminSystemSettingsUrl = () => {
+  return `/api/admin/system-settings`;
+};
+
+export const getAdminSystemSettings = async (
+  options?: RequestInit,
+): Promise<GetAdminSystemSettings200> => {
+  return customFetch<GetAdminSystemSettings200>(
+    getGetAdminSystemSettingsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminSystemSettingsQueryKey = () => {
+  return [`/api/admin/system-settings`] as const;
+};
+
+export const getGetAdminSystemSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminSystemSettings>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminSystemSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminSystemSettingsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminSystemSettings>>
+  > = ({ signal }) => getAdminSystemSettings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminSystemSettings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminSystemSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminSystemSettings>>
+>;
+export type GetAdminSystemSettingsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/system-settings
+ */
+
+export function useGetAdminSystemSettings<
+  TData = Awaited<ReturnType<typeof getAdminSystemSettings>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminSystemSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminSystemSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/system-settings/{key}
+ */
+export const getPutAdminSystemSettingsByKeyUrl = (key: string) => {
+  return `/api/admin/system-settings/${key}`;
+};
+
+export const putAdminSystemSettingsByKey = async (
+  key: string,
+  putAdminSystemSettingsByKeyBody?: PutAdminSystemSettingsByKeyBody,
+  options?: RequestInit,
+): Promise<PutAdminSystemSettingsByKey200> => {
+  return customFetch<PutAdminSystemSettingsByKey200>(
+    getPutAdminSystemSettingsByKeyUrl(key),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putAdminSystemSettingsByKeyBody),
+    },
+  );
+};
+
+export const getPutAdminSystemSettingsByKeyMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
+    TError,
+    { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
+  TError,
+  { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["putAdminSystemSettingsByKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
+    { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> }
+  > = (props) => {
+    const { key, data } = props ?? {};
+
+    return putAdminSystemSettingsByKey(key, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutAdminSystemSettingsByKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>
+>;
+export type PutAdminSystemSettingsByKeyMutationBody =
+  BodyType<PutAdminSystemSettingsByKeyBody>;
+export type PutAdminSystemSettingsByKeyMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /admin/system-settings/{key}
+ */
+export const usePutAdminSystemSettingsByKey = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
+    TError,
+    { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
+  TError,
+  { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+  TContext
+> => {
+  return useMutation(getPutAdminSystemSettingsByKeyMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/workflow-assignments
+ */
+export const getGetAdminWorkflowAssignmentsUrl = () => {
+  return `/api/admin/workflow-assignments`;
+};
+
+export const getAdminWorkflowAssignments = async (
+  options?: RequestInit,
+): Promise<GetAdminWorkflowAssignments200> => {
+  return customFetch<GetAdminWorkflowAssignments200>(
+    getGetAdminWorkflowAssignmentsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminWorkflowAssignmentsQueryKey = () => {
+  return [`/api/admin/workflow-assignments`] as const;
+};
+
+export const getGetAdminWorkflowAssignmentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminWorkflowAssignments>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflowAssignments>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminWorkflowAssignmentsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminWorkflowAssignments>>
+  > = ({ signal }) =>
+    getAdminWorkflowAssignments({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflowAssignments>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminWorkflowAssignmentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminWorkflowAssignments>>
+>;
+export type GetAdminWorkflowAssignmentsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/workflow-assignments
+ */
+
+export function useGetAdminWorkflowAssignments<
+  TData = Awaited<ReturnType<typeof getAdminWorkflowAssignments>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflowAssignments>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminWorkflowAssignmentsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/workflow-assignments/{pageType}
+ */
+export const getPutAdminWorkflowAssignmentsByPageTypeUrl = (
+  pageType: string,
+) => {
+  return `/api/admin/workflow-assignments/${pageType}`;
+};
+
+export const putAdminWorkflowAssignmentsByPageType = async (
+  pageType: string,
+  putAdminWorkflowAssignmentsByPageTypeBody?: PutAdminWorkflowAssignmentsByPageTypeBody,
+  options?: RequestInit,
+): Promise<PutAdminWorkflowAssignmentsByPageType200> => {
+  return customFetch<PutAdminWorkflowAssignmentsByPageType200>(
+    getPutAdminWorkflowAssignmentsByPageTypeUrl(pageType),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putAdminWorkflowAssignmentsByPageTypeBody),
+    },
+  );
+};
+
+export const getPutAdminWorkflowAssignmentsByPageTypeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminWorkflowAssignmentsByPageType>>,
+    TError,
+    {
+      pageType: string;
+      data: BodyType<PutAdminWorkflowAssignmentsByPageTypeBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putAdminWorkflowAssignmentsByPageType>>,
+  TError,
+  {
+    pageType: string;
+    data: BodyType<PutAdminWorkflowAssignmentsByPageTypeBody>;
+  },
+  TContext
+> => {
+  const mutationKey = ["putAdminWorkflowAssignmentsByPageType"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putAdminWorkflowAssignmentsByPageType>>,
+    {
+      pageType: string;
+      data: BodyType<PutAdminWorkflowAssignmentsByPageTypeBody>;
+    }
+  > = (props) => {
+    const { pageType, data } = props ?? {};
+
+    return putAdminWorkflowAssignmentsByPageType(
+      pageType,
+      data,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutAdminWorkflowAssignmentsByPageTypeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putAdminWorkflowAssignmentsByPageType>>
+>;
+export type PutAdminWorkflowAssignmentsByPageTypeMutationBody =
+  BodyType<PutAdminWorkflowAssignmentsByPageTypeBody>;
+export type PutAdminWorkflowAssignmentsByPageTypeMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary PUT /admin/workflow-assignments/{pageType}
+ */
+export const usePutAdminWorkflowAssignmentsByPageType = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminWorkflowAssignmentsByPageType>>,
+    TError,
+    {
+      pageType: string;
+      data: BodyType<PutAdminWorkflowAssignmentsByPageTypeBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putAdminWorkflowAssignmentsByPageType>>,
+  TError,
+  {
+    pageType: string;
+    data: BodyType<PutAdminWorkflowAssignmentsByPageTypeBody>;
+  },
+  TContext
+> => {
+  return useMutation(
+    getPutAdminWorkflowAssignmentsByPageTypeMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /admin/workflow-assignments/{pageType}
+ */
+export const getDeleteAdminWorkflowAssignmentsByPageTypeUrl = (
+  pageType: string,
+) => {
+  return `/api/admin/workflow-assignments/${pageType}`;
+};
+
+export const deleteAdminWorkflowAssignmentsByPageType = async (
+  pageType: string,
+  options?: RequestInit,
+): Promise<DeleteAdminWorkflowAssignmentsByPageType200 | void> => {
+  return customFetch<DeleteAdminWorkflowAssignmentsByPageType200 | void>(
+    getDeleteAdminWorkflowAssignmentsByPageTypeUrl(pageType),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteAdminWorkflowAssignmentsByPageTypeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminWorkflowAssignmentsByPageType>>,
+    TError,
+    { pageType: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAdminWorkflowAssignmentsByPageType>>,
+  TError,
+  { pageType: string },
+  TContext
+> => {
+  const mutationKey = ["deleteAdminWorkflowAssignmentsByPageType"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAdminWorkflowAssignmentsByPageType>>,
+    { pageType: string }
+  > = (props) => {
+    const { pageType } = props ?? {};
+
+    return deleteAdminWorkflowAssignmentsByPageType(pageType, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAdminWorkflowAssignmentsByPageTypeMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof deleteAdminWorkflowAssignmentsByPageType>>
+  >;
+
+export type DeleteAdminWorkflowAssignmentsByPageTypeMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary DELETE /admin/workflow-assignments/{pageType}
+ */
+export const useDeleteAdminWorkflowAssignmentsByPageType = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminWorkflowAssignmentsByPageType>>,
+    TError,
+    { pageType: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAdminWorkflowAssignmentsByPageType>>,
+  TError,
+  { pageType: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteAdminWorkflowAssignmentsByPageTypeMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/workflows
+ */
+export const getGetAdminWorkflowsUrl = () => {
+  return `/api/admin/workflows`;
+};
+
+export const getAdminWorkflows = async (
+  options?: RequestInit,
+): Promise<GetAdminWorkflows200> => {
+  return customFetch<GetAdminWorkflows200>(getGetAdminWorkflowsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAdminWorkflowsQueryKey = () => {
+  return [`/api/admin/workflows`] as const;
+};
+
+export const getGetAdminWorkflowsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminWorkflows>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflows>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAdminWorkflowsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminWorkflows>>
+  > = ({ signal }) => getAdminWorkflows({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflows>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminWorkflowsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminWorkflows>>
+>;
+export type GetAdminWorkflowsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/workflows
+ */
+
+export function useGetAdminWorkflows<
+  TData = Awaited<ReturnType<typeof getAdminWorkflows>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflows>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminWorkflowsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /admin/workflows
+ */
+export const getPostAdminWorkflowsUrl = () => {
+  return `/api/admin/workflows`;
+};
+
+export const postAdminWorkflows = async (
+  postAdminWorkflowsBody?: PostAdminWorkflowsBody,
+  options?: RequestInit,
+): Promise<PostAdminWorkflows200> => {
+  return customFetch<PostAdminWorkflows200>(getPostAdminWorkflowsUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postAdminWorkflowsBody),
+  });
+};
+
+export const getPostAdminWorkflowsMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminWorkflows>>,
+    TError,
+    { data: BodyType<PostAdminWorkflowsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminWorkflows>>,
+  TError,
+  { data: BodyType<PostAdminWorkflowsBody> },
+  TContext
+> => {
+  const mutationKey = ["postAdminWorkflows"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminWorkflows>>,
+    { data: BodyType<PostAdminWorkflowsBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminWorkflows(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminWorkflowsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminWorkflows>>
+>;
+export type PostAdminWorkflowsMutationBody = BodyType<PostAdminWorkflowsBody>;
+export type PostAdminWorkflowsMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /admin/workflows
+ */
+export const usePostAdminWorkflows = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminWorkflows>>,
+    TError,
+    { data: BodyType<PostAdminWorkflowsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminWorkflows>>,
+  TError,
+  { data: BodyType<PostAdminWorkflowsBody> },
+  TContext
+> => {
+  return useMutation(getPostAdminWorkflowsMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /admin/workflows/{id}
+ */
+export const getGetAdminWorkflowsByIdUrl = (id: string) => {
+  return `/api/admin/workflows/${id}`;
+};
+
+export const getAdminWorkflowsById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetAdminWorkflowsById200> => {
+  return customFetch<GetAdminWorkflowsById200>(
+    getGetAdminWorkflowsByIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetAdminWorkflowsByIdQueryKey = (id: string) => {
+  return [`/api/admin/workflows/${id}`] as const;
+};
+
+export const getGetAdminWorkflowsByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAdminWorkflowsById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAdminWorkflowsById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAdminWorkflowsByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAdminWorkflowsById>>
+  > = ({ signal }) => getAdminWorkflowsById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAdminWorkflowsById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAdminWorkflowsByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminWorkflowsById>>
+>;
+export type GetAdminWorkflowsByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /admin/workflows/{id}
+ */
+
+export function useGetAdminWorkflowsById<
+  TData = Awaited<ReturnType<typeof getAdminWorkflowsById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAdminWorkflowsById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAdminWorkflowsByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /admin/workflows/{id}
+ */
+export const getPutAdminWorkflowsByIdUrl = (id: string) => {
+  return `/api/admin/workflows/${id}`;
+};
+
+export const putAdminWorkflowsById = async (
+  id: string,
+  putAdminWorkflowsByIdBody?: PutAdminWorkflowsByIdBody,
+  options?: RequestInit,
+): Promise<PutAdminWorkflowsById200> => {
+  return customFetch<PutAdminWorkflowsById200>(
+    getPutAdminWorkflowsByIdUrl(id),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putAdminWorkflowsByIdBody),
+    },
+  );
+};
+
+export const getPutAdminWorkflowsByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminWorkflowsById>>,
+    TError,
+    { id: string; data: BodyType<PutAdminWorkflowsByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putAdminWorkflowsById>>,
+  TError,
+  { id: string; data: BodyType<PutAdminWorkflowsByIdBody> },
+  TContext
+> => {
+  const mutationKey = ["putAdminWorkflowsById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putAdminWorkflowsById>>,
+    { id: string; data: BodyType<PutAdminWorkflowsByIdBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return putAdminWorkflowsById(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutAdminWorkflowsByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putAdminWorkflowsById>>
+>;
+export type PutAdminWorkflowsByIdMutationBody =
+  BodyType<PutAdminWorkflowsByIdBody>;
+export type PutAdminWorkflowsByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /admin/workflows/{id}
+ */
+export const usePutAdminWorkflowsById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminWorkflowsById>>,
+    TError,
+    { id: string; data: BodyType<PutAdminWorkflowsByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putAdminWorkflowsById>>,
+  TError,
+  { id: string; data: BodyType<PutAdminWorkflowsByIdBody> },
+  TContext
+> => {
+  return useMutation(getPutAdminWorkflowsByIdMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /admin/workflows/{id}
+ */
+export const getDeleteAdminWorkflowsByIdUrl = (id: string) => {
+  return `/api/admin/workflows/${id}`;
+};
+
+export const deleteAdminWorkflowsById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DeleteAdminWorkflowsById200 | void> => {
+  return customFetch<DeleteAdminWorkflowsById200 | void>(
+    getDeleteAdminWorkflowsByIdUrl(id),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteAdminWorkflowsByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminWorkflowsById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAdminWorkflowsById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteAdminWorkflowsById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAdminWorkflowsById>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteAdminWorkflowsById(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAdminWorkflowsByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteAdminWorkflowsById>>
+>;
+
+export type DeleteAdminWorkflowsByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /admin/workflows/{id}
+ */
+export const useDeleteAdminWorkflowsById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminWorkflowsById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAdminWorkflowsById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteAdminWorkflowsByIdMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /ai/models
+ */
+export const getGetAiModelsUrl = () => {
+  return `/api/ai/models`;
+};
+
+export const getAiModels = async (
+  options?: RequestInit,
+): Promise<GetAiModels200> => {
+  return customFetch<GetAiModels200>(getGetAiModelsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAiModelsQueryKey = () => {
+  return [`/api/ai/models`] as const;
+};
+
+export const getGetAiModelsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAiModels>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAiModels>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAiModelsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiModels>>> = ({
+    signal,
+  }) => getAiModels({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAiModels>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAiModelsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAiModels>>
+>;
+export type GetAiModelsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /ai/models
+ */
+
+export function useGetAiModels<
+  TData = Awaited<ReturnType<typeof getAiModels>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAiModels>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAiModelsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /auth/config
+ */
+export const getGetAuthConfigUrl = () => {
+  return `/api/auth/config`;
+};
+
+export const getAuthConfig = async (
+  options?: RequestInit,
+): Promise<GetAuthConfig200> => {
+  return customFetch<GetAuthConfig200>(getGetAuthConfigUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAuthConfigQueryKey = () => {
+  return [`/api/auth/config`] as const;
+};
+
+export const getGetAuthConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAuthConfig>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAuthConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAuthConfigQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthConfig>>> = ({
+    signal,
+  }) => getAuthConfig({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAuthConfig>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAuthConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAuthConfig>>
+>;
+export type GetAuthConfigQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /auth/config
+ */
+
+export function useGetAuthConfig<
+  TData = Awaited<ReturnType<typeof getAuthConfig>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAuthConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAuthConfigQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /confidentiality-config/
+ */
+export const getGetConfidentialityConfigUrl = () => {
+  return `/api/confidentiality-config/`;
+};
+
+export const getConfidentialityConfig = async (
+  options?: RequestInit,
+): Promise<GetConfidentialityConfig200> => {
+  return customFetch<GetConfidentialityConfig200>(
+    getGetConfidentialityConfigUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetConfidentialityConfigQueryKey = () => {
+  return [`/api/confidentiality-config/`] as const;
+};
+
+export const getGetConfidentialityConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof getConfidentialityConfig>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getConfidentialityConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetConfidentialityConfigQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getConfidentialityConfig>>
+  > = ({ signal }) => getConfidentialityConfig({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getConfidentialityConfig>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetConfidentialityConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getConfidentialityConfig>>
+>;
+export type GetConfidentialityConfigQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /confidentiality-config/
+ */
+
+export function useGetConfidentialityConfig<
+  TData = Awaited<ReturnType<typeof getConfidentialityConfig>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getConfidentialityConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetConfidentialityConfigQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /confidentiality-config/assign
+ */
+export const getPostConfidentialityConfigAssignUrl = () => {
+  return `/api/confidentiality-config/assign`;
+};
+
+export const postConfidentialityConfigAssign = async (
+  postConfidentialityConfigAssignBody?: PostConfidentialityConfigAssignBody,
+  options?: RequestInit,
+): Promise<PostConfidentialityConfigAssign200> => {
+  return customFetch<PostConfidentialityConfigAssign200>(
+    getPostConfidentialityConfigAssignUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postConfidentialityConfigAssignBody),
+    },
+  );
+};
+
+export const getPostConfidentialityConfigAssignMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
+    TError,
+    { data: BodyType<PostConfidentialityConfigAssignBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
+  TError,
+  { data: BodyType<PostConfidentialityConfigAssignBody> },
+  TContext
+> => {
+  const mutationKey = ["postConfidentialityConfigAssign"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
+    { data: BodyType<PostConfidentialityConfigAssignBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postConfidentialityConfigAssign(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostConfidentialityConfigAssignMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postConfidentialityConfigAssign>>
+>;
+export type PostConfidentialityConfigAssignMutationBody =
+  BodyType<PostConfidentialityConfigAssignBody>;
+export type PostConfidentialityConfigAssignMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /confidentiality-config/assign
+ */
+export const usePostConfidentialityConfigAssign = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
+    TError,
+    { data: BodyType<PostConfidentialityConfigAssignBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
+  TError,
+  { data: BodyType<PostConfidentialityConfigAssignBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostConfidentialityConfigAssignMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /confidentiality-config/assign
+ */
+export const getDeleteConfidentialityConfigAssignUrl = () => {
+  return `/api/confidentiality-config/assign`;
+};
+
+export const deleteConfidentialityConfigAssign = async (
+  options?: RequestInit,
+): Promise<DeleteConfidentialityConfigAssign200 | void> => {
+  return customFetch<DeleteConfidentialityConfigAssign200 | void>(
+    getDeleteConfidentialityConfigAssignUrl(),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteConfidentialityConfigAssignMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteConfidentialityConfigAssign>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteConfidentialityConfigAssign>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["deleteConfidentialityConfigAssign"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteConfidentialityConfigAssign>>,
+    void
+  > = () => {
+    return deleteConfidentialityConfigAssign(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteConfidentialityConfigAssignMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteConfidentialityConfigAssign>>
+>;
+
+export type DeleteConfidentialityConfigAssignMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /confidentiality-config/assign
+ */
+export const useDeleteConfidentialityConfigAssign = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteConfidentialityConfigAssign>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteConfidentialityConfigAssign>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(
+    getDeleteConfidentialityConfigAssignMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /connectors/sharepoint/teams
+ */
+export const getGetConnectorsSharepointTeamsUrl = () => {
+  return `/api/connectors/sharepoint/teams`;
+};
+
+export const getConnectorsSharepointTeams = async (
+  options?: RequestInit,
+): Promise<GetConnectorsSharepointTeams200> => {
+  return customFetch<GetConnectorsSharepointTeams200>(
+    getGetConnectorsSharepointTeamsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetConnectorsSharepointTeamsQueryKey = () => {
+  return [`/api/connectors/sharepoint/teams`] as const;
+};
+
+export const getGetConnectorsSharepointTeamsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getConnectorsSharepointTeams>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeams>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetConnectorsSharepointTeamsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeams>>
+  > = ({ signal }) =>
+    getConnectorsSharepointTeams({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeams>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetConnectorsSharepointTeamsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getConnectorsSharepointTeams>>
+>;
+export type GetConnectorsSharepointTeamsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /connectors/sharepoint/teams
+ */
+
+export function useGetConnectorsSharepointTeams<
+  TData = Awaited<ReturnType<typeof getConnectorsSharepointTeams>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeams>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetConnectorsSharepointTeamsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /connectors/sharepoint/teams/{groupId}/drives
+ */
+export const getGetConnectorsSharepointTeamsByGroupIdDrivesUrl = (
+  groupId: string,
+) => {
+  return `/api/connectors/sharepoint/teams/${groupId}/drives`;
+};
+
+export const getConnectorsSharepointTeamsByGroupIdDrives = async (
+  groupId: string,
+  options?: RequestInit,
+): Promise<GetConnectorsSharepointTeamsByGroupIdDrives200> => {
+  return customFetch<GetConnectorsSharepointTeamsByGroupIdDrives200>(
+    getGetConnectorsSharepointTeamsByGroupIdDrivesUrl(groupId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetConnectorsSharepointTeamsByGroupIdDrivesQueryKey = (
+  groupId: string,
+) => {
+  return [`/api/connectors/sharepoint/teams/${groupId}/drives`] as const;
+};
+
+export const getGetConnectorsSharepointTeamsByGroupIdDrivesQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>
+  >,
+  TError = ErrorType<void>,
+>(
+  groupId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetConnectorsSharepointTeamsByGroupIdDrivesQueryKey(groupId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>>
+  > = ({ signal }) =>
+    getConnectorsSharepointTeamsByGroupIdDrives(groupId, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!groupId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetConnectorsSharepointTeamsByGroupIdDrivesQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>>
+  >;
+export type GetConnectorsSharepointTeamsByGroupIdDrivesQueryError =
+  ErrorType<void>;
+
+/**
+ * @summary GET /connectors/sharepoint/teams/{groupId}/drives
+ */
+
+export function useGetConnectorsSharepointTeamsByGroupIdDrives<
+  TData = Awaited<
+    ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>
+  >,
+  TError = ErrorType<void>,
+>(
+  groupId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getConnectorsSharepointTeamsByGroupIdDrives>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getGetConnectorsSharepointTeamsByGroupIdDrivesQueryOptions(
+      groupId,
+      options,
+    );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/changes
+ */
+export const getGetContentV1ChangesUrl = () => {
+  return `/api/content/v1/changes`;
+};
+
+export const getContentV1Changes = async (
+  options?: RequestInit,
+): Promise<GetContentV1Changes200> => {
+  return customFetch<GetContentV1Changes200>(getGetContentV1ChangesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetContentV1ChangesQueryKey = () => {
+  return [`/api/content/v1/changes`] as const;
+};
+
+export const getGetContentV1ChangesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentV1Changes>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Changes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetContentV1ChangesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentV1Changes>>
+  > = ({ signal }) => getContentV1Changes({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Changes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentV1ChangesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentV1Changes>>
+>;
+export type GetContentV1ChangesQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /content/v1/changes
+ */
+
+export function useGetContentV1Changes<
+  TData = Awaited<ReturnType<typeof getContentV1Changes>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Changes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentV1ChangesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/glossary
+ */
+export const getGetContentV1GlossaryUrl = () => {
+  return `/api/content/v1/glossary`;
+};
+
+export const getContentV1Glossary = async (
+  options?: RequestInit,
+): Promise<GetContentV1Glossary200> => {
+  return customFetch<GetContentV1Glossary200>(getGetContentV1GlossaryUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetContentV1GlossaryQueryKey = () => {
+  return [`/api/content/v1/glossary`] as const;
+};
+
+export const getGetContentV1GlossaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentV1Glossary>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Glossary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetContentV1GlossaryQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentV1Glossary>>
+  > = ({ signal }) => getContentV1Glossary({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Glossary>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentV1GlossaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentV1Glossary>>
+>;
+export type GetContentV1GlossaryQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /content/v1/glossary
+ */
+
+export function useGetContentV1Glossary<
+  TData = Awaited<ReturnType<typeof getContentV1Glossary>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Glossary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentV1GlossaryQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/openapi.json
+ */
+export const getGetContentV1OpenapiJsonUrl = () => {
+  return `/api/content/v1/openapi.json`;
+};
+
+export const getContentV1OpenapiJson = async (
+  options?: RequestInit,
+): Promise<GetContentV1OpenapiJson200> => {
+  return customFetch<GetContentV1OpenapiJson200>(
+    getGetContentV1OpenapiJsonUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetContentV1OpenapiJsonQueryKey = () => {
+  return [`/api/content/v1/openapi.json`] as const;
+};
+
+export const getGetContentV1OpenapiJsonQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentV1OpenapiJson>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1OpenapiJson>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetContentV1OpenapiJsonQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentV1OpenapiJson>>
+  > = ({ signal }) => getContentV1OpenapiJson({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1OpenapiJson>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentV1OpenapiJsonQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentV1OpenapiJson>>
+>;
+export type GetContentV1OpenapiJsonQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /content/v1/openapi.json
+ */
+
+export function useGetContentV1OpenapiJson<
+  TData = Awaited<ReturnType<typeof getContentV1OpenapiJson>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1OpenapiJson>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentV1OpenapiJsonQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/pages
+ */
+export const getGetContentV1PagesUrl = () => {
+  return `/api/content/v1/pages`;
+};
+
+export const getContentV1Pages = async (
+  options?: RequestInit,
+): Promise<GetContentV1Pages200> => {
+  return customFetch<GetContentV1Pages200>(getGetContentV1PagesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetContentV1PagesQueryKey = () => {
+  return [`/api/content/v1/pages`] as const;
+};
+
+export const getGetContentV1PagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentV1Pages>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Pages>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetContentV1PagesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentV1Pages>>
+  > = ({ signal }) => getContentV1Pages({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Pages>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentV1PagesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentV1Pages>>
+>;
+export type GetContentV1PagesQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /content/v1/pages
+ */
+
+export function useGetContentV1Pages<
+  TData = Awaited<ReturnType<typeof getContentV1Pages>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Pages>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentV1PagesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/pages/{id}
+ */
+export const getGetContentV1PagesByIdUrl = (id: string) => {
+  return `/api/content/v1/pages/${id}`;
+};
+
+export const getContentV1PagesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetContentV1PagesById200> => {
+  return customFetch<GetContentV1PagesById200>(
+    getGetContentV1PagesByIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetContentV1PagesByIdQueryKey = (id: string) => {
+  return [`/api/content/v1/pages/${id}`] as const;
+};
+
+export const getGetContentV1PagesByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentV1PagesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getContentV1PagesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetContentV1PagesByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentV1PagesById>>
+  > = ({ signal }) => getContentV1PagesById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1PagesById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentV1PagesByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentV1PagesById>>
+>;
+export type GetContentV1PagesByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /content/v1/pages/{id}
+ */
+
+export function useGetContentV1PagesById<
+  TData = Awaited<ReturnType<typeof getContentV1PagesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getContentV1PagesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentV1PagesByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /content/v1/scope
+ */
+export const getGetContentV1ScopeUrl = () => {
+  return `/api/content/v1/scope`;
+};
+
+export const getContentV1Scope = async (
+  options?: RequestInit,
+): Promise<GetContentV1Scope200> => {
+  return customFetch<GetContentV1Scope200>(getGetContentV1ScopeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetContentV1ScopeQueryKey = () => {
+  return [`/api/content/v1/scope`] as const;
+};
+
+export const getGetContentV1ScopeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentV1Scope>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Scope>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetContentV1ScopeQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentV1Scope>>
+  > = ({ signal }) => getContentV1Scope({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Scope>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentV1ScopeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentV1Scope>>
+>;
+export type GetContentV1ScopeQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /content/v1/scope
+ */
+
+export function useGetContentV1Scope<
+  TData = Awaited<ReturnType<typeof getContentV1Scope>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentV1Scope>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentV1ScopeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /content/v1/search
+ */
+export const getPostContentV1SearchUrl = () => {
+  return `/api/content/v1/search`;
+};
+
+export const postContentV1Search = async (
+  postContentV1SearchBody?: PostContentV1SearchBody,
+  options?: RequestInit,
+): Promise<PostContentV1Search200> => {
+  return customFetch<PostContentV1Search200>(getPostContentV1SearchUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postContentV1SearchBody),
+  });
+};
+
+export const getPostContentV1SearchMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postContentV1Search>>,
+    TError,
+    { data: BodyType<PostContentV1SearchBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postContentV1Search>>,
+  TError,
+  { data: BodyType<PostContentV1SearchBody> },
+  TContext
+> => {
+  const mutationKey = ["postContentV1Search"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postContentV1Search>>,
+    { data: BodyType<PostContentV1SearchBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postContentV1Search(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostContentV1SearchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postContentV1Search>>
+>;
+export type PostContentV1SearchMutationBody = BodyType<PostContentV1SearchBody>;
+export type PostContentV1SearchMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /content/v1/search
+ */
+export const usePostContentV1Search = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postContentV1Search>>,
+    TError,
+    { data: BodyType<PostContentV1SearchBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postContentV1Search>>,
+  TError,
+  { data: BodyType<PostContentV1SearchBody> },
+  TContext
+> => {
+  return useMutation(getPostContentV1SearchMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /content/working-copies/{id}/comment
+ */
+export const getPostContentWorkingCopiesByIdCommentUrl = (id: string) => {
+  return `/api/content/working-copies/${id}/comment`;
+};
+
+export const postContentWorkingCopiesByIdComment = async (
+  id: string,
+  postContentWorkingCopiesByIdCommentBody?: PostContentWorkingCopiesByIdCommentBody,
+  options?: RequestInit,
+): Promise<PostContentWorkingCopiesByIdComment200> => {
+  return customFetch<PostContentWorkingCopiesByIdComment200>(
+    getPostContentWorkingCopiesByIdCommentUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postContentWorkingCopiesByIdCommentBody),
+    },
+  );
+};
+
+export const getPostContentWorkingCopiesByIdCommentMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdComment>>,
+    TError,
+    { id: string; data: BodyType<PostContentWorkingCopiesByIdCommentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postContentWorkingCopiesByIdComment>>,
+  TError,
+  { id: string; data: BodyType<PostContentWorkingCopiesByIdCommentBody> },
+  TContext
+> => {
+  const mutationKey = ["postContentWorkingCopiesByIdComment"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdComment>>,
+    { id: string; data: BodyType<PostContentWorkingCopiesByIdCommentBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postContentWorkingCopiesByIdComment(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostContentWorkingCopiesByIdCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postContentWorkingCopiesByIdComment>>
+>;
+export type PostContentWorkingCopiesByIdCommentMutationBody =
+  BodyType<PostContentWorkingCopiesByIdCommentBody>;
+export type PostContentWorkingCopiesByIdCommentMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /content/working-copies/{id}/comment
+ */
+export const usePostContentWorkingCopiesByIdComment = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdComment>>,
+    TError,
+    { id: string; data: BodyType<PostContentWorkingCopiesByIdCommentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postContentWorkingCopiesByIdComment>>,
+  TError,
+  { id: string; data: BodyType<PostContentWorkingCopiesByIdCommentBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostContentWorkingCopiesByIdCommentMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /content/working-copies/{id}/generate-summary
+ */
+export const getPostContentWorkingCopiesByIdGenerateSummaryUrl = (
+  id: string,
+) => {
+  return `/api/content/working-copies/${id}/generate-summary`;
+};
+
+export const postContentWorkingCopiesByIdGenerateSummary = async (
+  id: string,
+  postContentWorkingCopiesByIdGenerateSummaryBody?: PostContentWorkingCopiesByIdGenerateSummaryBody,
+  options?: RequestInit,
+): Promise<PostContentWorkingCopiesByIdGenerateSummary200> => {
+  return customFetch<PostContentWorkingCopiesByIdGenerateSummary200>(
+    getPostContentWorkingCopiesByIdGenerateSummaryUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postContentWorkingCopiesByIdGenerateSummaryBody),
+    },
+  );
+};
+
+export const getPostContentWorkingCopiesByIdGenerateSummaryMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdGenerateSummary>>,
+    TError,
+    {
+      id: string;
+      data: BodyType<PostContentWorkingCopiesByIdGenerateSummaryBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postContentWorkingCopiesByIdGenerateSummary>>,
+  TError,
+  {
+    id: string;
+    data: BodyType<PostContentWorkingCopiesByIdGenerateSummaryBody>;
+  },
+  TContext
+> => {
+  const mutationKey = ["postContentWorkingCopiesByIdGenerateSummary"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdGenerateSummary>>,
+    {
+      id: string;
+      data: BodyType<PostContentWorkingCopiesByIdGenerateSummaryBody>;
+    }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postContentWorkingCopiesByIdGenerateSummary(
+      id,
+      data,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostContentWorkingCopiesByIdGenerateSummaryMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdGenerateSummary>>
+  >;
+export type PostContentWorkingCopiesByIdGenerateSummaryMutationBody =
+  BodyType<PostContentWorkingCopiesByIdGenerateSummaryBody>;
+export type PostContentWorkingCopiesByIdGenerateSummaryMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary POST /content/working-copies/{id}/generate-summary
+ */
+export const usePostContentWorkingCopiesByIdGenerateSummary = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postContentWorkingCopiesByIdGenerateSummary>>,
+    TError,
+    {
+      id: string;
+      data: BodyType<PostContentWorkingCopiesByIdGenerateSummaryBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postContentWorkingCopiesByIdGenerateSummary>>,
+  TError,
+  {
+    id: string;
+    data: BodyType<PostContentWorkingCopiesByIdGenerateSummaryBody>;
+  },
+  TContext
+> => {
+  return useMutation(
+    getPostContentWorkingCopiesByIdGenerateSummaryMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /content/working-copies/{id}/summary
+ */
+export const getPutContentWorkingCopiesByIdSummaryUrl = (id: string) => {
+  return `/api/content/working-copies/${id}/summary`;
+};
+
+export const putContentWorkingCopiesByIdSummary = async (
+  id: string,
+  putContentWorkingCopiesByIdSummaryBody?: PutContentWorkingCopiesByIdSummaryBody,
+  options?: RequestInit,
+): Promise<PutContentWorkingCopiesByIdSummary200> => {
+  return customFetch<PutContentWorkingCopiesByIdSummary200>(
+    getPutContentWorkingCopiesByIdSummaryUrl(id),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putContentWorkingCopiesByIdSummaryBody),
+    },
+  );
+};
+
+export const getPutContentWorkingCopiesByIdSummaryMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putContentWorkingCopiesByIdSummary>>,
+    TError,
+    { id: string; data: BodyType<PutContentWorkingCopiesByIdSummaryBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putContentWorkingCopiesByIdSummary>>,
+  TError,
+  { id: string; data: BodyType<PutContentWorkingCopiesByIdSummaryBody> },
+  TContext
+> => {
+  const mutationKey = ["putContentWorkingCopiesByIdSummary"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putContentWorkingCopiesByIdSummary>>,
+    { id: string; data: BodyType<PutContentWorkingCopiesByIdSummaryBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return putContentWorkingCopiesByIdSummary(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutContentWorkingCopiesByIdSummaryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putContentWorkingCopiesByIdSummary>>
+>;
+export type PutContentWorkingCopiesByIdSummaryMutationBody =
+  BodyType<PutContentWorkingCopiesByIdSummaryBody>;
+export type PutContentWorkingCopiesByIdSummaryMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /content/working-copies/{id}/summary
+ */
+export const usePutContentWorkingCopiesByIdSummary = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putContentWorkingCopiesByIdSummary>>,
+    TError,
+    { id: string; data: BodyType<PutContentWorkingCopiesByIdSummaryBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putContentWorkingCopiesByIdSummary>>,
+  TError,
+  { id: string; data: BodyType<PutContentWorkingCopiesByIdSummaryBody> },
+  TContext
+> => {
+  return useMutation(
+    getPutContentWorkingCopiesByIdSummaryMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/admin/keys
+ */
+export const getGetCopilotAdminKeysUrl = () => {
+  return `/api/copilot/admin/keys`;
+};
+
+export const getCopilotAdminKeys = async (
+  options?: RequestInit,
+): Promise<GetCopilotAdminKeys200> => {
+  return customFetch<GetCopilotAdminKeys200>(getGetCopilotAdminKeysUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotAdminKeysQueryKey = () => {
+  return [`/api/copilot/admin/keys`] as const;
+};
+
+export const getGetCopilotAdminKeysQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotAdminKeys>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotAdminKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotAdminKeysQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotAdminKeys>>
+  > = ({ signal }) => getCopilotAdminKeys({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotAdminKeys>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotAdminKeysQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotAdminKeys>>
+>;
+export type GetCopilotAdminKeysQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/admin/keys
+ */
+
+export function useGetCopilotAdminKeys<
+  TData = Awaited<ReturnType<typeof getCopilotAdminKeys>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotAdminKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotAdminKeysQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /copilot/admin/keys
+ */
+export const getPostCopilotAdminKeysUrl = () => {
+  return `/api/copilot/admin/keys`;
+};
+
+export const postCopilotAdminKeys = async (
+  postCopilotAdminKeysBody?: PostCopilotAdminKeysBody,
+  options?: RequestInit,
+): Promise<PostCopilotAdminKeys200> => {
+  return customFetch<PostCopilotAdminKeys200>(getPostCopilotAdminKeysUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postCopilotAdminKeysBody),
+  });
+};
+
+export const getPostCopilotAdminKeysMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postCopilotAdminKeys>>,
+    TError,
+    { data: BodyType<PostCopilotAdminKeysBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postCopilotAdminKeys>>,
+  TError,
+  { data: BodyType<PostCopilotAdminKeysBody> },
+  TContext
+> => {
+  const mutationKey = ["postCopilotAdminKeys"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postCopilotAdminKeys>>,
+    { data: BodyType<PostCopilotAdminKeysBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postCopilotAdminKeys(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostCopilotAdminKeysMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postCopilotAdminKeys>>
+>;
+export type PostCopilotAdminKeysMutationBody =
+  BodyType<PostCopilotAdminKeysBody>;
+export type PostCopilotAdminKeysMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /copilot/admin/keys
+ */
+export const usePostCopilotAdminKeys = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postCopilotAdminKeys>>,
+    TError,
+    { data: BodyType<PostCopilotAdminKeysBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postCopilotAdminKeys>>,
+  TError,
+  { data: BodyType<PostCopilotAdminKeysBody> },
+  TContext
+> => {
+  return useMutation(getPostCopilotAdminKeysMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /copilot/admin/keys/{id}
+ */
+export const getDeleteCopilotAdminKeysByIdUrl = (id: string) => {
+  return `/api/copilot/admin/keys/${id}`;
+};
+
+export const deleteCopilotAdminKeysById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DeleteCopilotAdminKeysById200 | void> => {
+  return customFetch<DeleteCopilotAdminKeysById200 | void>(
+    getDeleteCopilotAdminKeysByIdUrl(id),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteCopilotAdminKeysByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCopilotAdminKeysById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCopilotAdminKeysById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteCopilotAdminKeysById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCopilotAdminKeysById>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteCopilotAdminKeysById(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCopilotAdminKeysByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteCopilotAdminKeysById>>
+>;
+
+export type DeleteCopilotAdminKeysByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /copilot/admin/keys/{id}
+ */
+export const useDeleteCopilotAdminKeysById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCopilotAdminKeysById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCopilotAdminKeysById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteCopilotAdminKeysByIdMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/glossary
+ */
+export const getGetCopilotGlossaryUrl = () => {
+  return `/api/copilot/glossary`;
+};
+
+export const getCopilotGlossary = async (
+  options?: RequestInit,
+): Promise<GetCopilotGlossary200> => {
+  return customFetch<GetCopilotGlossary200>(getGetCopilotGlossaryUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotGlossaryQueryKey = () => {
+  return [`/api/copilot/glossary`] as const;
+};
+
+export const getGetCopilotGlossaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotGlossary>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotGlossary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotGlossaryQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotGlossary>>
+  > = ({ signal }) => getCopilotGlossary({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotGlossary>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotGlossaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotGlossary>>
+>;
+export type GetCopilotGlossaryQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/glossary
+ */
+
+export function useGetCopilotGlossary<
+  TData = Awaited<ReturnType<typeof getCopilotGlossary>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotGlossary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotGlossaryQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/glossary/{id}
+ */
+export const getGetCopilotGlossaryByIdUrl = (id: string) => {
+  return `/api/copilot/glossary/${id}`;
+};
+
+export const getCopilotGlossaryById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetCopilotGlossaryById200> => {
+  return customFetch<GetCopilotGlossaryById200>(
+    getGetCopilotGlossaryByIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetCopilotGlossaryByIdQueryKey = (id: string) => {
+  return [`/api/copilot/glossary/${id}`] as const;
+};
+
+export const getGetCopilotGlossaryByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotGlossaryById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCopilotGlossaryById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCopilotGlossaryByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotGlossaryById>>
+  > = ({ signal }) => getCopilotGlossaryById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotGlossaryById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotGlossaryByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotGlossaryById>>
+>;
+export type GetCopilotGlossaryByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/glossary/{id}
+ */
+
+export function useGetCopilotGlossaryById<
+  TData = Awaited<ReturnType<typeof getCopilotGlossaryById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCopilotGlossaryById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotGlossaryByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/nodes/{id}
+ */
+export const getGetCopilotNodesByIdUrl = (id: string) => {
+  return `/api/copilot/nodes/${id}`;
+};
+
+export const getCopilotNodesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetCopilotNodesById200> => {
+  return customFetch<GetCopilotNodesById200>(getGetCopilotNodesByIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotNodesByIdQueryKey = (id: string) => {
+  return [`/api/copilot/nodes/${id}`] as const;
+};
+
+export const getGetCopilotNodesByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotNodesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCopilotNodesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotNodesByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotNodesById>>
+  > = ({ signal }) => getCopilotNodesById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotNodesById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotNodesByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotNodesById>>
+>;
+export type GetCopilotNodesByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/nodes/{id}
+ */
+
+export function useGetCopilotNodesById<
+  TData = Awaited<ReturnType<typeof getCopilotNodesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCopilotNodesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotNodesByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/openapi.json
+ */
+export const getGetCopilotOpenapiJsonUrl = () => {
+  return `/api/copilot/openapi.json`;
+};
+
+export const getCopilotOpenapiJson = async (
+  options?: RequestInit,
+): Promise<GetCopilotOpenapiJson200> => {
+  return customFetch<GetCopilotOpenapiJson200>(getGetCopilotOpenapiJsonUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotOpenapiJsonQueryKey = () => {
+  return [`/api/copilot/openapi.json`] as const;
+};
+
+export const getGetCopilotOpenapiJsonQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotOpenapiJson>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotOpenapiJson>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotOpenapiJsonQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotOpenapiJson>>
+  > = ({ signal }) => getCopilotOpenapiJson({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotOpenapiJson>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotOpenapiJsonQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotOpenapiJson>>
+>;
+export type GetCopilotOpenapiJsonQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/openapi.json
+ */
+
+export function useGetCopilotOpenapiJson<
+  TData = Awaited<ReturnType<typeof getCopilotOpenapiJson>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotOpenapiJson>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotOpenapiJsonQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/pages
+ */
+export const getGetCopilotPagesUrl = () => {
+  return `/api/copilot/pages`;
+};
+
+export const getCopilotPages = async (
+  options?: RequestInit,
+): Promise<GetCopilotPages200> => {
+  return customFetch<GetCopilotPages200>(getGetCopilotPagesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotPagesQueryKey = () => {
+  return [`/api/copilot/pages`] as const;
+};
+
+export const getGetCopilotPagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotPages>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotPages>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotPagesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCopilotPages>>> = ({
+    signal,
+  }) => getCopilotPages({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotPages>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotPagesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotPages>>
+>;
+export type GetCopilotPagesQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/pages
+ */
+
+export function useGetCopilotPages<
+  TData = Awaited<ReturnType<typeof getCopilotPages>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotPages>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotPagesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/pages/{id}
+ */
+export const getGetCopilotPagesByIdUrl = (id: string) => {
+  return `/api/copilot/pages/${id}`;
+};
+
+export const getCopilotPagesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetCopilotPagesById200> => {
+  return customFetch<GetCopilotPagesById200>(getGetCopilotPagesByIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotPagesByIdQueryKey = (id: string) => {
+  return [`/api/copilot/pages/${id}`] as const;
+};
+
+export const getGetCopilotPagesByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotPagesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCopilotPagesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotPagesByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotPagesById>>
+  > = ({ signal }) => getCopilotPagesById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotPagesById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotPagesByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotPagesById>>
+>;
+export type GetCopilotPagesByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/pages/{id}
+ */
+
+export function useGetCopilotPagesById<
+  TData = Awaited<ReturnType<typeof getCopilotPagesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCopilotPagesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotPagesByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PATCH /copilot/pages/{id}/index-status
+ */
+export const getPatchCopilotPagesByIdIndexStatusUrl = (id: string) => {
+  return `/api/copilot/pages/${id}/index-status`;
+};
+
+export const patchCopilotPagesByIdIndexStatus = async (
+  id: string,
+  patchCopilotPagesByIdIndexStatusBody?: PatchCopilotPagesByIdIndexStatusBody,
+  options?: RequestInit,
+): Promise<PatchCopilotPagesByIdIndexStatus200> => {
+  return customFetch<PatchCopilotPagesByIdIndexStatus200>(
+    getPatchCopilotPagesByIdIndexStatusUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(patchCopilotPagesByIdIndexStatusBody),
+    },
+  );
+};
+
+export const getPatchCopilotPagesByIdIndexStatusMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchCopilotPagesByIdIndexStatus>>,
+    TError,
+    { id: string; data: BodyType<PatchCopilotPagesByIdIndexStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchCopilotPagesByIdIndexStatus>>,
+  TError,
+  { id: string; data: BodyType<PatchCopilotPagesByIdIndexStatusBody> },
+  TContext
+> => {
+  const mutationKey = ["patchCopilotPagesByIdIndexStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchCopilotPagesByIdIndexStatus>>,
+    { id: string; data: BodyType<PatchCopilotPagesByIdIndexStatusBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return patchCopilotPagesByIdIndexStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchCopilotPagesByIdIndexStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchCopilotPagesByIdIndexStatus>>
+>;
+export type PatchCopilotPagesByIdIndexStatusMutationBody =
+  BodyType<PatchCopilotPagesByIdIndexStatusBody>;
+export type PatchCopilotPagesByIdIndexStatusMutationError = ErrorType<void>;
+
+/**
+ * @summary PATCH /copilot/pages/{id}/index-status
+ */
+export const usePatchCopilotPagesByIdIndexStatus = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchCopilotPagesByIdIndexStatus>>,
+    TError,
+    { id: string; data: BodyType<PatchCopilotPagesByIdIndexStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof patchCopilotPagesByIdIndexStatus>>,
+  TError,
+  { id: string; data: BodyType<PatchCopilotPagesByIdIndexStatusBody> },
+  TContext
+> => {
+  return useMutation(
+    getPatchCopilotPagesByIdIndexStatusMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /copilot/search
+ */
+export const getPostCopilotSearchUrl = () => {
+  return `/api/copilot/search`;
+};
+
+export const postCopilotSearch = async (
+  postCopilotSearchBody?: PostCopilotSearchBody,
+  options?: RequestInit,
+): Promise<PostCopilotSearch200> => {
+  return customFetch<PostCopilotSearch200>(getPostCopilotSearchUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postCopilotSearchBody),
+  });
+};
+
+export const getPostCopilotSearchMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postCopilotSearch>>,
+    TError,
+    { data: BodyType<PostCopilotSearchBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postCopilotSearch>>,
+  TError,
+  { data: BodyType<PostCopilotSearchBody> },
+  TContext
+> => {
+  const mutationKey = ["postCopilotSearch"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postCopilotSearch>>,
+    { data: BodyType<PostCopilotSearchBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postCopilotSearch(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostCopilotSearchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postCopilotSearch>>
+>;
+export type PostCopilotSearchMutationBody = BodyType<PostCopilotSearchBody>;
+export type PostCopilotSearchMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /copilot/search
+ */
+export const usePostCopilotSearch = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postCopilotSearch>>,
+    TError,
+    { data: BodyType<PostCopilotSearchBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postCopilotSearch>>,
+  TError,
+  { data: BodyType<PostCopilotSearchBody> },
+  TContext
+> => {
+  return useMutation(getPostCopilotSearchMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /copilot/swagger.json
+ */
+export const getGetCopilotSwaggerJsonUrl = () => {
+  return `/api/copilot/swagger.json`;
+};
+
+export const getCopilotSwaggerJson = async (
+  options?: RequestInit,
+): Promise<GetCopilotSwaggerJson200> => {
+  return customFetch<GetCopilotSwaggerJson200>(getGetCopilotSwaggerJsonUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCopilotSwaggerJsonQueryKey = () => {
+  return [`/api/copilot/swagger.json`] as const;
+};
+
+export const getGetCopilotSwaggerJsonQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCopilotSwaggerJson>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotSwaggerJson>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCopilotSwaggerJsonQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCopilotSwaggerJson>>
+  > = ({ signal }) => getCopilotSwaggerJson({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotSwaggerJson>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCopilotSwaggerJsonQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCopilotSwaggerJson>>
+>;
+export type GetCopilotSwaggerJsonQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /copilot/swagger.json
+ */
+
+export function useGetCopilotSwaggerJson<
+  TData = Awaited<ReturnType<typeof getCopilotSwaggerJson>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCopilotSwaggerJson>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCopilotSwaggerJsonQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /delegations
+ */
+export const getGetDelegationsUrl = () => {
+  return `/api/delegations`;
+};
+
+export const getDelegations = async (
+  options?: RequestInit,
+): Promise<GetDelegations200> => {
+  return customFetch<GetDelegations200>(getGetDelegationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDelegationsQueryKey = () => {
+  return [`/api/delegations`] as const;
+};
+
+export const getGetDelegationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDelegations>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDelegations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDelegationsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDelegations>>> = ({
+    signal,
+  }) => getDelegations({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDelegations>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDelegationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDelegations>>
+>;
+export type GetDelegationsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /delegations
+ */
+
+export function useGetDelegations<
+  TData = Awaited<ReturnType<typeof getDelegations>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDelegations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDelegationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /delegations/{delegationId}
+ */
+export const getDeleteDelegationsByDelegationIdUrl = (delegationId: string) => {
+  return `/api/delegations/${delegationId}`;
+};
+
+export const deleteDelegationsByDelegationId = async (
+  delegationId: string,
+  options?: RequestInit,
+): Promise<DeleteDelegationsByDelegationId200 | void> => {
+  return customFetch<DeleteDelegationsByDelegationId200 | void>(
+    getDeleteDelegationsByDelegationIdUrl(delegationId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteDelegationsByDelegationIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDelegationsByDelegationId>>,
+    TError,
+    { delegationId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteDelegationsByDelegationId>>,
+  TError,
+  { delegationId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteDelegationsByDelegationId"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteDelegationsByDelegationId>>,
+    { delegationId: string }
+  > = (props) => {
+    const { delegationId } = props ?? {};
+
+    return deleteDelegationsByDelegationId(delegationId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteDelegationsByDelegationIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteDelegationsByDelegationId>>
+>;
+
+export type DeleteDelegationsByDelegationIdMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /delegations/{delegationId}
+ */
+export const useDeleteDelegationsByDelegationId = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDelegationsByDelegationId>>,
+    TError,
+    { delegationId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteDelegationsByDelegationId>>,
+  TError,
+  { delegationId: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteDelegationsByDelegationIdMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /docs
+ */
+export const getGetDocsUrl = () => {
+  return `/api/docs`;
+};
+
+export const getDocs = async (options?: RequestInit): Promise<GetDocs200> => {
+  return customFetch<GetDocs200>(getGetDocsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDocsQueryKey = () => {
+  return [`/api/docs`] as const;
+};
+
+export const getGetDocsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDocs>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getDocs>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDocsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDocs>>> = ({
+    signal,
+  }) => getDocs({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDocs>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDocsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDocs>>
+>;
+export type GetDocsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /docs
+ */
+
+export function useGetDocs<
+  TData = Awaited<ReturnType<typeof getDocs>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getDocs>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDocsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /docs-export/all
+ */
+export const getGetDocsExportAllUrl = () => {
+  return `/api/docs-export/all`;
+};
+
+export const getDocsExportAll = async (
+  options?: RequestInit,
+): Promise<GetDocsExportAll200> => {
+  return customFetch<GetDocsExportAll200>(getGetDocsExportAllUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDocsExportAllQueryKey = () => {
+  return [`/api/docs-export/all`] as const;
+};
+
+export const getGetDocsExportAllQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDocsExportAll>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDocsExportAll>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDocsExportAllQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getDocsExportAll>>
+  > = ({ signal }) => getDocsExportAll({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDocsExportAll>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDocsExportAllQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDocsExportAll>>
+>;
+export type GetDocsExportAllQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /docs-export/all
+ */
+
+export function useGetDocsExportAll<
+  TData = Awaited<ReturnType<typeof getDocsExportAll>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDocsExportAll>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDocsExportAllQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /docs/{filename}
+ */
+export const getGetDocsByFilenameUrl = (filename: string) => {
+  return `/api/docs/${filename}`;
+};
+
+export const getDocsByFilename = async (
+  filename: string,
+  options?: RequestInit,
+): Promise<GetDocsByFilename200> => {
+  return customFetch<GetDocsByFilename200>(getGetDocsByFilenameUrl(filename), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDocsByFilenameQueryKey = (filename: string) => {
+  return [`/api/docs/${filename}`] as const;
+};
+
+export const getGetDocsByFilenameQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDocsByFilename>>,
+  TError = ErrorType<void>,
+>(
+  filename: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getDocsByFilename>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetDocsByFilenameQueryKey(filename);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getDocsByFilename>>
+  > = ({ signal }) =>
+    getDocsByFilename(filename, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!filename,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDocsByFilename>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDocsByFilenameQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDocsByFilename>>
+>;
+export type GetDocsByFilenameQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /docs/{filename}
+ */
+
+export function useGetDocsByFilename<
+  TData = Awaited<ReturnType<typeof getDocsByFilename>>,
+  TError = ErrorType<void>,
+>(
+  filename: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getDocsByFilename>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDocsByFilenameQueryOptions(filename, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /glossary/export
+ */
+export const getGetGlossaryExportUrl = () => {
+  return `/api/glossary/export`;
+};
+
+export const getGlossaryExport = async (
+  options?: RequestInit,
+): Promise<GetGlossaryExport200> => {
+  return customFetch<GetGlossaryExport200>(getGetGlossaryExportUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetGlossaryExportQueryKey = () => {
+  return [`/api/glossary/export`] as const;
+};
+
+export const getGetGlossaryExportQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGlossaryExport>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGlossaryExport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetGlossaryExportQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGlossaryExport>>
+  > = ({ signal }) => getGlossaryExport({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGlossaryExport>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGlossaryExportQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGlossaryExport>>
+>;
+export type GetGlossaryExportQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /glossary/export
+ */
+
+export function useGetGlossaryExport<
+  TData = Awaited<ReturnType<typeof getGlossaryExport>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGlossaryExport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGlossaryExportQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /glossary/import
+ */
+export const getPostGlossaryImportUrl = () => {
+  return `/api/glossary/import`;
+};
+
+export const postGlossaryImport = async (
+  postGlossaryImportBody?: PostGlossaryImportBody,
+  options?: RequestInit,
+): Promise<PostGlossaryImport200> => {
+  return customFetch<PostGlossaryImport200>(getPostGlossaryImportUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postGlossaryImportBody),
+  });
+};
+
+export const getPostGlossaryImportMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGlossaryImport>>,
+    TError,
+    { data: BodyType<PostGlossaryImportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGlossaryImport>>,
+  TError,
+  { data: BodyType<PostGlossaryImportBody> },
+  TContext
+> => {
+  const mutationKey = ["postGlossaryImport"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGlossaryImport>>,
+    { data: BodyType<PostGlossaryImportBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGlossaryImport(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGlossaryImportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGlossaryImport>>
+>;
+export type PostGlossaryImportMutationBody = BodyType<PostGlossaryImportBody>;
+export type PostGlossaryImportMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /glossary/import
+ */
+export const usePostGlossaryImport = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGlossaryImport>>,
+    TError,
+    { data: BodyType<PostGlossaryImportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGlossaryImport>>,
+  TError,
+  { data: BodyType<PostGlossaryImportBody> },
+  TContext
+> => {
+  return useMutation(getPostGlossaryImportMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /glossary/reimport-seed
+ */
+export const getPostGlossaryReimportSeedUrl = () => {
+  return `/api/glossary/reimport-seed`;
+};
+
+export const postGlossaryReimportSeed = async (
+  postGlossaryReimportSeedBody?: PostGlossaryReimportSeedBody,
+  options?: RequestInit,
+): Promise<PostGlossaryReimportSeed200> => {
+  return customFetch<PostGlossaryReimportSeed200>(
+    getPostGlossaryReimportSeedUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGlossaryReimportSeedBody),
+    },
+  );
+};
+
+export const getPostGlossaryReimportSeedMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGlossaryReimportSeed>>,
+    TError,
+    { data: BodyType<PostGlossaryReimportSeedBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGlossaryReimportSeed>>,
+  TError,
+  { data: BodyType<PostGlossaryReimportSeedBody> },
+  TContext
+> => {
+  const mutationKey = ["postGlossaryReimportSeed"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGlossaryReimportSeed>>,
+    { data: BodyType<PostGlossaryReimportSeedBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGlossaryReimportSeed(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGlossaryReimportSeedMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGlossaryReimportSeed>>
+>;
+export type PostGlossaryReimportSeedMutationBody =
+  BodyType<PostGlossaryReimportSeedBody>;
+export type PostGlossaryReimportSeedMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /glossary/reimport-seed
+ */
+export const usePostGlossaryReimportSeed = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGlossaryReimportSeed>>,
+    TError,
+    { data: BodyType<PostGlossaryReimportSeedBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGlossaryReimportSeed>>,
+  TError,
+  { data: BodyType<PostGlossaryReimportSeedBody> },
+  TContext
+> => {
+  return useMutation(getPostGlossaryReimportSeedMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/acl-preview/{nodeId}
+ */
+export const getGetGraphConnectorAclPreviewByNodeIdUrl = (nodeId: string) => {
+  return `/api/graph-connector/acl-preview/${nodeId}`;
+};
+
+export const getGraphConnectorAclPreviewByNodeId = async (
+  nodeId: string,
+  options?: RequestInit,
+): Promise<GetGraphConnectorAclPreviewByNodeId200> => {
+  return customFetch<GetGraphConnectorAclPreviewByNodeId200>(
+    getGetGraphConnectorAclPreviewByNodeIdUrl(nodeId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorAclPreviewByNodeIdQueryKey = (
+  nodeId: string,
+) => {
+  return [`/api/graph-connector/acl-preview/${nodeId}`] as const;
+};
+
+export const getGetGraphConnectorAclPreviewByNodeIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>,
+  TError = ErrorType<void>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetGraphConnectorAclPreviewByNodeIdQueryKey(nodeId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>
+  > = ({ signal }) =>
+    getGraphConnectorAclPreviewByNodeId(nodeId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!nodeId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorAclPreviewByNodeIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>
+>;
+export type GetGraphConnectorAclPreviewByNodeIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/acl-preview/{nodeId}
+ */
+
+export function useGetGraphConnectorAclPreviewByNodeId<
+  TData = Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>,
+  TError = ErrorType<void>,
+>(
+  nodeId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorAclPreviewByNodeId>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorAclPreviewByNodeIdQueryOptions(
+    nodeId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/change-feed
+ */
+export const getGetGraphConnectorChangeFeedUrl = () => {
+  return `/api/graph-connector/change-feed`;
+};
+
+export const getGraphConnectorChangeFeed = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorChangeFeed200> => {
+  return customFetch<GetGraphConnectorChangeFeed200>(
+    getGetGraphConnectorChangeFeedUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorChangeFeedQueryKey = () => {
+  return [`/api/graph-connector/change-feed`] as const;
+};
+
+export const getGetGraphConnectorChangeFeedQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorChangeFeedQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>
+  > = ({ signal }) =>
+    getGraphConnectorChangeFeed({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorChangeFeedQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>
+>;
+export type GetGraphConnectorChangeFeedQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/change-feed
+ */
+
+export function useGetGraphConnectorChangeFeed<
+  TData = Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorChangeFeed>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorChangeFeedQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/connection
+ */
+export const getGetGraphConnectorConnectionUrl = () => {
+  return `/api/graph-connector/connection`;
+};
+
+export const getGraphConnectorConnection = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorConnection200> => {
+  return customFetch<GetGraphConnectorConnection200>(
+    getGetGraphConnectorConnectionUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorConnectionQueryKey = () => {
+  return [`/api/graph-connector/connection`] as const;
+};
+
+export const getGetGraphConnectorConnectionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorConnection>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorConnection>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorConnectionQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorConnection>>
+  > = ({ signal }) =>
+    getGraphConnectorConnection({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorConnection>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorConnectionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorConnection>>
+>;
+export type GetGraphConnectorConnectionQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/connection
+ */
+
+export function useGetGraphConnectorConnection<
+  TData = Awaited<ReturnType<typeof getGraphConnectorConnection>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorConnection>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorConnectionQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/connection/register
+ */
+export const getPostGraphConnectorConnectionRegisterUrl = () => {
+  return `/api/graph-connector/connection/register`;
+};
+
+export const postGraphConnectorConnectionRegister = async (
+  postGraphConnectorConnectionRegisterBody?: PostGraphConnectorConnectionRegisterBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorConnectionRegister200> => {
+  return customFetch<PostGraphConnectorConnectionRegister200>(
+    getPostGraphConnectorConnectionRegisterUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorConnectionRegisterBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorConnectionRegisterMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorConnectionRegister>>,
+    TError,
+    { data: BodyType<PostGraphConnectorConnectionRegisterBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorConnectionRegister>>,
+  TError,
+  { data: BodyType<PostGraphConnectorConnectionRegisterBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorConnectionRegister"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorConnectionRegister>>,
+    { data: BodyType<PostGraphConnectorConnectionRegisterBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGraphConnectorConnectionRegister(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorConnectionRegisterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorConnectionRegister>>
+>;
+export type PostGraphConnectorConnectionRegisterMutationBody =
+  BodyType<PostGraphConnectorConnectionRegisterBody>;
+export type PostGraphConnectorConnectionRegisterMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/connection/register
+ */
+export const usePostGraphConnectorConnectionRegister = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorConnectionRegister>>,
+    TError,
+    { data: BodyType<PostGraphConnectorConnectionRegisterBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorConnectionRegister>>,
+  TError,
+  { data: BodyType<PostGraphConnectorConnectionRegisterBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorConnectionRegisterMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/external-items/glossary/{id}
+ */
+export const getGetGraphConnectorExternalItemsGlossaryByIdUrl = (
+  id: string,
+) => {
+  return `/api/graph-connector/external-items/glossary/${id}`;
+};
+
+export const getGraphConnectorExternalItemsGlossaryById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetGraphConnectorExternalItemsGlossaryById200> => {
+  return customFetch<GetGraphConnectorExternalItemsGlossaryById200>(
+    getGetGraphConnectorExternalItemsGlossaryByIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorExternalItemsGlossaryByIdQueryKey = (
+  id: string,
+) => {
+  return [`/api/graph-connector/external-items/glossary/${id}`] as const;
+};
+
+export const getGetGraphConnectorExternalItemsGlossaryByIdQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>
+  >,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetGraphConnectorExternalItemsGlossaryByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>>
+  > = ({ signal }) =>
+    getGraphConnectorExternalItemsGlossaryById(id, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorExternalItemsGlossaryByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>>
+>;
+export type GetGraphConnectorExternalItemsGlossaryByIdQueryError =
+  ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/external-items/glossary/{id}
+ */
+
+export function useGetGraphConnectorExternalItemsGlossaryById<
+  TData = Awaited<
+    ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>
+  >,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorExternalItemsGlossaryById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getGetGraphConnectorExternalItemsGlossaryByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/external-items/glossary/{id}/register
+ */
+export const getPostGraphConnectorExternalItemsGlossaryByIdRegisterUrl = (
+  id: string,
+) => {
+  return `/api/graph-connector/external-items/glossary/${id}/register`;
+};
+
+export const postGraphConnectorExternalItemsGlossaryByIdRegister = async (
+  id: string,
+  postGraphConnectorExternalItemsGlossaryByIdRegisterBody?: PostGraphConnectorExternalItemsGlossaryByIdRegisterBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorExternalItemsGlossaryByIdRegister200> => {
+  return customFetch<PostGraphConnectorExternalItemsGlossaryByIdRegister200>(
+    getPostGraphConnectorExternalItemsGlossaryByIdRegisterUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(
+        postGraphConnectorExternalItemsGlossaryByIdRegisterBody,
+      ),
+    },
+  );
+};
+
+export const getPostGraphConnectorExternalItemsGlossaryByIdRegisterMutationOptions =
+  <TError = ErrorType<void>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof postGraphConnectorExternalItemsGlossaryByIdRegister>
+      >,
+      TError,
+      {
+        id: string;
+        data: BodyType<PostGraphConnectorExternalItemsGlossaryByIdRegisterBody>;
+      },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof postGraphConnectorExternalItemsGlossaryByIdRegister>
+    >,
+    TError,
+    {
+      id: string;
+      data: BodyType<PostGraphConnectorExternalItemsGlossaryByIdRegisterBody>;
+    },
+    TContext
+  > => {
+    const mutationKey = ["postGraphConnectorExternalItemsGlossaryByIdRegister"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof postGraphConnectorExternalItemsGlossaryByIdRegister>
+      >,
+      {
+        id: string;
+        data: BodyType<PostGraphConnectorExternalItemsGlossaryByIdRegisterBody>;
+      }
+    > = (props) => {
+      const { id, data } = props ?? {};
+
+      return postGraphConnectorExternalItemsGlossaryByIdRegister(
+        id,
+        data,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type PostGraphConnectorExternalItemsGlossaryByIdRegisterMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof postGraphConnectorExternalItemsGlossaryByIdRegister>
+    >
+  >;
+export type PostGraphConnectorExternalItemsGlossaryByIdRegisterMutationBody =
+  BodyType<PostGraphConnectorExternalItemsGlossaryByIdRegisterBody>;
+export type PostGraphConnectorExternalItemsGlossaryByIdRegisterMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/external-items/glossary/{id}/register
+ */
+export const usePostGraphConnectorExternalItemsGlossaryByIdRegister = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<
+      ReturnType<typeof postGraphConnectorExternalItemsGlossaryByIdRegister>
+    >,
+    TError,
+    {
+      id: string;
+      data: BodyType<PostGraphConnectorExternalItemsGlossaryByIdRegisterBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<
+    ReturnType<typeof postGraphConnectorExternalItemsGlossaryByIdRegister>
+  >,
+  TError,
+  {
+    id: string;
+    data: BodyType<PostGraphConnectorExternalItemsGlossaryByIdRegisterBody>;
+  },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorExternalItemsGlossaryByIdRegisterMutationOptions(
+      options,
+    ),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/external-items/pages/{id}
+ */
+export const getGetGraphConnectorExternalItemsPagesByIdUrl = (id: string) => {
+  return `/api/graph-connector/external-items/pages/${id}`;
+};
+
+export const getGraphConnectorExternalItemsPagesById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetGraphConnectorExternalItemsPagesById200> => {
+  return customFetch<GetGraphConnectorExternalItemsPagesById200>(
+    getGetGraphConnectorExternalItemsPagesByIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorExternalItemsPagesByIdQueryKey = (
+  id: string,
+) => {
+  return [`/api/graph-connector/external-items/pages/${id}`] as const;
+};
+
+export const getGetGraphConnectorExternalItemsPagesByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetGraphConnectorExternalItemsPagesByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>
+  > = ({ signal }) =>
+    getGraphConnectorExternalItemsPagesById(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorExternalItemsPagesByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>
+>;
+export type GetGraphConnectorExternalItemsPagesByIdQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/external-items/pages/{id}
+ */
+
+export function useGetGraphConnectorExternalItemsPagesById<
+  TData = Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorExternalItemsPagesById>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorExternalItemsPagesByIdQueryOptions(
+    id,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/external-items/pages/{id}/register
+ */
+export const getPostGraphConnectorExternalItemsPagesByIdRegisterUrl = (
+  id: string,
+) => {
+  return `/api/graph-connector/external-items/pages/${id}/register`;
+};
+
+export const postGraphConnectorExternalItemsPagesByIdRegister = async (
+  id: string,
+  postGraphConnectorExternalItemsPagesByIdRegisterBody?: PostGraphConnectorExternalItemsPagesByIdRegisterBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorExternalItemsPagesByIdRegister200> => {
+  return customFetch<PostGraphConnectorExternalItemsPagesByIdRegister200>(
+    getPostGraphConnectorExternalItemsPagesByIdRegisterUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(
+        postGraphConnectorExternalItemsPagesByIdRegisterBody,
+      ),
+    },
+  );
+};
+
+export const getPostGraphConnectorExternalItemsPagesByIdRegisterMutationOptions =
+  <TError = ErrorType<void>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof postGraphConnectorExternalItemsPagesByIdRegister>
+      >,
+      TError,
+      {
+        id: string;
+        data: BodyType<PostGraphConnectorExternalItemsPagesByIdRegisterBody>;
+      },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof postGraphConnectorExternalItemsPagesByIdRegister>
+    >,
+    TError,
+    {
+      id: string;
+      data: BodyType<PostGraphConnectorExternalItemsPagesByIdRegisterBody>;
+    },
+    TContext
+  > => {
+    const mutationKey = ["postGraphConnectorExternalItemsPagesByIdRegister"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof postGraphConnectorExternalItemsPagesByIdRegister>
+      >,
+      {
+        id: string;
+        data: BodyType<PostGraphConnectorExternalItemsPagesByIdRegisterBody>;
+      }
+    > = (props) => {
+      const { id, data } = props ?? {};
+
+      return postGraphConnectorExternalItemsPagesByIdRegister(
+        id,
+        data,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type PostGraphConnectorExternalItemsPagesByIdRegisterMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof postGraphConnectorExternalItemsPagesByIdRegister>>
+  >;
+export type PostGraphConnectorExternalItemsPagesByIdRegisterMutationBody =
+  BodyType<PostGraphConnectorExternalItemsPagesByIdRegisterBody>;
+export type PostGraphConnectorExternalItemsPagesByIdRegisterMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/external-items/pages/{id}/register
+ */
+export const usePostGraphConnectorExternalItemsPagesByIdRegister = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<
+      ReturnType<typeof postGraphConnectorExternalItemsPagesByIdRegister>
+    >,
+    TError,
+    {
+      id: string;
+      data: BodyType<PostGraphConnectorExternalItemsPagesByIdRegisterBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorExternalItemsPagesByIdRegister>>,
+  TError,
+  {
+    id: string;
+    data: BodyType<PostGraphConnectorExternalItemsPagesByIdRegisterBody>;
+  },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorExternalItemsPagesByIdRegisterMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/group-mappings
+ */
+export const getGetGraphConnectorGroupMappingsUrl = () => {
+  return `/api/graph-connector/group-mappings`;
+};
+
+export const getGraphConnectorGroupMappings = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorGroupMappings200> => {
+  return customFetch<GetGraphConnectorGroupMappings200>(
+    getGetGraphConnectorGroupMappingsUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorGroupMappingsQueryKey = () => {
+  return [`/api/graph-connector/group-mappings`] as const;
+};
+
+export const getGetGraphConnectorGroupMappingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorGroupMappingsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>
+  > = ({ signal }) =>
+    getGraphConnectorGroupMappings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorGroupMappingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>
+>;
+export type GetGraphConnectorGroupMappingsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/group-mappings
+ */
+
+export function useGetGraphConnectorGroupMappings<
+  TData = Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorGroupMappings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorGroupMappingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/group-mappings/{tier}
+ */
+export const getGetGraphConnectorGroupMappingsByTierUrl = (tier: string) => {
+  return `/api/graph-connector/group-mappings/${tier}`;
+};
+
+export const getGraphConnectorGroupMappingsByTier = async (
+  tier: string,
+  options?: RequestInit,
+): Promise<GetGraphConnectorGroupMappingsByTier200> => {
+  return customFetch<GetGraphConnectorGroupMappingsByTier200>(
+    getGetGraphConnectorGroupMappingsByTierUrl(tier),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorGroupMappingsByTierQueryKey = (
+  tier: string,
+) => {
+  return [`/api/graph-connector/group-mappings/${tier}`] as const;
+};
+
+export const getGetGraphConnectorGroupMappingsByTierQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>,
+  TError = ErrorType<void>,
+>(
+  tier: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetGraphConnectorGroupMappingsByTierQueryKey(tier);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>
+  > = ({ signal }) =>
+    getGraphConnectorGroupMappingsByTier(tier, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!tier,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorGroupMappingsByTierQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>
+>;
+export type GetGraphConnectorGroupMappingsByTierQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/group-mappings/{tier}
+ */
+
+export function useGetGraphConnectorGroupMappingsByTier<
+  TData = Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>,
+  TError = ErrorType<void>,
+>(
+  tier: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getGraphConnectorGroupMappingsByTier>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorGroupMappingsByTierQueryOptions(
+    tier,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /graph-connector/group-mappings/{tier}
+ */
+export const getPutGraphConnectorGroupMappingsByTierUrl = (tier: string) => {
+  return `/api/graph-connector/group-mappings/${tier}`;
+};
+
+export const putGraphConnectorGroupMappingsByTier = async (
+  tier: string,
+  putGraphConnectorGroupMappingsByTierBody?: PutGraphConnectorGroupMappingsByTierBody,
+  options?: RequestInit,
+): Promise<PutGraphConnectorGroupMappingsByTier200> => {
+  return customFetch<PutGraphConnectorGroupMappingsByTier200>(
+    getPutGraphConnectorGroupMappingsByTierUrl(tier),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putGraphConnectorGroupMappingsByTierBody),
+    },
+  );
+};
+
+export const getPutGraphConnectorGroupMappingsByTierMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putGraphConnectorGroupMappingsByTier>>,
+    TError,
+    { tier: string; data: BodyType<PutGraphConnectorGroupMappingsByTierBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putGraphConnectorGroupMappingsByTier>>,
+  TError,
+  { tier: string; data: BodyType<PutGraphConnectorGroupMappingsByTierBody> },
+  TContext
+> => {
+  const mutationKey = ["putGraphConnectorGroupMappingsByTier"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putGraphConnectorGroupMappingsByTier>>,
+    { tier: string; data: BodyType<PutGraphConnectorGroupMappingsByTierBody> }
+  > = (props) => {
+    const { tier, data } = props ?? {};
+
+    return putGraphConnectorGroupMappingsByTier(tier, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutGraphConnectorGroupMappingsByTierMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putGraphConnectorGroupMappingsByTier>>
+>;
+export type PutGraphConnectorGroupMappingsByTierMutationBody =
+  BodyType<PutGraphConnectorGroupMappingsByTierBody>;
+export type PutGraphConnectorGroupMappingsByTierMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /graph-connector/group-mappings/{tier}
+ */
+export const usePutGraphConnectorGroupMappingsByTier = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putGraphConnectorGroupMappingsByTier>>,
+    TError,
+    { tier: string; data: BodyType<PutGraphConnectorGroupMappingsByTierBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putGraphConnectorGroupMappingsByTier>>,
+  TError,
+  { tier: string; data: BodyType<PutGraphConnectorGroupMappingsByTierBody> },
+  TContext
+> => {
+  return useMutation(
+    getPutGraphConnectorGroupMappingsByTierMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /graph-connector/group-mappings/{tier}
+ */
+export const getDeleteGraphConnectorGroupMappingsByTierUrl = (tier: string) => {
+  return `/api/graph-connector/group-mappings/${tier}`;
+};
+
+export const deleteGraphConnectorGroupMappingsByTier = async (
+  tier: string,
+  options?: RequestInit,
+): Promise<DeleteGraphConnectorGroupMappingsByTier200 | void> => {
+  return customFetch<DeleteGraphConnectorGroupMappingsByTier200 | void>(
+    getDeleteGraphConnectorGroupMappingsByTierUrl(tier),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteGraphConnectorGroupMappingsByTierMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGraphConnectorGroupMappingsByTier>>,
+    TError,
+    { tier: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGraphConnectorGroupMappingsByTier>>,
+  TError,
+  { tier: string },
+  TContext
+> => {
+  const mutationKey = ["deleteGraphConnectorGroupMappingsByTier"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGraphConnectorGroupMappingsByTier>>,
+    { tier: string }
+  > = (props) => {
+    const { tier } = props ?? {};
+
+    return deleteGraphConnectorGroupMappingsByTier(tier, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGraphConnectorGroupMappingsByTierMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGraphConnectorGroupMappingsByTier>>
+>;
+
+export type DeleteGraphConnectorGroupMappingsByTierMutationError =
+  ErrorType<void>;
+
+/**
+ * @summary DELETE /graph-connector/group-mappings/{tier}
+ */
+export const useDeleteGraphConnectorGroupMappingsByTier = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGraphConnectorGroupMappingsByTier>>,
+    TError,
+    { tier: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGraphConnectorGroupMappingsByTier>>,
+  TError,
+  { tier: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteGraphConnectorGroupMappingsByTierMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/index-status/glossary
+ */
+export const getGetGraphConnectorIndexStatusGlossaryUrl = () => {
+  return `/api/graph-connector/index-status/glossary`;
+};
+
+export const getGraphConnectorIndexStatusGlossary = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorIndexStatusGlossary200> => {
+  return customFetch<GetGraphConnectorIndexStatusGlossary200>(
+    getGetGraphConnectorIndexStatusGlossaryUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorIndexStatusGlossaryQueryKey = () => {
+  return [`/api/graph-connector/index-status/glossary`] as const;
+};
+
+export const getGetGraphConnectorIndexStatusGlossaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorIndexStatusGlossaryQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>
+  > = ({ signal }) =>
+    getGraphConnectorIndexStatusGlossary({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorIndexStatusGlossaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>
+>;
+export type GetGraphConnectorIndexStatusGlossaryQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/index-status/glossary
+ */
+
+export function useGetGraphConnectorIndexStatusGlossary<
+  TData = Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusGlossary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getGetGraphConnectorIndexStatusGlossaryQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/index-status/pages
+ */
+export const getGetGraphConnectorIndexStatusPagesUrl = () => {
+  return `/api/graph-connector/index-status/pages`;
+};
+
+export const getGraphConnectorIndexStatusPages = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorIndexStatusPages200> => {
+  return customFetch<GetGraphConnectorIndexStatusPages200>(
+    getGetGraphConnectorIndexStatusPagesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorIndexStatusPagesQueryKey = () => {
+  return [`/api/graph-connector/index-status/pages`] as const;
+};
+
+export const getGetGraphConnectorIndexStatusPagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorIndexStatusPagesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>
+  > = ({ signal }) =>
+    getGraphConnectorIndexStatusPages({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorIndexStatusPagesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>
+>;
+export type GetGraphConnectorIndexStatusPagesQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/index-status/pages
+ */
+
+export function useGetGraphConnectorIndexStatusPages<
+  TData = Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorIndexStatusPages>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getGetGraphConnectorIndexStatusPagesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/readiness-check
+ */
+export const getGetGraphConnectorReadinessCheckUrl = () => {
+  return `/api/graph-connector/readiness-check`;
+};
+
+export const getGraphConnectorReadinessCheck = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorReadinessCheck200> => {
+  return customFetch<GetGraphConnectorReadinessCheck200>(
+    getGetGraphConnectorReadinessCheckUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorReadinessCheckQueryKey = () => {
+  return [`/api/graph-connector/readiness-check`] as const;
+};
+
+export const getGetGraphConnectorReadinessCheckQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorReadinessCheckQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>
+  > = ({ signal }) =>
+    getGraphConnectorReadinessCheck({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorReadinessCheckQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>
+>;
+export type GetGraphConnectorReadinessCheckQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/readiness-check
+ */
+
+export function useGetGraphConnectorReadinessCheck<
+  TData = Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorReadinessCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorReadinessCheckQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/schema
+ */
+export const getGetGraphConnectorSchemaUrl = () => {
+  return `/api/graph-connector/schema`;
+};
+
+export const getGraphConnectorSchema = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSchema200> => {
+  return customFetch<GetGraphConnectorSchema200>(
+    getGetGraphConnectorSchemaUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSchemaQueryKey = () => {
+  return [`/api/graph-connector/schema`] as const;
+};
+
+export const getGetGraphConnectorSchemaQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSchema>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSchema>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorSchemaQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSchema>>
+  > = ({ signal }) => getGraphConnectorSchema({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSchema>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSchemaQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSchema>>
+>;
+export type GetGraphConnectorSchemaQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/schema
+ */
+
+export function useGetGraphConnectorSchema<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSchema>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSchema>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorSchemaQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/schema/dry-run
+ */
+export const getGetGraphConnectorSchemaDryRunUrl = () => {
+  return `/api/graph-connector/schema/dry-run`;
+};
+
+export const getGraphConnectorSchemaDryRun = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSchemaDryRun200> => {
+  return customFetch<GetGraphConnectorSchemaDryRun200>(
+    getGetGraphConnectorSchemaDryRunUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSchemaDryRunQueryKey = () => {
+  return [`/api/graph-connector/schema/dry-run`] as const;
+};
+
+export const getGetGraphConnectorSchemaDryRunQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorSchemaDryRunQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>
+  > = ({ signal }) =>
+    getGraphConnectorSchemaDryRun({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSchemaDryRunQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>
+>;
+export type GetGraphConnectorSchemaDryRunQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/schema/dry-run
+ */
+
+export function useGetGraphConnectorSchemaDryRun<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSchemaDryRun>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorSchemaDryRunQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/schema/register
+ */
+export const getPostGraphConnectorSchemaRegisterUrl = () => {
+  return `/api/graph-connector/schema/register`;
+};
+
+export const postGraphConnectorSchemaRegister = async (
+  postGraphConnectorSchemaRegisterBody?: PostGraphConnectorSchemaRegisterBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorSchemaRegister200> => {
+  return customFetch<PostGraphConnectorSchemaRegister200>(
+    getPostGraphConnectorSchemaRegisterUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorSchemaRegisterBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorSchemaRegisterMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSchemaRegister>>,
+    TError,
+    { data: BodyType<PostGraphConnectorSchemaRegisterBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorSchemaRegister>>,
+  TError,
+  { data: BodyType<PostGraphConnectorSchemaRegisterBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorSchemaRegister"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorSchemaRegister>>,
+    { data: BodyType<PostGraphConnectorSchemaRegisterBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGraphConnectorSchemaRegister(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorSchemaRegisterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorSchemaRegister>>
+>;
+export type PostGraphConnectorSchemaRegisterMutationBody =
+  BodyType<PostGraphConnectorSchemaRegisterBody>;
+export type PostGraphConnectorSchemaRegisterMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/schema/register
+ */
+export const usePostGraphConnectorSchemaRegister = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSchemaRegister>>,
+    TError,
+    { data: BodyType<PostGraphConnectorSchemaRegisterBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorSchemaRegister>>,
+  TError,
+  { data: BodyType<PostGraphConnectorSchemaRegisterBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorSchemaRegisterMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/search-result-template
+ */
+export const getGetGraphConnectorSearchResultTemplateUrl = () => {
+  return `/api/graph-connector/search-result-template`;
+};
+
+export const getGraphConnectorSearchResultTemplate = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSearchResultTemplate200> => {
+  return customFetch<GetGraphConnectorSearchResultTemplate200>(
+    getGetGraphConnectorSearchResultTemplateUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSearchResultTemplateQueryKey = () => {
+  return [`/api/graph-connector/search-result-template`] as const;
+};
+
+export const getGetGraphConnectorSearchResultTemplateQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetGraphConnectorSearchResultTemplateQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>
+  > = ({ signal }) =>
+    getGraphConnectorSearchResultTemplate({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSearchResultTemplateQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>
+>;
+export type GetGraphConnectorSearchResultTemplateQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/search-result-template
+ */
+
+export function useGetGraphConnectorSearchResultTemplate<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSearchResultTemplate>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions =
+    getGetGraphConnectorSearchResultTemplateQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync-log
+ */
+export const getGetGraphConnectorSyncLogUrl = () => {
+  return `/api/graph-connector/sync-log`;
+};
+
+export const getGraphConnectorSyncLog = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSyncLog200> => {
+  return customFetch<GetGraphConnectorSyncLog200>(
+    getGetGraphConnectorSyncLogUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSyncLogQueryKey = () => {
+  return [`/api/graph-connector/sync-log`] as const;
+};
+
+export const getGetGraphConnectorSyncLogQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncLog>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorSyncLogQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog>>
+  > = ({ signal }) => getGraphConnectorSyncLog({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSyncLogQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSyncLog>>
+>;
+export type GetGraphConnectorSyncLogQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/sync-log
+ */
+
+export function useGetGraphConnectorSyncLog<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncLog>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorSyncLogQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/delta
+ */
+export const getPostGraphConnectorSyncDeltaUrl = () => {
+  return `/api/graph-connector/sync/delta`;
+};
+
+export const postGraphConnectorSyncDelta = async (
+  postGraphConnectorSyncDeltaBody?: PostGraphConnectorSyncDeltaBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorSyncDelta200> => {
+  return customFetch<PostGraphConnectorSyncDelta200>(
+    getPostGraphConnectorSyncDeltaUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorSyncDeltaBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorSyncDeltaMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncDelta>>,
+    TError,
+    { data: BodyType<PostGraphConnectorSyncDeltaBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorSyncDelta>>,
+  TError,
+  { data: BodyType<PostGraphConnectorSyncDeltaBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorSyncDelta"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorSyncDelta>>,
+    { data: BodyType<PostGraphConnectorSyncDeltaBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGraphConnectorSyncDelta(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorSyncDeltaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorSyncDelta>>
+>;
+export type PostGraphConnectorSyncDeltaMutationBody =
+  BodyType<PostGraphConnectorSyncDeltaBody>;
+export type PostGraphConnectorSyncDeltaMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/sync/delta
+ */
+export const usePostGraphConnectorSyncDelta = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncDelta>>,
+    TError,
+    { data: BodyType<PostGraphConnectorSyncDeltaBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorSyncDelta>>,
+  TError,
+  { data: BodyType<PostGraphConnectorSyncDeltaBody> },
+  TContext
+> => {
+  return useMutation(getPostGraphConnectorSyncDeltaMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/full
+ */
+export const getPostGraphConnectorSyncFullUrl = () => {
+  return `/api/graph-connector/sync/full`;
+};
+
+export const postGraphConnectorSyncFull = async (
+  postGraphConnectorSyncFullBody?: PostGraphConnectorSyncFullBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorSyncFull200> => {
+  return customFetch<PostGraphConnectorSyncFull200>(
+    getPostGraphConnectorSyncFullUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorSyncFullBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorSyncFullMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncFull>>,
+    TError,
+    { data: BodyType<PostGraphConnectorSyncFullBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorSyncFull>>,
+  TError,
+  { data: BodyType<PostGraphConnectorSyncFullBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorSyncFull"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorSyncFull>>,
+    { data: BodyType<PostGraphConnectorSyncFullBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGraphConnectorSyncFull(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorSyncFullMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorSyncFull>>
+>;
+export type PostGraphConnectorSyncFullMutationBody =
+  BodyType<PostGraphConnectorSyncFullBody>;
+export type PostGraphConnectorSyncFullMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/sync/full
+ */
+export const usePostGraphConnectorSyncFull = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncFull>>,
+    TError,
+    { data: BodyType<PostGraphConnectorSyncFullBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorSyncFull>>,
+  TError,
+  { data: BodyType<PostGraphConnectorSyncFullBody> },
+  TContext
+> => {
+  return useMutation(getPostGraphConnectorSyncFullMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/glossary/{id}
+ */
+export const getPostGraphConnectorSyncGlossaryByIdUrl = (id: string) => {
+  return `/api/graph-connector/sync/glossary/${id}`;
+};
+
+export const postGraphConnectorSyncGlossaryById = async (
+  id: string,
+  postGraphConnectorSyncGlossaryByIdBody?: PostGraphConnectorSyncGlossaryByIdBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorSyncGlossaryById200> => {
+  return customFetch<PostGraphConnectorSyncGlossaryById200>(
+    getPostGraphConnectorSyncGlossaryByIdUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorSyncGlossaryByIdBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorSyncGlossaryByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncGlossaryById>>,
+    TError,
+    { id: string; data: BodyType<PostGraphConnectorSyncGlossaryByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorSyncGlossaryById>>,
+  TError,
+  { id: string; data: BodyType<PostGraphConnectorSyncGlossaryByIdBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorSyncGlossaryById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorSyncGlossaryById>>,
+    { id: string; data: BodyType<PostGraphConnectorSyncGlossaryByIdBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postGraphConnectorSyncGlossaryById(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorSyncGlossaryByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorSyncGlossaryById>>
+>;
+export type PostGraphConnectorSyncGlossaryByIdMutationBody =
+  BodyType<PostGraphConnectorSyncGlossaryByIdBody>;
+export type PostGraphConnectorSyncGlossaryByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/sync/glossary/{id}
+ */
+export const usePostGraphConnectorSyncGlossaryById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncGlossaryById>>,
+    TError,
+    { id: string; data: BodyType<PostGraphConnectorSyncGlossaryByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorSyncGlossaryById>>,
+  TError,
+  { id: string; data: BodyType<PostGraphConnectorSyncGlossaryByIdBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorSyncGlossaryByIdMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync/log
+ */
+export const getGetGraphConnectorSyncLog2Url = () => {
+  return `/api/graph-connector/sync/log`;
+};
+
+export const getGraphConnectorSyncLog2 = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSyncLog2200> => {
+  return customFetch<GetGraphConnectorSyncLog2200>(
+    getGetGraphConnectorSyncLog2Url(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSyncLog2QueryKey = () => {
+  return [`/api/graph-connector/sync/log`] as const;
+};
+
+export const getGetGraphConnectorSyncLog2QueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorSyncLog2QueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>
+  > = ({ signal }) => getGraphConnectorSyncLog2({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSyncLog2QueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>
+>;
+export type GetGraphConnectorSyncLog2QueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/sync/log
+ */
+
+export function useGetGraphConnectorSyncLog2<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLog2>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorSyncLog2QueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync/log/export
+ */
+export const getGetGraphConnectorSyncLogExportUrl = () => {
+  return `/api/graph-connector/sync/log/export`;
+};
+
+export const getGraphConnectorSyncLogExport = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSyncLogExport200> => {
+  return customFetch<GetGraphConnectorSyncLogExport200>(
+    getGetGraphConnectorSyncLogExportUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSyncLogExportQueryKey = () => {
+  return [`/api/graph-connector/sync/log/export`] as const;
+};
+
+export const getGetGraphConnectorSyncLogExportQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorSyncLogExportQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>
+  > = ({ signal }) =>
+    getGraphConnectorSyncLogExport({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSyncLogExportQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>
+>;
+export type GetGraphConnectorSyncLogExportQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/sync/log/export
+ */
+
+export function useGetGraphConnectorSyncLogExport<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncLogExport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorSyncLogExportQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/sync/pages/{id}
+ */
+export const getPostGraphConnectorSyncPagesByIdUrl = (id: string) => {
+  return `/api/graph-connector/sync/pages/${id}`;
+};
+
+export const postGraphConnectorSyncPagesById = async (
+  id: string,
+  postGraphConnectorSyncPagesByIdBody?: PostGraphConnectorSyncPagesByIdBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorSyncPagesById200> => {
+  return customFetch<PostGraphConnectorSyncPagesById200>(
+    getPostGraphConnectorSyncPagesByIdUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorSyncPagesByIdBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorSyncPagesByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncPagesById>>,
+    TError,
+    { id: string; data: BodyType<PostGraphConnectorSyncPagesByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorSyncPagesById>>,
+  TError,
+  { id: string; data: BodyType<PostGraphConnectorSyncPagesByIdBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorSyncPagesById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorSyncPagesById>>,
+    { id: string; data: BodyType<PostGraphConnectorSyncPagesByIdBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postGraphConnectorSyncPagesById(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorSyncPagesByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorSyncPagesById>>
+>;
+export type PostGraphConnectorSyncPagesByIdMutationBody =
+  BodyType<PostGraphConnectorSyncPagesByIdBody>;
+export type PostGraphConnectorSyncPagesByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/sync/pages/{id}
+ */
+export const usePostGraphConnectorSyncPagesById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorSyncPagesById>>,
+    TError,
+    { id: string; data: BodyType<PostGraphConnectorSyncPagesByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorSyncPagesById>>,
+  TError,
+  { id: string; data: BodyType<PostGraphConnectorSyncPagesByIdBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorSyncPagesByIdMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /graph-connector/sync/queue
+ */
+export const getGetGraphConnectorSyncQueueUrl = () => {
+  return `/api/graph-connector/sync/queue`;
+};
+
+export const getGraphConnectorSyncQueue = async (
+  options?: RequestInit,
+): Promise<GetGraphConnectorSyncQueue200> => {
+  return customFetch<GetGraphConnectorSyncQueue200>(
+    getGetGraphConnectorSyncQueueUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetGraphConnectorSyncQueueQueryKey = () => {
+  return [`/api/graph-connector/sync/queue`] as const;
+};
+
+export const getGetGraphConnectorSyncQueueQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetGraphConnectorSyncQueueQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>
+  > = ({ signal }) => getGraphConnectorSyncQueue({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetGraphConnectorSyncQueueQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>
+>;
+export type GetGraphConnectorSyncQueueQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /graph-connector/sync/queue
+ */
+
+export function useGetGraphConnectorSyncQueue<
+  TData = Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getGraphConnectorSyncQueue>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetGraphConnectorSyncQueueQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /graph-connector/test-connection
+ */
+export const getPostGraphConnectorTestConnectionUrl = () => {
+  return `/api/graph-connector/test-connection`;
+};
+
+export const postGraphConnectorTestConnection = async (
+  postGraphConnectorTestConnectionBody?: PostGraphConnectorTestConnectionBody,
+  options?: RequestInit,
+): Promise<PostGraphConnectorTestConnection200> => {
+  return customFetch<PostGraphConnectorTestConnection200>(
+    getPostGraphConnectorTestConnectionUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postGraphConnectorTestConnectionBody),
+    },
+  );
+};
+
+export const getPostGraphConnectorTestConnectionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorTestConnection>>,
+    TError,
+    { data: BodyType<PostGraphConnectorTestConnectionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postGraphConnectorTestConnection>>,
+  TError,
+  { data: BodyType<PostGraphConnectorTestConnectionBody> },
+  TContext
+> => {
+  const mutationKey = ["postGraphConnectorTestConnection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postGraphConnectorTestConnection>>,
+    { data: BodyType<PostGraphConnectorTestConnectionBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postGraphConnectorTestConnection(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostGraphConnectorTestConnectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postGraphConnectorTestConnection>>
+>;
+export type PostGraphConnectorTestConnectionMutationBody =
+  BodyType<PostGraphConnectorTestConnectionBody>;
+export type PostGraphConnectorTestConnectionMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /graph-connector/test-connection
+ */
+export const usePostGraphConnectorTestConnection = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postGraphConnectorTestConnection>>,
+    TError,
+    { data: BodyType<PostGraphConnectorTestConnectionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postGraphConnectorTestConnection>>,
+  TError,
+  { data: BodyType<PostGraphConnectorTestConnectionBody> },
+  TContext
+> => {
+  return useMutation(
+    getPostGraphConnectorTestConnectionMutationOptions(options),
+  );
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /integration-keys/
+ */
+export const getGetIntegrationKeysUrl = () => {
+  return `/api/integration-keys/`;
+};
+
+export const getIntegrationKeys = async (
+  options?: RequestInit,
+): Promise<GetIntegrationKeys200> => {
+  return customFetch<GetIntegrationKeys200>(getGetIntegrationKeysUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetIntegrationKeysQueryKey = () => {
+  return [`/api/integration-keys/`] as const;
+};
+
+export const getGetIntegrationKeysQueryOptions = <
+  TData = Awaited<ReturnType<typeof getIntegrationKeys>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getIntegrationKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetIntegrationKeysQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getIntegrationKeys>>
+  > = ({ signal }) => getIntegrationKeys({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getIntegrationKeys>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetIntegrationKeysQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getIntegrationKeys>>
+>;
+export type GetIntegrationKeysQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /integration-keys/
+ */
+
+export function useGetIntegrationKeys<
+  TData = Awaited<ReturnType<typeof getIntegrationKeys>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getIntegrationKeys>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetIntegrationKeysQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /integration-keys/
+ */
+export const getPostIntegrationKeysUrl = () => {
+  return `/api/integration-keys/`;
+};
+
+export const postIntegrationKeys = async (
+  postIntegrationKeysBody?: PostIntegrationKeysBody,
+  options?: RequestInit,
+): Promise<PostIntegrationKeys200> => {
+  return customFetch<PostIntegrationKeys200>(getPostIntegrationKeysUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postIntegrationKeysBody),
+  });
+};
+
+export const getPostIntegrationKeysMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIntegrationKeys>>,
+    TError,
+    { data: BodyType<PostIntegrationKeysBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postIntegrationKeys>>,
+  TError,
+  { data: BodyType<PostIntegrationKeysBody> },
+  TContext
+> => {
+  const mutationKey = ["postIntegrationKeys"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postIntegrationKeys>>,
+    { data: BodyType<PostIntegrationKeysBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postIntegrationKeys(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostIntegrationKeysMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postIntegrationKeys>>
+>;
+export type PostIntegrationKeysMutationBody = BodyType<PostIntegrationKeysBody>;
+export type PostIntegrationKeysMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /integration-keys/
+ */
+export const usePostIntegrationKeys = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIntegrationKeys>>,
+    TError,
+    { data: BodyType<PostIntegrationKeysBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postIntegrationKeys>>,
+  TError,
+  { data: BodyType<PostIntegrationKeysBody> },
+  TContext
+> => {
+  return useMutation(getPostIntegrationKeysMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /integration-keys/preview
+ */
+export const getPostIntegrationKeysPreviewUrl = () => {
+  return `/api/integration-keys/preview`;
+};
+
+export const postIntegrationKeysPreview = async (
+  postIntegrationKeysPreviewBody?: PostIntegrationKeysPreviewBody,
+  options?: RequestInit,
+): Promise<PostIntegrationKeysPreview200> => {
+  return customFetch<PostIntegrationKeysPreview200>(
+    getPostIntegrationKeysPreviewUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postIntegrationKeysPreviewBody),
+    },
+  );
+};
+
+export const getPostIntegrationKeysPreviewMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIntegrationKeysPreview>>,
+    TError,
+    { data: BodyType<PostIntegrationKeysPreviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postIntegrationKeysPreview>>,
+  TError,
+  { data: BodyType<PostIntegrationKeysPreviewBody> },
+  TContext
+> => {
+  const mutationKey = ["postIntegrationKeysPreview"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postIntegrationKeysPreview>>,
+    { data: BodyType<PostIntegrationKeysPreviewBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postIntegrationKeysPreview(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostIntegrationKeysPreviewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postIntegrationKeysPreview>>
+>;
+export type PostIntegrationKeysPreviewMutationBody =
+  BodyType<PostIntegrationKeysPreviewBody>;
+export type PostIntegrationKeysPreviewMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /integration-keys/preview
+ */
+export const usePostIntegrationKeysPreview = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIntegrationKeysPreview>>,
+    TError,
+    { data: BodyType<PostIntegrationKeysPreviewBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postIntegrationKeysPreview>>,
+  TError,
+  { data: BodyType<PostIntegrationKeysPreviewBody> },
+  TContext
+> => {
+  return useMutation(getPostIntegrationKeysPreviewMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PATCH /integration-keys/{id}
+ */
+export const getPatchIntegrationKeysByIdUrl = (id: string) => {
+  return `/api/integration-keys/${id}`;
+};
+
+export const patchIntegrationKeysById = async (
+  id: string,
+  patchIntegrationKeysByIdBody?: PatchIntegrationKeysByIdBody,
+  options?: RequestInit,
+): Promise<PatchIntegrationKeysById200> => {
+  return customFetch<PatchIntegrationKeysById200>(
+    getPatchIntegrationKeysByIdUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(patchIntegrationKeysByIdBody),
+    },
+  );
+};
+
+export const getPatchIntegrationKeysByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchIntegrationKeysById>>,
+    TError,
+    { id: string; data: BodyType<PatchIntegrationKeysByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof patchIntegrationKeysById>>,
+  TError,
+  { id: string; data: BodyType<PatchIntegrationKeysByIdBody> },
+  TContext
+> => {
+  const mutationKey = ["patchIntegrationKeysById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof patchIntegrationKeysById>>,
+    { id: string; data: BodyType<PatchIntegrationKeysByIdBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return patchIntegrationKeysById(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PatchIntegrationKeysByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof patchIntegrationKeysById>>
+>;
+export type PatchIntegrationKeysByIdMutationBody =
+  BodyType<PatchIntegrationKeysByIdBody>;
+export type PatchIntegrationKeysByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary PATCH /integration-keys/{id}
+ */
+export const usePatchIntegrationKeysById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof patchIntegrationKeysById>>,
+    TError,
+    { id: string; data: BodyType<PatchIntegrationKeysByIdBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof patchIntegrationKeysById>>,
+  TError,
+  { id: string; data: BodyType<PatchIntegrationKeysByIdBody> },
+  TContext
+> => {
+  return useMutation(getPatchIntegrationKeysByIdMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /integration-keys/{id}
+ */
+export const getDeleteIntegrationKeysByIdUrl = (id: string) => {
+  return `/api/integration-keys/${id}`;
+};
+
+export const deleteIntegrationKeysById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DeleteIntegrationKeysById200 | void> => {
+  return customFetch<DeleteIntegrationKeysById200 | void>(
+    getDeleteIntegrationKeysByIdUrl(id),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteIntegrationKeysByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteIntegrationKeysById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteIntegrationKeysById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteIntegrationKeysById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteIntegrationKeysById>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteIntegrationKeysById(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteIntegrationKeysByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteIntegrationKeysById>>
+>;
+
+export type DeleteIntegrationKeysByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /integration-keys/{id}
+ */
+export const useDeleteIntegrationKeysById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteIntegrationKeysById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteIntegrationKeysById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteIntegrationKeysByIdMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /integration-keys/{id}/rotate
+ */
+export const getPostIntegrationKeysByIdRotateUrl = (id: string) => {
+  return `/api/integration-keys/${id}/rotate`;
+};
+
+export const postIntegrationKeysByIdRotate = async (
+  id: string,
+  postIntegrationKeysByIdRotateBody?: PostIntegrationKeysByIdRotateBody,
+  options?: RequestInit,
+): Promise<PostIntegrationKeysByIdRotate200> => {
+  return customFetch<PostIntegrationKeysByIdRotate200>(
+    getPostIntegrationKeysByIdRotateUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postIntegrationKeysByIdRotateBody),
+    },
+  );
+};
+
+export const getPostIntegrationKeysByIdRotateMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIntegrationKeysByIdRotate>>,
+    TError,
+    { id: string; data: BodyType<PostIntegrationKeysByIdRotateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postIntegrationKeysByIdRotate>>,
+  TError,
+  { id: string; data: BodyType<PostIntegrationKeysByIdRotateBody> },
+  TContext
+> => {
+  const mutationKey = ["postIntegrationKeysByIdRotate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postIntegrationKeysByIdRotate>>,
+    { id: string; data: BodyType<PostIntegrationKeysByIdRotateBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postIntegrationKeysByIdRotate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostIntegrationKeysByIdRotateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postIntegrationKeysByIdRotate>>
+>;
+export type PostIntegrationKeysByIdRotateMutationBody =
+  BodyType<PostIntegrationKeysByIdRotateBody>;
+export type PostIntegrationKeysByIdRotateMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /integration-keys/{id}/rotate
+ */
+export const usePostIntegrationKeysByIdRotate = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postIntegrationKeysByIdRotate>>,
+    TError,
+    { id: string; data: BodyType<PostIntegrationKeysByIdRotateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postIntegrationKeysByIdRotate>>,
+  TError,
+  { id: string; data: BodyType<PostIntegrationKeysByIdRotateBody> },
+  TContext
+> => {
+  return useMutation(getPostIntegrationKeysByIdRotateMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /media/import-sharepoint
+ */
+export const getPostMediaImportSharepointUrl = () => {
+  return `/api/media/import-sharepoint`;
+};
+
+export const postMediaImportSharepoint = async (
+  postMediaImportSharepointBody?: PostMediaImportSharepointBody,
+  options?: RequestInit,
+): Promise<PostMediaImportSharepoint200> => {
+  return customFetch<PostMediaImportSharepoint200>(
+    getPostMediaImportSharepointUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postMediaImportSharepointBody),
+    },
+  );
+};
+
+export const getPostMediaImportSharepointMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postMediaImportSharepoint>>,
+    TError,
+    { data: BodyType<PostMediaImportSharepointBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postMediaImportSharepoint>>,
+  TError,
+  { data: BodyType<PostMediaImportSharepointBody> },
+  TContext
+> => {
+  const mutationKey = ["postMediaImportSharepoint"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postMediaImportSharepoint>>,
+    { data: BodyType<PostMediaImportSharepointBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postMediaImportSharepoint(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostMediaImportSharepointMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postMediaImportSharepoint>>
+>;
+export type PostMediaImportSharepointMutationBody =
+  BodyType<PostMediaImportSharepointBody>;
+export type PostMediaImportSharepointMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /media/import-sharepoint
+ */
+export const usePostMediaImportSharepoint = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postMediaImportSharepoint>>,
+    TError,
+    { data: BodyType<PostMediaImportSharepointBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postMediaImportSharepoint>>,
+  TError,
+  { data: BodyType<PostMediaImportSharepointBody> },
+  TContext
+> => {
+  return useMutation(getPostMediaImportSharepointMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /media/validate-embed
+ */
+export const getPostMediaValidateEmbedUrl = () => {
+  return `/api/media/validate-embed`;
+};
+
+export const postMediaValidateEmbed = async (
+  postMediaValidateEmbedBody?: PostMediaValidateEmbedBody,
+  options?: RequestInit,
+): Promise<PostMediaValidateEmbed200> => {
+  return customFetch<PostMediaValidateEmbed200>(
+    getPostMediaValidateEmbedUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postMediaValidateEmbedBody),
+    },
+  );
+};
+
+export const getPostMediaValidateEmbedMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postMediaValidateEmbed>>,
+    TError,
+    { data: BodyType<PostMediaValidateEmbedBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postMediaValidateEmbed>>,
+  TError,
+  { data: BodyType<PostMediaValidateEmbedBody> },
+  TContext
+> => {
+  const mutationKey = ["postMediaValidateEmbed"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postMediaValidateEmbed>>,
+    { data: BodyType<PostMediaValidateEmbedBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postMediaValidateEmbed(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostMediaValidateEmbedMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postMediaValidateEmbed>>
+>;
+export type PostMediaValidateEmbedMutationBody =
+  BodyType<PostMediaValidateEmbedBody>;
+export type PostMediaValidateEmbedMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /media/validate-embed
+ */
+export const usePostMediaValidateEmbed = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postMediaValidateEmbed>>,
+    TError,
+    { data: BodyType<PostMediaValidateEmbedBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postMediaValidateEmbed>>,
+  TError,
+  { data: BodyType<PostMediaValidateEmbedBody> },
+  TContext
+> => {
+  return useMutation(getPostMediaValidateEmbedMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /principals/{id}/delegations
+ */
+export const getGetPrincipalsByIdDelegationsUrl = (id: string) => {
+  return `/api/principals/${id}/delegations`;
+};
+
+export const getPrincipalsByIdDelegations = async (
+  id: string,
+  options?: RequestInit,
+): Promise<GetPrincipalsByIdDelegations200> => {
+  return customFetch<GetPrincipalsByIdDelegations200>(
+    getGetPrincipalsByIdDelegationsUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetPrincipalsByIdDelegationsQueryKey = (id: string) => {
+  return [`/api/principals/${id}/delegations`] as const;
+};
+
+export const getGetPrincipalsByIdDelegationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPrincipalsByIdDelegationsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>
+  > = ({ signal }) =>
+    getPrincipalsByIdDelegations(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPrincipalsByIdDelegationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>
+>;
+export type GetPrincipalsByIdDelegationsQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /principals/{id}/delegations
+ */
+
+export function useGetPrincipalsByIdDelegations<
+  TData = Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>,
+  TError = ErrorType<void>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrincipalsByIdDelegations>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPrincipalsByIdDelegationsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /principals/{id}/delegations
+ */
+export const getPostPrincipalsByIdDelegationsUrl = (id: string) => {
+  return `/api/principals/${id}/delegations`;
+};
+
+export const postPrincipalsByIdDelegations = async (
+  id: string,
+  postPrincipalsByIdDelegationsBody?: PostPrincipalsByIdDelegationsBody,
+  options?: RequestInit,
+): Promise<PostPrincipalsByIdDelegations200> => {
+  return customFetch<PostPrincipalsByIdDelegations200>(
+    getPostPrincipalsByIdDelegationsUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(postPrincipalsByIdDelegationsBody),
+    },
+  );
+};
+
+export const getPostPrincipalsByIdDelegationsMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
+    TError,
+    { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
+  TError,
+  { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+  TContext
+> => {
+  const mutationKey = ["postPrincipalsByIdDelegations"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
+    { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return postPrincipalsByIdDelegations(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostPrincipalsByIdDelegationsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>
+>;
+export type PostPrincipalsByIdDelegationsMutationBody =
+  BodyType<PostPrincipalsByIdDelegationsBody>;
+export type PostPrincipalsByIdDelegationsMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /principals/{id}/delegations
+ */
+export const usePostPrincipalsByIdDelegations = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
+    TError,
+    { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
+  TError,
+  { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+  TContext
+> => {
+  return useMutation(getPostPrincipalsByIdDelegationsMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /rbac/sod-config
+ */
+export const getGetRbacSodConfigUrl = () => {
+  return `/api/rbac/sod-config`;
+};
+
+export const getRbacSodConfig = async (
+  options?: RequestInit,
+): Promise<GetRbacSodConfig200> => {
+  return customFetch<GetRbacSodConfig200>(getGetRbacSodConfigUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetRbacSodConfigQueryKey = () => {
+  return [`/api/rbac/sod-config`] as const;
+};
+
+export const getGetRbacSodConfigQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRbacSodConfig>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRbacSodConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRbacSodConfigQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRbacSodConfig>>
+  > = ({ signal }) => getRbacSodConfig({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRbacSodConfig>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRbacSodConfigQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRbacSodConfig>>
+>;
+export type GetRbacSodConfigQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /rbac/sod-config
+ */
+
+export function useGetRbacSodConfig<
+  TData = Awaited<ReturnType<typeof getRbacSodConfig>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRbacSodConfig>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRbacSodConfigQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary PUT /rbac/sod-config/{ruleKey}
+ */
+export const getPutRbacSodConfigByRuleKeyUrl = (ruleKey: string) => {
+  return `/api/rbac/sod-config/${ruleKey}`;
+};
+
+export const putRbacSodConfigByRuleKey = async (
+  ruleKey: string,
+  putRbacSodConfigByRuleKeyBody?: PutRbacSodConfigByRuleKeyBody,
+  options?: RequestInit,
+): Promise<PutRbacSodConfigByRuleKey200> => {
+  return customFetch<PutRbacSodConfigByRuleKey200>(
+    getPutRbacSodConfigByRuleKeyUrl(ruleKey),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(putRbacSodConfigByRuleKeyBody),
+    },
+  );
+};
+
+export const getPutRbacSodConfigByRuleKeyMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
+    TError,
+    { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
+  TError,
+  { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+  TContext
+> => {
+  const mutationKey = ["putRbacSodConfigByRuleKey"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
+    { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> }
+  > = (props) => {
+    const { ruleKey, data } = props ?? {};
+
+    return putRbacSodConfigByRuleKey(ruleKey, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutRbacSodConfigByRuleKeyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>
+>;
+export type PutRbacSodConfigByRuleKeyMutationBody =
+  BodyType<PutRbacSodConfigByRuleKeyBody>;
+export type PutRbacSodConfigByRuleKeyMutationError = ErrorType<void>;
+
+/**
+ * @summary PUT /rbac/sod-config/{ruleKey}
+ */
+export const usePutRbacSodConfigByRuleKey = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
+    TError,
+    { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
+  TError,
+  { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+  TContext
+> => {
+  return useMutation(getPutRbacSodConfigByRuleKeyMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary GET /tokens
+ */
+export const getGetTokensUrl = () => {
+  return `/api/tokens`;
+};
+
+export const getTokens = async (
+  options?: RequestInit,
+): Promise<GetTokens200> => {
+  return customFetch<GetTokens200>(getGetTokensUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTokensQueryKey = () => {
+  return [`/api/tokens`] as const;
+};
+
+export const getGetTokensQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTokens>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getTokens>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTokensQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTokens>>> = ({
+    signal,
+  }) => getTokens({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTokens>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTokensQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTokens>>
+>;
+export type GetTokensQueryError = ErrorType<void>;
+
+/**
+ * @summary GET /tokens
+ */
+
+export function useGetTokens<
+  TData = Awaited<ReturnType<typeof getTokens>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getTokens>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTokensQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary POST /tokens
+ */
+export const getPostTokensUrl = () => {
+  return `/api/tokens`;
+};
+
+export const postTokens = async (
+  postTokensBody?: PostTokensBody,
+  options?: RequestInit,
+): Promise<PostTokens200> => {
+  return customFetch<PostTokens200>(getPostTokensUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(postTokensBody),
+  });
+};
+
+export const getPostTokensMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postTokens>>,
+    TError,
+    { data: BodyType<PostTokensBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postTokens>>,
+  TError,
+  { data: BodyType<PostTokensBody> },
+  TContext
+> => {
+  const mutationKey = ["postTokens"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postTokens>>,
+    { data: BodyType<PostTokensBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postTokens(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostTokensMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postTokens>>
+>;
+export type PostTokensMutationBody = BodyType<PostTokensBody>;
+export type PostTokensMutationError = ErrorType<void>;
+
+/**
+ * @summary POST /tokens
+ */
+export const usePostTokens = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postTokens>>,
+    TError,
+    { data: BodyType<PostTokensBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postTokens>>,
+  TError,
+  { data: BodyType<PostTokensBody> },
+  TContext
+> => {
+  return useMutation(getPostTokensMutationOptions(options));
+};
+
+/**
+ * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
+ * @summary DELETE /tokens/{id}
+ */
+export const getDeleteTokensByIdUrl = (id: string) => {
+  return `/api/tokens/${id}`;
+};
+
+export const deleteTokensById = async (
+  id: string,
+  options?: RequestInit,
+): Promise<DeleteTokensById200 | void> => {
+  return customFetch<DeleteTokensById200 | void>(getDeleteTokensByIdUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteTokensByIdMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTokensById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTokensById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteTokensById"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTokensById>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteTokensById(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTokensByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTokensById>>
+>;
+
+export type DeleteTokensByIdMutationError = ErrorType<void>;
+
+/**
+ * @summary DELETE /tokens/{id}
+ */
+export const useDeleteTokensById = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTokensById>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTokensById>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteTokensByIdMutationOptions(options));
 };

@@ -45,7 +45,12 @@ function TreePickerNode({
   onSelect,
   depth,
 }: {
-  node: { id: string; title: string; displayCode: string | null; templateType: string };
+  node: {
+    id: string;
+    title: string;
+    displayCode: string | null;
+    templateType: string;
+  };
   excludeId: string;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
@@ -135,18 +140,20 @@ export function MoveNodeDialog({
   const moveMutation = useMoveNode({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetNodeQueryKey(nodeId) });
+        void queryClient.invalidateQueries({
+          queryKey: getGetNodeQueryKey(nodeId),
+        });
         if (currentParentId) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetNodeChildrenQueryKey(currentParentId),
           });
         }
         if (selectedParentId) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getGetNodeChildrenQueryKey(selectedParentId),
           });
         }
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getListRootNodesQueryKey(),
         });
         onOpenChange(false);
@@ -156,7 +163,8 @@ export function MoveNodeDialog({
   });
 
   const isSameParent = selectedParentId === currentParentId;
-  const canMove = selectedParentId !== null && !isSameParent && !moveMutation.isPending;
+  const canMove =
+    selectedParentId !== null && !isSameParent && !moveMutation.isPending;
 
   const handleMove = () => {
     if (!selectedParentId) return;
@@ -212,7 +220,8 @@ export function MoveNodeDialog({
         {moveMutation.isError && (
           <p className="text-xs text-destructive flex items-center gap-1">
             <AlertTriangle className="h-3 w-3" />
-            Fehler beim Verschieben: {(moveMutation.error as Error)?.message ?? "Unbekannter Fehler"}
+            Fehler beim Verschieben:{" "}
+            {(moveMutation.error as Error)?.message ?? "Unbekannter Fehler"}
           </p>
         )}
 

@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { CreateDeletionRequestBody } from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   deletionRequestsTable,
@@ -36,7 +38,10 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
 
   // Nur Prüfer (archive_page) sehen alle Anfragen; alle anderen sehen
   // ausschließlich ihre eigenen (vorher: vollständige Liste für jeden).
-  const canReviewAll = await hasPermission(req.user!.principalId, "archive_page");
+  const canReviewAll = await hasPermission(
+    req.user!.principalId,
+    "archive_page",
+  );
 
   let query = db
     .select({
@@ -63,7 +68,12 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
 
   const conditions = [];
   if (statusFilter) {
-    const validStatuses = ["pending", "approved", "rejected", "executed"] as const;
+    const validStatuses = [
+      "pending",
+      "approved",
+      "rejected",
+      "executed",
+    ] as const;
     type DeletionStatus = (typeof validStatuses)[number];
     if (validStatuses.includes(statusFilter as DeletionStatus)) {
       conditions.push(
@@ -72,7 +82,9 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
     }
   }
   if (!canReviewAll) {
-    conditions.push(eq(deletionRequestsTable.requestedBy, req.user!.principalId));
+    conditions.push(
+      eq(deletionRequestsTable.requestedBy, req.user!.principalId),
+    );
   }
   if (conditions.length > 0) {
     query = query.where(and(...conditions));
@@ -86,19 +98,25 @@ router.get("/deletion-requests", requireAuth, async (req, res) => {
   ];
   const allIds = [...new Set([...requestedByIds, ...reviewedByIds])];
 
-  const principals = allIds.length > 0
-    ? await db
-        .select({ id: principalsTable.id, displayName: principalsTable.displayName })
-        .from(principalsTable)
-        .where(inArray(principalsTable.id, allIds))
-    : [];
+  const principals =
+    allIds.length > 0
+      ? await db
+          .select({
+            id: principalsTable.id,
+            displayName: principalsTable.displayName,
+          })
+          .from(principalsTable)
+          .where(inArray(principalsTable.id, allIds))
+      : [];
 
   const nameMap = new Map(principals.map((p) => [p.id, p.displayName]));
 
   const result = rows.map((r) => ({
     ...r,
     requestedByName: nameMap.get(r.requestedBy) ?? r.requestedBy,
-    reviewedByName: r.reviewedBy ? (nameMap.get(r.reviewedBy) ?? r.reviewedBy) : null,
+    reviewedByName: r.reviewedBy
+      ? (nameMap.get(r.reviewedBy) ?? r.reviewedBy)
+      : null,
   }));
 
   res.json(result);
@@ -152,9 +170,9 @@ router.post("/deletion-requests", requireAuth, async (req, res) => {
     );
 
   if (existing) {
-    res
-      .status(409)
-      .json({ error: "Es existiert bereits eine offene Löschanfrage für diese Seite" });
+    res.status(409).json({
+      error: "Es existiert bereits eine offene Löschanfrage für diese Seite",
+    });
     return;
   }
 
@@ -248,6 +266,7 @@ router.get("/deletion-requests/:requestId", requireAuth, async (req, res) => {
 router.post(
   "/deletion-requests/:requestId/review",
   requireAuth,
+  validateBody(CreateDeletionRequestBody),
   async (req, res) => {
     const requestId = String(req.params.requestId);
     const { decision, comment } = req.body as {
@@ -273,9 +292,15 @@ router.post(
 
     // archive_page knoten-skopiert prüfen (konsistent zu DELETE /nodes/:id) —
     // die frühere rein globale Prüfung ignorierte Seiten-Scopes.
-    const canReview = await hasPermission(reviewerId, "archive_page", request.nodeId);
+    const canReview = await hasPermission(
+      reviewerId,
+      "archive_page",
+      request.nodeId,
+    );
     if (!canReview) {
-      res.status(403).json({ error: "Keine Berechtigung zur Prüfung dieser Löschanfrage" });
+      res
+        .status(403)
+        .json({ error: "Keine Berechtigung zur Prüfung dieser Löschanfrage" });
       return;
     }
 
@@ -331,9 +356,7 @@ router.post(
       await tx.insert(auditEventsTable).values({
         eventType: "content",
         action:
-          decision === "approved"
-            ? "deletion_approved"
-            : "deletion_rejected",
+          decision === "approved" ? "deletion_approved" : "deletion_rejected",
         actorId: reviewerId,
         resourceType: "content_node",
         resourceId: request.nodeId,
@@ -436,38 +459,39 @@ router.get(
   requireAuth,
   requirePermission("read_page", (req) => req.params.nodeId as string),
   async (req, res) => {
-  const nodeId = String(req.params.nodeId);
+    const nodeId = String(req.params.nodeId);
 
-  const [request] = await db
-    .select({
-      id: deletionRequestsTable.id,
-      nodeId: deletionRequestsTable.nodeId,
-      nodeTitle: contentNodesTable.title,
-      nodeDisplayCode: contentNodesTable.displayCode,
-      requestedBy: deletionRequestsTable.requestedBy,
-      reason: deletionRequestsTable.reason,
-      status: deletionRequestsTable.status,
-      reviewedBy: deletionRequestsTable.reviewedBy,
-      reviewComment: deletionRequestsTable.reviewComment,
-      reviewedAt: deletionRequestsTable.reviewedAt,
-      createdAt: deletionRequestsTable.createdAt,
-      updatedAt: deletionRequestsTable.updatedAt,
-    })
-    .from(deletionRequestsTable)
-    .innerJoin(
-      contentNodesTable,
-      eq(deletionRequestsTable.nodeId, contentNodesTable.id),
-    )
-    .where(
-      and(
-        eq(deletionRequestsTable.nodeId, nodeId),
-        eq(deletionRequestsTable.status, "pending"),
-      ),
-    )
-    .orderBy(desc(deletionRequestsTable.createdAt))
-    .limit(1);
+    const [request] = await db
+      .select({
+        id: deletionRequestsTable.id,
+        nodeId: deletionRequestsTable.nodeId,
+        nodeTitle: contentNodesTable.title,
+        nodeDisplayCode: contentNodesTable.displayCode,
+        requestedBy: deletionRequestsTable.requestedBy,
+        reason: deletionRequestsTable.reason,
+        status: deletionRequestsTable.status,
+        reviewedBy: deletionRequestsTable.reviewedBy,
+        reviewComment: deletionRequestsTable.reviewComment,
+        reviewedAt: deletionRequestsTable.reviewedAt,
+        createdAt: deletionRequestsTable.createdAt,
+        updatedAt: deletionRequestsTable.updatedAt,
+      })
+      .from(deletionRequestsTable)
+      .innerJoin(
+        contentNodesTable,
+        eq(deletionRequestsTable.nodeId, contentNodesTable.id),
+      )
+      .where(
+        and(
+          eq(deletionRequestsTable.nodeId, nodeId),
+          eq(deletionRequestsTable.status, "pending"),
+        ),
+      )
+      .orderBy(desc(deletionRequestsTable.createdAt))
+      .limit(1);
 
-  res.json(request ?? null);
-});
+    res.json(request ?? null);
+  },
+);
 
 export { router as deletionRequestsRouter };

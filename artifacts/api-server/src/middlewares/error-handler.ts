@@ -60,6 +60,7 @@ export function errorHandler(
   }
 
   res.status(status).json({
-    error: isProduction && status >= 500 ? "Interner Serverfehler" : err.message,
+    error:
+      isProduction && status >= 500 ? "Interner Serverfehler" : err.message,
   });
 }
