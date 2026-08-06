@@ -1,6 +1,6 @@
 # FlowCore – Dokumentations-Index
 
-**Stand**: Juni 2026 | **Produktions-URL**: `https://flowcore.bildungscampus-backnang.de`
+**Stand**: August 2026 | **Produktions-URL**: `https://flowcore.onecampusgroup.de` · **Entwicklung**: `https://dev-flowcore.onecampusgroup.de`
 
 ---
 
@@ -30,6 +30,7 @@
 - [13 – Performance & Kapazität](./13-PERFORMANCE.md)
 - [14 – Go-Live-Checkliste](./14-GO-LIVE-CHECKLIST.md) — Alle Voraussetzungen für Produktionsbetrieb inkl. Entra-Berechtigungen
 - [15 – Source of Truth](./15-SOURCE-OF-TRUTH.md)
+- [16 – Betrieb auf dem OneCampus-Server](./16-BETRIEB-ONECAMPUS-SERVER.md) — Deploy-Weg, Branch-Modell, Sicherungen, Fallstricke (ab 08/2026)
 
 ## Copilot Studio Integration
 

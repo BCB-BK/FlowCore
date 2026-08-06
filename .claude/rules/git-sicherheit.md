@@ -1,0 +1,28 @@
+# Regel: Git-Sicherheit & Baseline (universell)
+
+## Baseline vor jeder Änderung dokumentieren
+Branch · Commit (`git rev-parse HEAD`) · `git status` (Arbeitsbaum) · vorhandene fremde/nicht
+zugehörige Änderungen · relevante Ausgangsfehler (Tests/Lint-Baseline) · Ziel-Remote und
+Deploy-Wirkung des Branches (aus der Repo-`CLAUDE.md`, nie angenommen).
+
+## Fremde Änderungen sind unantastbar
+Niemals überschreiben, zurücksetzen, stashen, „bereinigen" oder in eigene Commits aufnehmen.
+Wenn fremde Änderungen den Auftrag blockieren: benennen und fragen.
+
+## Ohne ausdrückliche, aktuelle Freigabe verboten
+(zusätzlich technisch geblockt durch PreToolUse-Hook + Permission-Deny):
+- `git reset --hard` · `git clean` · `git push --force` und `--force-with-lease`
+- `git rebase` · `git commit --amend` · ungefragtes `git stash`
+- Löschen von Branches, die nicht selbst in dieser Session angelegt wurden
+- Push auf `main`/PROD-wirksame Branches (Deploy-Wirkung steht in der Repo-`CLAUDE.md`)
+
+## Commit-Disziplin
+Vor jedem Commit den **vollständigen Diff** prüfen. Ein Commit enthält ausschließlich die
+beauftragte Änderung plus zwingend zugehörige Tests und Doku. Commit-Identity:
+`git config user.email noreply@anthropic.com && git config user.name Claude`;
+Co-Author generisch `Co-Authored-By: Claude <noreply@anthropic.com>` + `Claude-Session:`-Zeile.
+Kein Modellname in Commits, PRs, Code, Kommentaren.
+
+## Isolation
+Parallele oder größere Arbeiten in getrennten Worktrees/Arbeitsbereichen — nie zwei
+Schreiber im selben Working Tree.

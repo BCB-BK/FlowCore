@@ -1,0 +1,32 @@
+{
+  "//": "OneCampus-Vorlage für <repo>/.claude/settings.json — Stand v2.0 (06.08.2026).",
+  "//hinweis": "Permissions-Deny greift VOR allow; der PreToolUse-Guard blockt zusätzlich Muster, die deny nicht sauber fassen kann. Bypass-Modi nicht verwenden; unternehmensweite Härtung gehört in Managed Settings (Betreiber).",
+  "permissions": {
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(git rebase:*)",
+      "Bash(git commit --amend:*)",
+      "Bash(git stash:*)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pretooluse-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
