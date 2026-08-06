@@ -1,6 +1,6 @@
 # FlowCore – Dokumentations-Index
 
-**Stand**: Juni 2026 | **Produktions-URL**: `https://flowcore.onecampusgroup.de` · **Entwicklung**: `https://dev-flowcore.onecampusgroup.de`
+**Stand**: August 2026 | **Produktions-URL**: `https://flowcore.onecampusgroup.de` · **Entwicklung**: `https://dev-flowcore.onecampusgroup.de`
 
 ---
 
