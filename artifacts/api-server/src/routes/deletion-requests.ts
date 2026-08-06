@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { CreateDeletionRequestBody } from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   deletionRequestsTable,
@@ -264,6 +266,7 @@ router.get("/deletion-requests/:requestId", requireAuth, async (req, res) => {
 router.post(
   "/deletion-requests/:requestId/review",
   requireAuth,
+  validateBody(CreateDeletionRequestBody),
   async (req, res) => {
     const requestId = String(req.params.requestId);
     const { decision, comment } = req.body as {

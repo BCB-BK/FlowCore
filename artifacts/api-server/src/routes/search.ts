@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { TrackSearchClickBody } from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   contentNodesTable,
@@ -461,6 +463,7 @@ router.post(
   "/click",
   requireAuth,
   requirePermission("read_page"),
+  validateBody(TrackSearchClickBody),
   async (req, res) => {
     const { queryId, nodeId, position } = req.body;
 

@@ -6,6 +6,13 @@
  */
 
 import { Router, type IRouter } from "express";
+import {
+  ApproveRevisionBody,
+  RejectRevisionBody,
+  SubmitForReviewBody,
+  WatchNodeBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
   reviewWorkflowsTable,
@@ -69,6 +76,7 @@ function resolveNodeIdFromRevision(permissionKey: WikiPermission) {
 router.post(
   "/revisions/:id/submit-for-review",
   ...resolveNodeIdFromRevision("submit_for_review"),
+  validateBody(SubmitForReviewBody),
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
@@ -162,6 +170,7 @@ router.post(
 router.post(
   "/revisions/:id/approve",
   ...resolveNodeIdFromRevision("approve_page"),
+  validateBody(ApproveRevisionBody),
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
@@ -318,6 +327,7 @@ router.post(
 router.post(
   "/revisions/:id/reject",
   ...resolveNodeIdFromRevision("review_page"),
+  validateBody(RejectRevisionBody),
   async (req, res) => {
     try {
       const revisionId = req.params.id as string;
@@ -606,6 +616,7 @@ router.post(
   "/nodes/:nodeId/watch",
   requireAuth,
   requirePermission("read_page", (req) => req.params.nodeId),
+  validateBody(WatchNodeBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const principalId = req.user!.principalId;

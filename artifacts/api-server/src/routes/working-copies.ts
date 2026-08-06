@@ -46,12 +46,12 @@ import {
   notifyWorkingCopyPublished,
 } from "../services/notification.service";
 import {
-  UpdateWorkingCopyBody,
-  SubmitForReviewBody,
   ApproveRevisionBody,
-  RejectRevisionBody,
-  PublishWorkingCopyBody,
   CancelWorkingCopyBody,
+  PublishWorkingCopyBody,
+  RejectRevisionBody,
+  SubmitForReviewBody,
+  UpdateWorkingCopyBody,
 } from "@workspace/api-zod";
 import { containsAgentMetadataKeys } from "../lib/agent-metadata";
 
@@ -187,6 +187,7 @@ router.patch(
   "/working-copies/:id",
   requireAuth,
   loadWorkingCopy,
+  validateBody(UpdateWorkingCopyBody),
   async (req: Request, res: Response, next: NextFunction) => {
     const wc = (req as WorkingCopyRequest).workingCopy;
     if (!wc) {

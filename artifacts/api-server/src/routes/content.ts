@@ -37,9 +37,11 @@ import {
 } from "@workspace/shared/page-types";
 import {
   CreateNodeBody,
-  UpdateNodeBody,
-  MoveNodeBody,
   CreateRelationBody,
+  CreateRevisionBody,
+  MoveNodeBody,
+  PublishRevisionBody,
+  UpdateNodeBody,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -591,6 +593,7 @@ router.get(
   "/nodes/:id/revisions",
   requireAuth,
   requirePermission("read_page", (req) => req.params.id),
+  validateBody(CreateRevisionBody),
   async (req, res) => {
     const id = req.params.id as string;
     const revisions = await getVersionTree(id);
@@ -608,6 +611,7 @@ router.post("/revisions/:id/publish", requireAuth, (_req, res) => {
 router.post(
   "/revisions/:id/restore",
   requireAuth,
+  validateBody(PublishRevisionBody),
   async (req, res, next) => {
     const id = req.params.id as string;
     const [rev] = await db

@@ -1,4 +1,10 @@
 import { sanitizeInternalError } from "../lib/safe-error";
+import {
+  CreateReleaseBody,
+  TransitionReleaseBody,
+  UpdateReleaseBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { Router, type IRouter } from "express";
 import { pool } from "@workspace/db";
 import { appConfig } from "../lib/config";
@@ -155,6 +161,7 @@ router.post(
   "/admin/releases",
   requireAuth,
   requirePermission("manage_settings"),
+  validateBody(CreateReleaseBody),
   async (req, res) => {
     try {
       const { title, description, version, clusterRef, changedFiles } =
@@ -183,6 +190,7 @@ router.patch(
   "/admin/releases/:id",
   requireAuth,
   requirePermission("manage_settings"),
+  validateBody(UpdateReleaseBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -209,6 +217,7 @@ router.post(
   "/admin/releases/:id/transition",
   requireAuth,
   requirePermission("manage_settings"),
+  validateBody(TransitionReleaseBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;

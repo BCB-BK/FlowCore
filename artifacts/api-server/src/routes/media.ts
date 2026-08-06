@@ -1,4 +1,6 @@
 import { sanitizeInternalError } from "../lib/safe-error";
+import { TrackMediaUsageBody, UploadMediaBody } from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import {
   Router,
   type IRouter,
@@ -122,6 +124,7 @@ router.post(
   requireAuth,
   requirePermission("edit_content"),
   parseMultipart,
+  validateBody(UploadMediaBody),
   async (req, res) => {
     try {
       const file = (req as unknown as Record<string, unknown>)._uploadedFile as
@@ -521,6 +524,7 @@ router.post(
   "/assets/:id/usages",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(TrackMediaUsageBody),
   async (req, res) => {
     const assetId = req.params.id as string;
     const { nodeId, revisionId, usageContext } = req.body as {

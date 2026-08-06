@@ -1,4 +1,10 @@
 import { Router, type IRouter } from "express";
+import {
+  CreateGlossaryTermBody,
+  LinkGlossaryTermBody,
+  UpdateGlossaryTermBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import { glossaryTermsTable } from "@workspace/db/schema";
 import { eq, ilike, sql } from "drizzle-orm";
@@ -128,6 +134,7 @@ router.post(
   "/",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(CreateGlossaryTermBody),
   async (req, res) => {
     const { term, definition, synonyms, abbreviation, nodeId } = req.body;
 
@@ -185,6 +192,7 @@ router.patch(
   "/:id",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(UpdateGlossaryTermBody),
   async (req, res) => {
     const id = req.params.id as string;
     const { term, definition, synonyms, abbreviation, nodeId } = req.body;
@@ -244,6 +252,7 @@ router.post(
   "/:id/link",
   requireAuth,
   requirePermission("edit_content"),
+  validateBody(LinkGlossaryTermBody),
   async (req, res) => {
     const id = req.params.id as string;
     const { nodeId } = req.body;

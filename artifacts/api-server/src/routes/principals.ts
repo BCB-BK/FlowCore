@@ -1,4 +1,11 @@
 import { Router } from "express";
+import {
+  AssignRoleBody,
+  CreatePrincipalBody,
+  GrantPagePermissionBody,
+  SetNodeOwnershipBody,
+} from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import {
@@ -69,6 +76,7 @@ router.post(
   "/principals",
   requireAuth,
   requirePermission("manage_permissions"),
+  validateBody(CreatePrincipalBody),
   async (req, res) => {
     const { externalId, principalType, displayName, email, upn } =
       req.body ?? {};
@@ -195,6 +203,7 @@ router.post(
   "/principals/:id/roles",
   requireAuth,
   requirePermission("manage_permissions"),
+  validateBody(AssignRoleBody),
   async (req, res) => {
     const id = req.params.id as string;
     const role = req.body?.role as string | undefined;
@@ -398,6 +407,7 @@ router.post(
   "/content/nodes/:nodeId/permissions",
   requireAuth,
   requirePermission("manage_permissions", (req) => req.params.nodeId),
+  validateBody(GrantPagePermissionBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const id = await db.transaction(async (tx) => {
@@ -467,6 +477,7 @@ router.put(
   "/content/nodes/:nodeId/ownership",
   requireAuth,
   requirePermission("manage_permissions", (req) => req.params.nodeId),
+  validateBody(SetNodeOwnershipBody),
   async (req, res) => {
     const nodeId = req.params.nodeId as string;
     const id = await db.transaction(async (tx) => {
