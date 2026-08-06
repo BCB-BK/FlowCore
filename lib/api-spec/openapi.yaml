@@ -8,6 +8,24 @@ servers:
   - url: /api
     description: Base API path
 tags:
+  - name: api-tokens
+    description: api-tokens operations
+  - name: confidentiality
+    description: confidentiality operations
+  - name: content-api
+    description: content-api operations
+  - name: copilot
+    description: copilot operations
+  - name: copilot-connector
+    description: copilot-connector operations
+  - name: docs
+    description: docs operations
+  - name: graph-connector
+    description: graph-connector operations
+  - name: integration-keys
+    description: integration-keys operations
+  - name: workflows-admin
+    description: workflows-admin operations
   - name: health
     description: Health operations
   - name: auth
@@ -3460,6 +3478,2761 @@ paths:
                 properties:
                   count:
                     type: integer
+
+  # --- Aus der Implementierung nachgetragen (Audit-Befund B1) ---------------
+  # Diese Endpunkte waren implementiert, aber nicht Teil des Vertrags. Die
+  # Eintraege sind vollstaendig in Methode, Pfad und Pfadparametern, aber grob
+  # in den Schemata. Sie zu verfeinern ist offene Nacharbeit -- sichtbar hier,
+  # statt unsichtbar als Luecke.
+
+  /admin/audit-events:
+    get:
+      operationId: getAdminAuditEvents
+      tags: [admin]
+      summary: GET /admin/audit-events
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/audit-events/export:
+    get:
+      operationId: getAdminAuditEventsExport
+      tags: [admin]
+      summary: GET /admin/audit-events/export
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/audit-events/filters:
+    get:
+      operationId: getAdminAuditEventsFilters
+      tags: [admin]
+      summary: GET /admin/audit-events/filters
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/flowcore-account:
+    get:
+      operationId: getAdminFlowcoreAccount
+      tags: [workflows-admin]
+      summary: GET /admin/flowcore-account
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    put:
+      operationId: putAdminFlowcoreAccount
+      tags: [workflows-admin]
+      summary: PUT /admin/flowcore-account
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/flowcore-account/test:
+    post:
+      operationId: postAdminFlowcoreAccountTest
+      tags: [workflows-admin]
+      summary: POST /admin/flowcore-account/test
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/migrate-working-copies:
+    post:
+      operationId: postAdminMigrateWorkingCopies
+      tags: [admin]
+      summary: POST /admin/migrate-working-copies
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/notification-rules:
+    get:
+      operationId: getAdminNotificationRules
+      tags: [workflows-admin]
+      summary: GET /admin/notification-rules
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    post:
+      operationId: postAdminNotificationRules
+      tags: [workflows-admin]
+      summary: POST /admin/notification-rules
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/notification-rules/seed:
+    post:
+      operationId: postAdminNotificationRulesSeed
+      tags: [workflows-admin]
+      summary: POST /admin/notification-rules/seed
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/notification-rules/{id}:
+    put:
+      operationId: putAdminNotificationRulesById
+      tags: [workflows-admin]
+      summary: PUT /admin/notification-rules/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    delete:
+      operationId: deleteAdminNotificationRulesById
+      tags: [workflows-admin]
+      summary: DELETE /admin/notification-rules/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/setup-mode:
+    get:
+      operationId: getAdminSetupMode
+      tags: [admin]
+      summary: GET /admin/setup-mode
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/system-settings:
+    get:
+      operationId: getAdminSystemSettings
+      tags: [admin]
+      summary: GET /admin/system-settings
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/system-settings/{key}:
+    put:
+      operationId: putAdminSystemSettingsByKey
+      tags: [admin]
+      summary: PUT /admin/system-settings/{key}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/workflow-assignments:
+    get:
+      operationId: getAdminWorkflowAssignments
+      tags: [workflows-admin]
+      summary: GET /admin/workflow-assignments
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/workflow-assignments/{pageType}:
+    put:
+      operationId: putAdminWorkflowAssignmentsByPageType
+      tags: [workflows-admin]
+      summary: PUT /admin/workflow-assignments/{pageType}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: pageType
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    delete:
+      operationId: deleteAdminWorkflowAssignmentsByPageType
+      tags: [workflows-admin]
+      summary: DELETE /admin/workflow-assignments/{pageType}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: pageType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/workflows:
+    get:
+      operationId: getAdminWorkflows
+      tags: [workflows-admin]
+      summary: GET /admin/workflows
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    post:
+      operationId: postAdminWorkflows
+      tags: [workflows-admin]
+      summary: POST /admin/workflows
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /admin/workflows/{id}:
+    get:
+      operationId: getAdminWorkflowsById
+      tags: [workflows-admin]
+      summary: GET /admin/workflows/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    put:
+      operationId: putAdminWorkflowsById
+      tags: [workflows-admin]
+      summary: PUT /admin/workflows/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    delete:
+      operationId: deleteAdminWorkflowsById
+      tags: [workflows-admin]
+      summary: DELETE /admin/workflows/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /ai/models:
+    get:
+      operationId: getAiModels
+      tags: [ai]
+      summary: GET /ai/models
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /auth/config:
+    get:
+      operationId: getAuthConfig
+      tags: [auth]
+      summary: GET /auth/config
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /confidentiality-config/:
+    get:
+      operationId: getConfidentialityConfig
+      tags: [confidentiality]
+      summary: GET /confidentiality-config/
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /confidentiality-config/assign:
+    post:
+      operationId: postConfidentialityConfigAssign
+      tags: [confidentiality]
+      summary: POST /confidentiality-config/assign
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    delete:
+      operationId: deleteConfidentialityConfigAssign
+      tags: [confidentiality]
+      summary: DELETE /confidentiality-config/assign
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /connectors/sharepoint/teams:
+    get:
+      operationId: getConnectorsSharepointTeams
+      tags: [connectors]
+      summary: GET /connectors/sharepoint/teams
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /connectors/sharepoint/teams/{groupId}/drives:
+    get:
+      operationId: getConnectorsSharepointTeamsByGroupIdDrives
+      tags: [connectors]
+      summary: GET /connectors/sharepoint/teams/{groupId}/drives
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/changes:
+    get:
+      operationId: getContentV1Changes
+      tags: [content-api]
+      summary: GET /content/v1/changes
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/glossary:
+    get:
+      operationId: getContentV1Glossary
+      tags: [content-api]
+      summary: GET /content/v1/glossary
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/openapi.json:
+    get:
+      operationId: getContentV1Openapi.json
+      tags: [content-api]
+      summary: GET /content/v1/openapi.json
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/pages:
+    get:
+      operationId: getContentV1Pages
+      tags: [content-api]
+      summary: GET /content/v1/pages
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/pages/{id}:
+    get:
+      operationId: getContentV1PagesById
+      tags: [content-api]
+      summary: GET /content/v1/pages/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/scope:
+    get:
+      operationId: getContentV1Scope
+      tags: [content-api]
+      summary: GET /content/v1/scope
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/v1/search:
+    post:
+      operationId: postContentV1Search
+      tags: [content-api]
+      summary: POST /content/v1/search
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/working-copies/{id}/comment:
+    post:
+      operationId: postContentWorkingCopiesByIdComment
+      tags: [working-copies]
+      summary: POST /content/working-copies/{id}/comment
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/working-copies/{id}/generate-summary:
+    post:
+      operationId: postContentWorkingCopiesByIdGenerateSummary
+      tags: [working-copies]
+      summary: POST /content/working-copies/{id}/generate-summary
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /content/working-copies/{id}/summary:
+    put:
+      operationId: putContentWorkingCopiesByIdSummary
+      tags: [working-copies]
+      summary: PUT /content/working-copies/{id}/summary
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/admin/keys:
+    get:
+      operationId: getCopilotAdminKeys
+      tags: [copilot-connector]
+      summary: GET /copilot/admin/keys
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    post:
+      operationId: postCopilotAdminKeys
+      tags: [copilot-connector]
+      summary: POST /copilot/admin/keys
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/admin/keys/{id}:
+    delete:
+      operationId: deleteCopilotAdminKeysById
+      tags: [copilot-connector]
+      summary: DELETE /copilot/admin/keys/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/glossary:
+    get:
+      operationId: getCopilotGlossary
+      tags: [copilot]
+      summary: GET /copilot/glossary
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/glossary/{id}:
+    get:
+      operationId: getCopilotGlossaryById
+      tags: [copilot]
+      summary: GET /copilot/glossary/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/nodes/{id}:
+    get:
+      operationId: getCopilotNodesById
+      tags: [copilot-connector]
+      summary: GET /copilot/nodes/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/openapi.json:
+    get:
+      operationId: getCopilotOpenapi.json
+      tags: [copilot-connector]
+      summary: GET /copilot/openapi.json
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/pages:
+    get:
+      operationId: getCopilotPages
+      tags: [copilot]
+      summary: GET /copilot/pages
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/pages/{id}:
+    get:
+      operationId: getCopilotPagesById
+      tags: [copilot]
+      summary: GET /copilot/pages/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/pages/{id}/index-status:
+    patch:
+      operationId: patchCopilotPagesByIdIndexStatus
+      tags: [copilot]
+      summary: PATCH /copilot/pages/{id}/index-status
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/search:
+    post:
+      operationId: postCopilotSearch
+      tags: [copilot-connector]
+      summary: POST /copilot/search
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /copilot/swagger.json:
+    get:
+      operationId: getCopilotSwagger.json
+      tags: [copilot-connector]
+      summary: GET /copilot/swagger.json
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /delegations:
+    get:
+      operationId: getDelegations
+      tags: [principals]
+      summary: GET /delegations
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /delegations/{delegationId}:
+    delete:
+      operationId: deleteDelegationsByDelegationId
+      tags: [principals]
+      summary: DELETE /delegations/{delegationId}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: delegationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /docs:
+    get:
+      operationId: getDocs
+      tags: [docs]
+      summary: GET /docs
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /docs-export/all:
+    get:
+      operationId: getDocsExportAll
+      tags: [docs]
+      summary: GET /docs-export/all
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /docs/{filename}:
+    get:
+      operationId: getDocsByFilename
+      tags: [docs]
+      summary: GET /docs/{filename}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /glossary/export:
+    get:
+      operationId: getGlossaryExport
+      tags: [glossary]
+      summary: GET /glossary/export
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /glossary/import:
+    post:
+      operationId: postGlossaryImport
+      tags: [glossary]
+      summary: POST /glossary/import
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /glossary/reimport-seed:
+    post:
+      operationId: postGlossaryReimportSeed
+      tags: [glossary]
+      summary: POST /glossary/reimport-seed
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/acl-preview/{nodeId}:
+    get:
+      operationId: getGraphConnectorAclPreviewByNodeId
+      tags: [graph-connector]
+      summary: GET /graph-connector/acl-preview/{nodeId}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/change-feed:
+    get:
+      operationId: getGraphConnectorChangeFeed
+      tags: [graph-connector]
+      summary: GET /graph-connector/change-feed
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/connection:
+    get:
+      operationId: getGraphConnectorConnection
+      tags: [graph-connector]
+      summary: GET /graph-connector/connection
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/connection/register:
+    post:
+      operationId: postGraphConnectorConnectionRegister
+      tags: [graph-connector]
+      summary: POST /graph-connector/connection/register
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/external-items/glossary/{id}:
+    get:
+      operationId: getGraphConnectorExternalItemsGlossaryById
+      tags: [graph-connector]
+      summary: GET /graph-connector/external-items/glossary/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/external-items/glossary/{id}/register:
+    post:
+      operationId: postGraphConnectorExternalItemsGlossaryByIdRegister
+      tags: [graph-connector]
+      summary: POST /graph-connector/external-items/glossary/{id}/register
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/external-items/pages/{id}:
+    get:
+      operationId: getGraphConnectorExternalItemsPagesById
+      tags: [graph-connector]
+      summary: GET /graph-connector/external-items/pages/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/external-items/pages/{id}/register:
+    post:
+      operationId: postGraphConnectorExternalItemsPagesByIdRegister
+      tags: [graph-connector]
+      summary: POST /graph-connector/external-items/pages/{id}/register
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/group-mappings:
+    get:
+      operationId: getGraphConnectorGroupMappings
+      tags: [graph-connector]
+      summary: GET /graph-connector/group-mappings
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/group-mappings/{tier}:
+    get:
+      operationId: getGraphConnectorGroupMappingsByTier
+      tags: [graph-connector]
+      summary: GET /graph-connector/group-mappings/{tier}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: tier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    put:
+      operationId: putGraphConnectorGroupMappingsByTier
+      tags: [graph-connector]
+      summary: PUT /graph-connector/group-mappings/{tier}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: tier
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    delete:
+      operationId: deleteGraphConnectorGroupMappingsByTier
+      tags: [graph-connector]
+      summary: DELETE /graph-connector/group-mappings/{tier}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: tier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/index-status/glossary:
+    get:
+      operationId: getGraphConnectorIndexStatusGlossary
+      tags: [graph-connector]
+      summary: GET /graph-connector/index-status/glossary
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/index-status/pages:
+    get:
+      operationId: getGraphConnectorIndexStatusPages
+      tags: [graph-connector]
+      summary: GET /graph-connector/index-status/pages
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/readiness-check:
+    get:
+      operationId: getGraphConnectorReadinessCheck
+      tags: [graph-connector]
+      summary: GET /graph-connector/readiness-check
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/schema:
+    get:
+      operationId: getGraphConnectorSchema
+      tags: [graph-connector]
+      summary: GET /graph-connector/schema
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/schema/dry-run:
+    get:
+      operationId: getGraphConnectorSchemaDryRun
+      tags: [graph-connector]
+      summary: GET /graph-connector/schema/dry-run
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/schema/register:
+    post:
+      operationId: postGraphConnectorSchemaRegister
+      tags: [graph-connector]
+      summary: POST /graph-connector/schema/register
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/search-result-template:
+    get:
+      operationId: getGraphConnectorSearchResultTemplate
+      tags: [graph-connector]
+      summary: GET /graph-connector/search-result-template
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync-log:
+    get:
+      operationId: getGraphConnectorSyncLog
+      tags: [graph-connector]
+      summary: GET /graph-connector/sync-log
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/delta:
+    post:
+      operationId: postGraphConnectorSyncDelta
+      tags: [graph-connector]
+      summary: POST /graph-connector/sync/delta
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/full:
+    post:
+      operationId: postGraphConnectorSyncFull
+      tags: [graph-connector]
+      summary: POST /graph-connector/sync/full
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/glossary/{id}:
+    post:
+      operationId: postGraphConnectorSyncGlossaryById
+      tags: [graph-connector]
+      summary: POST /graph-connector/sync/glossary/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/log:
+    get:
+      operationId: getGraphConnectorSyncLog2
+      tags: [graph-connector]
+      summary: GET /graph-connector/sync/log
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/log/export:
+    get:
+      operationId: getGraphConnectorSyncLogExport
+      tags: [graph-connector]
+      summary: GET /graph-connector/sync/log/export
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/pages/{id}:
+    post:
+      operationId: postGraphConnectorSyncPagesById
+      tags: [graph-connector]
+      summary: POST /graph-connector/sync/pages/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/sync/queue:
+    get:
+      operationId: getGraphConnectorSyncQueue
+      tags: [graph-connector]
+      summary: GET /graph-connector/sync/queue
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /graph-connector/test-connection:
+    post:
+      operationId: postGraphConnectorTestConnection
+      tags: [graph-connector]
+      summary: POST /graph-connector/test-connection
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /integration-keys/:
+    get:
+      operationId: getIntegrationKeys
+      tags: [integration-keys]
+      summary: GET /integration-keys/
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    post:
+      operationId: postIntegrationKeys
+      tags: [integration-keys]
+      summary: POST /integration-keys/
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /integration-keys/preview:
+    post:
+      operationId: postIntegrationKeysPreview
+      tags: [integration-keys]
+      summary: POST /integration-keys/preview
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /integration-keys/{id}:
+    patch:
+      operationId: patchIntegrationKeysById
+      tags: [integration-keys]
+      summary: PATCH /integration-keys/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    delete:
+      operationId: deleteIntegrationKeysById
+      tags: [integration-keys]
+      summary: DELETE /integration-keys/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /integration-keys/{id}/rotate:
+    post:
+      operationId: postIntegrationKeysByIdRotate
+      tags: [integration-keys]
+      summary: POST /integration-keys/{id}/rotate
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /media/import-sharepoint:
+    post:
+      operationId: postMediaImportSharepoint
+      tags: [media]
+      summary: POST /media/import-sharepoint
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /media/validate-embed:
+    post:
+      operationId: postMediaValidateEmbed
+      tags: [media]
+      summary: POST /media/validate-embed
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /principals/{id}/delegations:
+    get:
+      operationId: getPrincipalsByIdDelegations
+      tags: [principals]
+      summary: GET /principals/{id}/delegations
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    post:
+      operationId: postPrincipalsByIdDelegations
+      tags: [principals]
+      summary: POST /principals/{id}/delegations
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /rbac/sod-config:
+    get:
+      operationId: getRbacSodConfig
+      tags: [principals]
+      summary: GET /rbac/sod-config
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /rbac/sod-config/{ruleKey}:
+    put:
+      operationId: putRbacSodConfigByRuleKey
+      tags: [principals]
+      summary: PUT /rbac/sod-config/{ruleKey}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: ruleKey
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /tokens:
+    get:
+      operationId: getTokens
+      tags: [api-tokens]
+      summary: GET /tokens
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+    post:
+      operationId: postTokens
+      tags: [api-tokens]
+      summary: POST /tokens
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
+
+  /tokens/{id}:
+    delete:
+      operationId: deleteTokensById
+      tags: [api-tokens]
+      summary: DELETE /tokens/{id}
+      description: >-
+        Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter
+        sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
+        und beschreiben den Endpunkt daher nur grob.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Not authenticated
+        "403":
+          description: Not authorised
 
 components:
   parameters:
