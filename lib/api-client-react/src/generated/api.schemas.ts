@@ -5,6 +5,58 @@
  * FlowCore API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CreateApiTokenInput {
+  /** Anzeigename des Tokens (Route begrenzt auf 100 Zeichen). */
+  name: string;
+  /** Ablaufzeitpunkt; die Route verlangt ein gueltiges Datum in der Zukunft. */
+  expiresAt?: string | null;
+  [key: string]: unknown;
+}
+
+export interface UpdateSystemSettingInput {
+  /** Neuer Wert der Einstellung. */
+  value: string;
+  [key: string]: unknown;
+}
+
+export interface AssignConfidentialityInput {
+  /** Vertraulichkeitsstufe; die Route laesst internal, confidential und strictly_confidential zu. */
+  level: string;
+  /** Kennung der Person oder Gruppe. */
+  principalId: string;
+  [key: string]: unknown;
+}
+
+export interface ImportSharepointMediaInput {
+  driveId: string;
+  itemId: string;
+  filename: string;
+  /** Optionale Seite, der der Anhang zugeordnet wird. */
+  nodeId?: string;
+  [key: string]: unknown;
+}
+
+export interface ValidateEmbedInput {
+  /** Zu pruefende Einbettungsadresse. */
+  url: string;
+  [key: string]: unknown;
+}
+
+export interface UpdateSodRuleInput {
+  isEnabled: boolean;
+  [key: string]: unknown;
+}
+
+export interface CreateDelegationInput {
+  /** Kennung der vertretenden Person. */
+  deputyId: string;
+  startsAt: string;
+  endsAt?: string | null;
+  scope?: string | null;
+  reason?: string | null;
+  [key: string]: unknown;
+}
+
 export type HealthStatusStatus =
   (typeof HealthStatusStatus)[keyof typeof HealthStatusStatus];
 
@@ -2596,8 +2648,6 @@ export type GetAdminSetupMode200 = { [key: string]: unknown };
 
 export type GetAdminSystemSettings200 = { [key: string]: unknown };
 
-export type PutAdminSystemSettingsByKeyBody = { [key: string]: unknown };
-
 export type PutAdminSystemSettingsByKey200 = { [key: string]: unknown };
 
 export type GetAdminWorkflowAssignments200 = { [key: string]: unknown };
@@ -2633,8 +2683,6 @@ export type GetAiModels200 = { [key: string]: unknown };
 export type GetAuthConfig200 = { [key: string]: unknown };
 
 export type GetConfidentialityConfig200 = { [key: string]: unknown };
-
-export type PostConfidentialityConfigAssignBody = { [key: string]: unknown };
 
 export type PostConfidentialityConfigAssign200 = { [key: string]: unknown };
 
@@ -2854,29 +2902,19 @@ export type PostIntegrationKeysByIdRotateBody = { [key: string]: unknown };
 
 export type PostIntegrationKeysByIdRotate200 = { [key: string]: unknown };
 
-export type PostMediaImportSharepointBody = { [key: string]: unknown };
-
 export type PostMediaImportSharepoint200 = { [key: string]: unknown };
-
-export type PostMediaValidateEmbedBody = { [key: string]: unknown };
 
 export type PostMediaValidateEmbed200 = { [key: string]: unknown };
 
 export type GetPrincipalsByIdDelegations200 = { [key: string]: unknown };
 
-export type PostPrincipalsByIdDelegationsBody = { [key: string]: unknown };
-
 export type PostPrincipalsByIdDelegations200 = { [key: string]: unknown };
 
 export type GetRbacSodConfig200 = { [key: string]: unknown };
 
-export type PutRbacSodConfigByRuleKeyBody = { [key: string]: unknown };
-
 export type PutRbacSodConfigByRuleKey200 = { [key: string]: unknown };
 
 export type GetTokens200 = { [key: string]: unknown };
-
-export type PostTokensBody = { [key: string]: unknown };
 
 export type PostTokens200 = { [key: string]: unknown };
 

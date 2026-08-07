@@ -6,4 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PostMediaImportSharepointBody = { [key: string]: unknown };
+export interface ValidateEmbedInput {
+  /** Zu pruefende Einbettungsadresse. */
+  url: string;
+  [key: string]: unknown;
+}

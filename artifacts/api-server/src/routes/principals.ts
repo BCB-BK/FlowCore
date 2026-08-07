@@ -4,6 +4,8 @@ import {
   CreatePrincipalBody,
   GrantPagePermissionBody,
   SetNodeOwnershipBody,
+  PutRbacSodConfigByRuleKeyBody,
+  PostPrincipalsByIdDelegationsBody,
 } from "@workspace/api-zod";
 import { validateBody } from "../middlewares/validate-body";
 import { requireAuth } from "../middlewares/require-auth";
@@ -525,6 +527,7 @@ router.put(
   "/rbac/sod-config/:ruleKey",
   requireAuth,
   requirePermission("manage_settings"),
+  validateBody(PutRbacSodConfigByRuleKeyBody),
   async (req, res) => {
     const ruleKey = req.params.ruleKey as string;
     if (!isValidSodRuleKey(ruleKey)) {
@@ -578,84 +581,90 @@ router.get("/principals/:id/delegations", requireAuth, async (req, res) => {
   res.json({ outgoing, incoming });
 });
 
-router.post("/principals/:id/delegations", requireAuth, async (req, res) => {
-  const principalId = req.params.id as string;
-  const isSelf = req.user!.principalId === principalId;
-  if (!isSelf) {
-    const perms = await getEffectivePermissions(req.user!.principalId);
-    if (!perms.has("manage_permissions")) {
-      res.status(403).json({ error: "Forbidden" });
+router.post(
+  "/principals/:id/delegations",
+  requireAuth,
+  validateBody(PostPrincipalsByIdDelegationsBody),
+  async (req, res) => {
+    const principalId = req.params.id as string;
+    const isSelf = req.user!.principalId === principalId;
+    if (!isSelf) {
+      const perms = await getEffectivePermissions(req.user!.principalId);
+      if (!perms.has("manage_permissions")) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+    }
+
+    const { deputyId, scope, reason, startsAt, endsAt } = req.body;
+    if (!deputyId || !startsAt) {
+      res.status(400).json({ error: "deputyId and startsAt are required" });
       return;
     }
-  }
 
-  const { deputyId, scope, reason, startsAt, endsAt } = req.body;
-  if (!deputyId || !startsAt) {
-    res.status(400).json({ error: "deputyId and startsAt are required" });
-    return;
-  }
+    if (deputyId === principalId) {
+      res.status(400).json({ error: "Cannot delegate to yourself" });
+      return;
+    }
 
-  if (deputyId === principalId) {
-    res.status(400).json({ error: "Cannot delegate to yourself" });
-    return;
-  }
+    const validScope = scope ?? "global";
+    const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
+    if (!scopePattern.test(validScope)) {
+      res.status(400).json({
+        error:
+          "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
+      });
+      return;
+    }
 
-  const validScope = scope ?? "global";
-  const scopePattern = /^(global|node:[0-9a-f-]{36}|code:.+)$/;
-  if (!scopePattern.test(validScope)) {
-    res.status(400).json({
-      error: "scope must be 'global', 'node:<uuid>', or 'code:<display_code>'",
+    const parsedStartsAt = new Date(startsAt);
+    if (isNaN(parsedStartsAt.getTime())) {
+      res.status(400).json({ error: "startsAt must be a valid date" });
+      return;
+    }
+
+    let parsedEndsAt: Date | undefined;
+    if (endsAt) {
+      parsedEndsAt = new Date(endsAt);
+      if (isNaN(parsedEndsAt.getTime())) {
+        res.status(400).json({ error: "endsAt must be a valid date" });
+        return;
+      }
+      if (parsedEndsAt <= parsedStartsAt) {
+        res.status(400).json({ error: "endsAt must be after startsAt" });
+        return;
+      }
+    }
+
+    const delegationId = await db.transaction(async (tx) => {
+      const dId = await createDelegation(
+        {
+          principalId,
+          deputyId,
+          scope: validScope,
+          reason,
+          startsAt: parsedStartsAt,
+          endsAt: parsedEndsAt,
+          createdBy: req.user!.principalId,
+        },
+        tx,
+      );
+
+      await tx.insert(auditEventsTable).values({
+        eventType: "rbac",
+        action: "delegation_created",
+        actorId: req.user!.principalId,
+        resourceType: "deputy_delegation",
+        resourceId: dId,
+        details: { principalId, deputyId, scope, startsAt, endsAt, reason },
+      });
+
+      return dId;
     });
-    return;
-  }
 
-  const parsedStartsAt = new Date(startsAt);
-  if (isNaN(parsedStartsAt.getTime())) {
-    res.status(400).json({ error: "startsAt must be a valid date" });
-    return;
-  }
-
-  let parsedEndsAt: Date | undefined;
-  if (endsAt) {
-    parsedEndsAt = new Date(endsAt);
-    if (isNaN(parsedEndsAt.getTime())) {
-      res.status(400).json({ error: "endsAt must be a valid date" });
-      return;
-    }
-    if (parsedEndsAt <= parsedStartsAt) {
-      res.status(400).json({ error: "endsAt must be after startsAt" });
-      return;
-    }
-  }
-
-  const delegationId = await db.transaction(async (tx) => {
-    const dId = await createDelegation(
-      {
-        principalId,
-        deputyId,
-        scope: validScope,
-        reason,
-        startsAt: parsedStartsAt,
-        endsAt: parsedEndsAt,
-        createdBy: req.user!.principalId,
-      },
-      tx,
-    );
-
-    await tx.insert(auditEventsTable).values({
-      eventType: "rbac",
-      action: "delegation_created",
-      actorId: req.user!.principalId,
-      resourceType: "deputy_delegation",
-      resourceId: dId,
-      details: { principalId, deputyId, scope, startsAt, endsAt, reason },
-    });
-
-    return dId;
-  });
-
-  res.status(201).json({ id: delegationId });
-});
+    res.status(201).json({ id: delegationId });
+  },
+);
 
 router.delete("/delegations/:delegationId", requireAuth, async (req, res) => {
   const delegationId = req.params.delegationId as string;

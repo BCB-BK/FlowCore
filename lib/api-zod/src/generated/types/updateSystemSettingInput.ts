@@ -6,4 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PostMediaValidateEmbedBody = { [key: string]: unknown };
+export interface UpdateSystemSettingInput {
+  /** Neuer Wert der Einstellung. */
+  value: string;
+  [key: string]: unknown;
+}

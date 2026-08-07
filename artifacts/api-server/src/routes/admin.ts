@@ -3,6 +3,7 @@ import {
   CreateReleaseBody,
   TransitionReleaseBody,
   UpdateReleaseBody,
+  PutAdminSystemSettingsByKeyBody,
 } from "@workspace/api-zod";
 import { validateBody } from "../middlewares/validate-body";
 import { Router, type IRouter } from "express";
@@ -520,6 +521,7 @@ router.put(
   "/admin/system-settings/:key",
   requireAuth,
   requirePermission("manage_settings"),
+  validateBody(PutAdminSystemSettingsByKeyBody),
   async (req, res) => {
     try {
       const key = req.params.key as string;

@@ -1,3 +1,23 @@
+/**
+ * Qualitaetsberichte.
+ *
+ * Zum Spaltenpaar `current_revision_id` / `published_revision_id`: Die
+ * Auswertungen hier fragen durchgaengig
+ * `COALESCE(cn.current_revision_id, cn.published_revision_id)` ab, nicht
+ * `current_revision_id` allein.
+ *
+ * Grund: `current_revision_id` wird nur noch von den einmaligen
+ * Uebernahmeskripten (`scripts/src/import-*.ts`) und vom Seed gesetzt. Der
+ * regulaere Weg -- Arbeitskopie einreichen und freigeben -- pflegt das Feld
+ * nicht; er schreibt ausschliesslich `published_revision_id`. Jede Seite, die
+ * seither ueber die Anwendung entstanden ist, hat dort deshalb NULL.
+ *
+ * Ohne COALESCE hatte das zwei Wirkungen, beide falsch: Bedingungen meldeten
+ * diese Seiten als "ohne aktuelle Revision" (auf PROD 119 von 221 Meldungen
+ * unzutreffend, dazu 89 falsche "Pflichtfelder fehlen"), und -- schwerer
+ * wiegend -- die Verbindungen auf `content_revisions` liessen sie still ganz
+ * aus der Auswertung fallen.
+ */
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 
@@ -135,7 +155,7 @@ export async function getQualityOverview(): Promise<QualityOverview> {
   const overdueResult = await db.execute(sql`
     SELECT COUNT(DISTINCT cn.id) as cnt
     FROM content_nodes cn
-    JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND cr.next_review_date IS NOT NULL
       AND cr.next_review_date < NOW()
@@ -156,11 +176,11 @@ export async function getQualityOverview(): Promise<QualityOverview> {
   const incompleteResult = await db.execute(sql`
     SELECT COUNT(*) as cnt
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND (
         cn.owner_id IS NULL
-        OR cn.current_revision_id IS NULL
+        OR COALESCE(cn.current_revision_id, cn.published_revision_id) IS NULL
         OR cn.published_revision_id IS NULL
         OR NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)
       )
@@ -205,13 +225,13 @@ export async function getQualityOverview(): Promise<QualityOverview> {
     SELECT
       ROUND(AVG(
         CASE WHEN cn.owner_id IS NOT NULL THEN 20 ELSE 0 END +
-        CASE WHEN cn.current_revision_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN cn.published_revision_id IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id) THEN 20 ELSE 0 END +
-        CASE WHEN cn.current_revision_id IS NOT NULL AND (cr.next_review_date IS NULL OR cr.next_review_date >= NOW()) THEN 20 ELSE 0 END
+        CASE WHEN COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL AND (cr.next_review_date IS NULL OR cr.next_review_date >= NOW()) THEN 20 ELSE 0 END
       )) as avg_completeness
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
   `);
 
@@ -264,7 +284,7 @@ export async function getPageQualityList(
   } else if (filter === "incomplete") {
     whereClause = sql`WHERE NOT cn.is_deleted AND (
       cn.owner_id IS NULL
-      OR cn.current_revision_id IS NULL
+      OR COALESCE(cn.current_revision_id, cn.published_revision_id) IS NULL
       OR cn.published_revision_id IS NULL
       OR NOT EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id)
     )`;
@@ -273,7 +293,7 @@ export async function getPageQualityList(
   const countResult = await db.execute(sql`
     SELECT COUNT(*) as cnt
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     ${whereClause}
   `);
   const total = num(countResult.rows[0] ?? {}, "cnt");
@@ -286,7 +306,7 @@ export async function getPageQualityList(
       cn.template_type,
       cn.status,
       cn.owner_id,
-      (cn.current_revision_id IS NOT NULL) as has_current_revision,
+      (COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL) as has_current_revision,
       (cn.published_revision_id IS NOT NULL) as has_published_revision,
       cr.next_review_date::text as next_review_date,
       cn.updated_at::text as updated_at,
@@ -303,7 +323,7 @@ export async function getPageQualityList(
         SELECT 1 FROM content_nodes p WHERE p.id = cn.parent_node_id AND (p.is_deleted = true OR p.status = 'deleted')
       )) as parent_deleted
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     ${whereClause}
     ORDER BY cn.updated_at DESC
     LIMIT ${limit}
@@ -422,8 +442,8 @@ export async function getDuplicates(): Promise<DuplicateGroup[]> {
         END as same_parent
       FROM content_nodes a
       JOIN content_nodes b ON a.id < b.id
-      LEFT JOIN content_revisions cra ON a.current_revision_id = cra.id
-      LEFT JOIN content_revisions crb ON b.current_revision_id = crb.id
+      LEFT JOIN content_revisions cra ON COALESCE(a.current_revision_id, a.published_revision_id) = cra.id
+      LEFT JOIN content_revisions crb ON COALESCE(b.current_revision_id, b.published_revision_id) = crb.id
       WHERE NOT a.is_deleted AND NOT b.is_deleted
         AND a.title != b.title
         AND similarity(LOWER(a.title), LOWER(b.title)) > 0.25
@@ -517,7 +537,7 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
   const overdueReviews = await db.execute(sql`
     SELECT cn.id as node_id, cn.title, cn.display_code, cr.next_review_date::text as next_review_date
     FROM content_nodes cn
-    JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND cr.next_review_date IS NOT NULL
       AND cr.next_review_date < NOW()
@@ -582,7 +602,7 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
   const noRevision = await db.execute(sql`
     SELECT id as node_id, title, display_code
     FROM content_nodes
-    WHERE NOT is_deleted AND current_revision_id IS NULL
+    WHERE NOT is_deleted AND COALESCE(current_revision_id, published_revision_id) IS NULL
     LIMIT 50
   `);
   for (const raw of noRevision.rows) {
@@ -689,7 +709,7 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
            cr.next_review_date::text as next_review_date,
            (NOW() - cr.next_review_date)::text as overdue_interval
     FROM content_nodes cn
-    JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND cr.next_review_date IS NOT NULL
       AND cr.next_review_date < NOW() - INTERVAL '30 days'
@@ -712,7 +732,7 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
     SELECT cn.id as node_id, cn.title, cn.display_code,
            cr.reviewer_id, cr.approver_id, cn.owner_id
     FROM content_nodes cn
-    JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND (
         (cn.owner_id IS NOT NULL AND cr.reviewer_id IS NOT NULL AND cn.owner_id = cr.reviewer_id)
@@ -752,13 +772,15 @@ export async function getMaintenanceHints(): Promise<MaintenanceHint[]> {
 
   const missingMandatory = await db.execute(sql`
     SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type,
-           cn.owner_id, cn.current_revision_id, cn.published_revision_id
+           cn.owner_id,
+           COALESCE(cn.current_revision_id, cn.published_revision_id) AS current_revision_id,
+           cn.published_revision_id
     FROM content_nodes cn
     WHERE NOT cn.is_deleted
       AND cn.status IN ('published', 'approved')
       AND (
         cn.owner_id IS NULL
-        OR cn.current_revision_id IS NULL
+        OR COALESCE(cn.current_revision_id, cn.published_revision_id) IS NULL
         OR cn.published_revision_id IS NULL
       )
     LIMIT 30
@@ -943,11 +965,11 @@ export async function getPersonalWorkItems(
     SELECT cn.id as node_id, cn.title, cn.display_code, cn.template_type, cn.status, cn.updated_at::text as updated_at,
            cr.next_review_date::text as next_review_date
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND cn.owner_id = ${principalId}
       AND (
-        cn.current_revision_id IS NULL
+        COALESCE(cn.current_revision_id, cn.published_revision_id) IS NULL
         OR cn.published_revision_id IS NULL
         OR (cr.next_review_date IS NOT NULL AND cr.next_review_date < NOW())
         OR cn.updated_at < NOW() - INTERVAL '180 days'
@@ -1159,15 +1181,15 @@ export async function getOwnershipMonitor(
     SELECT
       COUNT(*) as total_pages,
       COUNT(*) FILTER (WHERE cn.owner_id IS NULL) as pages_without_owner,
-      COUNT(*) FILTER (WHERE cr.reviewer_id IS NULL AND cn.current_revision_id IS NOT NULL) as pages_without_reviewer,
-      COUNT(*) FILTER (WHERE cr.approver_id IS NULL AND cn.current_revision_id IS NOT NULL) as pages_without_approver,
+      COUNT(*) FILTER (WHERE cr.reviewer_id IS NULL AND COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL) as pages_without_reviewer,
+      COUNT(*) FILTER (WHERE cr.approver_id IS NULL AND COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL) as pages_without_approver,
       COUNT(*) FILTER (WHERE (
         (CASE WHEN cn.owner_id IS NULL THEN 1 ELSE 0 END) +
-        (CASE WHEN cr.reviewer_id IS NULL AND cn.current_revision_id IS NOT NULL THEN 1 ELSE 0 END) +
-        (CASE WHEN cr.approver_id IS NULL AND cn.current_revision_id IS NOT NULL THEN 1 ELSE 0 END)
+        (CASE WHEN cr.reviewer_id IS NULL AND COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN cr.approver_id IS NULL AND COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL THEN 1 ELSE 0 END)
       ) > 1) as pages_with_multiple_gaps
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
   `);
   const sr = (summaryResult.rows[0] ?? {}) as R;
@@ -1180,18 +1202,18 @@ export async function getOwnershipMonitor(
       cn.template_type,
       cn.status,
       cn.owner_id,
-      cn.current_revision_id,
+      COALESCE(cn.current_revision_id, cn.published_revision_id) AS current_revision_id,
       cr.reviewer_id,
       cr.approver_id,
       cn.updated_at::text as updated_at,
       EXTRACT(EPOCH FROM (NOW() - cn.updated_at)) / 86400 as days_since_update
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
       AND (
         cn.owner_id IS NULL
-        OR (cr.reviewer_id IS NULL AND cn.current_revision_id IS NOT NULL)
-        OR (cr.approver_id IS NULL AND cn.current_revision_id IS NOT NULL)
+        OR (cr.reviewer_id IS NULL AND COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL)
+        OR (cr.approver_id IS NULL AND COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL)
       )
     ORDER BY
       CASE
@@ -1311,13 +1333,13 @@ export async function getQualityByProcess(): Promise<ProcessQualityRow[]> {
       COUNT(DISTINCT cn.id) FILTER (WHERE cr.next_review_date IS NOT NULL AND cr.next_review_date < NOW()) as overdue_reviews,
       ROUND(AVG(
         CASE WHEN cn.owner_id IS NOT NULL THEN 20 ELSE 0 END +
-        CASE WHEN cn.current_revision_id IS NOT NULL THEN 20 ELSE 0 END +
+        CASE WHEN COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN cn.published_revision_id IS NOT NULL THEN 20 ELSE 0 END +
         CASE WHEN EXISTS (SELECT 1 FROM content_node_tags t WHERE t.node_id = cn.id) THEN 20 ELSE 0 END +
-        CASE WHEN cn.current_revision_id IS NOT NULL AND (cr.next_review_date IS NULL OR cr.next_review_date >= NOW()) THEN 20 ELSE 0 END
+        CASE WHEN COALESCE(cn.current_revision_id, cn.published_revision_id) IS NOT NULL AND (cr.next_review_date IS NULL OR cr.next_review_date >= NOW()) THEN 20 ELSE 0 END
       )) as avg_completeness
     FROM content_nodes cn
-    LEFT JOIN content_revisions cr ON cn.current_revision_id = cr.id
+    LEFT JOIN content_revisions cr ON COALESCE(cn.current_revision_id, cn.published_revision_id) = cr.id
     WHERE NOT cn.is_deleted
     GROUP BY cn.template_type
     ORDER BY total_pages DESC

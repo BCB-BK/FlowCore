@@ -6,4 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PostPrincipalsByIdDelegationsBody = { [key: string]: unknown };
+export interface UpdateSodRuleInput {
+  isEnabled: boolean;
+  [key: string]: unknown;
+}
