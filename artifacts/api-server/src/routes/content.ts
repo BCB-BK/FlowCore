@@ -38,7 +38,6 @@ import {
 import {
   CreateNodeBody,
   CreateRelationBody,
-  CreateRevisionBody,
   MoveNodeBody,
   PublishRevisionBody,
   UpdateNodeBody,
@@ -593,7 +592,6 @@ router.get(
   "/nodes/:id/revisions",
   requireAuth,
   requirePermission("read_page", (req) => req.params.id),
-  validateBody(CreateRevisionBody),
   async (req, res) => {
     const id = req.params.id as string;
     const revisions = await getVersionTree(id);
