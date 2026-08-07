@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { PostConfidentialityConfigAssignBody } from "@workspace/api-zod";
+import { validateBody } from "../middlewares/validate-body";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import {
@@ -73,6 +75,7 @@ router.post(
   "/assign",
   requireAuth,
   requirePermission("manage_permissions"),
+  validateBody(PostConfidentialityConfigAssignBody),
   async (req, res) => {
     const { level, principalId } = req.body as {
       level: string;

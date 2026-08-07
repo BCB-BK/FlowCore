@@ -3859,12 +3859,11 @@ paths:
           schema:
             type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/UpdateSystemSettingInput"
       responses:
         "200":
           description: Success
@@ -4177,12 +4176,11 @@ paths:
         sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
         und beschreiben den Endpunkt daher nur grob.
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/AssignConfidentialityInput"
       responses:
         "200":
           description: Success
@@ -5989,12 +5987,11 @@ paths:
         sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
         und beschreiben den Endpunkt daher nur grob.
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/ImportSharepointMediaInput"
       responses:
         "200":
           description: Success
@@ -6018,12 +6015,11 @@ paths:
         sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
         und beschreiben den Endpunkt daher nur grob.
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/ValidateEmbedInput"
       responses:
         "200":
           description: Success
@@ -6079,12 +6075,11 @@ paths:
           schema:
             type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/CreateDelegationInput"
       responses:
         "200":
           description: Success
@@ -6136,12 +6131,11 @@ paths:
           schema:
             type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/UpdateSodRuleInput"
       responses:
         "200":
           description: Success
@@ -6185,12 +6179,11 @@ paths:
         sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert
         und beschreiben den Endpunkt daher nur grob.
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: "#/components/schemas/CreateApiTokenInput"
       responses:
         "200":
           description: Success
@@ -6280,6 +6273,91 @@ components:
         format: uuid
 
   schemas:
+    # --- Rumpfschemata der zuvor nur grob beschriebenen Endpunkte (Audit B2) ---
+    # Pflichtfelder sind bewusst genau die, bei denen die jeweilige Route heute
+    # schon mit 400 antwortet. Fachliche Regeln (Laengen, erlaubte Werte,
+    # Zeitlogik) bleiben in der Route, damit ihre sprechenden Fehlermeldungen
+    # erhalten bleiben. additionalProperties bleibt offen: die Beschreibung ist
+    # der Mindestvertrag, nicht die vollstaendige Feldliste.
+    CreateApiTokenInput:
+      type: object
+      additionalProperties: true
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: Anzeigename des Tokens (Route begrenzt auf 100 Zeichen).
+        expiresAt:
+          type: string
+          nullable: true
+          description: Ablaufzeitpunkt; die Route verlangt ein gueltiges Datum in der Zukunft.
+    UpdateSystemSettingInput:
+      type: object
+      additionalProperties: true
+      required: [value]
+      properties:
+        value:
+          type: string
+          description: Neuer Wert der Einstellung.
+    AssignConfidentialityInput:
+      type: object
+      additionalProperties: true
+      required: [level, principalId]
+      properties:
+        level:
+          type: string
+          description: Vertraulichkeitsstufe; die Route laesst internal, confidential und strictly_confidential zu.
+        principalId:
+          type: string
+          description: Kennung der Person oder Gruppe.
+    ImportSharepointMediaInput:
+      type: object
+      additionalProperties: true
+      required: [driveId, itemId, filename]
+      properties:
+        driveId:
+          type: string
+        itemId:
+          type: string
+        filename:
+          type: string
+        nodeId:
+          type: string
+          description: Optionale Seite, der der Anhang zugeordnet wird.
+    ValidateEmbedInput:
+      type: object
+      additionalProperties: true
+      required: [url]
+      properties:
+        url:
+          type: string
+          description: Zu pruefende Einbettungsadresse.
+    UpdateSodRuleInput:
+      type: object
+      additionalProperties: true
+      required: [isEnabled]
+      properties:
+        isEnabled:
+          type: boolean
+    CreateDelegationInput:
+      type: object
+      additionalProperties: true
+      required: [deputyId, startsAt]
+      properties:
+        deputyId:
+          type: string
+          description: Kennung der vertretenden Person.
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+          nullable: true
+        scope:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
     HealthStatus:
       type: object
       properties:

@@ -26,6 +26,7 @@ import type {
   AiUsageStats,
   ApproveRevisionBody,
   ApproveWorkingCopyBody,
+  AssignConfidentialityInput,
   AssignRole201,
   AssignRoleInput,
   AssignTagToNodeBody,
@@ -47,6 +48,8 @@ import type {
   ContentRevision,
   ContentTemplate,
   CreateAiFieldProfileBody,
+  CreateApiTokenInput,
+  CreateDelegationInput,
   CreateDeletionRequestBody,
   CreateGlossaryTerm,
   CreateNodeInput,
@@ -149,6 +152,7 @@ import type {
   GraphGroup,
   GraphPerson,
   HealthStatus,
+  ImportSharepointMediaInput,
   LinkGlossaryTermBody,
   ListActiveSessions200,
   ListBackupRunsParams,
@@ -189,7 +193,6 @@ import type {
   PostAdminWorkflows200,
   PostAdminWorkflowsBody,
   PostConfidentialityConfigAssign200,
-  PostConfidentialityConfigAssignBody,
   PostContentV1Search200,
   PostContentV1SearchBody,
   PostContentWorkingCopiesByIdComment200,
@@ -229,13 +232,9 @@ import type {
   PostIntegrationKeysPreview200,
   PostIntegrationKeysPreviewBody,
   PostMediaImportSharepoint200,
-  PostMediaImportSharepointBody,
   PostMediaValidateEmbed200,
-  PostMediaValidateEmbedBody,
   PostPrincipalsByIdDelegations200,
-  PostPrincipalsByIdDelegationsBody,
   PostTokens200,
-  PostTokensBody,
   Principal,
   PrincipalWithRoles,
   ProcessQualityRow,
@@ -247,7 +246,6 @@ import type {
   PutAdminNotificationRulesById200,
   PutAdminNotificationRulesByIdBody,
   PutAdminSystemSettingsByKey200,
-  PutAdminSystemSettingsByKeyBody,
   PutAdminWorkflowAssignmentsByPageType200,
   PutAdminWorkflowAssignmentsByPageTypeBody,
   PutAdminWorkflowsById200,
@@ -257,7 +255,6 @@ import type {
   PutGraphConnectorGroupMappingsByTier200,
   PutGraphConnectorGroupMappingsByTierBody,
   PutRbacSodConfigByRuleKey200,
-  PutRbacSodConfigByRuleKeyBody,
   QualityOverview,
   RejectRevisionBody,
   Release,
@@ -306,12 +303,15 @@ import type {
   UpdateAiSettingsBody,
   UpdateNodeInput,
   UpdateReleaseInput,
+  UpdateSodRuleInput,
   UpdateSourceSystemInput,
   UpdateStorageProviderInput,
+  UpdateSystemSettingInput,
   UpdateWorkingCopyInput,
   UploadMediaBody,
   ValidateBackupTarget200,
   ValidateBackupTargetBody,
+  ValidateEmbedInput,
   WatchNodeBody,
   WorkingCopy,
   WorkingCopyDiff,
@@ -15593,7 +15593,7 @@ export const getPutAdminSystemSettingsByKeyUrl = (key: string) => {
 
 export const putAdminSystemSettingsByKey = async (
   key: string,
-  putAdminSystemSettingsByKeyBody?: PutAdminSystemSettingsByKeyBody,
+  updateSystemSettingInput: UpdateSystemSettingInput,
   options?: RequestInit,
 ): Promise<PutAdminSystemSettingsByKey200> => {
   return customFetch<PutAdminSystemSettingsByKey200>(
@@ -15602,7 +15602,7 @@ export const putAdminSystemSettingsByKey = async (
       ...options,
       method: "PUT",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(putAdminSystemSettingsByKeyBody),
+      body: JSON.stringify(updateSystemSettingInput),
     },
   );
 };
@@ -15614,14 +15614,14 @@ export const getPutAdminSystemSettingsByKeyMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
     TError,
-    { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+    { key: string; data: BodyType<UpdateSystemSettingInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
   TError,
-  { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+  { key: string; data: BodyType<UpdateSystemSettingInput> },
   TContext
 > => {
   const mutationKey = ["putAdminSystemSettingsByKey"];
@@ -15635,7 +15635,7 @@ export const getPutAdminSystemSettingsByKeyMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
-    { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> }
+    { key: string; data: BodyType<UpdateSystemSettingInput> }
   > = (props) => {
     const { key, data } = props ?? {};
 
@@ -15649,7 +15649,7 @@ export type PutAdminSystemSettingsByKeyMutationResult = NonNullable<
   Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>
 >;
 export type PutAdminSystemSettingsByKeyMutationBody =
-  BodyType<PutAdminSystemSettingsByKeyBody>;
+  BodyType<UpdateSystemSettingInput>;
 export type PutAdminSystemSettingsByKeyMutationError = ErrorType<void>;
 
 /**
@@ -15662,14 +15662,14 @@ export const usePutAdminSystemSettingsByKey = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
     TError,
-    { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+    { key: string; data: BodyType<UpdateSystemSettingInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof putAdminSystemSettingsByKey>>,
   TError,
-  { key: string; data: BodyType<PutAdminSystemSettingsByKeyBody> },
+  { key: string; data: BodyType<UpdateSystemSettingInput> },
   TContext
 > => {
   return useMutation(getPutAdminSystemSettingsByKeyMutationOptions(options));
@@ -16642,7 +16642,7 @@ export const getPostConfidentialityConfigAssignUrl = () => {
 };
 
 export const postConfidentialityConfigAssign = async (
-  postConfidentialityConfigAssignBody?: PostConfidentialityConfigAssignBody,
+  assignConfidentialityInput: AssignConfidentialityInput,
   options?: RequestInit,
 ): Promise<PostConfidentialityConfigAssign200> => {
   return customFetch<PostConfidentialityConfigAssign200>(
@@ -16651,7 +16651,7 @@ export const postConfidentialityConfigAssign = async (
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(postConfidentialityConfigAssignBody),
+      body: JSON.stringify(assignConfidentialityInput),
     },
   );
 };
@@ -16663,14 +16663,14 @@ export const getPostConfidentialityConfigAssignMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
     TError,
-    { data: BodyType<PostConfidentialityConfigAssignBody> },
+    { data: BodyType<AssignConfidentialityInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
   TError,
-  { data: BodyType<PostConfidentialityConfigAssignBody> },
+  { data: BodyType<AssignConfidentialityInput> },
   TContext
 > => {
   const mutationKey = ["postConfidentialityConfigAssign"];
@@ -16684,7 +16684,7 @@ export const getPostConfidentialityConfigAssignMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
-    { data: BodyType<PostConfidentialityConfigAssignBody> }
+    { data: BodyType<AssignConfidentialityInput> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -16698,7 +16698,7 @@ export type PostConfidentialityConfigAssignMutationResult = NonNullable<
   Awaited<ReturnType<typeof postConfidentialityConfigAssign>>
 >;
 export type PostConfidentialityConfigAssignMutationBody =
-  BodyType<PostConfidentialityConfigAssignBody>;
+  BodyType<AssignConfidentialityInput>;
 export type PostConfidentialityConfigAssignMutationError = ErrorType<void>;
 
 /**
@@ -16711,14 +16711,14 @@ export const usePostConfidentialityConfigAssign = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
     TError,
-    { data: BodyType<PostConfidentialityConfigAssignBody> },
+    { data: BodyType<AssignConfidentialityInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postConfidentialityConfigAssign>>,
   TError,
-  { data: BodyType<PostConfidentialityConfigAssignBody> },
+  { data: BodyType<AssignConfidentialityInput> },
   TContext
 > => {
   return useMutation(
@@ -22612,7 +22612,7 @@ export const getPostMediaImportSharepointUrl = () => {
 };
 
 export const postMediaImportSharepoint = async (
-  postMediaImportSharepointBody?: PostMediaImportSharepointBody,
+  importSharepointMediaInput: ImportSharepointMediaInput,
   options?: RequestInit,
 ): Promise<PostMediaImportSharepoint200> => {
   return customFetch<PostMediaImportSharepoint200>(
@@ -22621,7 +22621,7 @@ export const postMediaImportSharepoint = async (
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(postMediaImportSharepointBody),
+      body: JSON.stringify(importSharepointMediaInput),
     },
   );
 };
@@ -22633,14 +22633,14 @@ export const getPostMediaImportSharepointMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postMediaImportSharepoint>>,
     TError,
-    { data: BodyType<PostMediaImportSharepointBody> },
+    { data: BodyType<ImportSharepointMediaInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postMediaImportSharepoint>>,
   TError,
-  { data: BodyType<PostMediaImportSharepointBody> },
+  { data: BodyType<ImportSharepointMediaInput> },
   TContext
 > => {
   const mutationKey = ["postMediaImportSharepoint"];
@@ -22654,7 +22654,7 @@ export const getPostMediaImportSharepointMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postMediaImportSharepoint>>,
-    { data: BodyType<PostMediaImportSharepointBody> }
+    { data: BodyType<ImportSharepointMediaInput> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -22668,7 +22668,7 @@ export type PostMediaImportSharepointMutationResult = NonNullable<
   Awaited<ReturnType<typeof postMediaImportSharepoint>>
 >;
 export type PostMediaImportSharepointMutationBody =
-  BodyType<PostMediaImportSharepointBody>;
+  BodyType<ImportSharepointMediaInput>;
 export type PostMediaImportSharepointMutationError = ErrorType<void>;
 
 /**
@@ -22681,14 +22681,14 @@ export const usePostMediaImportSharepoint = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postMediaImportSharepoint>>,
     TError,
-    { data: BodyType<PostMediaImportSharepointBody> },
+    { data: BodyType<ImportSharepointMediaInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postMediaImportSharepoint>>,
   TError,
-  { data: BodyType<PostMediaImportSharepointBody> },
+  { data: BodyType<ImportSharepointMediaInput> },
   TContext
 > => {
   return useMutation(getPostMediaImportSharepointMutationOptions(options));
@@ -22703,7 +22703,7 @@ export const getPostMediaValidateEmbedUrl = () => {
 };
 
 export const postMediaValidateEmbed = async (
-  postMediaValidateEmbedBody?: PostMediaValidateEmbedBody,
+  validateEmbedInput: ValidateEmbedInput,
   options?: RequestInit,
 ): Promise<PostMediaValidateEmbed200> => {
   return customFetch<PostMediaValidateEmbed200>(
@@ -22712,7 +22712,7 @@ export const postMediaValidateEmbed = async (
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(postMediaValidateEmbedBody),
+      body: JSON.stringify(validateEmbedInput),
     },
   );
 };
@@ -22724,14 +22724,14 @@ export const getPostMediaValidateEmbedMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postMediaValidateEmbed>>,
     TError,
-    { data: BodyType<PostMediaValidateEmbedBody> },
+    { data: BodyType<ValidateEmbedInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postMediaValidateEmbed>>,
   TError,
-  { data: BodyType<PostMediaValidateEmbedBody> },
+  { data: BodyType<ValidateEmbedInput> },
   TContext
 > => {
   const mutationKey = ["postMediaValidateEmbed"];
@@ -22745,7 +22745,7 @@ export const getPostMediaValidateEmbedMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postMediaValidateEmbed>>,
-    { data: BodyType<PostMediaValidateEmbedBody> }
+    { data: BodyType<ValidateEmbedInput> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -22758,8 +22758,7 @@ export const getPostMediaValidateEmbedMutationOptions = <
 export type PostMediaValidateEmbedMutationResult = NonNullable<
   Awaited<ReturnType<typeof postMediaValidateEmbed>>
 >;
-export type PostMediaValidateEmbedMutationBody =
-  BodyType<PostMediaValidateEmbedBody>;
+export type PostMediaValidateEmbedMutationBody = BodyType<ValidateEmbedInput>;
 export type PostMediaValidateEmbedMutationError = ErrorType<void>;
 
 /**
@@ -22772,14 +22771,14 @@ export const usePostMediaValidateEmbed = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postMediaValidateEmbed>>,
     TError,
-    { data: BodyType<PostMediaValidateEmbedBody> },
+    { data: BodyType<ValidateEmbedInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postMediaValidateEmbed>>,
   TError,
-  { data: BodyType<PostMediaValidateEmbedBody> },
+  { data: BodyType<ValidateEmbedInput> },
   TContext
 > => {
   return useMutation(getPostMediaValidateEmbedMutationOptions(options));
@@ -22888,7 +22887,7 @@ export const getPostPrincipalsByIdDelegationsUrl = (id: string) => {
 
 export const postPrincipalsByIdDelegations = async (
   id: string,
-  postPrincipalsByIdDelegationsBody?: PostPrincipalsByIdDelegationsBody,
+  createDelegationInput: CreateDelegationInput,
   options?: RequestInit,
 ): Promise<PostPrincipalsByIdDelegations200> => {
   return customFetch<PostPrincipalsByIdDelegations200>(
@@ -22897,7 +22896,7 @@ export const postPrincipalsByIdDelegations = async (
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(postPrincipalsByIdDelegationsBody),
+      body: JSON.stringify(createDelegationInput),
     },
   );
 };
@@ -22909,14 +22908,14 @@ export const getPostPrincipalsByIdDelegationsMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
     TError,
-    { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+    { id: string; data: BodyType<CreateDelegationInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
   TError,
-  { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+  { id: string; data: BodyType<CreateDelegationInput> },
   TContext
 > => {
   const mutationKey = ["postPrincipalsByIdDelegations"];
@@ -22930,7 +22929,7 @@ export const getPostPrincipalsByIdDelegationsMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
-    { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> }
+    { id: string; data: BodyType<CreateDelegationInput> }
   > = (props) => {
     const { id, data } = props ?? {};
 
@@ -22944,7 +22943,7 @@ export type PostPrincipalsByIdDelegationsMutationResult = NonNullable<
   Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>
 >;
 export type PostPrincipalsByIdDelegationsMutationBody =
-  BodyType<PostPrincipalsByIdDelegationsBody>;
+  BodyType<CreateDelegationInput>;
 export type PostPrincipalsByIdDelegationsMutationError = ErrorType<void>;
 
 /**
@@ -22957,14 +22956,14 @@ export const usePostPrincipalsByIdDelegations = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
     TError,
-    { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+    { id: string; data: BodyType<CreateDelegationInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postPrincipalsByIdDelegations>>,
   TError,
-  { id: string; data: BodyType<PostPrincipalsByIdDelegationsBody> },
+  { id: string; data: BodyType<CreateDelegationInput> },
   TContext
 > => {
   return useMutation(getPostPrincipalsByIdDelegationsMutationOptions(options));
@@ -23056,7 +23055,7 @@ export const getPutRbacSodConfigByRuleKeyUrl = (ruleKey: string) => {
 
 export const putRbacSodConfigByRuleKey = async (
   ruleKey: string,
-  putRbacSodConfigByRuleKeyBody?: PutRbacSodConfigByRuleKeyBody,
+  updateSodRuleInput: UpdateSodRuleInput,
   options?: RequestInit,
 ): Promise<PutRbacSodConfigByRuleKey200> => {
   return customFetch<PutRbacSodConfigByRuleKey200>(
@@ -23065,7 +23064,7 @@ export const putRbacSodConfigByRuleKey = async (
       ...options,
       method: "PUT",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(putRbacSodConfigByRuleKeyBody),
+      body: JSON.stringify(updateSodRuleInput),
     },
   );
 };
@@ -23077,14 +23076,14 @@ export const getPutRbacSodConfigByRuleKeyMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
     TError,
-    { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+    { ruleKey: string; data: BodyType<UpdateSodRuleInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
   TError,
-  { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+  { ruleKey: string; data: BodyType<UpdateSodRuleInput> },
   TContext
 > => {
   const mutationKey = ["putRbacSodConfigByRuleKey"];
@@ -23098,7 +23097,7 @@ export const getPutRbacSodConfigByRuleKeyMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
-    { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> }
+    { ruleKey: string; data: BodyType<UpdateSodRuleInput> }
   > = (props) => {
     const { ruleKey, data } = props ?? {};
 
@@ -23112,7 +23111,7 @@ export type PutRbacSodConfigByRuleKeyMutationResult = NonNullable<
   Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>
 >;
 export type PutRbacSodConfigByRuleKeyMutationBody =
-  BodyType<PutRbacSodConfigByRuleKeyBody>;
+  BodyType<UpdateSodRuleInput>;
 export type PutRbacSodConfigByRuleKeyMutationError = ErrorType<void>;
 
 /**
@@ -23125,14 +23124,14 @@ export const usePutRbacSodConfigByRuleKey = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
     TError,
-    { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+    { ruleKey: string; data: BodyType<UpdateSodRuleInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof putRbacSodConfigByRuleKey>>,
   TError,
-  { ruleKey: string; data: BodyType<PutRbacSodConfigByRuleKeyBody> },
+  { ruleKey: string; data: BodyType<UpdateSodRuleInput> },
   TContext
 > => {
   return useMutation(getPutRbacSodConfigByRuleKeyMutationOptions(options));
@@ -23215,14 +23214,14 @@ export const getPostTokensUrl = () => {
 };
 
 export const postTokens = async (
-  postTokensBody?: PostTokensBody,
+  createApiTokenInput: CreateApiTokenInput,
   options?: RequestInit,
 ): Promise<PostTokens200> => {
   return customFetch<PostTokens200>(getPostTokensUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(postTokensBody),
+    body: JSON.stringify(createApiTokenInput),
   });
 };
 
@@ -23233,14 +23232,14 @@ export const getPostTokensMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postTokens>>,
     TError,
-    { data: BodyType<PostTokensBody> },
+    { data: BodyType<CreateApiTokenInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postTokens>>,
   TError,
-  { data: BodyType<PostTokensBody> },
+  { data: BodyType<CreateApiTokenInput> },
   TContext
 > => {
   const mutationKey = ["postTokens"];
@@ -23254,7 +23253,7 @@ export const getPostTokensMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postTokens>>,
-    { data: BodyType<PostTokensBody> }
+    { data: BodyType<CreateApiTokenInput> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -23267,7 +23266,7 @@ export const getPostTokensMutationOptions = <
 export type PostTokensMutationResult = NonNullable<
   Awaited<ReturnType<typeof postTokens>>
 >;
-export type PostTokensMutationBody = BodyType<PostTokensBody>;
+export type PostTokensMutationBody = BodyType<CreateApiTokenInput>;
 export type PostTokensMutationError = ErrorType<void>;
 
 /**
@@ -23280,14 +23279,14 @@ export const usePostTokens = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postTokens>>,
     TError,
-    { data: BodyType<PostTokensBody> },
+    { data: BodyType<CreateApiTokenInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postTokens>>,
   TError,
-  { data: BodyType<PostTokensBody> },
+  { data: BodyType<CreateApiTokenInput> },
   TContext
 > => {
   return useMutation(getPostTokensMutationOptions(options));

@@ -4503,10 +4503,9 @@ export const PutAdminSystemSettingsByKeyParams = zod.object({
   key: zod.coerce.string(),
 });
 
-export const PutAdminSystemSettingsByKeyBody = zod.record(
-  zod.string(),
-  zod.unknown(),
-);
+export const PutAdminSystemSettingsByKeyBody = zod.object({
+  value: zod.string().describe("Neuer Wert der Einstellung."),
+});
 
 export const PutAdminSystemSettingsByKeyResponse = zod.record(
   zod.string(),
@@ -4642,10 +4641,14 @@ export const GetConfidentialityConfigResponse = zod.record(
  * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
  * @summary POST /confidentiality-config/assign
  */
-export const PostConfidentialityConfigAssignBody = zod.record(
-  zod.string(),
-  zod.unknown(),
-);
+export const PostConfidentialityConfigAssignBody = zod.object({
+  level: zod
+    .string()
+    .describe(
+      "Vertraulichkeitsstufe; die Route laesst internal, confidential und strictly_confidential zu.",
+    ),
+  principalId: zod.string().describe("Kennung der Person oder Gruppe."),
+});
 
 export const PostConfidentialityConfigAssignResponse = zod.record(
   zod.string(),
@@ -5443,10 +5446,15 @@ export const PostIntegrationKeysByIdRotateResponse = zod.record(
  * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
  * @summary POST /media/import-sharepoint
  */
-export const PostMediaImportSharepointBody = zod.record(
-  zod.string(),
-  zod.unknown(),
-);
+export const PostMediaImportSharepointBody = zod.object({
+  driveId: zod.string(),
+  itemId: zod.string(),
+  filename: zod.string(),
+  nodeId: zod
+    .string()
+    .optional()
+    .describe("Optionale Seite, der der Anhang zugeordnet wird."),
+});
 
 export const PostMediaImportSharepointResponse = zod.record(
   zod.string(),
@@ -5457,10 +5465,9 @@ export const PostMediaImportSharepointResponse = zod.record(
  * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
  * @summary POST /media/validate-embed
  */
-export const PostMediaValidateEmbedBody = zod.record(
-  zod.string(),
-  zod.unknown(),
-);
+export const PostMediaValidateEmbedBody = zod.object({
+  url: zod.string().describe("Zu pruefende Einbettungsadresse."),
+});
 
 export const PostMediaValidateEmbedResponse = zod.record(
   zod.string(),
@@ -5488,10 +5495,13 @@ export const PostPrincipalsByIdDelegationsParams = zod.object({
   id: zod.coerce.string(),
 });
 
-export const PostPrincipalsByIdDelegationsBody = zod.record(
-  zod.string(),
-  zod.unknown(),
-);
+export const PostPrincipalsByIdDelegationsBody = zod.object({
+  deputyId: zod.string().describe("Kennung der vertretenden Person."),
+  startsAt: zod.string(),
+  endsAt: zod.string().nullish(),
+  scope: zod.string().nullish(),
+  reason: zod.string().nullish(),
+});
 
 export const PostPrincipalsByIdDelegationsResponse = zod.record(
   zod.string(),
@@ -5512,10 +5522,9 @@ export const PutRbacSodConfigByRuleKeyParams = zod.object({
   ruleKey: zod.coerce.string(),
 });
 
-export const PutRbacSodConfigByRuleKeyBody = zod.record(
-  zod.string(),
-  zod.unknown(),
-);
+export const PutRbacSodConfigByRuleKeyBody = zod.object({
+  isEnabled: zod.boolean(),
+});
 
 export const PutRbacSodConfigByRuleKeyResponse = zod.record(
   zod.string(),
@@ -5532,7 +5541,17 @@ export const GetTokensResponse = zod.record(zod.string(), zod.unknown());
  * Aus der Implementierung abgeleitet. Methode, Pfad und Pfadparameter sind belegt; Anfrage- und Antwortschema sind noch nicht ausdetailliert und beschreiben den Endpunkt daher nur grob.
  * @summary POST /tokens
  */
-export const PostTokensBody = zod.record(zod.string(), zod.unknown());
+export const PostTokensBody = zod.object({
+  name: zod
+    .string()
+    .describe("Anzeigename des Tokens (Route begrenzt auf 100 Zeichen)."),
+  expiresAt: zod
+    .string()
+    .nullish()
+    .describe(
+      "Ablaufzeitpunkt; die Route verlangt ein gueltiges Datum in der Zukunft.",
+    ),
+});
 
 export const PostTokensResponse = zod.record(zod.string(), zod.unknown());
 
