@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-const API = "http://localhost:8080/api";
+// Relativ statt absolut: so greift die in playwright.config.ts gesetzte
+// baseURL (E2E_BASE_URL). Vorher zeigte der Pfad fest auf localhost:8080
+// und lief damit gegen eine Adresse, die keine Umgebung bedient
+// (Audit-Befund A4: Ziel muss per Umgebung setzbar sein).
+const API = "/api";
 const HEADERS = {
   "Content-Type": "application/json",
   "X-Dev-Principal-Id": "00000000-0000-0000-0000-000000000001",
@@ -115,7 +119,8 @@ test.describe("Frontend Navigation – API layer", () => {
   });
 
   test("frontend serves valid HTML", async ({ request }) => {
-    const res = await request.get("http://localhost:80");
+    // Relativ, damit die baseURL aus der Konfiguration greift.
+    const res = await request.get("/");
     expect(res.ok()).toBe(true);
     const html = await res.text();
     expect(html.toLowerCase()).toContain("<!doctype html");

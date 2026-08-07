@@ -148,7 +148,8 @@ test.describe("RBAC Permission Boundaries", () => {
 
   test("unauthenticated request returns 401", async ({ playwright }) => {
     const ctx = await playwright.request.newContext({
-      baseURL: "http://localhost:80",
+      // Gleiche Quelle und gleicher Rueckfallwert wie playwright.config.ts.
+      baseURL: process.env.E2E_BASE_URL ?? "http://localhost:80",
       extraHTTPHeaders: {},
     });
     const res = await ctx.get(`${API}/content/nodes`);

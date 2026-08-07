@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-const API = "http://localhost:8080/api";
+// Relativ statt absolut: so greift die in playwright.config.ts gesetzte
+// baseURL (E2E_BASE_URL). Vorher zeigte der Pfad fest auf localhost:8080
+// und lief damit gegen eine Adresse, die keine Umgebung bedient
+// (Audit-Befund A4: Ziel muss per Umgebung setzbar sein).
+const API = "/api";
 const HEADERS = {
   "Content-Type": "application/json",
   "X-Dev-Principal-Id": "00000000-0000-0000-0000-000000000001",
