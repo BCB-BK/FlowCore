@@ -25,6 +25,14 @@ Prüfliste (jeweils mit Fundstelle belegen oder als geprüft-sauber abhaken):
 8. **Fail-open-Muster:** `.catch` der Fehler verschluckt, Feature das bei fehlender Config
    „offen" statt „zu" schaltet (Lehre: APP_PASSWORD leer = App ungeschützt).
 
-Antworte mit: Verdikt (`FREIGABE-EMPFEHLUNG` / `NACHARBEIT NÖTIG` / `ABLEHNUNG`) + Befunde
-(Datei:Zeile · Schwere KRITISCH/HOCH/MITTEL/NIEDRIG · Angriffspfad · konkreter Fix-Vorschlag).
-Nur Befunde, keine Fixes. Kein Hedging.
+## Antwortformat (maschinenlesbarer Schlussblock, exakt so)
+
+```
+VERDIKT: FREIGABE-EMPFEHLUNG | NACHARBEIT NÖTIG | ABLEHNUNG
+FIX-AUFTRÄGE:
+1. <Datei:Zeile> — <Schwere KRITISCH/HOCH/MITTEL/NIEDRIG> — <Angriffspfad> — <was zu tun ist> — Abnahme: <prüfbares Kriterium>
+2. …
+```
+
+Die FIX-AUFTRÄGE sind direkte Arbeitsaufträge an den Ursprungsagenten. Nur Befunde, keine
+Fixes durch dich. Kein Hedging.

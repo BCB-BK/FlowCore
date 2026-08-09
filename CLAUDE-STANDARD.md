@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.0)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.1)
 
-> **Version 2.0 · 06.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
+> **Version 2.1 · 07.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -95,21 +95,27 @@ Je Repo präzisiert (Befehle in der Repo-`CLAUDE.md`). Reihenfolge:
 4. **Doku-Gate:** alle berührten Dokus im selben Task nachziehen; Abweichung Doku↔Code wird
    benannt, per Nachweis aufgelöst und korrigiert.
 5. **Senior-Self-Review-Block** (gelesen · geändert+warum · Referenzsuche · Root-Cause-Beleg ·
-   Verifikation · Floskel-Selbstkritik) — Selbstbericht, dritte Prüfschicht neben Guards und Review (§8).
-6. Befundliste (§4) + Abgleich `98-OFFENE-BAUSTELLEN.md` → Commit auf die zulässige Branch.
+   Verifikation · Floskel-Selbstkritik) — Selbstbericht, dritte Prüfschicht neben Guards und Wächter.
+6. **Wächter-Freigabe** (§8, Skill `waechter`) — ohne `FREIGABE-EMPFEHLUNG` kein `BESTANDEN`.
+7. Befundliste (§4) + Abgleich `98-OFFENE-BAUSTELLEN.md` → Commit auf die zulässige Branch.
 
 **Abschlussstatus — exakt vier:** `BESTANDEN` · `NICHT BESTANDEN` · `BLOCKIERT VOR START` ·
 `BLOCKIERT DURCH SCOPE-FREMDEN FEHLER`. `BESTANDEN` nur, wenn jeder geforderte Check real lief
 und kein Guard/Hook dafür deaktiviert oder umgangen wurde.
 
-## §8 Unabhängige Prüfung
+## §8 Wächter-Protokoll (Pflicht nach jeder Code-Änderung)
 
-Substanzielle Änderungen vor Abschluss durch **read-only Reviewer im frischen Kontext**
-(Subagent `architecture-reviewer`): Auftragstreue, Verträge, Wirkungskette, Nebenwirkungen,
-Komplexität, Testlücken, Widersprüche Code↔Doku↔Bericht. Bei Auth/AuthZ, personenbezogenen
-Daten, Uploads, externen APIs, Zahlungen, Mandantentrennung oder Prod-Daten zusätzlich
-**`security-reviewer` verpflichtend**. Der Implementierer nimmt sich nie allein per eigener
-Zusammenfassung ab.
+**Jede** Code-Änderung durchläuft vor der Statusmeldung den Wächter (Skill `waechter`):
+read-only Review im frischen Kontext durch `architecture-reviewer` (Auftragstreue, Verträge,
+Wirkungskette, Nebenwirkungen, Komplexität, Testlücken, Doku↔Code↔Bericht,
+**Standard-Compliance inkl. DoD-Nachweisen**); bei Auth/AuthZ, personenbezogenen Daten,
+Uploads, externen APIs, Zahlungen, Mandanten oder Prod-Daten zusätzlich `security-reviewer`.
+Verdikt `NACHARBEIT NÖTIG`/`ABLEHNUNG` ⇒ die nummerierten FIX-AUFTRÄGE abarbeiten und erneut
+prüfen lassen — **maximal 2 Fix-Runden**, danach Eskalation an den Betreiber (offene Befunde
++ Empfehlung). Kein `BESTANDEN` ohne `FREIGABE-EMPFEHLUNG`; das Verdikt wird als Marker
+`.claude/waechter-verdikt.json` festgehalten (Anker des Stop-Hooks — Details im Skill).
+Der Implementierer nimmt sich nie allein per eigener Zusammenfassung ab; Override nur durch
+expliziten Betreiber-Satz, sichtbar ausgewiesen.
 
 ## §9 Kontext, Memory, Agenten
 
@@ -132,6 +138,7 @@ Zusammenfassung ab.
 | Verfahren (kritischer Task, Deploy, Migration) | Skills |
 | Unabhängige Prüfung | read-only Subagents |
 | Harte Verbote (git/DB/Secrets/destruktiv) | **PreToolUse-Hook + Permission-Deny** (`standards/settings/`) |
+| Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert Beenden ohne Freigabe-Verdikt |
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
 | Build-/Merge-Qualität | CI-Guards |
 
