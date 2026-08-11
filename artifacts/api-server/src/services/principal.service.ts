@@ -133,6 +133,76 @@ export async function getPrincipalByExternalId(
   return principal ?? null;
 }
 
+/** Form einer Kennung; beide Arten (intern wie Entra) sind UUIDs. */
+const KENNUNG_MUSTER =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Vereinheitlicht eine Personenangabe aus dem Formular auf die interne Kennung.
+ *
+ * Die Personensuche (`GET /principals/graph/people`) liefert zweierlei im selben
+ * Feld `id`: bei einem Treffer aus Microsoft Graph die **Entra-Objektkennung**,
+ * beim Rückfall auf den lokalen Bestand die **interne Kennung**. Was davon
+ * ankommt, hängt allein daran, ob Graph gerade antwortet. Wird der Wert
+ * ungeprüft gespeichert, zeigt er später ins Leere: genau so entstanden die
+ * 184 unauflösbaren Eigentümerverweise, die jede Eigentümer-Anzeige mit 404
+ * beantworteten — und die dazu führten, dass der Eigentümer einer vertraulichen
+ * Seite nie als solcher erkannt wurde (`confidentiality.service`).
+ *
+ * Reihenfolge: interne Kennung → unverändert; Entra-Kennung → zugehöriger
+ * Principal; in Graph bekannt, aber lokal noch nicht angelegt → wird angelegt.
+ * Nicht auflösbar → `null`, damit der Aufrufer entscheiden kann.
+ */
+export async function resolvePrincipalReference(
+  wert: string | null | undefined,
+  accessToken?: string,
+): Promise<string | null> {
+  const kennung = wert?.trim();
+  if (!kennung) return null;
+
+  // Ohne Formprüfung liefe eine Freitexteingabe in einen Postgres-Typfehler.
+  if (!KENNUNG_MUSTER.test(kennung)) {
+    logger.warn({ kennung }, "Personenangabe ist keine gültige Kennung");
+    return null;
+  }
+
+  const intern = await getPrincipalById(kennung);
+  if (intern) return intern.id;
+
+  // Beide Schreibweisen des Anbieters kommen im Bestand vor (Migrationsaltlast).
+  const [extern] = await db
+    .select({ id: principalsTable.id })
+    .from(principalsTable)
+    .where(
+      and(
+        inArray(principalsTable.externalProvider, ["entra", "entra_id"]),
+        eq(principalsTable.externalId, kennung),
+      ),
+    );
+  if (extern) return extern.id;
+
+  if (accessToken) {
+    const { getPersonById } = await import("./graph-client.service");
+    const person = await getPersonById(accessToken, kennung);
+    if (person?.displayName) {
+      return upsertPrincipal({
+        principalType: "user",
+        externalProvider: "entra",
+        externalId: kennung,
+        displayName: person.displayName,
+        email: person.mail ?? undefined,
+        upn: person.userPrincipalName ?? undefined,
+      });
+    }
+  }
+
+  logger.warn(
+    { kennung },
+    "Personenangabe konnte weder lokal noch über Graph aufgelöst werden",
+  );
+  return null;
+}
+
 export async function searchPrincipals(query: string, limit = 20) {
   const pattern = `%${query}%`;
   return db

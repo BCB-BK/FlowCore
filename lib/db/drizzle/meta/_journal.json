@@ -71,6 +71,13 @@
       "when": 1751414400000,
       "tag": "0010_add_inline_wiki_link_relation_type",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786455000000,
+      "tag": "0011_eigentuemer_auf_principal_kennung",
+      "breakpoints": true
     }
   ]
 }

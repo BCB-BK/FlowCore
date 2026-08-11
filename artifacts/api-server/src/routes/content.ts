@@ -21,6 +21,8 @@ import {
   getNodeTree,
   getSiblings,
 } from "../services/graph.service";
+import { resolvePrincipalReference } from "../services/principal.service";
+import { getGraphToken } from "../lib/session-crypto";
 import { requireAuth } from "../middlewares/require-auth";
 import { requirePermission } from "../middlewares/require-permission";
 import { validateBody } from "../middlewares/validate-body";
@@ -270,13 +272,35 @@ router.post(
   validateBody(CreateNodeBody),
   async (req, res) => {
     try {
-      const nodeId = await createContentNode(req.body, {
-        eventType: "content",
-        action: "node_created",
-        actorId: req.user!.principalId,
-        resourceType: "content_node",
-        details: { title: req.body.title, templateType: req.body.templateType },
-      });
+      // Die Personenauswahl liefert je nach Verfügbarkeit von Graph eine
+      // Entra- oder eine interne Kennung im selben Feld. Gespeichert wird
+      // ausschließlich die interne — sonst zeigt der Verweis später ins Leere.
+      const angegebenerEigentuemer = req.body.ownerId as string | undefined;
+      const ownerId = await resolvePrincipalReference(
+        angegebenerEigentuemer,
+        getGraphToken(req.session),
+      );
+      if (angegebenerEigentuemer && !ownerId) {
+        res.status(400).json({
+          error:
+            "Die gewählte verantwortliche Person ist nicht bekannt. Bitte erneut auswählen.",
+        });
+        return;
+      }
+
+      const nodeId = await createContentNode(
+        { ...req.body, ownerId },
+        {
+          eventType: "content",
+          action: "node_created",
+          actorId: req.user!.principalId,
+          resourceType: "content_node",
+          details: {
+            title: req.body.title,
+            templateType: req.body.templateType,
+          },
+        },
+      );
       const [node] = await db
         .select()
         .from(contentNodesTable)

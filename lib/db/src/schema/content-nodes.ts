@@ -20,6 +20,9 @@ const tsvector = customType<{ data: string }>({
 });
 import { nodeStatusEnum, templateTypeEnum } from "./enums";
 import { contentTemplatesTable } from "./content-templates";
+// Verzögert aufgelöst (Pfeilfunktion in `references`), weil principals.ts
+// seinerseits dieses Modul einbindet.
+import { principalsTable } from "./principals";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -40,7 +43,15 @@ export const contentNodesTable = pgTable(
     status: nodeStatusEnum("status").notNull().default("draft"),
     currentRevisionId: uuid("current_revision_id"),
     publishedRevisionId: uuid("published_revision_id"),
-    ownerId: text("owner_id"),
+    // Verweis auf principals.id — bewusst geprüft: als freies Textfeld nahm die
+    // Spalte auch Entra-Objektkennungen an, die hier ins Leere zeigen (184 von
+    // 184 Werten). Siehe resolvePrincipalReference im principal.service.
+    ownerId: uuid("owner_id").references(
+      (): AnyPgColumn => principalsTable.id,
+      {
+        onDelete: "set null",
+      },
+    ),
     searchVector: tsvector("search_vector"),
     isDeleted: boolean("is_deleted").notNull().default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
