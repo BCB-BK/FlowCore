@@ -1,11 +1,11 @@
 import { sanitizeInternalError } from "../lib/safe-error";
 import {
   TrackMediaUsageBody,
-  UploadMediaBody,
   PostMediaImportSharepointBody,
   PostMediaValidateEmbedBody,
 } from "@workspace/api-zod";
 import { validateBody } from "../middlewares/validate-body";
+import { z } from "zod";
 import {
   Router,
   type IRouter,
@@ -43,6 +43,26 @@ const router: IRouter = Router();
 // Per MAX_UPLOAD_MB übersteuerbar (Default 50 MB)
 const MAX_UPLOAD_MB = envInt("MAX_UPLOAD_MB", 50);
 const MAX_FILE_SIZE = MAX_UPLOAD_MB * 1024 * 1024;
+
+/**
+ * Rumpfprüfung des Uploads — nur die Textfelder des Multipart-Formulars.
+ *
+ * Hier steht bewusst **nicht** das generierte `UploadMediaBody`. Jenes Schema
+ * verlangt zusätzlich `file` als `File`-Instanz und beschreibt damit korrekt,
+ * was der *Browser* absendet. Auf dem Server landet der Datei-Teil aber bei
+ * busboy in `_uploadedFile` und niemals in `req.body`. Gegen `req.body`
+ * geprüft konnte `file` deshalb nie erfüllt sein: jeder Bild-Upload endete
+ * mit 400 "Validierungsfehler", für jeden Benutzer und jede Datei.
+ *
+ * Die Datei selbst bleibt geprüft — nur an den Stellen, die sie tatsächlich
+ * sehen: busboy erzwingt das Größenlimit (413), die Route weiter unten das
+ * Vorhandensein (400 "No file provided").
+ */
+const UploadMediaFormularfelder = z.object({
+  altText: z.string().optional(),
+  caption: z.string().optional(),
+  nodeId: z.string().uuid().optional(),
+});
 
 /**
  * Multipart-Parsing über busboy (Streaming, mit hartem Größenlimit) statt der
@@ -129,7 +149,7 @@ router.post(
   requireAuth,
   requirePermission("edit_content"),
   parseMultipart,
-  validateBody(UploadMediaBody),
+  validateBody(UploadMediaFormularfelder),
   async (req, res) => {
     try {
       const file = (req as unknown as Record<string, unknown>)._uploadedFile as
