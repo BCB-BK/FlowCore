@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.1)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.2)
 
-> **Version 2.1 · 07.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
+> **Version 2.2 · 11.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -129,6 +129,24 @@ expliziten Betreiber-Satz, sichtbar ausgewiesen.
 - Bei kritischen Aufgaben zu Beginn dokumentieren: geladene Regel-Dateien, Claude-Code-Version,
   Modell, aktive Permissions/Hooks.
 
+## §11 Delegation & Orchestrierung
+
+- **Rohdatenarbeit gehört in Subagenten** (eigenes Kontextfenster): breite Codebase-Erkundung,
+  Loganalyse, Recherche, parallele Musteränderungen, Reviews. Der Hauptkontext bleibt frei für
+  Ziel, Urteil und Entscheidung — nicht für Suchtreffer und Log-Wüsten.
+- **Nicht delegiert wird:** ein unklarer Auftrag (erst klären, §2), gleichzeitige Schreibarbeit
+  an derselben/Hotspot-Datei, und Kleinstfixes (Delegation kostet dort mehr, als sie bringt).
+- **Rückgabeformat verbindlich: Dossier statt Prosa** — `file:line`, Befund, Verdikt, Belege
+  mit Exit-Codes/Zitat. „Habe geschaut, sieht gut aus" ist kein Ergebnis.
+- **Subagent-Berichte sind kein Nachweis.** Gedeckt sind sie erst durch deterministische Guards,
+  reale Tests oder den Wächter (§8). Die Verantwortung für das Ergebnis bleibt beim
+  Orchestrator; er delegiert Arbeit, nicht Verantwortung, und sieht bei substanziellen
+  Änderungen den Diff.
+- **Modell und Effort je Aufruf bewusst wählen** und kurz begründen: urteilslastig (Design,
+  Review, Debugging) hoch, mechanisch (gerichtete Edits, Verifikation, Scouting) schlanker.
+- **Subagenten laden diese Datei nicht zuverlässig mit** — die für den Auftrag geltenden Regeln
+  gehören in den Auftragstext. Details und Auftragsschema: `.claude/rules/delegation.md`.
+
 ## §10 Durchsetzungsmatrix & Regelpflege
 
 | Regelart | Durchsetzung |
@@ -138,6 +156,7 @@ expliziten Betreiber-Satz, sichtbar ausgewiesen.
 | Verfahren (kritischer Task, Deploy, Migration) | Skills |
 | Unabhängige Prüfung | read-only Subagents |
 | Harte Verbote (git/DB/Secrets/destruktiv) | **PreToolUse-Hook + Permission-Deny** (`standards/settings/`) |
+| Delegation (§11) | Skill-/Auftragsdisziplin + Dossier-Pflicht (kein Hook — Urteilsfrage) |
 | Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert Beenden ohne Freigabe-Verdikt |
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
 | Build-/Merge-Qualität | CI-Guards |
