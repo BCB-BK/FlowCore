@@ -135,7 +135,7 @@ describe("POST /media/upload", () => {
       method: "POST",
       body: formular(),
     });
-    const rumpf = await antwort.json();
+    const rumpf = (await antwort.json()) as Record<string, unknown>;
     expect(
       antwort.status,
       `Erwartet 201, kam ${antwort.status}: ${JSON.stringify(rumpf)}`,
@@ -177,6 +177,7 @@ describe("POST /media/upload", () => {
       body: leer,
     });
     expect(antwort.status).toBe(400);
-    expect((await antwort.json()).error).toBe("No file provided");
+    const rumpf = (await antwort.json()) as Record<string, unknown>;
+    expect(rumpf.error).toBe("No file provided");
   });
 });
