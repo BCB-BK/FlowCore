@@ -10,6 +10,20 @@ Recovery · Betrieb ohne unnötige Handgriffe.
 welche wurden geprüft, warum sind die übrigen hier nicht nötig? Diese Begründung gehört in
 den Abschluss.
 
+## End-to-End-Tests: risikobasiert, nicht pauschal
+
+E2E-Vollsuiten bei jeder Änderung wären zu langsam und würden bald übersprungen — das ist
+schlimmer als kein Test. Drei Einsatzpunkte, mehr nicht:
+
+| Anlass | Umfang |
+|---|---|
+| UI-/Flow-Änderung | nur die betroffenen Specs, lokal |
+| vor PROD-Übernahme (Tier B/C) | Vollsuite gegen DEV/Testumgebung, als Gate |
+| nach jedem Deploy | `post-deploy-smoke.sh` (< 1 Minute), Pflicht |
+
+E2E-Tests, die Daten schreiben, laufen **nie** gegen PROD und nur gegen eine dafür
+vorgesehene Umgebung — steht im Repo etwas anderes, gilt die strengere Angabe.
+
 ## Observability
 Neue kritische Abläufe müssen beobachtbar sein: strukturierte Logs, Metriken, Korrelations-IDs,
 Health-Checks, Alarmierung — soweit relevant. Observability erfasst keine Secrets und keine

@@ -22,7 +22,8 @@ description: Schema- und Datenmigrations-Verfahren — Expand→Migrate→Contra
 
 ## Werkzeug-Warnungen
 - `drizzle-kit push --force` löscht Tabellen außerhalb des deklarierten Schemas — Wirkung
-  vorab gegen die Ziel-DB prüfen (empirisch belegt bei PLATO, 26.07.2026).
+  vorab gegen die Ziel-DB prüfen (empirisch belegt in der internen Produktionsplattform,
+  26.07.2026).
 - Dump/Restore: PG-Versionen von Quelle und Ziel abgleichen; neuerer Dump lässt sich nicht
   in ältere Tools einspielen.
 - Schema-Sync nie gegen die falsche Umgebung: aktive DB technisch verifizieren (Query-Beleg).

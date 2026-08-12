@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.2)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.3)
 
-> **Version 2.2 · 11.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
+> **Version 2.3 · 11.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -87,9 +87,19 @@ auflösen — nichts wird still fallengelassen, nichts ungefragt umgebaut:
 
 Je Repo präzisiert (Befehle in der Repo-`CLAUDE.md`). Reihenfolge:
 1. Typecheck 0 neue Fehler · Lint sauber (Baseline dokumentiert).
-2. **Deterministische Guards** des Repos (typecheck/lint, hardcode-, dead-code-,
-   doc-freshness-, security-scan). Neue wiederkehrende Fehlerklasse ⇒ neuer Guard mit
-   dokumentiertem Auslöser-Fall. Guards sind Skripte — LLM-Selbstberichte ersetzen sie nicht.
+2. **Abschluss-Guard — in JEDEM Repo derselbe:** `bash .claude/guards/onecampus-guard.sh`.
+   Er bringt die Mindestprüfungen selbst mit (Secrets, Hygiene, Doku-Frische) und fährt
+   zusätzlich die Werkzeuge des Repos (typecheck/lint/test/validate). Sein **Verdikt-Block
+   mit Exit-Code ist der Nachweis** — er wird in der Abschluss-Antwort zitiert. Was mangels
+   Werkzeug nicht lief, erscheint als `n/v` und landet automatisch in
+   `docs/98-OFFENE-BAUSTELLEN.md`; nichts wird als bestanden behauptet.
+   **Ausnahmen sind begründungspflichtig:** Legitime Vorlagendateien (z. B. eine getrackte
+   `.env`-Muster­datei) werden in `.claude/guard-ausnahmen.conf` eingetragen — ein Glob je
+   Zeile mit Begründung hinter `#`. Ohne Begründung wirkt der Eintrag nicht. Die Zahl der
+   Ausnahmen steht im Verdikt: freigestellt heißt **sichtbar**, nicht verschwunden. Das
+   Suchmuster des Guards wird dafür **nie** aufgeweicht — das entwertete die Prüfung überall.
+   Neue wiederkehrende Fehlerklasse ⇒ neuer Guard mit dokumentiertem Auslöser-Fall.
+   Guards sind Skripte — LLM-Selbstberichte ersetzen sie nicht.
 3. Betroffene Tests **real** ausführen (keine neu fehlschlagende Datei); neue SQL real gegen
    schema-konforme DB.
 4. **Doku-Gate:** alle berührten Dokus im selben Task nachziehen; Abweichung Doku↔Code wird
@@ -159,6 +169,8 @@ expliziten Betreiber-Satz, sichtbar ausgewiesen.
 | Delegation (§11) | Skill-/Auftragsdisziplin + Dossier-Pflicht (kein Hook — Urteilsfrage) |
 | Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert Beenden ohne Freigabe-Verdikt |
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
+| Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code) |
+| Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |
 | Build-/Merge-Qualität | CI-Guards |
 
 Eine Regel gilt erst als eingeführt mit Owner, Geltungsbereich, Durchsetzungsform und

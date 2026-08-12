@@ -21,7 +21,10 @@ löscht undeklarierte Tabellen). Fehlschlag = sofort melden, nicht stapeln.
    genügt dann nicht. Kein durchführbarer Rollback ⇒ kein PROD-Deploy.
 6. Doku-Gate erfüllt (Kernvertrag §7.4)
 
-**Nach dem Deploy (Nachbeobachtung, Ergebnis dokumentieren):**
-Health-Check + Logs + Metriken real prüfen · 1–2 Kernworkflows End-to-End · relevante
-Datenzustände (Counts/Stichproben) · Beobachtungszeitraum benennen. Ein gestarteter
-Deploy-Prozess ist kein erfolgreiches Deployment.
+**Nach dem Deploy — Pflicht, nicht optional:**
+`bash .claude/guards/post-deploy-smoke.sh` muss **Exit 0** liefern (Konfiguration:
+`.claude/smoke.conf` je Instanz — Basis-URL, Health-Pfad, 1–3 Kernpfade mit erwartetem
+Status). Der Smoke-Verdikt-Block wird in der Abschlussmeldung zitiert. Schlägt er fehl, gilt
+der Deploy als **nicht verifiziert** → Logs prüfen, ggf. Rollback (`rules/release-rollback.md`).
+Zusätzlich: Logs/Metriken sichten, relevante Datenzustände stichprobenartig prüfen,
+Beobachtungszeitraum benennen. Ein gestarteter Deploy-Prozess ist kein erfolgreiches Deployment.
