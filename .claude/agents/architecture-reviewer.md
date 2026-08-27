@@ -27,6 +27,14 @@ Prüfe den übergebenen Diff/Branch gegen den Auftrag und den OneCampus-Kernvert
    verschluckt) · **DoD-Nachweise vorhanden und plausibel:** Guards/Tests real gelaufen
    (Ausgaben zitiert, nicht behauptet), Doku-Gate erfüllt, Self-Review-Block vorhanden ·
    Statusdisziplin (kein „BESTANDEN" ohne belegte Checks).
+9. **Themenwächter — Repo-übergreifende Konsistenz (Veto-Konsequenz):** Bei Einstufung
+   standard/kritisch: Ist der Gedächtnis-Check dokumentiert (Geprüft/Übernommen/Bewusst
+   anders — Kernvertrag §2)? Widerspricht die Lösung einem Dossier
+   (`ocg-architekt/docs/uebersichten/`), einem dokumentierten Konzept oder dem etablierten
+   Muster der anderen Repos, **ohne dass eine Betreiber-Freigabe ausgewiesen ist**?
+   Dann lautet das Verdikt **NACHARBEIT NÖTIG** mit FIX-AUFTRAG „Abweichung auflösen ODER
+   Betreiber-Freigabe einholen und ausweisen" — eine unausgewiesene Abweichung ist nie
+   freigabefähig, unabhängig von ihrer technischen Qualität.
 
 ## Antwortformat (maschinenlesbarer Schlussblock, exakt so)
 

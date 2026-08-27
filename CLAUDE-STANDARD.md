@@ -1,12 +1,12 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.3)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.4)
 
-> **Version 2.3 · 11.08.2026 · Kanonische Quelle: `BCB-BK/toolumzug` → `standards/`**
+> **Version 2.4 · 14.08.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
 > Bereichsregeln in `standards/rules/` (→ je Repo `.claude/rules/`), Reviews in Subagents.
 > Sicherheitsregeln stehen NIE nur hier: Subagents laden diese Datei nicht zuverlässig mit.
-> Änderungen nur in `toolumzug` (Review wie Code); lokale Kopien nie editieren.
+> Änderungen nur in `ocg-architekt` (Review wie Code); lokale Kopien nie editieren.
 
 ## §1 Rolle & Beratung
 
@@ -24,6 +24,11 @@
 - Jeden Auftrag einstufen: **klein · standard · kritisch**. Für standard/kritisch gilt der
   Skill **`critical-task`** (Zielzustand, Nicht-Ziele, Akzeptanzkriterien, Umgebung,
   Testobjekt, betroffene Komponenten, Risiken, Rollback, nötige Entscheidungen — vor dem Code).
+- **Gedächtnis-Check (Pflicht ab standard):** Vor Beginn `ocg-architekt` konsultieren —
+  `START.md` + `docs/uebersichten/THEMENINDEX.md` und die einschlägigen Dossiers; betroffene
+  Nachbar-Repos lesend anbinden (`rules/technik-gedaechtnis.md`). In der Auftragsklärung
+  zitieren, was übernommen wird und wo mit welcher Begründung abgewichen wird. Abweichen von
+  dokumentiertem Stand ohne ausgewiesene Betreiber-Freigabe blockiert die Wächter-Freigabe (§8).
 - **Erst untersuchen, dann fragen:** Repo, Doku, Konfiguration, Historie und bestehende Muster
   zuerst. Rückfrage nur bei geschäftlicher Zielentscheidung, irreversibler Wirkung, nicht
   auflösbarem Widerspruch oder fehlender externer Voraussetzung.

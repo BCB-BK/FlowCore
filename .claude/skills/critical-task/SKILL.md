@@ -15,6 +15,12 @@ Zielzustand · Nicht-Ziele · fachliche Akzeptanzkriterien · betroffene Umgebun
 nicht angenommen) · reales Testobjekt oder zulässiger Contract-Nachweis · betroffene
 Komponenten + Schnittstellen · Risiken · Rollback-/Rückabwicklungsweg · notwendige Entscheidungen.
 
+**Gedächtnis-Check (Kernvertrag §2, drei Zeilen genügen):** `ocg-architekt` → `START.md` +
+`docs/uebersichten/THEMENINDEX.md` + einschlägige Dossiers gelesen; betroffene Nachbar-Repos
+lesend angebunden. Dokumentieren: *Geprüft:* … · *Übernommen:* … (mit Quelle) · *Bewusst
+anders:* … (mit Begründung — ohne ausgewiesene Betreiber-Freigabe blockiert eine Abweichung
+die Wächter-Freigabe).
+
 Fehlt davon etwas: **erst Repo/Doku/Historie/Muster untersuchen.** Rückfrage nur bei
 geschäftlicher Zielentscheidung, irreversibler Wirkung, nicht auflösbarem Widerspruch oder
 fehlender externer Voraussetzung.
