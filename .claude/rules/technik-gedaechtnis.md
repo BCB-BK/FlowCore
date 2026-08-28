@@ -11,7 +11,7 @@ einen Obsidian-Vault (alle Klone nebeneinander) — es gibt keine zweite Ablage.
 
 | Situation | Quelle in der Zentrale |
 |---|---|
-| Arbeit an/auf einem Server | `server-register.md` — vorher lesen, nachher fortschreiben |
+| Arbeit an/auf einem Server | `server-register.md`, Abschnitt „Maschinen und Arbeitswege" — **vorher lesen, nachher fortschreiben**. Welche Maschine trägt was · Checkout-Pfad und Branch · Linux-Benutzer · das erprobte Kommando · was dort nicht angefasst wird |
 | Architektur-/Stack-Frage („womit bauen wir X?") | `docs/` (Masterplan, Konzepte) — dokumentierte Entscheidungen binden; Abweichung nur mit Betreiber-Freigabe, sichtbar ausgewiesen |
 | „Wo steht Projekt Y gerade?" | im Repo von Y: `docs/98-OFFENE-BAUSTELLEN.md` + `docs/99-SESSION-LEARNINGS.md` |
 
@@ -66,6 +66,22 @@ Zeilen in einer Tabelle geführt werden (z. B. ein Entscheidungsprotokoll mit E-
 kann er nicht auflösen — dort bleibt die beidseitige Kennzeichnung Handarbeit. Sie ist
 deshalb nicht weniger Pflicht, nur unbeaufsichtigt. *(Festgestellt 27.08.2026 beim Ablösen
 einer Entscheidung in `OneCampus-Website`.)*
+
+## Rückschreiben ist Teil der Arbeit, nicht die Kür danach
+
+Wer auf einem Server war, hinterlässt dort Wissen, das sonst niemand hat: unter welchem
+Benutzer ein Kommando läuft, wo der Schlüssel liegt, welches Verzeichnis auf welcher Maschine
+steht, was ein Deploy von selbst erledigt. **Das gehört noch in derselben Sitzung ins
+Server-Register** — nicht ins Sitzungsprotokoll, wo es niemand sucht.
+
+*Auslöser 28.08.2026: Ein Standard-Rollout sollte auf vier Maschinen nachgezogen werden. Zwei
+Drittel der Kommandos scheiterten — nicht weil sie falsch waren, sondern weil nirgends stand,
+welche Maschine was trägt. Der Betreiber hat sich die Zuordnung über Fehlermeldungen
+erarbeitet (`sudo: unknown user flowcore`, `Permission denied (publickey)`,
+`No such file or directory`). Jede dieser Antworten war einer früheren Sitzung längst bekannt.*
+
+Die Probe ist einfach: **Könnte jemand, der diese Maschine nie gesehen hat, allein mit dem
+Register dort arbeiten?** Wenn nein, fehlt ein Eintrag.
 
 ## Übergreifende Erkenntnisse fließen zur Zentrale
 
