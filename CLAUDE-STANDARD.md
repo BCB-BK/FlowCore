@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.9)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.10)
 
-> **Version 2.9 · 28.08.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.10 · 28.08.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -141,6 +141,17 @@ Arbeit anzuhalten.
   festhält, **was** es gemessen hat, ist kein Urteil. Ebenso gilt ein Spar-, Cache- oder
   Skip-Mechanismus, dessen Trefferquote nicht gemessen wird, als **unwirksam** — nicht als
   vorhanden.
+- **Eine Verteilung ist erst fertig, wenn sie beim Verbraucher gemessen wurde (v2.10).** Einen
+  Standard, eine Regel oder eine Konfiguration ins Repository zu legen ist die **Auslieferung,
+  nicht die Wirkung**. Gemessen wird dort, wo gelesen wird: auf der Maschine, im Checkout, in
+  der Sitzung, die es lädt. Wer „ausgerollt" meldet, nennt je Umgebung, **wer** es liest und
+  **welchen Stand** er sieht — oder meldet die Umgebung ausdrücklich als **ungeprüft**.
+  Werkzeug: `.claude/guards/agenten-inventur.sh` (rein lesend, fail-closed).
+- **Maschinenfakten kommen von der Maschine (v2.10).** Für Aussagen über Server — Benutzer,
+  Pfade, installierte Werkzeuge, laufende Prozesse, Zugriffswege — ist die **Maschine die
+  Quelle**. Ein Dokument darüber ist eine **Hypothese**, bis sie bestätigt wurde, und wird beim
+  Zitieren als solche gekennzeichnet; das gilt auch für das eigene Server-Register. Ein
+  Blaupausen- oder Soll-Dokument beschreibt die Absicht, nicht den Zustand.
 
 ## §6 Git, Umgebungen, Deploy
 
@@ -267,6 +278,7 @@ expliziten Betreiber-Satz, sichtbar ausgewiesen.
 | Grunddeklaration (Tier, Umgebungen, PROD-Branches) | **Guard D6** — fehlt sie, erscheint das im Verdikt und in den offenen Punkten |
 | Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code) |
 | Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |
+| Rollout-Abnahme beim Verbraucher (§5) | **`agenten-inventur.sh`** je Maschine — Ausgabe mit Datum ins Server-Register |
 | Build-/Merge-Qualität | CI-Guards |
 
 **Rangfolge der Durchsetzung: Maschine vor Regel (v2.6).** Was ein Skript verweigern kann,
