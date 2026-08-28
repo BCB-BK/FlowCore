@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# OneCampus Abschluss-Guard — einheitlich für ALLE Repos (Standard v2.3)
+# OneCampus Abschluss-Guard — einheitlich für ALLE Repos (Standard v2.6)
 #
 # Zweck: EINE Abschlussprüfung, die überall läuft — unabhängig davon, ob im Repo
 # schon Werkzeuge existieren. Bringt Mindestprüfungen selbst mit (D1–D3) und
@@ -194,6 +194,67 @@ if [ "$code" -eq 0 ]; then d3="keine Code-Änderung — n/a  ✓"
 elif [ "$docs" -gt 0 ]; then d3="$code Code- / $docs Doku-Datei(en)  ✓"
 else d3="$code Code-Datei(en), aber KEINE Doku berührt  ⚠"; fi
 
+# --- D5: Abloese-Hinweise beidseitig? (Dokumenten-Hygiene, ab v2.5) --------
+# Anlass (27.08.2026): In einem Repo lagen drei Dokumente zur selben Entscheidung
+# nebeneinander. Das NEUE nannte korrekt "Loest ab: X" — das abgeloeste X trug keinen
+# Hinweis darauf. Eine Session las X, hielt es fuer gueltig und berichtete einen falschen
+# Befund. Nur das neue Dokument zu kennzeichnen genuegt nicht: Gelesen wird, was die Suche
+# zuerst findet, nicht das Dokument, das die Abloesung erklaert.
+# Diese Pruefung ist deterministisch: Nennt ein geaendertes Dokument eine Abloesung, muss
+# das genannte Ziel den Gegenhinweis tragen.
+# WARNUNG, kein harter Fehler — Altbestand soll sichtbar werden, nicht ganze Repos blockieren.
+d5_treffer=0; d5_offen=0; d5_unaufloesbar=0; D5HITS=""
+# Doppelpunkt ist PFLICHT: "ersetzt" ist gewoehnliche deutsche Prosa ("Klicks ersetzt
+# durch ..."), "Ersetzt:" dagegen eine Metadatenzeile. Ohne diese Verschaerfung erzeugt
+# der Guard Muell-Ziele wie 'Klicks' oder '|' (Fund 27.08.2026, erster Realtest).
+ABL_NENNT='([Ll]öst ab|[Ll]oest ab|[Ee]rsetzt|[Ss]upersedes)[[:space:]]*\**[[:space:]]*:[[:space:]]*\**[[:space:]]*'
+ABL_TRAEGT='([Aa]bgelöst durch|[Aa]bgeloest durch|[Ss]uperseded by|veraltet|überholt|ueberholt)'
+for f in "${CHANGED[@]}"; do
+  case "$f" in *.md) ;; *) continue;; esac
+  [ -f "$f" ] || continue
+  ist_ausgenommen "$f" && continue
+  # Zieldokument aus der Nennung ziehen: Backtick-Pfad, *.md-Name oder Kennung (z. B. TR-ADR-001)
+  while IFS= read -r ziel; do
+    [ -n "$ziel" ] || continue
+    # Ziel muss wie ein Dokumentbezug aussehen: Dateiname, Pfad oder Kennung (TR-ADR-001).
+    # Alles andere ist ein Prosa-Fehltreffer und wird still verworfen — ein Guard, der
+    # Rauschen meldet, wird weggeklickt und schuetzt dann gar nichts mehr.
+    # Mindestlaenge und ein Buchstabe sind Pflicht: Ein Dokument, das die Muster selbst
+    # BESCHREIBT ("Löst ab: / Ersetzt: / Supersedes:"), erzeugte sonst das Ziel '/'
+    # (Fund 27.08.2026 im eigenen Repo — der Guard meldete sich selbst).
+    case "$ziel" in
+      ?|??) continue ;;
+      *[A-Za-z]*) ;;
+      *) continue ;;
+    esac
+    case "$ziel" in
+      *.md|*/*) ;;
+      *[A-Za-z][-_][A-Za-z0-9]*) ;;
+      *) continue ;;
+    esac
+    d5_treffer=$((d5_treffer+1))
+    # Kandidaten suchen: exakter Pfad, Dateiname, oder Kennung im Dateinamen (klein geschrieben)
+    kand=""
+    [ -f "$ziel" ] && kand="$ziel"
+    [ -z "$kand" ] && kand="$(find . -path ./node_modules -prune -o -type f -name "$(basename "$ziel")" -print 2>/dev/null | head -1)"
+    [ -z "$kand" ] && kand="$(find . -path ./node_modules -prune -o -type f -iname "*$(echo "$ziel" | tr 'A-Z' 'a-z' | tr -d ' ')*.md" -print 2>/dev/null | head -1)"
+    if [ -z "$kand" ]; then
+      d5_unaufloesbar=$((d5_unaufloesbar+1))
+      D5HITS="${D5HITS}\n  $f nennt Ablösung von '$ziel' — Zieldokument nicht auffindbar (nicht auflösbar)"
+    elif ! grep -qEi "$ABL_TRAEGT" "$kand" 2>/dev/null; then
+      d5_offen=$((d5_offen+1))
+      D5HITS="${D5HITS}\n  ${kand#./} trägt KEINEN Ablöse-Hinweis, obwohl ${f} es ablöst"
+    fi
+  # Nur die Kennung/den Dateinamen nehmen, nicht den erklaerenden Folgetext:
+  # "TR-ADR-001 (Cookiebot als zentrale CMP)" -> "TR-ADR-001". Ohne das wird das Ziel
+  # unauffindbar und der Guard meldet faelschlich "nicht aufloesbar" (Fund 27.08.2026).
+  done < <(grep -hoEi "$ABL_NENNT[^,;.()]*" "$f" 2>/dev/null \
+            | sed -E "s/$ABL_NENNT//I" | tr -d '`*' | awk '{print $1}' | grep -v '^$' | head -5)
+done
+if [ "$d5_treffer" -eq 0 ]; then d5="keine Ablöse-Erklärung im Diff — n/a  ✓"
+elif [ "$d5_offen" -eq 0 ] && [ "$d5_unaufloesbar" -eq 0 ]; then d5="$d5_treffer Ablösung(en), Gegenhinweis überall vorhanden  ✓"
+else d5="$d5_treffer Ablösung(en) · $d5_offen ohne Gegenhinweis · $d5_unaufloesbar nicht auflösbar  ⚠"; fi
+
 # --- D4: Repo-eigene Guards (falls vorhanden) --------------------------------
 if [ "$QUICK" -eq 1 ]; then
   d4="übersprungen (--quick)"
@@ -205,6 +266,28 @@ else
   if [ "${#extra[@]}" -gt 0 ]; then d4="$(join "${extra[@]}")"
   elif [ "$DEPS" -eq 0 ]; then d4="n/v — Abhaengigkeiten nicht installiert"
   else d4="keine repo-eigenen Guards vorhanden — n/v"; NV+=("keine repo-eigenen Guards (D4 nicht prüfbar)"); fi
+fi
+
+# --- D6: Grunddeklaration der Repo-CLAUDE.md (ab v2.6) ----------------------
+# Kernvertrag Paragraf 6 verlangt: "Branch <-> Umgebung <-> DB <-> Deploy-Wirkung und das
+# Tier (A/B/C) stehen ausformuliert in der Repo-CLAUDE.md." Beim Vollabgleich am 27.08.2026
+# zeigte sich: Ausgerechnet das Repo mit dem groessten Kontrollapparat (710 Hook-Zeilen,
+# 24 CI-Workflows) hatte weder Umgebungstabelle noch Tier-Block — und zwei weitere Repos
+# trugen nur einen Platzhalter "noch nicht erhoben". Ein Agent arbeitet dort blind an
+# unbekannter Deploy-Wirkung. Das ist deterministisch pruefbar, also gehoert es in die
+# Maschine statt in eine Regel, an die sich jemand erinnern muss.
+# WARNUNG, kein harter Fehler: Der Befund soll sichtbar werden, nicht die Arbeit blockieren.
+d6=""
+if [ -f CLAUDE.md ]; then
+  fehlt=()
+  grep -qE 'Tier [ABC]' CLAUDE.md || fehlt+=("Tier-Block")
+  grep -qiE '^\|[[:space:]]*(PROD|DEV|TEST|WWW2|Umgebung|Arbeitsbranch)' CLAUDE.md || fehlt+=("Umgebungstabelle")
+  grep -qiE 'noch nicht erhoben' CLAUDE.md && fehlt+=("nur Platzhalter statt Steckbrief")
+  [ -f .claude/prod-branches.conf ] || fehlt+=("prod-branches.conf")
+  if [ "${#fehlt[@]}" -eq 0 ]; then d6="Tier · Umgebungen · PROD-Branches deklariert  ✓"
+  else d6="$(join "${fehlt[@]}") fehlt  ⚠"; NV+=("Grunddeklaration unvollständig: $(join "${fehlt[@]}") (Kernvertrag §6)"); fi
+else
+  d6="keine CLAUDE.md — n/v"; NV+=("keine Repo-CLAUDE.md vorhanden (Kernvertrag §6)")
 fi
 
 # --- Offene Punkte fortschreiben (Lücken bleiben sichtbar) -------------------
@@ -227,5 +310,8 @@ printf 'D1 Secrets     %s\n' "$d1"
 printf 'D2 Hygiene     %s\n' "$d2"
 printf 'D3 Doku        %s\n' "$d3"
 printf 'D4 Repo-Guards %s\n' "$d4"
+printf 'D5 Doku-Ablösung %s\n' "$d5"
+printf 'D6 Deklaration %s\n' "$d6"
+[ -n "$D5HITS" ] && printf '%b\n' "$D5HITS"
 if [ "$FAIL" -eq 0 ]; then printf 'VERDIKT: BESTANDEN\n\n'; exit 0
 else printf 'VERDIKT: NICHT BESTANDEN\n\n'; exit 1; fi

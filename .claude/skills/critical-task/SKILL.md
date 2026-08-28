@@ -36,7 +36,7 @@ SSOT je Repo: `docs/00-SYSTEMKARTE.md` (+ `01-ARCHITEKTUR.md`, `02-UMGEBUNGEN-UN
 Code-/Laufzeitstand ab: Konflikt benennen, per Nachweis auflösen, Doku im selben Task korrigieren.
 
 ## 4. Umsetzung
-Root-Cause-first (Kernvertrag §3.2), Pre-Action-Audit als Tabelle (§3.4), Baseline nach
+Root-Cause-first (Kernvertrag §3.2), Pre-Action-Audit als Tabelle (§3.6), Baseline nach
 `rules/git-sicherheit.md`, Umgebema nach `rules/umgebungen-migrationen.md`.
 
 ## 5. Live-Validierung

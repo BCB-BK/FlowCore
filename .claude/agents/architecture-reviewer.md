@@ -35,6 +35,10 @@ Prüfe den übergebenen Diff/Branch gegen den Auftrag und den OneCampus-Kernvert
    Dann lautet das Verdikt **NACHARBEIT NÖTIG** mit FIX-AUFTRAG „Abweichung auflösen ODER
    Betreiber-Freigabe einholen und ausweisen" — eine unausgewiesene Abweichung ist nie
    freigabefähig, unabhängig von ihrer technischen Qualität.
+   Zusätzlich (v2.5): Wurde die **Gültigkeit** der zitierten Quelle geprüft (Datum,
+   Ablöse-Hinweis, jüngeres Entscheidungsdokument) — oder nur ihre Existenz? Ein Beleg aus
+   einem abgelösten Dokument ist kein Beleg. Widersprechen sich zwei Quellen und die Änderung
+   folgt stillschweigend einer davon: **NACHARBEIT NÖTIG**, Widerspruch melden.
 
 ## Antwortformat (maschinenlesbarer Schlussblock, exakt so)
 

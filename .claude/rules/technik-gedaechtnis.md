@@ -25,9 +25,19 @@ einen Obsidian-Vault (alle Klone nebeneinander) — es gibt keine zweite Ablage.
 
 ## Abweichungen: melden, nicht verstecken (Themenwächter)
 
-Erkennt eine Session eine **Repo-übergreifende technische Abweichung** — die eigene oder
-eine vorgefundene Lösung widerspricht einem Dossier (`docs/uebersichten/` der Zentrale),
-einem dokumentierten Konzept oder dem etablierten Muster der anderen Repos — gilt:
+Meldepflichtig sind **zwei** Arten von Abweichung:
+
+- **Repo-übergreifend:** die eigene oder eine vorgefundene Lösung widerspricht einem Dossier
+  (`docs/uebersichten/` der Zentrale), einem dokumentierten Konzept oder dem etablierten
+  Muster der anderen Repos.
+- **Innerhalb eines Repos (ab v2.5):** zwei Dokumente widersprechen sich · ein
+  Entscheidungsdokument widerspricht der Umsetzung · `98-OFFENE-BAUSTELLEN.md` führt etwas
+  als offen, das längst entschieden ist. *Auslöser: Am 27.08.2026 standen in einem Repo drei
+  Dokumente zur selben Entscheidung nebeneinander — das abgelöste ohne jeden Hinweis darauf.
+  Eine Session hat daraufhin einen falschen Befund berichtet. Die alte Regelfassung erfasste
+  diesen Fall nicht, weil er nicht repo-übergreifend war.*
+
+In beiden Fällen gilt:
 
 1. Im Abschlussbericht ein eigener Block **`ABWEICHUNGS-MELDUNG`**: was weicht ab · wovon ·
    warum · Empfehlung. Der Betreiber sieht die Meldung damit im Moment des Abschlusses.
@@ -35,6 +45,27 @@ einem dokumentierten Konzept oder dem etablierten Muster der anderen Repos — g
    Kurator sammelt diese Blöcke wöchentlich in den THEMENINDEX ein).
 3. Eine **eigene** unausgewiesene Abweichung blockiert die Wächter-Freigabe (§8) — sie wird
    aufgelöst oder vom Betreiber freigegeben, nie stillschweigend abgeschlossen.
+
+## Dokumenten-Hygiene: Ablösung wird beidseitig vermerkt
+
+Ein Entscheidungsdokument (ADR, Konzept, Architekturpapier) trägt **Status und Datum**.
+Wird es abgelöst, wird das in **beide** Dokumente eingetragen:
+
+- das **neue** nennt, was es ablöst: `**Löst ab:** <Dokument>`
+- das **alte** bekommt eine Kopfzeile: `**Abgelöst durch <Dokument> am TT.MM.JJJJ**`
+
+Nur das neue zu kennzeichnen genügt nicht — niemand liest das neue Dokument, um zu erfahren,
+dass das alte ungültig ist; gelesen wird das, was die Suche zuerst findet. Ein abgelöstes
+Dokument ohne Hinweis ist eine Falle, die irgendwann jemand aufsammelt. Der Abschluss-Guard
+prüft das (D5): Nennt ein Dokument eine Ablösung, muss das genannte Ziel den Gegenhinweis
+tragen. Dasselbe gilt für Einträge in `98-OFFENE-BAUSTELLEN.md`, die durch eine Entscheidung
+erledigt sind — sie werden geschlossen, nicht stehengelassen.
+
+**Grenze des Guards:** D5 prüft Ablösungen zwischen **Dateien**. Entscheidungen, die als
+Zeilen in einer Tabelle geführt werden (z. B. ein Entscheidungsprotokoll mit E-Nummern),
+kann er nicht auflösen — dort bleibt die beidseitige Kennzeichnung Handarbeit. Sie ist
+deshalb nicht weniger Pflicht, nur unbeaufsichtigt. *(Festgestellt 27.08.2026 beim Ablösen
+einer Entscheidung in `OneCampus-Website`.)*
 
 ## Übergreifende Erkenntnisse fließen zur Zentrale
 
