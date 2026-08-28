@@ -56,11 +56,15 @@ DEPS=1; { [ -f package.json ] && [ ! -d node_modules ]; } && DEPS=0
 
 join() { local sep=" · " out=""; for x in "$@"; do out="${out:+$out$sep}$x"; done; printf '%s' "$out"; }
 has_script() { [ -f package.json ] && node -e "process.exit(require('./package.json').scripts?.['$1']?0:1)" 2>/dev/null; }
-# Namensvarianten: Die Repos benennen dieselbe Pruefung unterschiedlich — `typecheck`
-# (FlowCore, Research, Vault, Website) heisst anderswo `check` (ASOS, belege, PLATO:
-# jeweils `tsc`), `test` heisst bei PLATO `test:server` (vitest). Ohne diese Liste
-# behauptete der Guard "Skript fehlt", obwohl die Pruefung existiert — und schriebe
-# diese Falschaussage dauerhaft in die offenen Punkte (Fund 12.08.2026).
+# Namensvarianten: Die Repos benennen dieselbe Pruefung unterschiedlich — was hier
+# `typecheck` heisst, laeuft anderswo als `check` (jeweils `tsc`), und `test` heisst in
+# einem der Tool-Repos `test:server` (vitest). Ohne diese Liste behauptete der Guard
+# "Skript fehlt", obwohl die Pruefung existiert — und schriebe diese Falschaussage
+# dauerhaft in die offenen Punkte (Fund 12.08.2026).
+# KEINE PROJEKTNAMEN in dieser Datei: Sie wird in ALLE Repos verteilt, auch in das
+# oeffentliche Website-Repo, das interne Werkzeugnamen per Test verbietet
+# (`tests/payload/unit/interne-begriffe.test.ts`). Ein Name im Kommentar laesst dort
+# die CI rot werden — belegt am 28.08.2026.
 # Erste gefundene Variante gewinnt; der tatsaechlich gelaufene Name steht im Verdikt.
 finde_script() { # finde_script <dimension> -> gibt Skriptnamen aus oder nichts
   local kandidaten="" s
@@ -295,7 +299,7 @@ if [ "${#NV[@]}" -gt 0 ]; then
   OPEN="docs/98-OFFENE-BAUSTELLEN.md"; mkdir -p docs
   [ -f "$OPEN" ] || printf '# Offene Baustellen\n\n' > "$OPEN"
   # Endet die Datei ohne Zeilenumbruch, klebte der Eintrag bisher an die letzte Zeile
-  # und war dort praktisch unsichtbar (Fund 12.08.2026, PLATO).
+  # und war dort praktisch unsichtbar (Fund 12.08.2026 in einem der Tool-Repos).
   [ -s "$OPEN" ] && [ "$(tail -c1 "$OPEN" | od -An -c | tr -d ' ')" != '\n' ] && printf '\n' >> "$OPEN"
   for n in "${NV[@]}"; do
     grep -qF "$n" "$OPEN" 2>/dev/null || echo "- [ ] Guard-Befund: $n (automatisch eingetragen)" >> "$OPEN"
