@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.10)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.12)
 
-> **Version 2.10 · 28.08.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.12 · 30.08.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -137,6 +137,12 @@ Arbeit anzuhalten.
   fehlschlagen, nicht nur der Gutfall bestehen; die Gegenprobe wird dokumentiert. Sonst entsteht
   der teuerste Zustand überhaupt: eine Prüfung, die grün ist über genau dem Defekt, für den sie
   gebaut wurde.
+  **Und die Gegenprobe gehört in die Umgebung, in der gemessen wird (v2.10).** Ein Prüfwerkzeug,
+  das nur in der Entwicklungsumgebung gegengeprüft wurde, trägt deren Annahmen mit —
+  Verzeichnistiefen, Pfadlayouts, Rechte. Der **erste Lauf in der Zielumgebung ist Teil der
+  Abnahme**, nicht der Betrieb danach. *(Auslöser 28.08.2026: Eine Inventur mit `-maxdepth 4`
+  bestand die Gegenprobe im flachen Container und übersah beim ersten Realeinsatz drei von vier
+  Checkouts, weil sie dort auf Ebene 5 liegen.)*
 - **Kein „bestanden" ohne persistierte Messgrundlage (v2.9).** Ein grünes Urteil, das nicht
   festhält, **was** es gemessen hat, ist kein Urteil. Ebenso gilt ein Spar-, Cache- oder
   Skip-Mechanismus, dessen Trefferquote nicht gemessen wird, als **unwirksam** — nicht als
@@ -279,6 +285,7 @@ expliziten Betreiber-Satz, sichtbar ausgewiesen.
 | Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code) |
 | Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |
 | Rollout-Abnahme beim Verbraucher (§5) | **`agenten-inventur.sh`** je Maschine — Ausgabe mit Datum ins Server-Register |
+| Einheitlichkeit der Agenten-Maschinen | **`rules/agenten-arbeitsplatz.md`** (Soll A1–A8) + Abweichungsblock der Inventur |
 | Build-/Merge-Qualität | CI-Guards |
 
 **Rangfolge der Durchsetzung: Maschine vor Regel (v2.6).** Was ein Skript verweigern kann,
@@ -293,3 +300,37 @@ Eine Regel gilt erst als eingeführt mit Owner, Geltungsbereich, Durchsetzungsfo
 Überprüfungstermin. Regel-/Hook-/Settings-Änderungen werden wie Code reviewed. **Das
 Abschwächen oder Umgehen von Hooks, Permissions oder Guards zur Erreichung eines
 Abschlussstatus ist verboten.**
+
+
+## §12 Berichtswesen (v2.11)
+
+**Jedes Projekt meldet täglich in die gemeinsame Ablage** —
+`BCB-BK/ocg-architekt` → `berichte/<quelle>/<JJJJ-MM-TT>-<art>.md`. Die Systematik steht
+in `berichte/README.md` des Zielrepos, die Pflichten in `.claude/rules/berichtswesen.md`,
+die Mechanik liefert `.claude/werkzeuge/bericht-melden.sh` mit.
+
+**Warum das im Kernvertrag steht und nicht nur in einer Bereichsregel:** Berichte
+entstanden bisher dort, wo sie anfielen. Das Drift-Protokoll auf `ehip1` meldete ab dem
+21.08.2026 täglich einen Deploy-Blocker, der den gesamten Relaunch aufhielt — bis zum
+29.08. hat niemand hineingesehen. Acht Tage Stillstand, sauber protokolliert und
+ungelesen. Ein Bericht, den niemand liest, ist kein Bericht.
+
+| Art | Wann | Pflicht für |
+|---|---|---|
+| `betrieb` | täglich | jedes Projekt mit laufendem Dienst |
+| `zustellung` | täglich | jedes Projekt, das Daten an ein Fremdsystem übergibt — **inklusive der Fehlschläge** |
+| `arbeit` | bei jeder Änderung | alle |
+| `vorfall` | sofort | alle |
+
+Drei Punkte, die nicht verhandelbar sind:
+
+1. **Kein Bericht wird überschrieben.** Korrekturen kommen als „Nachtrag" darunter. Ein
+   korrigierter Bericht, dem man die Korrektur nicht ansieht, ist wertlos.
+2. **`zustellung` zählt die Fehlschläge mit** — und `offen gesamt` getrennt von
+   `fehlgeschlagen`. Sobald ein Rückfallweg fehlt, ist eine nicht zugestellte Übergabe
+   nicht „verspätet", sondern verloren.
+3. **Kein Bericht ist auch ein Befund.** Die Meldung ist auch dann fällig, wenn nichts
+   passiert ist — nur eine vollständige Reihe macht eine Lücke sichtbar.
+
+**Maschine vor Regel (§10):** Die Meldung gehört in einen Zeitplan des Projekts, nicht in
+die Erinnerung eines Menschen.
