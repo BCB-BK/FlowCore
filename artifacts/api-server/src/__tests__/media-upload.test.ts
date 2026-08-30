@@ -93,9 +93,21 @@ vi.mock("../lib/session-crypto", () => ({ getGraphToken: () => "" }));
 vi.mock("../lib/logger", () => ({
   logger: { error: () => {}, warn: () => {}, info: () => {} },
 }));
+// Wie das Original: Umgebungsvariable schlaegt Default. Der frueher hier
+// stehende Mock gab immer den Default zurueck — damit war das Groessenlimit
+// gar nicht testbar.
 vi.mock("../lib/env", () => ({
-  envInt: (_n: string, standard: number) => standard,
+  envInt: (name: string, standard: number) => {
+    const roh = process.env[name];
+    if (!roh) return standard;
+    const wert = parseInt(roh, 10);
+    return Number.isFinite(wert) && wert > 0 ? wert : standard;
+  },
 }));
+
+// Vor dem Import der Route setzen: `MAX_UPLOAD_MB` wird dort einmalig beim
+// Laden des Moduls ausgewertet.
+process.env.MAX_UPLOAD_MB = "1";
 
 let server: Server;
 let basis: string;
@@ -167,6 +179,25 @@ describe("POST /media/upload", () => {
       body: formular({ nodeId: "keine-uuid" }),
     });
     expect(antwort.status).toBe(400);
+  });
+
+  it("weist eine zu große Datei mit 413 und deutscher Meldung ab", async () => {
+    // MAX_UPLOAD_MB steht in dieser Datei auf 1 — 2 MiB reichen also aus,
+    // ohne dass der Test echte 100 MB durch die Leitung schiebt.
+    const zuGross = Buffer.alloc(2 * 1024 * 1024, 0);
+    const daten = new FormData();
+    daten.append(
+      "file",
+      new Blob([zuGross], { type: "application/octet-stream" }),
+      "zu-gross.bin",
+    );
+    const antwort = await fetch(`${basis}/api/media/upload`, {
+      method: "POST",
+      body: daten,
+    });
+    expect(antwort.status).toBe(413);
+    const rumpf = (await antwort.json()) as Record<string, unknown>;
+    expect(rumpf.error).toBe("Datei zu groß (maximal 1 MB)");
   });
 
   it("weist einen Aufruf ohne Datei weiterhin ab", async () => {

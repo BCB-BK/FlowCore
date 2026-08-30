@@ -35,13 +35,18 @@ import {
 import { getDriveItemContent } from "../services/sharepoint.service";
 import { logger } from "../lib/logger";
 import { envInt } from "../lib/env";
+import {
+  MAX_UPLOAD_MB_DEFAULT,
+  fileTooLargeMessage,
+} from "@workspace/shared/uploads";
 import busboy from "busboy";
 import { getGraphToken, type TokenSitzung } from "../lib/session-crypto";
 
 const router: IRouter = Router();
 
-// Per MAX_UPLOAD_MB übersteuerbar (Default 50 MB)
-const MAX_UPLOAD_MB = envInt("MAX_UPLOAD_MB", 50);
+// Per MAX_UPLOAD_MB übersteuerbar; der Default steht in
+// lib/shared/src/uploads und gilt zugleich für die Frontend-Prüfung.
+const MAX_UPLOAD_MB = envInt("MAX_UPLOAD_MB", MAX_UPLOAD_MB_DEFAULT);
 const MAX_FILE_SIZE = MAX_UPLOAD_MB * 1024 * 1024;
 
 /**
@@ -129,9 +134,7 @@ function parseMultipart(req: Request, res: Response, next: NextFunction) {
     if (finished) return;
     finished = true;
     if (fileTooLarge) {
-      res.status(413).json({
-        error: `Datei zu groß (maximal ${MAX_UPLOAD_MB} MB)`,
-      });
+      res.status(413).json({ error: fileTooLargeMessage(MAX_UPLOAD_MB) });
       return;
     }
     if (uploadedFile) {
@@ -269,7 +272,7 @@ router.post(
         const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
         totalSize += buf.length;
         if (totalSize > MAX_FILE_SIZE) {
-          res.status(413).json({ error: "File too large (max 50 MB)" });
+          res.status(413).json({ error: fileTooLargeMessage(MAX_UPLOAD_MB) });
           return;
         }
         chunks.push(buf);

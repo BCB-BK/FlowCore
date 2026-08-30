@@ -203,11 +203,41 @@ Das Bearbeiten von Seiten erfolgt immer über das **Arbeitskopie-System**. Eine 
 
 - **Rich-Text-Formatierung**: Überschriften (H1–H6), Fett, Kursiv, Unterstrichen, Durchgestrichen, Code.
 - **Listen**: Aufzählungen (nummeriert und unnummeriert), verschachtelte Listen.
-- **Tabellen**: Einfügen, Zeilen/Spalten hinzufügen/entfernen, Zellen zusammenführen.
+- **Tabellen**: Einfügen, Zeilen/Spalten hinzufügen/entfernen, Zellen zusammenführen. Sobald der Cursor in einer Tabelle steht, erscheint die Tabellenleiste. Sie wandert beim Scrollen mit und bleibt unterhalb der Formatleiste sichtbar, solange die Tabelle im Bild ist — bei langen Tabellen müssen Sie zum Einfügen einer Zeile also nicht mehr nach oben scrollen.
 - **Callouts**: Hervorgehobene Hinweisboxen mit verschiedenen Typen (Info, Warnung, Erfolg, Fehler).
 - **Diagramme**: Mermaid-Diagramme direkt im Editor erstellen und als Vorschau anzeigen.
-- **Medien**: Bilder und Videos per Drag & Drop einbetten, Dateien hochladen, externe URLs einbetten.
+- **Medien**: Bilder und Videos per Drag & Drop einbetten, Dateien hochladen, externe URLs einbetten. Dateien bis **100 MB**.
 - **Spezial-Komponenten**: Je nach Seitentyp stehen besondere Editoren bereit, z. B. SIPOC-Karten, RACI-Matrix, Frage-Antwort-Paare, Begriffs-Wiederholer, Checklisten-Editor oder Kompetenzbereich-Editor.
+
+#### Bildgröße und Textumfluss
+
+Ein eingefügtes Bild lässt sich in der Größe anpassen:
+
+1. Fahren Sie mit der Maus über das Bild oder klicken Sie es an — am rechten Rand
+   und in der rechten unteren Ecke erscheinen zwei kleine Griffe.
+2. Ziehen Sie einen Griff nach links oder rechts. Das Seitenverhältnis bleibt
+   dabei erhalten.
+3. Alternativ klicken Sie das Bild an: Es erscheint eine kleine Leiste mit den
+   festen Breiten **25 %, 50 %, 75 % und 100 %** sowie dem **Umfluss**
+   (Block, Links, Rechts). Bei „Links" oder „Rechts" fließt der Text um das Bild
+   herum.
+
+Die eingestellte Breite wird mit der Seite gespeichert und gilt auch für Leser.
+
+#### Diagramm als SVG anzeigen
+
+Im Abschnitt **BPMN 2.0-Diagramm** können Sie statt eines gezeichneten Diagramms
+eine fertige SVG-Grafik einbetten (z. B. einen Export aus Miro). Umschalten über
+**Modus: BPMN | SVG**.
+
+- Die Grafik wird beim Öffnen vollständig eingepasst.
+- Über der Anzeige liegen vier Schaltflächen: **Verkleinern**, **Vergrößern**,
+  **Ganz einpassen** und **Vollbild**. Das Vollbild verlassen Sie mit `Esc`.
+- Am unteren Rand der Anzeige sitzt ein Griff: Ziehen Sie ihn nach unten, um den
+  Anzeigebereich höher zu machen. Die eingestellte Höhe wird mit der Seite
+  gespeichert.
+- Innerhalb der Anzeige können Sie mit gedrückter Maustaste verschieben und mit
+  dem Mausrad zoomen.
 
 #### KI-Ausfüllhilfe bei Feldern und Sektionen
 

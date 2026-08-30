@@ -23,6 +23,8 @@ import { FieldHelpTooltip } from "@/components/metadata/FieldHelpTooltip";
 import { SharePointFilePicker } from "./SharePointFilePicker";
 import { WikiNodePickerDialog } from "./WikiNodePickerDialog";
 import { useToast } from "@/hooks/use-toast";
+import { EDITOR_CONFIG, MAX_UPLOAD_MB } from "@/lib/editor-config";
+import { fileTooLargeMessage } from "@workspace/shared/uploads";
 import { useRowKeys } from "./useRowKeys";
 
 type ReferenceType = "url" | "sharepoint" | "upload" | "node";
@@ -189,6 +191,15 @@ export function ReferencesEditor({
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
+
+    // Vor dem Senden pruefen — spart den Fehlversuch ueber die Leitung.
+    if (file.size > EDITOR_CONFIG.maxFileSizeBytes) {
+      toast({
+        variant: "destructive",
+        title: fileTooLargeMessage(MAX_UPLOAD_MB),
+      });
+      return;
+    }
 
     setUploading(true);
     try {

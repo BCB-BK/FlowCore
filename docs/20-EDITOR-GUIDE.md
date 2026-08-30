@@ -86,7 +86,7 @@ Für Seitentypen mit BPMN-Diagramm steht der integrierte **BPMN-Editor** (bpmn-j
 ### Datei hochladen (Medienbibliothek)
 1. Klicken Sie im Editor auf das **Bild/Datei-Symbol** oder tippen Sie `/image`
 2. Klicken Sie **„Datei hochladen"**
-3. Wählen Sie eine Datei von Ihrem Computer (max. 50 MB)
+3. Wählen Sie eine Datei von Ihrem Computer (max. 100 MB)
 4. Die Datei wird automatisch in die SharePoint-Medienablage hochgeladen
 5. Das Asset erscheint sofort im Editor und in der Medienbibliothek
 

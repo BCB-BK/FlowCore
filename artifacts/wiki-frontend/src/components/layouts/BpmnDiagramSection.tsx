@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { BpmnEditor, DEFAULT_BPMN_XML } from "@/components/editor/BpmnEditor";
 import { DiagramLegend } from "@/components/qm/DiagramLegend";
 import { Button } from "@workspace/ui/button";
+import { viewBoxAusMassen } from "@/lib/svg-viewbox";
 import {
   GitBranch,
   Pencil,
@@ -11,12 +12,33 @@ import {
   Upload,
   Link2,
   Trash2,
+  ZoomIn,
+  ZoomOut,
+  Scan,
+  Maximize2,
+  Minimize2,
+  GripHorizontal,
 } from "lucide-react";
 
 interface BpmnDiagramData {
   xml: string;
   svgEmbed?: string;
   mode?: "bpmn" | "svg";
+  /** Vom Betrachter eingestellte Rahmenhoehe der SVG-Anzeige, in Pixeln. */
+  svgHeight?: number;
+}
+
+/** Gleiche Hoehe wie der BPMN-Editor daneben, damit der Wechsel nicht springt. */
+const SVG_VIEWER_DEFAULT_HEIGHT = 560;
+const SVG_VIEWER_MIN_HEIGHT = 240;
+
+interface PanZoomInstanz {
+  destroy: () => void;
+  resize: () => void;
+  fit: () => void;
+  center: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
 }
 
 function isBpmnData(v: unknown): v is BpmnDiagramData {
@@ -56,15 +78,66 @@ function sanitizeSvg(raw: string): string {
       });
     });
     doc.querySelectorAll("script").forEach((s) => s.parentNode?.removeChild(s));
-    return new XMLSerializer().serializeToString(doc.documentElement);
+
+    // Ohne viewBox kann svg-pan-zoom nicht einpassen — die Grafik blieb dann
+    // ausschnittsweise stehen. Exporte aus Miro und Visio tragen haeufig nur
+    // width/height in Pixeln. Beides muss hier gesetzt sein, BEVOR der Viewer
+    // width/height auf 100 % zieht und die Originalmasse damit verliert.
+    const wurzel = doc.documentElement;
+    if (!wurzel.getAttribute("viewBox")) {
+      const ersatz = viewBoxAusMassen(
+        wurzel.getAttribute("width"),
+        wurzel.getAttribute("height"),
+      );
+      if (ersatz) wurzel.setAttribute("viewBox", ersatz);
+    }
+    if (!wurzel.getAttribute("preserveAspectRatio")) {
+      wurzel.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    }
+
+    return new XMLSerializer().serializeToString(wurzel);
   } catch {
     return "";
   }
 }
 
-function SvgViewer({ svgContent }: { svgContent: string }) {
+function SvgViewer({
+  svgContent,
+  height,
+  onHeightChange,
+}: {
+  svgContent: string;
+  /** Gespeicherte Rahmenhoehe; fehlt sie, gilt der Standard. */
+  height?: number;
+  /** Nur gesetzt, wenn die Hoehe gespeichert werden darf (Bearbeitungsrecht). */
+  onHeightChange?: (hoehe: number) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const panZoomRef = useRef<{ destroy: () => void } | null>(null);
+  const panZoomRef = useRef<PanZoomInstanz | null>(null);
+  const [vollbild, setVollbild] = useState(false);
+  const [rahmenHoehe, setRahmenHoehe] = useState(
+    height ?? SVG_VIEWER_DEFAULT_HEIGHT,
+  );
+  const ziehenRef = useRef<{ startY: number; startHoehe: number } | null>(null);
+  const hoeheRef = useRef(rahmenHoehe);
+  hoeheRef.current = rahmenHoehe;
+
+  // Von aussen geaenderte Hoehe uebernehmen (anderer Abschnitt geladen).
+  useEffect(() => {
+    setRahmenHoehe(height ?? SVG_VIEWER_DEFAULT_HEIGHT);
+  }, [height]);
+
+  const einpassen = useCallback(() => {
+    const instanz = panZoomRef.current;
+    if (!instanz) return;
+    try {
+      instanz.resize();
+      instanz.fit();
+      instanz.center();
+    } catch {
+      /* Instanz bereits verworfen */
+    }
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -86,16 +159,17 @@ function SvgViewer({ svgContent }: { svgContent: string }) {
       .then(({ default: svgPanZoom }) => {
         if (cancelled || !svgEl.parentNode) return;
         try {
-          const instance = svgPanZoom(svgEl, {
+          panZoomRef.current = svgPanZoom(svgEl, {
             zoomEnabled: true,
             panEnabled: true,
-            controlIconsEnabled: true,
+            // Eigene Leiste statt der eingebauten Symbole: jene liegen im SVG
+            // selbst, skalieren mit und passen nicht zum uebrigen Bedienbild.
+            controlIconsEnabled: false,
             fit: true,
             center: true,
             minZoom: 0.1,
             maxZoom: 20,
-          });
-          panZoomRef.current = instance;
+          }) as PanZoomInstanz;
         } catch {
           /* ignore */
         }
@@ -117,12 +191,128 @@ function SvgViewer({ svgContent }: { svgContent: string }) {
     };
   }, [svgContent]);
 
+  // Jede Groessenaenderung des Rahmens — Ziehgriff, Vollbild, Fensterbreite —
+  // muss neu eingepasst werden. Ohne das behaelt svg-pan-zoom den Viewport
+  // von der ersten Messung und schneidet weiterhin ab.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === "undefined") return;
+    const beobachter = new ResizeObserver(() => einpassen());
+    beobachter.observe(container);
+    return () => beobachter.disconnect();
+  }, [einpassen]);
+
+  // Vollbild mit Escape verlassen.
+  useEffect(() => {
+    if (!vollbild) return;
+    const beiTaste = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setVollbild(false);
+    };
+    window.addEventListener("keydown", beiTaste);
+    return () => window.removeEventListener("keydown", beiTaste);
+  }, [vollbild]);
+
+  const beiZiehStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    ziehenRef.current = { startY: e.clientY, startHoehe: hoeheRef.current };
+  };
+
+  const beiZiehen = (e: React.PointerEvent<HTMLDivElement>) => {
+    const zug = ziehenRef.current;
+    if (!zug) return;
+    setRahmenHoehe(
+      Math.max(
+        SVG_VIEWER_MIN_HEIGHT,
+        Math.round(zug.startHoehe + (e.clientY - zug.startY)),
+      ),
+    );
+  };
+
+  const beiZiehEnde = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!ziehenRef.current) return;
+    ziehenRef.current = null;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    // Erst am Ende des Ziehens speichern — nicht bei jedem Pixel.
+    onHeightChange?.(hoeheRef.current);
+  };
+
+  const knopf = "h-7 w-7 p-0";
+
   return (
     <div
-      ref={containerRef}
-      className="w-full rounded-lg border overflow-hidden bg-muted/10"
-      style={{ minHeight: 400 }}
-    />
+      className={
+        vollbild
+          ? "fixed inset-0 z-50 flex flex-col gap-1 bg-background p-3"
+          : "flex flex-col gap-1"
+      }
+    >
+      <div className="flex items-center justify-end gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={knopf}
+          title="Verkleinern"
+          onClick={() => panZoomRef.current?.zoomOut()}
+        >
+          <ZoomOut className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={knopf}
+          title="Vergrößern"
+          onClick={() => panZoomRef.current?.zoomIn()}
+        >
+          <ZoomIn className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={knopf}
+          title="Ganz einpassen"
+          onClick={einpassen}
+        >
+          <Scan className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={knopf}
+          title={vollbild ? "Vollbild verlassen (Esc)" : "Vollbild"}
+          onClick={() => setVollbild((v) => !v)}
+        >
+          {vollbild ? (
+            <Minimize2 className="h-3.5 w-3.5" />
+          ) : (
+            <Maximize2 className="h-3.5 w-3.5" />
+          )}
+        </Button>
+      </div>
+
+      <div
+        ref={containerRef}
+        className={`w-full rounded-lg border overflow-hidden bg-muted/10 ${
+          vollbild ? "flex-1" : ""
+        }`}
+        style={vollbild ? undefined : { height: rahmenHoehe }}
+      />
+
+      {!vollbild && (
+        <div
+          role="separator"
+          aria-label="Höhe der Diagrammanzeige ändern"
+          title="Zum Ändern der Höhe ziehen"
+          onPointerDown={beiZiehStart}
+          onPointerMove={beiZiehen}
+          onPointerUp={beiZiehEnde}
+          onPointerCancel={beiZiehEnde}
+          className="flex h-3 cursor-ns-resize items-center justify-center rounded text-muted-foreground/50 hover:bg-accent hover:text-muted-foreground"
+        >
+          <GripHorizontal className="h-3 w-3" />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -283,7 +473,7 @@ export function BpmnDiagramSection({
   const hasSvgEmbed = Boolean(svgEmbed);
 
   function handleSave(newXml: string) {
-    onSave?.({ xml: newXml, svgEmbed: parsedData?.svgEmbed, mode: "bpmn" });
+    onSave?.({ ...parsedData, xml: newXml, mode: "bpmn" });
     setEditing(false);
   }
 
@@ -293,11 +483,17 @@ export function BpmnDiagramSection({
 
   function handleSvgSave(svgContent: string) {
     onSave?.({
+      ...parsedData,
       xml: xml ?? DEFAULT_BPMN_XML,
       svgEmbed: svgContent,
       mode: "svg",
     });
     setSvgEditing(false);
+  }
+
+  function handleSvgHeightChange(hoehe: number) {
+    if (!parsedData) return;
+    onSave?.({ ...parsedData, svgHeight: hoehe });
   }
 
   function handleSwitchMode(newMode: "bpmn" | "svg") {
@@ -424,7 +620,13 @@ export function BpmnDiagramSection({
 
       {mode === "svg" && svgEmbed ? (
         <div className="space-y-3">
-          <SvgViewer svgContent={svgEmbed} />
+          <SvgViewer
+            svgContent={svgEmbed}
+            height={parsedData?.svgHeight}
+            onHeightChange={
+              readOnly || !onSave ? undefined : handleSvgHeightChange
+            }
+          />
           {!readOnly && !hasSvgEmbed && (
             <Button
               variant="outline"
