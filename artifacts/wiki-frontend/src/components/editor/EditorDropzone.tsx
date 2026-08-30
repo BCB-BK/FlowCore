@@ -9,7 +9,8 @@ import {
   X,
   AlertCircle,
 } from "lucide-react";
-import { EDITOR_CONFIG } from "@/lib/editor-config";
+import { EDITOR_CONFIG, MAX_UPLOAD_MB } from "@/lib/editor-config";
+import { fileTooLargeMessage } from "@workspace/shared/uploads";
 
 interface UploadProgress {
   id: string;
@@ -64,7 +65,7 @@ export function EditorDropzone({
             mediaType,
             progress: 0,
             status: "error",
-            error: `Datei zu groß (max. ${Math.round(EDITOR_CONFIG.maxFileSizeBytes / 1024 / 1024)} MB)`,
+            error: fileTooLargeMessage(MAX_UPLOAD_MB),
           },
         ]);
         return;

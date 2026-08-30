@@ -6,7 +6,8 @@
   "exports": {
     "./providers": "./src/providers/index.ts",
     "./page-types": "./src/page-types/index.ts",
-    "./rich-text": "./src/rich-text/index.ts"
+    "./rich-text": "./src/rich-text/index.ts",
+    "./uploads": "./src/uploads/index.ts"
   },
   "dependencies": {}
 }

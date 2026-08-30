@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
+import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import TaskList from "@tiptap/extension-task-list";
@@ -8,7 +10,6 @@ import { Table as TiptapTable } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
-import TiptapImage from "@tiptap/extension-image";
 import TiptapLink from "@tiptap/extension-link";
 import TiptapUnderline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -27,6 +28,10 @@ import { BlockId } from "./extensions/block-id";
 import { DragHandle } from "./extensions/drag-handle";
 import { WikiLink } from "./extensions/wiki-link";
 import { Indent } from "./extensions/indent";
+import {
+  ResizableImage,
+  ImageBubbleMenuContent,
+} from "./extensions/ResizableImage";
 import {
   CalloutNodeView,
   EmbedBlockNodeView,
@@ -150,7 +155,7 @@ export function BlockEditor({
       TableRow,
       TableCell,
       TableHeader,
-      TiptapImage.configure({ inline: false, allowBase64: false }),
+      ResizableImage.configure({ inline: false, allowBase64: false }),
       TiptapLink.configure({
         openOnClick: !editable,
         HTMLAttributes: { rel: "noopener noreferrer" },
@@ -615,6 +620,17 @@ export function BlockEditor({
         <div className={`relative ${editable ? "pl-6" : ""}`}>
           {editable && <BlockActionMenu editor={editor} />}
           {editable && <TableContextMenu editor={editor} />}
+          {editable && (
+            <BubbleMenu
+              editor={editor}
+              shouldShow={({ state }) =>
+                state.selection instanceof NodeSelection &&
+                state.selection.node.type.name === "image"
+              }
+            >
+              <ImageBubbleMenuContent editor={editor} />
+            </BubbleMenu>
+          )}
           {editable && onCreateSubpage && (
             <ContextualSubpageButton
               editor={editor}

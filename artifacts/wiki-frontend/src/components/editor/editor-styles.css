@@ -197,28 +197,74 @@
   border-radius: 0.5rem;
 }
 
+/*
+ * Bild-Rahmen der Extension extensions/ResizableImage.
+ *
+ * Breite und Umfluss sitzen am Rahmen, nicht am <img>: nur so umfliesst der
+ * Text das Bild wirklich, und eine Prozentbreite bezieht sich auf die
+ * Textspalte statt auf das Bild selbst. Die frueheren Regeln an
+ * `img[data-float]` liefen ins Leere, weil das Attribut ohne NodeView nie
+ * gesetzt wurde.
+ */
+.ProseMirror .fc-bild {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  margin: 0.5rem auto;
+}
+
+.ProseMirror .fc-bild img {
+  display: block;
+}
+
+.ProseMirror .fc-bild[data-float="left"] {
+  float: left;
+  margin: 0.25rem 1rem 0.5rem 0;
+}
+
+.ProseMirror .fc-bild[data-float="right"] {
+  float: right;
+  margin: 0.25rem 0 0.5rem 1rem;
+}
+
+.ProseMirror .fc-bild.ProseMirror-selectednode img,
 .ProseMirror img.ProseMirror-selectednode {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
 }
 
-.ProseMirror img[data-float="left"] {
-  float: left;
-  margin-right: 1rem;
-  margin-bottom: 0.5rem;
+/* Ziehgriffe — nur im Bearbeitungsmodus gerendert, sichtbar bei Hover/Auswahl. */
+.ProseMirror .fc-bild-griff {
+  position: absolute;
+  background: hsl(var(--primary));
+  border: 1px solid hsl(var(--background));
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.12s ease-in-out;
+  touch-action: none;
 }
 
-.ProseMirror img[data-float="right"] {
-  float: right;
-  margin-left: 1rem;
-  margin-bottom: 0.5rem;
+.ProseMirror .fc-bild:hover .fc-bild-griff,
+.ProseMirror .fc-bild.ProseMirror-selectednode .fc-bild-griff {
+  opacity: 1;
 }
 
-.ProseMirror img[data-float="none"] {
-  float: none;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+.ProseMirror .fc-bild-griff-kante {
+  top: 50%;
+  right: -5px;
+  width: 10px;
+  height: 36px;
+  transform: translateY(-50%);
+  border-radius: 9999px;
+  cursor: ew-resize;
+}
+
+.ProseMirror .fc-bild-griff-ecke {
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
 }
 
 .ProseMirror hr {

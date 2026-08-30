@@ -78,6 +78,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     // Scroll-Containers sichtbar (Tester-Feedback). Opaker Hintergrund über
     // bg-background + Gradient-Tint, damit beim Überlagern nichts durchscheint.
     <div
+      data-editor-toolbar
       role="toolbar"
       aria-label="Textformatierung"
       className="sticky top-0 z-20 flex items-center gap-0.5 flex-wrap border-b p-1 rounded-t-lg bg-background bg-gradient-to-b from-muted/30 to-muted/30"

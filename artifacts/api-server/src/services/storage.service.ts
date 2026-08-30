@@ -54,7 +54,9 @@ export class LocalStorageProvider implements IStorageProvider {
       buffer = Buffer.concat(chunks);
     }
 
-    fs.writeFileSync(filePath, buffer);
+    // Asynchron: bei den nun zulaessigen 100-MB-Dateien blockiert ein
+    // synchroner Schreibvorgang den Event-Loop fuer alle anderen Anfragen.
+    await fs.promises.writeFile(filePath, buffer);
 
     return {
       storageKey: key,

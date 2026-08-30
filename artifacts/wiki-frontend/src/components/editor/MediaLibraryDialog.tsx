@@ -20,6 +20,8 @@ import {
   Globe,
 } from "lucide-react";
 import { SharePointMediaBrowser } from "./SharePointMediaBrowser";
+import { EDITOR_CONFIG, MAX_UPLOAD_MB } from "@/lib/editor-config";
+import { fileTooLargeMessage } from "@workspace/shared/uploads";
 
 interface MediaAsset {
   id: string;
@@ -104,6 +106,17 @@ export function MediaLibraryDialog({
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+
+      // Vor dem Senden pruefen: sonst laedt der Browser die Datei erst
+      // vollstaendig hoch, nur um am Ende einen 413 zu bekommen.
+      if (file.size > EDITOR_CONFIG.maxFileSizeBytes) {
+        e.target.value = "";
+        toast({
+          variant: "destructive",
+          title: fileTooLargeMessage(MAX_UPLOAD_MB),
+        });
+        return;
+      }
 
       setIsUploading(true);
       try {
@@ -246,7 +259,7 @@ export function MediaLibraryDialog({
             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8">
               <Upload className="h-10 w-10 text-muted-foreground mb-3" />
               <p className="text-sm text-muted-foreground mb-3">
-                Datei zum Hochladen auswählen (max. 50 MB)
+                Datei zum Hochladen auswählen (max. {MAX_UPLOAD_MB} MB)
               </p>
               <label>
                 <input

@@ -5,7 +5,6 @@ import { Extension } from "@tiptap/core";
 import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import TiptapImage from "@tiptap/extension-image";
 import TiptapLink from "@tiptap/extension-link";
 import TiptapUnderline from "@tiptap/extension-underline";
 import Highlight from "@tiptap/extension-highlight";
@@ -29,6 +28,10 @@ import {
   X,
 } from "lucide-react";
 import { Separator } from "@workspace/ui/separator";
+import {
+  ResizableImage,
+  ImageBubbleMenuContent,
+} from "./extensions/ResizableImage";
 import { Toggle } from "@workspace/ui/toggle";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/tooltip";
 import { VideoBlock } from "./extensions/video-block";
@@ -56,38 +59,6 @@ const IndentKeymap = Extension.create({
           return this.editor.chain().focus().liftListItem("listItem").run();
         }
         return false;
-      },
-    };
-  },
-});
-
-const ResizableImage = TiptapImage.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      width: {
-        default: null,
-        renderHTML(attributes) {
-          if (!attributes.width) return {};
-          return {
-            "data-width": attributes.width,
-            style: `width: ${attributes.width}; max-width: 100%;`,
-          };
-        },
-        parseHTML(element) {
-          return element.getAttribute("data-width") || null;
-        },
-      },
-      "data-float": {
-        default: "none",
-        renderHTML(attributes) {
-          const f = attributes["data-float"];
-          if (!f || f === "none") return { "data-float": "none" };
-          return { "data-float": f };
-        },
-        parseHTML(element) {
-          return element.getAttribute("data-float") || "none";
-        },
       },
     };
   },
@@ -205,71 +176,6 @@ function LinkBubbleMenuContent({ editor }: { editor: Editor }) {
         <Unlink className="h-3 w-3" />
         Entfernen
       </button>
-    </div>
-  );
-}
-
-function ImageBubbleMenuContent({ editor }: { editor: Editor }) {
-  const attrs = editor.getAttributes("image");
-  const currentFloat = (attrs["data-float"] as string) || "none";
-  const currentWidth = (attrs.width as string) || null;
-
-  const setWidth = useCallback(
-    (w: string | null) =>
-      editor.chain().focus().updateAttributes("image", { width: w }).run(),
-    [editor],
-  );
-
-  const setFloat = useCallback(
-    (f: string) =>
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("image", { "data-float": f })
-        .run(),
-    [editor],
-  );
-
-  const WIDTH_OPTIONS: Array<{ label: string; value: string | null }> = [
-    { label: "25%", value: "25%" },
-    { label: "50%", value: "50%" },
-    { label: "75%", value: "75%" },
-    { label: "100%", value: null },
-  ];
-
-  const FLOAT_OPTIONS = [
-    { label: "Block", value: "none" },
-    { label: "Links", value: "left" },
-    { label: "Rechts", value: "right" },
-  ];
-
-  return (
-    <div className="flex items-center gap-1 bg-background border rounded-md shadow-md p-1 flex-wrap">
-      <span className="text-xs text-muted-foreground">Breite:</span>
-      {WIDTH_OPTIONS.map(({ label, value }) => {
-        const isActive =
-          value === null ? !currentWidth : currentWidth === value;
-        return (
-          <button
-            key={label}
-            className={`text-xs px-1.5 py-0.5 rounded ${isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-            onClick={() => setWidth(value)}
-          >
-            {label}
-          </button>
-        );
-      })}
-      <Separator orientation="vertical" className="mx-0.5 h-4" />
-      <span className="text-xs text-muted-foreground">Umfluss:</span>
-      {FLOAT_OPTIONS.map(({ label, value }) => (
-        <button
-          key={value}
-          className={`text-xs px-1.5 py-0.5 rounded ${currentFloat === value ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-          onClick={() => setFloat(value)}
-        >
-          {label}
-        </button>
-      ))}
     </div>
   );
 }

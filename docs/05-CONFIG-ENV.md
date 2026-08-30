@@ -46,7 +46,7 @@ Alle Werte haben sichere Defaults und sind nur bei Bedarf zu übersteuern:
 | `SESSION_MAX_AGE_HOURS` | Session-Lebensdauer | `8` |
 | `GROUP_CHECK_TTL_MIN` | Cache-Dauer der Entra-Gruppenprüfung | `15` |
 | `JSON_BODY_LIMIT` | Maximale JSON-Body-Größe | `2mb` |
-| `MAX_UPLOAD_MB` | Maximale Upload-Dateigröße (Medien) | `50` |
+| `MAX_UPLOAD_MB` | Maximale Upload-Dateigröße (Medien) | `100` (Quelle: `lib/shared/src/uploads`; nginx `client_max_body_size` muss mitziehen) |
 | `COPILOT_PROJECTION_CACHE_TTL_SEC` | Cache-Dauer der Copilot-Suchprojektionen | `300` |
 
 ### KI-Modelle
