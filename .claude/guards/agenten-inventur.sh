@@ -140,9 +140,14 @@ TIEFE=6
 WURZELN=("$HOME" /home /var/www /srv /opt)
 zeile "Suchbereich" "Tiefe $TIEFE unter: ${WURZELN[*]}"
 mit=0; ohne=0; verweigert=0; sonstige=""
+# Arbeitsverzeichnisse laufender Claude-Jobs ausschliessen. Auf PLATO tauchten am
+# 31.08.2026 drei Checkouts unter ~/.claude/jobs/<id>/tmp/ auf, mit Standard v2.3 —
+# Wegwerf-Kopien aus einem Auftrag, nicht Arbeitsplaetze. Sie als "veralteten Stand" zu
+# melden ist Rauschen und verdeckt die echten Befunde (Kernvertrag §4: Rauschen verdeckt
+# die Meldungen, auf die es ankommt).
 alle=$(for w in "${WURZELN[@]}"; do
          [ -d "$w" ] && find "$w" -maxdepth "$TIEFE" -name .git -type d 2>/dev/null
-       done | sort -u)
+       done | grep -v '/\.claude/jobs/' | sort -u)
 for wurzel in "${WURZELN[@]}"; do
   [ -d "$wurzel" ] || continue
   while IFS= read -r g; do
