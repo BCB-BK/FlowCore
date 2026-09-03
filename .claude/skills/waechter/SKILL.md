@@ -1,13 +1,16 @@
 ---
 name: waechter
-description: Pflicht-Abschlussprotokoll nach JEDER Code-Änderung — unabhängiges Review im frischen Kontext, Fix-Kreislauf (max. 2 Runden), Verdikt-Marker für den Stop-Hook. Ohne FREIGABE-EMPFEHLUNG des Wächters gibt es kein BESTANDEN.
+description: Pflicht-Abschlussprotokoll je AUFGABE (nicht je Commit) — unabhängiges Review im frischen Kontext über die gesamte Änderung, Fix-Kreislauf (max. 2 Runden), Verdikt-Marker für den Stop-Hook. Ohne FREIGABE-EMPFEHLUNG des Wächters gibt es kein BESTANDEN.
 ---
 
 # Wächter — erzwungener Review-Fix-Kreislauf
 
 ## Wann
-Nach **jeder** Code-Änderung, vor jeder Statusmeldung — ausnahmslos (Betreiber-Entscheidung
-07.08.2026: Modus „immer"). Reine Lese-/Recherche-Sessions ohne Diff sind nicht betroffen.
+**Einmal am Ende jeder Aufgabe**, vor der Statusmeldung — über die gesamte Änderung der Aufgabe
+(Kernvertrag §8, v2.13; Betreiber-Anordnung 02.09.2026). **Nicht** nach jedem Commit:
+Zwischenstände auf DEV laufen mit Guard und betroffenen Tests und werden committet. Der Modus
+„immer“ (07.08.2026) bleibt — „immer“ heißt: jede Aufgabe, ohne Ausnahme, nicht jede Zeile.
+Reine Lese-/Recherche-Sessions ohne Diff sind nicht betroffen.
 
 ## Ablauf
 

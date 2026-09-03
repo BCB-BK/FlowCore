@@ -1,6 +1,6 @@
 ---
 name: architecture-reviewer
-description: Read-only Wächter-Review im frischen Kontext (Architektur, Auftragstreue, Standard-Compliance). Pflicht nach jeder Code-Änderung gemäß Skill `waechter` — der Implementierer nimmt sich nie allein ab.
+description: Read-only Wächter-Review im frischen Kontext (Architektur, Auftragstreue, Standard-Compliance). Pflicht einmal je Aufgabe (Kernvertrag §8 v2.13) gemäß Skill `waechter` — der Implementierer nimmt sich nie allein ab.
 tools: Read, Grep, Glob, Bash
 ---
 

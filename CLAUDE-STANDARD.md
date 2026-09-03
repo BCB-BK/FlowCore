@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.12)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.13)
 
-> **Version 2.12 · 30.08.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.13 · 03.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -218,26 +218,44 @@ Je Repo präzisiert (Befehle in der Repo-`CLAUDE.md`). Reihenfolge:
    benannt, per Nachweis aufgelöst und korrigiert.
 5. **Senior-Self-Review-Block** (gelesen · geändert+warum · Referenzsuche · Root-Cause-Beleg ·
    Verifikation · Floskel-Selbstkritik) — Selbstbericht, dritte Prüfschicht neben Guards und Wächter.
-6. **Wächter-Freigabe** (§8, Skill `waechter`) — ohne `FREIGABE-EMPFEHLUNG` kein `BESTANDEN`.
+6. **Wächter-Freigabe** (§8, Skill `waechter`) — **einmal je Aufgabe**, nicht je Commit; ohne
+   `FREIGABE-EMPFEHLUNG` kein `BESTANDEN`.
 7. Befundliste (§4) + Abgleich `98-OFFENE-BAUSTELLEN.md` → Commit auf die zulässige Branch.
 
 **Abschlussstatus — exakt vier:** `BESTANDEN` · `NICHT BESTANDEN` · `BLOCKIERT VOR START` ·
 `BLOCKIERT DURCH SCOPE-FREMDEN FEHLER`. `BESTANDEN` nur, wenn jeder geforderte Check real lief
 und kein Guard/Hook dafür deaktiviert oder umgangen wurde.
 
-## §8 Wächter-Protokoll (Pflicht nach jeder Code-Änderung)
+## §8 Wächter-Protokoll — je Aufgabe auf DEV, einmal vollständig vor PROD (v2.13)
 
-**Jede** Code-Änderung durchläuft vor der Statusmeldung den Wächter (Skill `waechter`):
-read-only Review im frischen Kontext durch `architecture-reviewer` (Auftragstreue, Verträge,
-Wirkungskette, Nebenwirkungen, Komplexität, Testlücken, Doku↔Code↔Bericht,
-**Standard-Compliance inkl. DoD-Nachweisen**); bei Auth/AuthZ, personenbezogenen Daten,
-Uploads, externen APIs, Zahlungen, Mandanten oder Prod-Daten zusätzlich `security-reviewer`.
-Verdikt `NACHARBEIT NÖTIG`/`ABLEHNUNG` ⇒ die nummerierten FIX-AUFTRÄGE abarbeiten und erneut
-prüfen lassen — **maximal 2 Fix-Runden**, danach Eskalation an den Betreiber (offene Befunde
-+ Empfehlung). Kein `BESTANDEN` ohne `FREIGABE-EMPFEHLUNG`; das Verdikt wird als Marker
-`.claude/waechter-verdikt.json` festgehalten (Anker des Stop-Hooks — Details im Skill).
-Der Implementierer nimmt sich nie allein per eigener Zusammenfassung ab; Override nur durch
-expliziten Betreiber-Satz, sichtbar ausgewiesen.
+**Prüfung skaliert mit dem Ziel, nicht mit dem Commit.** (Betreiber-Anordnung 02.09.2026:
+„Prüfung, wenn der Code auf die Prod kommen soll — zuvor arbeiten wir sauber unsere Punkte ab.“)
+
+- **Auf DEV: der Wächter je Aufgabe.** Ein Auftrag (klein · standard · kritisch, §2) endet mit
+  **genau einem** Wächter-Durchlauf über die gesamte Änderung (Skill `waechter`): read-only
+  Review im frischen Kontext durch `architecture-reviewer` (Auftragstreue, Verträge,
+  Wirkungskette, Nebenwirkungen, Komplexität, Testlücken, Doku↔Code↔Bericht,
+  **Standard-Compliance inkl. DoD-Nachweisen**); bei Auth/AuthZ, personenbezogenen Daten,
+  Uploads, externen APIs, Zahlungen, Mandanten oder Prod-Daten zusätzlich `security-reviewer`.
+  **Zwischenstände auf DEV brauchen keinen eigenen Wächter** — sie brauchen den Guard und die
+  betroffenen Tests, dann werden sie committet und gepusht. Ein Zweizeiler ist kein Anlass
+  für eine **eigene** Review-Runde; die Aufgabe, zu der er gehört, ist es — **auch wenn die
+  Aufgabe selbst nur aus diesem Zweizeiler besteht.**
+- **Vor PROD: einmal alles.** Über das gesamte Delta seit dem letzten PROD-Stand laufen
+  Vollsuite, Änderungsliste (§6 Schritt 1) und Abschlussbericht — **einmal**, als Grundlage der
+  Betreiber-Freigabe. Das ersetzt keine Wächter-Runde und wiederholt keine; es ist die Prüfung,
+  die dem Ziel entspricht.
+- **Verdikt:** `NACHARBEIT NÖTIG`/`ABLEHNUNG` ⇒ die nummerierten FIX-AUFTRÄGE abarbeiten und
+  erneut prüfen lassen — **maximal 2 Fix-Runden**, danach Eskalation an den Betreiber (offene
+  Befunde + Empfehlung). Kein `BESTANDEN` ohne `FREIGABE-EMPFEHLUNG`; das Verdikt wird als
+  Marker `.claude/waechter-verdikt.json` festgehalten (Anker des Stop-Hooks — Details im Skill).
+- **Unverändert:** Der Implementierer nimmt sich nie allein per eigener Zusammenfassung ab;
+  Override nur durch expliziten Betreiber-Satz, sichtbar ausgewiesen.
+
+*Auslöser (02.09.2026): In OneCampus lief ein Zweizeiler über einen Pull Request mit zwei
+Wächter-Runden, weil „nach jeder Code-Änderung“ wörtlich als „nach jedem Commit“ gelesen wurde —
+bei einem Branch, der nichts als DEV deployt. Die EHiP-Website arbeitete faktisch längst so, wie
+es hier steht. Dossier: `docs/03-entwicklungsstandard.md` §20/§21 der Zentrale.*
 
 ## §9 Kontext, Memory, Agenten
 
@@ -279,7 +297,7 @@ expliziten Betreiber-Satz, sichtbar ausgewiesen.
 | Unabhängige Prüfung | read-only Subagents |
 | Harte Verbote (git/DB/Secrets/destruktiv) | **PreToolUse-Hook + Permission-Deny** (`standards/settings/`) |
 | Delegation (§11) | Skill-/Auftragsdisziplin + Dossier-Pflicht (kein Hook — Urteilsfrage) |
-| Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert Beenden ohne Freigabe-Verdikt |
+| Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert das Beenden mit **uncommitteten** Änderungen ohne Freigabe-Verdikt und das Committen nach einem nicht freigegebenen Review. **Der Wächter am Aufgabenende bei sauberem Baum ist regel-, nicht hookdurchgesetzt** — der Hook kennt keine Aufgabengrenze (v2.13, offener Punkt in der Zentrale) |
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
 | Grunddeklaration (Tier, Umgebungen, PROD-Branches) | **Guard D6** — fehlt sie, erscheint das im Verdikt und in den offenen Punkten |
 | Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code) |
