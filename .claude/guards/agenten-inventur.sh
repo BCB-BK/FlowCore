@@ -65,19 +65,28 @@ if hat claude; then
   zeile "Status" "INSTALLIERT"
   cpfad=$(command -v claude)
   zeile "Pfad" "$cpfad"
-  # A1: global installiert, damit es je Maschine EINEN Aktualisierungsweg gibt
+  # A1 (neu gefasst 08.09.2026): Nicht der Ort zaehlt, sondern EIN Weg je Maschine — und der
+  # native Installer haelt sich selbst aktuell. ~/.local/bin/claude ist sein vorgesehener Ort und
+  # damit KEINE Abweichung. Gemeldet wird jetzt der npm-Weg, der Node.js verlangt und von Hand
+  # aktualisiert werden muss. (Auslöser: aos1 faehrt Claude Code ohne node; delst1 wurde am
+  # 08.09. mit dem nativen Installer in einem Schritt eingerichtet.)
   case "$cpfad" in
-    "$HOME"/*) abw "A1  Claude Code liegt benutzerlokal ($cpfad) statt global — eigener Aktualisierungsweg. Soll: sudo npm install -g @anthropic-ai/claude-code" ;;
+    */.local/bin/claude) : ;;                        # nativer Installer — Soll
+    *node_modules*|*/.npm-global/*|/usr/lib/node_modules/*|/usr/local/lib/node_modules/*)
+      abw "A1  Claude Code kommt aus einem npm-Paket ($cpfad) — braucht Node.js und muss von Hand aktualisiert werden. Soll: curl -fsSL https://claude.ai/install.sh | bash" ;;
+    */npm/*|*/nvm/*|*/node*/bin/claude)
+      abw "A1  Claude Code kommt aus einer Node-Installation ($cpfad) — braucht Node.js und muss von Hand aktualisiert werden. Soll: curl -fsSL https://claude.ai/install.sh | bash" ;;
   esac
   zeile "Version" "$(claude --version 2>/dev/null | head -1 || echo "$unbekannt")"
 else
   zeile "Status" "NICHT INSTALLIERT"
   abw "A1  Claude Code ist auf dieser Maschine NICHT installiert — hier liest kein Agent den Standard"
-  # Die haeufigste Ursache zuerst: Node fehlt, also kann das npm-Paket nicht laufen.
+  # Node ist fuer den nativen Installer NICHT noetig (belegt: aos1 faehrt Claude Code ohne node).
+  # Die Zeile bleibt als Zustandsangabe, nicht mehr als Ursache.
   if hat node; then
-    zeile "  node" "$(node --version 2>/dev/null)  — vorhanden, Claude Code aber nicht"
+    zeile "  node" "$(node --version 2>/dev/null)  — vorhanden (fuer den nativen Installer nicht noetig)"
   else
-    zeile "  node" "FEHLT — ohne node kann Claude Code nicht laufen"
+    zeile "  node" "nicht vorhanden — fuer den nativen Installer auch nicht noetig"
   fi
   hat npm && zeile "  npm" "$(npm --version 2>/dev/null)" || zeile "  npm" "FEHLT"
 fi
