@@ -15,6 +15,30 @@ einen Obsidian-Vault (alle Klone nebeneinander) — es gibt keine zweite Ablage.
 | Architektur-/Stack-Frage („womit bauen wir X?") | `docs/` (Masterplan, Konzepte) — dokumentierte Entscheidungen binden; Abweichung nur mit Betreiber-Freigabe, sichtbar ausgewiesen |
 | „Wo steht Projekt Y gerade?" | im Repo von Y: `docs/98-OFFENE-BAUSTELLEN.md` + `docs/99-SESSION-LEARNINGS.md` |
 
+## Die vier Fragen vor jedem Thema — und fünf Zeilen danach (v2.14)
+
+**Betreiber 08.09.2026:** *„Immer erst mal die Frage: Was wurde schon gebaut? Welche Ansätze gab
+es? Was hat funktioniert? Was hat nicht funktioniert?“* Das ist keine Kür für große Aufträge,
+sondern die erste Zeile jeder Auftragskarte (Skill `auftrag`):
+
+1. Was wurde zu diesem Thema schon gebaut — in welchem Repo, welche Dateien?
+2. Welche Ansätze gab es?
+3. Was hat funktioniert?
+4. Was hat nicht funktioniert — und warum?
+
+**Quelle ist das Fach-Dossier** unter `docs/uebersichten/<thema>.md` der Zentrale (Aufbau: Wo
+gebaut · Wie gelöst · Was scheiterte · Offene Entscheidungen · Was ein anderes Repo übernimmt ·
+Verlauf). Erstes Beispiel: `terminbuchung.md`. Gibt es kein Dossier, sagt die Karte das, und die
+Nachbar-Repos werden lesend angebunden. **Repos teilen sich nichts automatisch** — der Weg ist
+Lesepflicht am Anfang und Rückschreibpflicht am Ende:
+
+- **Am Ende jeder Aufgabe zu einem Thema mit Dossier:** fünf Zeilen unter „Verlauf“ — Datum,
+  Repo, was neu ist, was scheiterte, was offen bleibt. Geschrieben wird in `ocg-architekt`
+  (Ausnahme von „nur im Repo des Auftrags“ — das Dossier ist der eine Ort dafür).
+- **Thema in zwei Repos ohne Dossier:** Dossier anlegen, Zeile in den THEMENINDEX.
+
+Der Kurator prüft wöchentlich, ob ein Thema in zwei Repos ohne Dossier auftaucht.
+
 ## Quer-Zugriff zwischen Repos
 
 - **Lesen ist erlaubt und erwünscht.** Das nötige Repo an die Session anbinden und

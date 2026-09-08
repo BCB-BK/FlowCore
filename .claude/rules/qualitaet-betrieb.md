@@ -10,19 +10,24 @@ Recovery · Betrieb ohne unnötige Handgriffe.
 welche wurden geprüft, warum sind die übrigen hier nicht nötig? Diese Begründung gehört in
 den Abschluss.
 
-## End-to-End-Tests: risikobasiert, nicht pauschal
+## Browser-Nachweis: ein Werkzeug, drei Stufen (v2.14)
 
-E2E-Vollsuiten bei jeder Änderung wären zu langsam und würden bald übersprungen — das ist
-schlimmer als kein Test. Drei Einsatzpunkte, mehr nicht:
+**Echte Browser-Tests sind die Prüfgrundlage für Frontend-Änderungen** (Betreiber 08.09.2026) —
+Playwright gegen die DEV-Adresse, ausgeführt von der DEV-Maschine, ohne Installation auf dem
+Host (Playwright-Docker-Image, Vorbild `EHiP-Website/tests/browser/`). Der Nachweis besteht aus
+Spec-Name, Laufausgabe mit Exit-Code und Screenshots und steht im Abschluss und im Bericht.
+Die Stufe legt die Auftragskarte fest (Skill `auftrag`):
 
-| Anlass | Umfang |
-|---|---|
-| UI-/Flow-Änderung | nur die betroffenen Specs, lokal |
-| vor PROD-Übernahme (Tier B/C) | Vollsuite gegen DEV/Testumgebung, als Gate |
-| nach jedem Deploy | `post-deploy-smoke.sh` (< 1 Minute), Pflicht |
+| Stufe | Was geändert wurde | Nachweis | Dauer |
+|---|---|---|---|
+| **S** | Text, Farbe, Abstand, Button verschoben | Screenshot der betroffenen Seite bei 390 px und 1280 px; Konsolen-/Netzfehler-Sweep dieser Seite | ~1 Min. |
+| **M** | Neue oder geänderte Funktion (Formular, Filter, Kalender, Abfrage) | Ablauf-Spec, der die Funktion auf DEV **durchführt** (bis Bestätigung / Datensatz), bei drei Breiten; Barrierefreiheits-Schnellprüfung; der Spec bleibt im Repo | 5–15 Min. |
+| **L** | Navigation, Anmeldung, Zahlung, Release nach PROD | Vollsuite des Repos + `post-deploy-smoke.sh` nach dem Deploy | nach Repo |
 
-E2E-Tests, die Daten schreiben, laufen **nie** gegen PROD und nur gegen eine dafür
-vorgesehene Umgebung — steht im Repo etwas anderes, gilt die strengere Angabe.
+Keine Stufe erzwingt eine eigene Wächter-Runde. Ein verschobener Button ist S und fertig,
+wenn der Screenshot ihn zeigt. E2E-Vollsuiten bei jeder Änderung wären zu langsam und würden
+bald übersprungen — das ist schlimmer als kein Test. Specs, die Daten schreiben, laufen
+**nie** gegen PROD; steht im Repo etwas Strengeres, gilt das.
 
 ## Observability
 Neue kritische Abläufe müssen beobachtbar sein: strukturierte Logs, Metriken, Korrelations-IDs,

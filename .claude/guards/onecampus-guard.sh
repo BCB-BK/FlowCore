@@ -12,8 +12,8 @@
 #            --base X  Vergleichsbasis für den Diff (Default: HEAD)
 #
 # Grundsatz (Kernvertrag §5): Was nicht geprüft werden konnte, wird als "n/v"
-# ausgewiesen — niemals als bestanden behauptet. Fehlende Werkzeuge landen als
-# offener Punkt in docs/98-OFFENE-BAUSTELLEN.md, damit die Lücke sichtbar bleibt.
+# ausgewiesen — niemals als bestanden behauptet. Fehlende Werkzeuge stehen als Zeile
+# "OFFEN (n/v)" im Verdikt (seit v2.14 nicht mehr in docs/98-OFFENE-BAUSTELLEN.md).
 # =============================================================================
 set -uo pipefail
 
@@ -29,8 +29,8 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "FEHLER: kein git-
 ROOT="$(git rev-parse --show-toplevel)"; cd "$ROOT"
 REPO="$(basename "$ROOT")"; SHA="$(git rev-parse --short HEAD 2>/dev/null || echo '—')"
 
-# NV: STRUKTURELLE Lücken des Repos (fehlendes Skript, fehlende Guards) — sie werden in
-# docs/98-OFFENE-BAUSTELLEN.md fortgeschrieben, damit sie nicht in Vergessenheit geraten.
+# NV: STRUKTURELLE Lücken des Repos (fehlendes Skript, fehlende Guards) — sie erscheinen
+# als Zeile "OFFEN (n/v)" im Verdikt und werden in jeder Abschlussantwort zitiert (v2.14).
 # NICHT hierher gehören vorübergehende Zustände der Umgebung (z. B. nicht installierte
 # Abhaengigkeiten in einem frischen Checkout): Die stehen als "n/v" im Verdikt, wo sie
 # hingehoeren. Wuerde der Guard sie eintragen, verschmutzte er die Dauer-Dokumentation
@@ -294,17 +294,11 @@ else
   d6="keine CLAUDE.md — n/v"; NV+=("keine Repo-CLAUDE.md vorhanden (Kernvertrag §6)")
 fi
 
-# --- Offene Punkte fortschreiben (Lücken bleiben sichtbar) -------------------
-if [ "${#NV[@]}" -gt 0 ]; then
-  OPEN="docs/98-OFFENE-BAUSTELLEN.md"; mkdir -p docs
-  [ -f "$OPEN" ] || printf '# Offene Baustellen\n\n' > "$OPEN"
-  # Endet die Datei ohne Zeilenumbruch, klebte der Eintrag bisher an die letzte Zeile
-  # und war dort praktisch unsichtbar (Fund 12.08.2026 in einem der Tool-Repos).
-  [ -s "$OPEN" ] && [ "$(tail -c1 "$OPEN" | od -An -c | tr -d ' ')" != '\n' ] && printf '\n' >> "$OPEN"
-  for n in "${NV[@]}"; do
-    grep -qF "$n" "$OPEN" 2>/dev/null || echo "- [ ] Guard-Befund: $n (automatisch eingetragen)" >> "$OPEN"
-  done
-fi
+# --- Offene Punkte: seit v2.14 NICHT mehr in 98 geschrieben ----------------------
+# Bis v2.13 hängte der Guard jeden n/v-Befund an docs/98-OFFENE-BAUSTELLEN.md an.
+# Folge: Automatikzeilen in leeren Repos, und 98 wurde zum Parkplatz (Betreiber
+# 08.09.2026). Lücken bleiben sichtbar — im Verdikt-Block unten (Zeile OFFEN),
+# in jeder Abschlussantwort zitiert. Wer sie schließen will, trägt das Werkzeug ein.
 
 # --- Verdikt -----------------------------------------------------------------
 printf '\nGUARD-VERDIKT  %s @ %s\n' "$REPO" "$SHA"
@@ -316,6 +310,7 @@ printf 'D3 Doku        %s\n' "$d3"
 printf 'D4 Repo-Guards %s\n' "$d4"
 printf 'D5 Doku-Ablösung %s\n' "$d5"
 printf 'D6 Deklaration %s\n' "$d6"
+if [ "${#NV[@]}" -gt 0 ]; then printf 'OFFEN (n/v)    %s\n' "$(join "${NV[@]}")"; fi
 [ -n "$D5HITS" ] && printf '%b\n' "$D5HITS"
 if [ "$FAIL" -eq 0 ]; then printf 'VERDIKT: BESTANDEN\n\n'; exit 0
 else printf 'VERDIKT: NICHT BESTANDEN\n\n'; exit 1; fi

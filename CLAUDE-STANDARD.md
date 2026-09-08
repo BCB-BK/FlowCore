@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.13)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.14)
 
-> **Version 2.13 · 03.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.14 · 08.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -30,11 +30,16 @@
 - Jeden Auftrag einstufen: **klein · standard · kritisch**. Für standard/kritisch gilt der
   Skill **`critical-task`** (Zielzustand, Nicht-Ziele, Akzeptanzkriterien, Umgebung,
   Testobjekt, betroffene Komponenten, Risiken, Rollback, nötige Entscheidungen — vor dem Code).
-- **Gedächtnis-Check (Pflicht ab standard):** Vor Beginn `ocg-architekt` konsultieren —
-  `START.md` + `docs/uebersichten/THEMENINDEX.md` und die einschlägigen Dossiers; betroffene
-  Nachbar-Repos lesend anbinden (`rules/technik-gedaechtnis.md`). In der Auftragsklärung
-  zitieren, was übernommen wird und wo mit welcher Begründung abgewichen wird. Abweichen von
-  dokumentiertem Stand ohne ausgewiesene Betreiber-Freigabe blockiert die Wächter-Freigabe (§8).
+- **Auftragskarte (Pflicht, jede Aufgabe — v2.14, Skill `auftrag`):** Vor der ersten Zeile
+  schreibt der Agent den Auftrag als drei bis sieben **prüfbare Kriterien** zurück, mit Stufe
+  S/M/L des Browser-Nachweises. Sie ist der Maßstab, an dem der Wächter (§8) misst.
+- **Gedächtnis zuerst — vier Fragen (Pflicht, jede Aufgabe; Betreiber 08.09.2026):** *Was wurde
+  zu diesem Thema schon gebaut? Welche Ansätze gab es? Was hat funktioniert? Was nicht — und
+  warum?* Quelle: `ocg-architekt` → `docs/uebersichten/THEMENINDEX.md` und das Dossier des
+  Themas; fehlt eins, werden die Nachbar-Repos lesend angebunden (`rules/technik-gedaechtnis.md`).
+  Die Antwort steht in der Auftragskarte — auch „nichts gefunden“. **Am Ende der Aufgabe
+  werden fünf Zeilen ins Dossier zurückgeschrieben.** Abweichen von dokumentiertem Stand
+  ohne ausgewiesene Betreiber-Freigabe ist ein unerfülltes Kriterium (§8).
 - **Gültigkeit prüfen, nicht nur Existenz (v2.5):** Ein gefundenes Dokument ist noch kein
   gültiges. Vor dem Zitieren: Datum · trägt es einen Ablöse-Hinweis · gibt es im selben
   Bereich ein jüngeres Entscheidungsdokument · widersprechen sich zwei Quellen?
@@ -104,7 +109,14 @@ auflösen — nichts wird still fallengelassen, nichts ungefragt umgebaut:
 |---|---|
 | **Unmittelbar gekoppelt** (Auftrag unvollständig ohne Fix) | im Task beheben, als getrennter Fix ausgewiesen |
 | **Kritisch** (Sicherheit, Datenverlust, Prod-Risiko) | sofort melden; Fix nur nach Freigabe, außer Gefahr im Verzug |
-| **Unabhängig** | dokumentieren (`docs/98-OFFENE-BAUSTELLEN.md`) + vorschlagen, nicht umbauen |
+| **Unabhängig** | vorschlagen, nicht umbauen; **in `98` nur, was eine Entscheidung oder eine andere Person braucht**, höchstens zehn Zeilen (v2.14) |
+
+**`98-OFFENE-BAUSTELLEN.md` ist kein Parkplatz (v2.14, Betreiber 08.09.2026).** Was der Agent
+selbst beheben kann und zum Auftrag gehört, wird gebaut — im selben Auftrag, auch wenn es erst
+beim Bauen auffällt. Eine Nummer bekommt nur, was eine **Entscheidung oder eine andere Person**
+braucht, je Punkt höchstens zehn Zeilen; was länger ist, ist ein Dokument. Der Guard schreibt
+seine `n/v`-Befunde **nicht** mehr hinein, sie stehen im Verdikt. Offene Kriterien einer Aufgabe
+gehen als Nachricht an den Betreiber (§8), nie als Listeneintrag.
 
 **Maß halten (v2.8).** Nicht jede Beobachtung ist ein Befund. Was selbst behebbar ist und im
 Auftrag liegt: **beheben, nicht melden**. Was nicht: **einmal** nennen, mit Empfehlung, dann
@@ -173,8 +185,12 @@ Arbeit anzuhalten.
 - **PROD-Übernahme — einheitlich in ALLEN Repos, drei Schritte (v2.8, Betreiber-Vorgabe):**
   1. **Was wurde gemacht** — vollständige Liste der enthaltenen Änderungen: Features, Fixes,
      Schema-/Datenwirkung, Risiken, was sich für Nutzer:innen ändert.
-  2. **Freigabe des Betreibers** — ausdrücklich und aktuell, auf genau diese Liste.
-  3. **Übernahme** — Merge bzw. Deploy nach dem Weg des Repos.
+  2. **Freigabe des Betreibers** — ausdrücklich und aktuell, auf genau diese Liste: **`GO www2`**
+     bzw. **`GO prod`** (v2.14). Alles andere ist kein GO.
+  3. **Übernahme durch den Agenten** (v2.14, Betreiber 08.09.2026) — er führt den Weg des Repos
+     selbst aus (Skill `deploy`, Abschnitt „GO-Protokoll“) und meldet Smoke-Ergebnis. Der
+     Betreiber öffnet weder GitHub noch ein Terminal; die Maschine verweigert, was ohne
+     Freigabemarke kommt.
 
   Kein Repo weicht davon ab. Wo eine Maschine den Schritt zusätzlich absichert (Deploy-Skript,
   das ohne Freigabemarke verweigert), ist das die stärkere Form derselben Regel — nicht eine
@@ -213,49 +229,51 @@ Je Repo präzisiert (Befehle in der Repo-`CLAUDE.md`). Reihenfolge:
    Neue wiederkehrende Fehlerklasse ⇒ neuer Guard mit dokumentiertem Auslöser-Fall.
    Guards sind Skripte — LLM-Selbstberichte ersetzen sie nicht.
 3. Betroffene Tests **real** ausführen (keine neu fehlschlagende Datei); neue SQL real gegen
-   schema-konforme DB.
+   schema-konforme DB. **Browser-Nachweis der Stufe S/M/L** aus der Auftragskarte
+   (`rules/qualitaet-betrieb.md`) — Spec-Name, Exit-Code, Screenshots.
 4. **Doku-Gate:** alle berührten Dokus im selben Task nachziehen; Abweichung Doku↔Code wird
    benannt, per Nachweis aufgelöst und korrigiert.
-5. **Senior-Self-Review-Block** (gelesen · geändert+warum · Referenzsuche · Root-Cause-Beleg ·
+5. Befundliste (§4) + Abgleich `98-OFFENE-BAUSTELLEN.md` + Rückschreiben ins Themen-Dossier (§2).
+6. **Senior-Self-Review-Block** (gelesen · geändert+warum · Referenzsuche · Root-Cause-Beleg ·
    Verifikation · Floskel-Selbstkritik) — Selbstbericht, dritte Prüfschicht neben Guards und Wächter.
-6. **Wächter-Freigabe** (§8, Skill `waechter`) — **einmal je Aufgabe**, nicht je Commit; ohne
-   `FREIGABE-EMPFEHLUNG` kein `BESTANDEN`.
-7. Befundliste (§4) + Abgleich `98-OFFENE-BAUSTELLEN.md` → Commit auf die zulässige Branch.
+7. **Wächter** (§8, Skill `waechter`) — **einmal je Aufgabe, als letzter Schritt**; ohne
+   `ERFÜLLT` kein `BESTANDEN`. **Danach Commit, dann nichts mehr.** Jede Änderung nach dem
+   Verdikt ist eine neue Aufgabe (v2.14 — Ursache der Endlosschleifen bis v2.13: der Wächter
+   stand vor dem `98`-Abgleich, jede Zeile danach machte den Marker ungültig).
 
 **Abschlussstatus — exakt vier:** `BESTANDEN` · `NICHT BESTANDEN` · `BLOCKIERT VOR START` ·
 `BLOCKIERT DURCH SCOPE-FREMDEN FEHLER`. `BESTANDEN` nur, wenn jeder geforderte Check real lief
 und kein Guard/Hook dafür deaktiviert oder umgangen wurde.
 
-## §8 Wächter-Protokoll — je Aufgabe auf DEV, einmal vollständig vor PROD (v2.13)
+## §8 Wächter — ein Reviewer, eine Frage, eine Nachbesserung (v2.14)
 
-**Prüfung skaliert mit dem Ziel, nicht mit dem Commit.** (Betreiber-Anordnung 02.09.2026:
-„Prüfung, wenn der Code auf die Prod kommen soll — zuvor arbeiten wir sauber unsere Punkte ab.“)
+**Betreiber-Anordnung 08.09.2026:** *„Nach der Aufgabe prüft ein unabhängiger Architektur-Bot,
+ob der Auftrag erfüllt wurde — bestanden, oder eine Nachbesserung, dann ist Schluss.“*
 
-- **Auf DEV: der Wächter je Aufgabe.** Ein Auftrag (klein · standard · kritisch, §2) endet mit
-  **genau einem** Wächter-Durchlauf über die gesamte Änderung (Skill `waechter`): read-only
-  Review im frischen Kontext durch `architecture-reviewer` (Auftragstreue, Verträge,
-  Wirkungskette, Nebenwirkungen, Komplexität, Testlücken, Doku↔Code↔Bericht,
-  **Standard-Compliance inkl. DoD-Nachweisen**); bei Auth/AuthZ, personenbezogenen Daten,
-  Uploads, externen APIs, Zahlungen, Mandanten oder Prod-Daten zusätzlich `security-reviewer`.
-  **Zwischenstände auf DEV brauchen keinen eigenen Wächter** — sie brauchen den Guard und die
-  betroffenen Tests, dann werden sie committet und gepusht. Ein Zweizeiler ist kein Anlass
-  für eine **eigene** Review-Runde; die Aufgabe, zu der er gehört, ist es — **auch wenn die
-  Aufgabe selbst nur aus diesem Zweizeiler besteht.**
-- **Vor PROD: einmal alles.** Über das gesamte Delta seit dem letzten PROD-Stand laufen
-  Vollsuite, Änderungsliste (§6 Schritt 1) und Abschlussbericht — **einmal**, als Grundlage der
-  Betreiber-Freigabe. Das ersetzt keine Wächter-Runde und wiederholt keine; es ist die Prüfung,
-  die dem Ziel entspricht.
-- **Verdikt:** `NACHARBEIT NÖTIG`/`ABLEHNUNG` ⇒ die nummerierten FIX-AUFTRÄGE abarbeiten und
-  erneut prüfen lassen — **maximal 2 Fix-Runden**, danach Eskalation an den Betreiber (offene
-  Befunde + Empfehlung). Kein `BESTANDEN` ohne `FREIGABE-EMPFEHLUNG`; das Verdikt wird als
-  Marker `.claude/waechter-verdikt.json` festgehalten (Anker des Stop-Hooks — Details im Skill).
-- **Unverändert:** Der Implementierer nimmt sich nie allein per eigener Zusammenfassung ab;
-  Override nur durch expliziten Betreiber-Satz, sichtbar ausgewiesen.
+- **Auf DEV, je Aufgabe, genau ein Reviewer.** Am Ende jeder Aufgabe (klein · standard ·
+  kritisch, §2) läuft **ein** Aufruf von `architecture-reviewer` im frischen Kontext, read-only,
+  mit Auftragskarte, Diff und Nachweisen (Skill `waechter`). **Kein zweiter Reviewer, nichts
+  parallel.** Sicherheitsfragen sind ein Abschnitt desselben Reviews.
+- **Eine Frage:** *Ist der Auftrag erfüllt und belegt?* Geprüft wird gegen die Kriterien der
+  Auftragskarte, nicht gegen den Geschmack des Reviewers. Verdikt `ERFÜLLT` oder
+  `NACHBESSERN` mit den **unerfüllten Kriterien**. Alles außerhalb der Kriterien und der vier
+  harten Stopps (Secret sichtbar · PROD ohne Freigabe · Unumkehrbares · Hook abgeschwächt) ist
+  ein **Hinweis**, kein Fix-Auftrag.
+- **Höchstens eine Nachbesserung.** Danach `ERFÜLLT` — oder die offenen Kriterien gehen mit
+  einer Empfehlung **als Nachricht an den Betreiber**, und die Aufgabe bleibt offen. Kein
+  drittes Review, kein Eintrag in `98`, kein eigenmächtiges Weiteriterieren.
+- **Vor PROD: einmal alles.** Über das Delta seit dem letzten PROD-Stand laufen Vollsuite
+  (Stufe L), Änderungsliste (§6 Schritt 1) und Zusammenfassung — **einmal**, als Grundlage des
+  `GO`. Das ist keine weitere Wächter-Runde.
+- **Marker:** Nach dem Verdikt schreibt der Implementierer `.claude/waechter-verdikt.json`
+  (Anker des Stop-Hooks, Formel im Skill), committet — und ändert danach nichts mehr.
+- **Unverändert:** Der Implementierer nimmt sich nie allein ab; Override nur durch expliziten
+  Betreiber-Satz, sichtbar ausgewiesen.
 
-*Auslöser (02.09.2026): In OneCampus lief ein Zweizeiler über einen Pull Request mit zwei
-Wächter-Runden, weil „nach jeder Code-Änderung“ wörtlich als „nach jedem Commit“ gelesen wurde —
-bei einem Branch, der nichts als DEV deployt. Die EHiP-Website arbeitete faktisch längst so, wie
-es hier steht. Dossier: `docs/03-entwicklungsstandard.md` §20/§21 der Zentrale.*
+*Auslöser (08.09.2026): Bis zu drei Reviewer parallel, Endlosschleifen bei Zweizeilern,
+Folgearbeiten in `98` geparkt — nichts davon stand als Regel; alles entstand aus §7-Reihenfolge,
+„zusätzlich security-reviewer“ und Fix-Aufträgen zu neun Dimensionen. Dossier:
+`docs/auftraege/arbeitsweise-alle-repos-2026-09-08.md` der Zentrale, §3.*
 
 ## §9 Kontext, Memory, Agenten
 
@@ -297,10 +315,11 @@ es hier steht. Dossier: `docs/03-entwicklungsstandard.md` §20/§21 der Zentrale
 | Unabhängige Prüfung | read-only Subagents |
 | Harte Verbote (git/DB/Secrets/destruktiv) | **PreToolUse-Hook + Permission-Deny** (`standards/settings/`) |
 | Delegation (§11) | Skill-/Auftragsdisziplin + Dossier-Pflicht (kein Hook — Urteilsfrage) |
-| Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert das Beenden mit **uncommitteten** Änderungen ohne Freigabe-Verdikt und das Committen nach einem nicht freigegebenen Review. **Der Wächter am Aufgabenende bei sauberem Baum ist regel-, nicht hookdurchgesetzt** — der Hook kennt keine Aufgabengrenze (v2.13, offener Punkt in der Zentrale) |
+| Abschluss-Gate (Wächter-Pflicht §8) | **Stop-Hook** (`stop-waechter-hook.sh`) — blockiert das Beenden mit **uncommitteten** Änderungen ohne Freigabe-Verdikt und das Committen nach einem nicht freigegebenen Review. Seit v2.14 ist der Wächter der letzte Schritt vor dem Commit — damit fällt die Aufgabengrenze mit dem Commit zusammen |
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
 | Grunddeklaration (Tier, Umgebungen, PROD-Branches) | **Guard D6** — fehlt sie, erscheint das im Verdikt und in den offenen Punkten |
-| Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code) |
+| Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code; `n/v` steht im Verdikt, nicht in `98` — v2.14) |
+| Erreichbarkeit aller Domänen und Berichtslücken | **Domänenwache der Zentrale** (`werkzeuge/domain-wache.sh` in `ocg-architekt`, GitHub Actions alle 30 Minuten, Issue `alarm`) + tägliche Morgenrunde an den Betreiber (v2.14) |
 | Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |
 | Rollout-Abnahme beim Verbraucher (§5) | **`agenten-inventur.sh`** je Maschine — Ausgabe mit Datum ins Server-Register |
 | Einheitlichkeit der Agenten-Maschinen | **`rules/agenten-arbeitsplatz.md`** (Soll A1–A8) + Abweichungsblock der Inventur |
@@ -352,3 +371,11 @@ Drei Punkte, die nicht verhandelbar sind:
 
 **Maschine vor Regel (§10):** Die Meldung gehört in einen Zeitplan des Projekts, nicht in
 die Erinnerung eines Menschen.
+
+**Die Zentrale misst selbst (v2.14, Betreiber 08.09.2026).** Berichte der Projekte ersetzen keine
+Messung: `plato.onecampusgroup.de` stand vom 22.08. bis 08.09.2026 mit 502, PLATO lieferte keinen
+Bericht, und die Lücke stand als Listenpunkt statt als Alarm. Seitdem misst die Zentrale jede
+Adresse aus `domains.conf` alle 30 Minuten von einem GitHub-Runner (Status, Antwortzeit,
+Zertifikat), schreibt `berichte/zentrale/`, öffnet bei Fehlern ein Issue `alarm` und meldet dem
+Betreiber jeden Morgen. **Jede neue Umgebung wird im selben Zug in `domains.conf` eingetragen** —
+eine Adresse, die dort fehlt, wird nicht bewacht.

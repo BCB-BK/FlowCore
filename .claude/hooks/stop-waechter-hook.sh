@@ -40,7 +40,7 @@ if [ -z "$DIRTY" ]; then
   # Blockieren nur, wenn NACH einem nicht freigegebenen Review committet wurde
   # (Marker nennt älteren HEAD und trägt keine Freigabe). Reverte/Nicht-Code → Durchlass.
   if [ "$MV" != "FREIGABE-EMPFEHLUNG" ] && [ -n "$MH" ] && [ "$MH" != "$HEAD" ]; then
-    echo "WÄCHTER-BLOCK: Es wurde committet, aber das letzte Wächter-Verdikt ($MV) ist keine FREIGABE-EMPFEHLUNG. Skill 'waechter' ausführen: Review-Kreislauf abschließen (max. 2 Fix-Runden, dann Eskalation an den Betreiber). Betreiber-Ausnahme: Datei .claude/WAECHTER-SKIP anlegen." >&2
+    echo "WÄCHTER-BLOCK: Es wurde committet, aber das letzte Wächter-Verdikt ($MV) ist keine FREIGABE-EMPFEHLUNG. Skill 'waechter' ausführen: ein Reviewer, eine Nachbesserung, dann Verdikt-Marker und Commit (v2.14). Betreiber-Ausnahme: Datei .claude/WAECHTER-SKIP anlegen." >&2
     exit 2
   fi
   exit 0
@@ -56,5 +56,5 @@ if [ -f "$MARKER" ]; then
   if [ "$MV" = "FREIGABE-EMPFEHLUNG" ] && [ "$MD" = "$CUR_HASH" ]; then exit 0; fi
 fi
 
-echo "WÄCHTER-BLOCK: Diese Session hat Code verändert, aber es liegt kein frisches Wächter-Verdikt mit FREIGABE-EMPFEHLUNG für den aktuellen Stand vor. Jetzt den Skill 'waechter' ausführen: (1) Diff+Auftrag+Nachweise an den Subagent architecture-reviewer (bei Security-Bezug zusätzlich security-reviewer) übergeben, (2) FIX-AUFTRÄGE abarbeiten (max. 2 Runden, dann Eskalation an den Betreiber), (3) bei Freigabe .claude/waechter-verdikt.json mit head/diffHash/verdict schreiben — die exakte diffHash-Formel steht im Skill waechter (Abschnitt Verdikt-Marker). Betreiber-Ausnahme: Datei .claude/WAECHTER-SKIP anlegen (gilt einmal)." >&2
+echo "WÄCHTER-BLOCK: Diese Session hat Code verändert, aber es liegt kein frisches Wächter-Verdikt mit FREIGABE-EMPFEHLUNG für den aktuellen Stand vor. Jetzt den Skill 'waechter' ausführen: (1) Auftragskarte+Diff+Nachweise an den EINEN Subagent architecture-reviewer übergeben (kein zweiter Reviewer), (2) unerfüllte Kriterien beheben (höchstens eine Nachbesserung, dann offene Kriterien an den Betreiber), (3) bei ERFÜLLT .claude/waechter-verdikt.json mit head/diffHash/verdict schreiben — die exakte diffHash-Formel steht im Skill waechter (Abschnitt Verdikt-Marker). Betreiber-Ausnahme: Datei .claude/WAECHTER-SKIP anlegen (gilt einmal)." >&2
 exit 2
