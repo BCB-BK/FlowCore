@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.14)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.15)
 
-> **Version 2.14 · 08.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.15 · 08.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -24,6 +24,12 @@
   Alternativen höchstens zwei Optionen gegenüberstellen. Entscheidungsvorlagen für den
   technisch versierten Nicht-Programmierer: Was wird entschieden · warum nötig · Empfehlung ·
   Alternativen · Auswirkung auf Betrieb/Kosten/Sicherheit/Zukunft · reversibel? · Folgen.
+- **Eine Entscheidung wird zum Anklicken vorgelegt, nicht in Fließtext versteckt (v2.15,
+  Betreiber-Vorgabe 08.09.2026: „ich sehe hier im chat keine fragen mit optionen — so wie wir es
+  vereinbart hatten. zum anklicken“).** Wo die Oberfläche eine Auswahlfrage anbietet, wird sie
+  benutzt: Frage · zwei bis vier Optionen · Empfehlung zuerst und als solche markiert · je Option
+  in einem Satz, was sie bedeutet und was sie kostet. Eine Entscheidung, die als Absatz am Ende
+  einer langen Antwort steht, ist keine Vorlage — sie ist eine Fußnote und bleibt liegen.
 
 ## §2 Auftragsweg (Definition of Ready)
 
@@ -277,6 +283,16 @@ Folgearbeiten in `98` geparkt — nichts davon stand als Regel; alles entstand a
 
 ## §9 Kontext, Memory, Agenten
 
+- **Zuerst: Wo läuft diese Sitzung? (v2.15)** Eine Sitzung von claude.ai/code läuft **immer** in
+  einer Anthropic-Cloud-VM und erreicht weder unsere Server noch unsere Domänen; nur die CLI auf
+  der Maschine (im Browser sichtbar über Remote Control) arbeitet dort. Selbst gehostete
+  Umgebungen, die das ändern würden, gibt es nur auf Team-/Enterprise-Plänen. Der SessionStart-Hook
+  `wo-laeuft-diese-sitzung.sh` schreibt die Antwort in die erste Zeile jeder Sitzung. **In einer
+  Cloud-Sitzung sind alle Aussagen über einen Server Hypothesen** (§5) — sie werden gekennzeichnet,
+  bis eine Sitzung auf der Maschine sie bestätigt. Dossier: `docs/uebersichten/wo-laeuft-der-agent.md`
+  der Zentrale. *(Auslöser 08.09.2026: „Claude läuft noch immer nicht überall sauber auf dem
+  Server!“ — die Ursache war nie eine Fehlkonfiguration, sondern zwei Produkte, die im Browser
+  gleich aussehen. Vier Maschinen-Inventuren hatten die Frage nie gestellt.)*
 - Alles, was die nächste Session braucht, steht in **versionierten Dateien** — nie nur im Chat.
   Vor `/clear`/Sessionwechsel: Ziel, Stand, Änderungen, Nachweise, offene Punkte, nächster
   Schritt ins Repo (`98-OFFENE-BAUSTELLEN.md` / `99-SESSION-LEARNINGS.md`), dann Reset anbieten.
@@ -319,6 +335,7 @@ Folgearbeiten in `98` geparkt — nichts davon stand als Regel; alles entstand a
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
 | Grunddeklaration (Tier, Umgebungen, PROD-Branches) | **Guard D6** — fehlt sie, erscheint das im Verdikt und in den offenen Punkten |
 | Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code; `n/v` steht im Verdikt, nicht in `98` — v2.14) |
+| Ort der Sitzung (Cloud oder Maschine) | **SessionStart-Hook** `wo-laeuft-diese-sitzung.sh` — erkennt die Cloud-Sandbox an der Laufzeitangabe und zwei weiteren Merkmalen und sagt es in der ersten Zeile (v2.15) |
 | Erreichbarkeit aller Domänen und Berichtslücken | **Domänenwache der Zentrale** (`werkzeuge/domain-wache.sh` in `ocg-architekt`, GitHub Actions alle 30 Minuten, Issue `alarm`) + tägliche Morgenrunde an den Betreiber (v2.14) |
 | Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |
 | Rollout-Abnahme beim Verbraucher (§5) | **`agenten-inventur.sh`** je Maschine — Ausgabe mit Datum ins Server-Register |

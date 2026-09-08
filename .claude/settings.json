@@ -37,6 +37,16 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wo-laeuft-diese-sitzung.sh"
+          }
+        ]
+      }
     ]
   }
 }
