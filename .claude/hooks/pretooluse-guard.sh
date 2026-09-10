@@ -146,6 +146,16 @@ prod_muster() {
           $1 ~ /^(PFAD|DB|HOST|DIENST)$/ && $2 != "" { print $2 }''' "$PROD_CONF")"
     if [ -n "$gefunden" ]; then
       printf '%s\n' "$gefunden"
+      # Die Deklaration ERWEITERT die Standardmuster, sie ersetzt sie nicht
+      # (korrigiert 10.09.2026). Vorher galt: sobald ein Repo eigene Werte hatte,
+      # fielen die Standardmuster weg — und damit alles, was die Deklaration nicht
+      # aufzaehlt. Gemessen an FlowCore: deklariert war `PFAD /var/www/flowcore-prod`,
+      # geaendert wurde `/etc/nginx/sites-available/flowcore-prod`, also die
+      # Konfiguration, die die Produktion ueberhaupt erst ausliefert. Eine
+      # Deklaration ist nie vollstaendig — vhosts, Units, Zertifikate und
+      # Sicherungskopien liegen ausserhalb des Anwendungspfads. `KEINE` bleibt der
+      # einzige Weg, den Schutz abzuschalten.
+      STANDARDMUSTER
     else
       echo "GUARD-HINWEIS: .claude/prod-schutz.conf enthaelt keine Wertzeile — es gelten die konservativen Standardmuster. Bitte die PROD-Ziele dieses Repos eintragen (Vorlage: standards/prod-schutz/ in ocg-architekt)." >&2
       STANDARDMUSTER
@@ -156,111 +166,184 @@ prod_muster() {
 }
 
 MUSTER="$(prod_muster)"
-if [ -n "$MUSTER" ] && ! printf '%s' "$MUSTER" | grep -qx '__KEINE__'; then
-  # Trifft das Kommando ueberhaupt ein PROD-Ziel?
-  #
-  # MIT WORTGRENZEN, und das ist keine Feinheit, sondern die Bedingung dafuer, dass
-  # DEV frei bleibt: Ohne sie traefe `HOST ehip.eu` auch `dev.ehip.eu` und
-  # `www2.ehip.eu`, `DB aos_main_contao` auch `aos_main_contao_dev`. Die Anordnung
-  # "Vollzugriff auf DEV" waere damit ins Gegenteil verkehrt — der Guard wuerde
-  # genau die Umgebung sperren, auf der frei gearbeitet werden soll.
-  # Erlaubt als Grenze ist alles, was nicht Teil eines Namens sein kann; `.`, `-`
-  # und `_` gehoeren ausdruecklich NICHT dazu.
+
+# --- Ein Kommando, viele Kommandos (v2.16, korrigiert 10.09.2026) ------------
+# Die Pruefung lief bisher ueber den GESAMTEN Kommandostring. Bei einem
+# zusammengesetzten Kommando fuehrt das in die Irre, und zwar messbar:
+#
+#   sudo -n cp /etc/nginx/sites-available/flowcore-prod \
+#              /etc/nginx/sites-available/flowcore-prod.vor-cache | tail -1 \
+#     && echo "Sicherung ok"
+#
+# Die Richtungspruefung von `cp` nimmt "das letzte Argument". Ueber den ganzen
+# String ist das `ok"` — aus dem `echo` am Ende. Ergebnis: Das Umschreiben der
+# nginx-Konfiguration, die die Produktion ausliefert, lief ungebremst durch
+# (gemessen 10.09.2026 am realen Kommando aus der FlowCore-Sitzung).
+#
+# Deshalb wird an den Shell-Trennern zerlegt und JEDES Teilkommando einzeln
+# geprueft — dieselbe Zerlegung, die Claude Code fuer seine eigenen Regeln
+# vornimmt. Das Gesamtkommando bleibt ZUSAETZLICH in der Pruefung: Zerlegen
+# darf Treffer nur hinzufuegen, nie welche verlieren (fail-closed).
+pruefe_teil() {
+  TEIL="$1"
+  [ -n "$TEIL" ] || return 0
   TRIFFT_PROD=0
   while IFS= read -r ziel; do
-    [ -z "$ziel" ] && continue
-    if printf '%s' "$CMD" | grep -qE -- "(^|[^A-Za-z0-9._-])${ziel}([^A-Za-z0-9._-]|\$)"; then
-      TRIFFT_PROD=1; break
-    fi
+  [ -z "$ziel" ] && continue
+  if printf '%s' "$TEIL" | grep -qE -- "(^|[^A-Za-z0-9._-])${ziel}([^A-Za-z0-9._-]|\$)"; then
+    TRIFFT_PROD=1; break
+  fi
   done <<EOF
 $MUSTER
 EOF
 
-  if [ "$TRIFFT_PROD" = "1" ]; then
-    # Schreibende Muster. Bewusst eng gefasst: Was hier nicht steht, laeuft durch.
-    SCHREIBEND=""
-    printf '%s' "$CMD" | grep -qiE '\b(insert[[:space:]]+into|update[[:space:]]+[a-z_"]+[[:space:]]+set|delete[[:space:]]+from|alter[[:space:]]+(table|database)|create[[:space:]]+(table|database|index)|grant|revoke)\b' \
-      && SCHREIBEND="schreibendes SQL"
-    # Kopierwerkzeuge: Bei `cp`, `rsync` und `install` entscheidet das LETZTE
-    # Argument, ob geschrieben wird. `cp <prod>/datei /tmp/` ist eine Analyse und
-    # laeuft durch; `cp /tmp/datei <prod>/` ist ein PROD-Schreibzugriff. Ohne diese
-    # Unterscheidung waere jedes Herauskopieren zur Untersuchung gesperrt — dieselbe
-    # Reibung wie bei der Umleitung nach /tmp (Waechter-Hinweis 10.09.2026).
-    if printf '%s' "$CMD" | grep -qE '(^|[^a-zA-Z0-9_-])(cp|rsync|install)[[:space:]]'; then
-      letztes="$(printf '%s' "$CMD" | awk '{ for (i = NF; i >= 1; i--) if ($i !~ /^-/) { print $i; exit } }' || true)"
-      if [ -n "$letztes" ]; then
-        while IFS= read -r m; do
-          [ -z "$m" ] && continue
-          printf '%s' "$letztes" | grep -qE -- "(^|[^A-Za-z0-9._-])${m}([^A-Za-z0-9._-]|\$)" \
-            && { SCHREIBEND="Kopieren in ein PROD-Ziel"; break; }
-        done <<KOPIERENDE
+if [ "$TRIFFT_PROD" = "1" ]; then
+  # Schreibende Muster. Bewusst eng gefasst: Was hier nicht steht, laeuft durch.
+  SCHREIBEND=""
+  printf '%s' "$TEIL" | grep -qiE '\b(insert[[:space:]]+into|update[[:space:]]+[a-z_"]+[[:space:]]+set|delete[[:space:]]+from|alter[[:space:]]+(table|database)|create[[:space:]]+(table|database|index)|grant|revoke)\b' \
+    && SCHREIBEND="schreibendes SQL"
+  # Kopierwerkzeuge: Bei `cp`, `rsync` und `install` entscheidet das LETZTE
+  # Argument, ob geschrieben wird. `cp <prod>/datei /tmp/` ist eine Analyse und
+  # laeuft durch; `cp /tmp/datei <prod>/` ist ein PROD-Schreibzugriff. Ohne diese
+  # Unterscheidung waere jedes Herauskopieren zur Untersuchung gesperrt — dieselbe
+  # Reibung wie bei der Umleitung nach /tmp (Waechter-Hinweis 10.09.2026).
+  if printf '%s' "$TEIL" | grep -qE '(^|[^a-zA-Z0-9_-])(cp|rsync|install)[[:space:]]'; then
+    # Umleitungen sind keine Argumente. `cp a b 2>&1` endete sonst bei `2>&1`
+  # statt bei `b` — und genau daran lief das nginx-Kommando aus der
+  # FlowCore-Sitzung vorbei (gemessen 10.09.2026).
+  # `cp -t <ziel> <quelle>` und `install -t` drehen die Reihenfolge um: Das Ziel
+  # steht als Optionsargument vorn, das letzte Argument ist die QUELLE. Die
+  # Heuristik "letztes Argument ist das Ziel" laeuft daran vorbei — in HEAD wie in
+  # der ersten Fassung dieser Korrektur (Waechter-Hinweis 10.09.2026).
+  #
+  # NUR fuer cp und install. `rsync -t` ist etwas voellig anderes: dort heisst -t
+  # `--times` und nimmt KEIN Argument. Wer die Option mitliest, haelt die QUELLE
+  # fuer das Ziel und sperrt damit `rsync -t <prod>/app.js /tmp/` — reines Lesen
+  # von PROD, also genau das, was frei sein muss. Dieselbe Fehlerklasse wie K5,
+  # nur an einer anderen Option (Waechter-Befund Runde 2, 10.09.2026).
+  letztes=""
+  if printf '%s' "$TEIL" | grep -qE '(^|[^a-zA-Z0-9_-])(cp|install)[[:space:]]'; then
+    letztes="$(printf '%s' "$TEIL" | grep -oE -- '-(-target-directory=|t[[:space:]]+)[^[:space:]]+' \
+      | sed -E 's/^--target-directory=|^-t[[:space:]]+//' | head -1 || true)"
+  fi
+  if [ -z "$letztes" ]; then
+    # Ein angehaengter Kommentar ist kein Argument. `cp neu.js <prod>/app.js
+    # # vor dem Deploy` galt sonst als "Ziel = Deploy" und lief durch — die
+    # billigste denkbare Umgehung der PROD-Sperre (Waechter-Befund 10.09.2026,
+    # G1). Abgeschnitten wird nur fuer die ZIELermittlung; fuer die Frage, ob das
+    # Kommando ueberhaupt ein PROD-Ziel beruehrt, bleibt der Text vollstaendig —
+    # ein Kommentar, der einen PROD-Namen nennt, macht die Pruefung strenger,
+    # nicht laxer.
+    letztes="$(printf '%s' "$TEIL" \
+      | sed -E 's/(^|[[:space:]])#.*$//' \
+      | sed -E 's/[0-9]*(>>?|<)[[:space:]]*&?[^[:space:]]*//g' \
+      | awk '{ for (i = NF; i >= 1; i--) if ($i !~ /^-/) { print $i; exit } }' || true)"
+  fi
+    if [ -n "$letztes" ]; then
+      while IFS= read -r m; do
+        [ -z "$m" ] && continue
+        # Beim ZIEL ist die hintere Grenze um EIN Zeichen weiter als sonst: Der
+        # Punkt zaehlt hier als Grenze, `_` und `-` nicht. Das trennt die beiden
+        # Faelle, die sonst kollidieren:
+        #   `<prod>/app.js.bak`, `<prod>.vor-cache` -> Punkt  -> PROD, blockt
+        #   `/tmp/ehip_main_contao_dev.sql`         -> `_`    -> DEV, laeuft
+        # Ohne den Punkt fiele jede Sicherungskopie neben der PROD-Datei durch;
+        # ohne die Grenze traefe jeder DEV-Name, der einen PROD-Namen verlaengert
+        # — und `ehip_main_contao_dev` neben `ehip_main_contao` steht so in den
+        # mitgelieferten Konfigurationen. Beide Richtungen sind Waechter-Befunde
+        # vom 10.09.2026 (Suffix-Sicherung bzw. K5).
+        printf '%s' "$letztes" | grep -qE -- "(^|[^A-Za-z0-9._-])${m}([^A-Za-z0-9_-]|\$)" \
+          && { SCHREIBEND="Kopieren in ein PROD-Ziel"; break; }
+      done <<KOPIERENDE
 $MUSTER
 KOPIERENDE
-      fi
-    fi
-    # Loeschen, Verschieben und Rechteaenderung treffen IMMER das genannte Ziel —
-    # hier gibt es keine harmlose Richtung.
-    printf '%s' "$CMD" | grep -qE '(^|[^a-zA-Z0-9_-])(rm|mv|chmod|chown|truncate|dd)[[:space:]]' \
-      && SCHREIBEND="${SCHREIBEND:-Dateiaenderung}"
-    printf '%s' "$CMD" | grep -qE 'sed[[:space:]]+(-[a-zA-Z]*i|--in-place)' \
-      && SCHREIBEND="${SCHREIBEND:-Textersetzung in Datei (sed -i)}"
-    # Umleitung und tee: NUR sperren, wenn das ZIEL ein PROD-Ziel ist. Sonst
-    # blockiert eine Analyse wie `grep /var/www/x-prod/log > /tmp/auswertung`
-    # — Lesen von PROD, Schreiben nach /tmp. Genau die Reibung, die diese
-    # Fassung abschaffen soll (Waechter-Hinweis 10.09.2026).
-    # `|| true`: grep ohne Treffer liefert Exit 1 — unter `set -e` bricht die
-    # Kommandosubstitution sonst das ganze Skript ab, und ein abgebrochener Guard
-    # prueft gar nichts mehr. (Gefunden in der Gegenprobe 10.09.2026: drei Faelle
-    # endeten mit Exit 1 statt 0 oder 2.)
-    ZIELE="$(printf '%s' "$CMD" \
-      | grep -oE '(>>?[[:space:]]*|[[:space:]]tee[[:space:]]+(-a[[:space:]]+)?)[^[:space:];|&)]+' 2>/dev/null \
-      | sed -E 's/^(>>?[[:space:]]*|[[:space:]]tee[[:space:]]+(-a[[:space:]]+)?)//' || true)"
-    if [ -z "$SCHREIBEND" ] && [ -n "$ZIELE" ]; then
-      while IFS= read -r ziel; do
-        [ -z "$ziel" ] && continue
-        while IFS= read -r m; do
-          [ -z "$m" ] && continue
-          printf '%s' "$ziel" | grep -qE -- "$m" && { SCHREIBEND="Umleitung in eine PROD-Datei"; break; }
-        done <<MUSTERENDE
-$MUSTER
-MUSTERENDE
-        [ -n "$SCHREIBEND" ] && break
-      done <<ZIELENDE
-$ZIELE
-ZIELENDE
-    fi
-    printf '%s' "$CMD" | grep -qE 'systemctl[[:space:]]+(restart|stop|start|reload|disable|enable)' \
-      && SCHREIBEND="${SCHREIBEND:-Dienst neu starten oder abschalten}"
-    # Zwei Bedingungen statt eines Musters: `docker compose -f <datei> restart`
-    # haelt das Verb nicht direkt hinter `compose` — das alte Muster lief daran
-    # vorbei (Waechter-Befund 10.09.2026, K3).
-    if printf '%s' "$CMD" | grep -qE '(^|[|;&[:space:]])docker([[:space:]]+compose)?[[:space:]]' \
-       && printf '%s' "$CMD" | grep -qE '[[:space:]](up|down|restart|stop|rm|kill)([[:space:]]|$)'; then
-      SCHREIBEND="${SCHREIBEND:-Container neu starten oder entfernen}"
-    fi
-    printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(checkout|switch|pull|merge|reset|apply|restore)' \
-      && SCHREIBEND="${SCHREIBEND:-Arbeitsbaum aendern}"
-    # Schreibende HTTP-Methoden gegen einen deklarierten PROD-HOST. Ohne diese
-    # Zeile liefe `curl -X POST https://prod/api` durch, solange keine Umleitung
-    # im Kommando steht (Waechter-Hinweis 10.09.2026).
-    printf '%s' "$CMD" | grep -qE '(-X|--request)[[:space:]]+(POST|PUT|PATCH|DELETE)' \
-      && SCHREIBEND="${SCHREIBEND:-schreibender HTTP-Aufruf}"
-    # Weitere Schreibwege, die der Waechter am 10.09.2026 als offen benannt hat.
-    printf '%s' "$CMD" | grep -qE '(psql|mysql)[^|;&]*<[[:space:]]*[^[:space:];|&]+' \
-      && SCHREIBEND="${SCHREIBEND:-SQL-Datei einspielen}"
-
-    if [ -n "$SCHREIBEND" ]; then
-      if [ -f "$ALLOW_PROD" ]; then
-        mkdir -p "$(pwd)/.claude" 2>/dev/null || true
-        printf '%s | %s | %s\n' "$(date -Iseconds)" "$SCHREIBEND" "$CMD" \
-          >> "$(pwd)/.claude/prod-zugriffe.log" 2>/dev/null || true
-        echo "PROD-ZUGRIFF (freigegeben durch .claude/ALLOW-PROD): $SCHREIBEND — protokolliert in .claude/prod-zugriffe.log" >&2
-      else
-        echo "GUARD-BLOCK: $SCHREIBEND an einem PROD-Ziel — laut .claude/prod-schutz.conf ist das Produktion. Lesen ist frei; Schreiben braucht nach Kernvertrag §6 eine ausdrueckliche Anweisung des Betreibers. Freigabeweg: .claude/ALLOW-PROD anlegen (erste Zeile: Auftrag und Datum), gilt fuer die Sitzung, jede Aktion wird protokolliert, nach der Aufgabe loeschen." >&2
-        exit 2
-      fi
     fi
   fi
+  # Loeschen, Verschieben und Rechteaenderung treffen IMMER das genannte Ziel —
+  # hier gibt es keine harmlose Richtung.
+  printf '%s' "$TEIL" | grep -qE '(^|[^a-zA-Z0-9_-])(rm|mv|chmod|chown|truncate|dd)[[:space:]]' \
+    && SCHREIBEND="${SCHREIBEND:-Dateiaenderung}"
+  printf '%s' "$TEIL" | grep -qE 'sed[[:space:]]+(-[a-zA-Z]*i|--in-place)' \
+    && SCHREIBEND="${SCHREIBEND:-Textersetzung in Datei (sed -i)}"
+  # Umleitung und tee: NUR sperren, wenn das ZIEL ein PROD-Ziel ist. Sonst
+  # blockiert eine Analyse wie `grep /var/www/x-prod/log > /tmp/auswertung`
+  # — Lesen von PROD, Schreiben nach /tmp. Genau die Reibung, die diese
+  # Fassung abschaffen soll (Waechter-Hinweis 10.09.2026).
+  # `|| true`: grep ohne Treffer liefert Exit 1 — unter `set -e` bricht die
+  # Kommandosubstitution sonst das ganze Skript ab, und ein abgebrochener Guard
+  # prueft gar nichts mehr. (Gefunden in der Gegenprobe 10.09.2026: drei Faelle
+  # endeten mit Exit 1 statt 0 oder 2.)
+  ZIELE="$(printf '%s' "$TEIL" \
+    | grep -oE '(>>?[[:space:]]*|[[:space:]]tee[[:space:]]+(-a[[:space:]]+)?)[^[:space:];|&)]+' 2>/dev/null \
+    | sed -E 's/^(>>?[[:space:]]*|[[:space:]]tee[[:space:]]+(-a[[:space:]]+)?)//' || true)"
+  if [ -z "$SCHREIBEND" ] && [ -n "$ZIELE" ]; then
+    while IFS= read -r ziel; do
+      [ -z "$ziel" ] && continue
+      while IFS= read -r m; do
+        [ -z "$m" ] && continue
+        printf '%s' "$ziel" | grep -qE -- "$m" && { SCHREIBEND="Umleitung in eine PROD-Datei"; break; }
+      done <<MUSTERENDE
+$MUSTER
+MUSTERENDE
+      [ -n "$SCHREIBEND" ] && break
+    done <<ZIELENDE
+$ZIELE
+ZIELENDE
+  fi
+  printf '%s' "$TEIL" | grep -qE 'systemctl[[:space:]]+(restart|stop|start|reload|disable|enable)' \
+    && SCHREIBEND="${SCHREIBEND:-Dienst neu starten oder abschalten}"
+  # Zwei Bedingungen statt eines Musters: `docker compose -f <datei> restart`
+  # haelt das Verb nicht direkt hinter `compose` — das alte Muster lief daran
+  # vorbei (Waechter-Befund 10.09.2026, K3).
+  if printf '%s' "$TEIL" | grep -qE '(^|[|;&[:space:]])docker([[:space:]]+compose)?[[:space:]]' \
+     && printf '%s' "$TEIL" | grep -qE '[[:space:]](up|down|restart|stop|rm|kill)([[:space:]]|$)'; then
+    SCHREIBEND="${SCHREIBEND:-Container neu starten oder entfernen}"
+  fi
+  printf '%s' "$TEIL" | grep -qE 'git[[:space:]]+(checkout|switch|pull|merge|reset|apply|restore)' \
+    && SCHREIBEND="${SCHREIBEND:-Arbeitsbaum aendern}"
+  # Schreibende HTTP-Methoden gegen einen deklarierten PROD-HOST. Ohne diese
+  # Zeile liefe `curl -X POST https://prod/api` durch, solange keine Umleitung
+  # im Kommando steht (Waechter-Hinweis 10.09.2026).
+  printf '%s' "$TEIL" | grep -qE '(-X|--request)[[:space:]]+(POST|PUT|PATCH|DELETE)' \
+    && SCHREIBEND="${SCHREIBEND:-schreibender HTTP-Aufruf}"
+  # Weitere Schreibwege, die der Waechter am 10.09.2026 als offen benannt hat.
+  printf '%s' "$TEIL" | grep -qE '(psql|mysql)[^|;&]*<[[:space:]]*[^[:space:];|&]+' \
+    && SCHREIBEND="${SCHREIBEND:-SQL-Datei einspielen}"
+
+  if [ -n "$SCHREIBEND" ]; then
+    if [ -f "$ALLOW_PROD" ]; then
+      mkdir -p "$(pwd)/.claude" 2>/dev/null || true
+      printf '%s | %s | %s\n' "$(date -Iseconds)" "$SCHREIBEND" "$TEIL" \
+        >> "$(pwd)/.claude/prod-zugriffe.log" 2>/dev/null || true
+      echo "PROD-ZUGRIFF (freigegeben durch .claude/ALLOW-PROD): $SCHREIBEND — protokolliert in .claude/prod-zugriffe.log" >&2
+    else
+      echo "GUARD-BLOCK: $SCHREIBEND an einem PROD-Ziel — laut .claude/prod-schutz.conf ist das Produktion. Lesen ist frei; Schreiben braucht nach Kernvertrag §6 eine ausdrueckliche Anweisung des Betreibers. Freigabeweg: .claude/ALLOW-PROD anlegen (erste Zeile: Auftrag und Datum), gilt fuer die Sitzung, jede Aktion wird protokolliert, nach der Aufgabe loeschen." >&2
+      exit 2
+    fi
+  fi
+  fi
+}
+
+if [ -n "$MUSTER" ] && ! printf '%s' "$MUSTER" | grep -qx '__KEINE__'; then
+  pruefe_teil "$CMD"
+  # Die Schleife laeuft hinter einer Pipe, also in einer Subshell — ihr `exit 2`
+  # beendet nur diese. Deshalb wird der Ausstieg am Exit-Code der Gruppe
+  # abgefangen und hier wiederholt. Ohne das liefe ein geblocktes Teilkommando
+  # durch, und die Zerlegung waere schlimmer als keine.
+  printf '%s' "$CMD" | tr '\n' ';' | sed -E 's/(\|\||&&|\|&|[;|&])/\n/g' | {
+    # `|| [ -n "$teil" ]` ist hier kein Schoenheitsfehler, sondern die halbe
+    # Sperre: Die Eingabe endet OHNE Zeilenumbruch, `read` liefert dafuer Exit 1,
+    # und der Rumpf lief fuer das LETZTE Segment nie. Damit war genau der Fall
+    # blind, fuer den die Zerlegung gebaut wurde — ein angehaengter Kommentar
+    # genuegte: `cp neu.js /var/www/<prod>/app.js # vor dem Deploy` kam durch,
+    # weil die Gesamtpruefung `Deploy` fuer das Kopierziel hielt und die Schleife
+    # das einzige (= letzte) Segment nie ansah. (Waechter-Befund 10.09.2026, K6.)
+    while IFS= read -r teil || [ -n "$teil" ]; do
+      teil="$(printf '%s' "$teil" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+      [ -z "$teil" ] && continue
+      pruefe_teil "$teil"
+    done
+  } || exit 2
 fi
 
 echo "$CMD" | grep -qiE '\b(drop\s+(database|table|schema)|truncate\s+table)\b' && block "destruktives SQL (DROP/TRUNCATE)"
