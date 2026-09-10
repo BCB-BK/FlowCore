@@ -46,11 +46,11 @@ import {
   notifyWorkingCopyPublished,
 } from "../services/notification.service";
 import {
-  ApproveRevisionBody,
+  ApproveWorkingCopyBody,
   CancelWorkingCopyBody,
   PublishWorkingCopyBody,
-  RejectRevisionBody,
-  SubmitForReviewBody,
+  ReturnWorkingCopyForChangesBody,
+  SubmitWorkingCopyBody,
   UpdateWorkingCopyBody,
 } from "@workspace/api-zod";
 import { containsAgentMetadataKeys } from "../lib/agent-metadata";
@@ -232,7 +232,13 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcOwnerOrPermission("submit_working_copy"),
-  validateBody(SubmitForReviewBody),
+  // Schema der EIGENEN Operation (submitWorkingCopy). Vorher hing hier das
+  // der Revisions-Operation: es kennt `reviewerId` und `comment`, aber nicht
+  // `changeType` und `changeSummary` — genau die Felder, die diese Route
+  // entgegennimmt. Weil `validateBody` zusammenfuehrt statt zu ersetzen und
+  // alle Felder optional sind, fiel es nicht auf: `changeType` lief
+  // vollstaendig ungeprueft durch, ein unsinniger Wert waere angekommen.
+  validateBody(SubmitWorkingCopyBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -271,7 +277,7 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcPermission("review_working_copy"),
-  validateBody(RejectRevisionBody),
+  validateBody(ReturnWorkingCopyForChangesBody),
   async (req, res) => {
     try {
       const id = req.params.id as string;
@@ -305,7 +311,11 @@ router.post(
   requireAuth,
   loadWorkingCopy,
   requireWcPermission("review_working_copy"),
-  validateBody(ApproveRevisionBody),
+  // Vorher hing hier das Schema der Revisions-Freigabe. Jenes traegt zusaetzlich
+  // `nextReviewDate: zod.date()` — ein echtes Date-Objekt, das durch JSON
+  // nicht transportierbar ist. Heute schickt die Oberflaeche das Feld nicht,
+  // also fiel nichts auf; wer es ergaenzt haette, waere auf 400 gelaufen.
+  validateBody(ApproveWorkingCopyBody),
   async (req, res) => {
     const id = req.params.id as string;
     const actorId = req.user!.principalId;
