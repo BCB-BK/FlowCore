@@ -97,3 +97,16 @@ export function isRichTextEmpty(value: unknown): boolean {
   if (value.trim().length === 0) return true;
   return htmlToPlainText(value).trim().length === 0;
 }
+
+// HTML -> TipTap/ProseMirror (fuer structuredFields._editorContent).
+// Liegt in einer eigenen Datei, weil es ein Wandler ist und keine
+// Textabfrage — hier nur durchgereicht.
+export {
+  htmlToTiptapJson,
+  parseInlineContent,
+  parseListItems,
+  parseHtmlTable,
+  decodeEntities,
+  stripTags,
+} from "./html-to-tiptap";
+export type { TiptapNode, TiptapMark } from "./html-to-tiptap";

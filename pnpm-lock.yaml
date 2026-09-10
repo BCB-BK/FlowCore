@@ -232,6 +232,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
+      markdown-it:
+        specifier: ^14.1.2
+        version: 14.3.0
       multer:
         specifier: ^2.2.0
         version: 2.2.0
@@ -263,6 +266,9 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
+      '@types/markdown-it':
+        specifier: ^14.1.2
+        version: 14.1.2
       '@types/multer':
         specifier: ^2.1.0
         version: 2.1.0
@@ -956,6 +962,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../lib/db
+      '@workspace/shared':
+        specifier: workspace:*
+        version: link:../lib/shared
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@types/pg@8.18.0)(pg@8.20.0)
@@ -3235,6 +3244,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
