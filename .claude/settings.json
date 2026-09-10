@@ -14,7 +14,18 @@
       "Read(.env.*)",
       "Read(**/.env)",
       "Read(**/.env.*)"
-    ]
+    ],
+    "allow": [
+      "Bash(*)",
+      "Read(**)",
+      "Edit(**)",
+      "Write(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "WebFetch(*)",
+      "WebSearch(*)"
+    ],
+    "additionalDirectories": []
   },
   "hooks": {
     "PreToolUse": [

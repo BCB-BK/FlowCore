@@ -11,7 +11,46 @@
 # =============================================================================
 set -euo pipefail
 INPUT="$(cat)"
-CMD="$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
+CMD_ROH="$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
+
+# --- Heredoc-Inhalte sind Daten, nicht Kommandos (v2.16) --------------------
+# Wer eine Konfigurationsdatei schreibt, die Sperrmuster BENENNT, loeste bisher
+# einen Fehlalarm aus: `cat > settings.json <<EOF ... "git push --force" ... EOF`
+# wurde blockiert, obwohl nichts ausgefuehrt wird. Dieselbe Fehlerklasse wie ein
+# Wachalarm auf der falschen Adresse — und sie kostet genau die Reibung, die
+# diese Fassung abschaffen soll. (Aufgetreten 10.09.2026 beim Schreiben der
+# neuen settings-Vorlage: der Guard blockierte sein eigenes Regelwerk.)
+#
+# Ausgeklammert wird der Rumpf NUR, wenn das Kommando vor dem Heredoc in eine
+# DATEI schreibt (cat/tee/Umleitung). Geht der Heredoc an einen Interpreter
+# (bash, sh, python, psql ...), bleibt er vollstaendig in der Pruefung — dort
+# ist er auszufuehrender Code, keine Datei.
+CMD="$(printf '%s' "$CMD_ROH" | awk '
+  BEGIN { in_h = 0 }
+  in_h == 1 { s = $0; sub(/^[ \t]+/, "", s); if (s == ende) { in_h = 0 } next }
+  {
+    zeile = $0
+    if (match(zeile, /<<-?[ ]*[A-Za-z_'"'"'"][A-Za-z0-9_'"'"'"]*/)) {
+      kopf = substr(zeile, 1, RSTART - 1)
+      rest = substr(zeile, RSTART + RLENGTH)
+      # Der ZEILENREST hinter der Marke gehoert zur Pruefung — dort steht bei
+      # `cat <<EOF | bash` der Interpreter und bei `cat <<EOF > ziel && kommando`
+      # das eigentliche Kommando. Ihn wegzuwerfen war eine Luecke, durch die jede
+      # Sperre umgangen werden konnte (Waechter-Befund 10.09.2026, K2/K7).
+      ohne_marke = kopf rest
+      schreibt = (ohne_marke ~ /(^|[|;&[:space:]])(cat|tee)([[:space:]]|$)/) || (ohne_marke ~ />[[:space:]]*[^&[:space:]]/)
+      interpreter = (ohne_marke ~ /(^|[|;&[:space:]])(bash|sh|zsh|python3?|perl|ruby|node|psql|mysql)([[:space:]]|$)/)
+      if (schreibt && !interpreter) {
+        marke = substr(zeile, RSTART, RLENGTH)
+        sub(/^<<-?[ ]*/, "", marke); gsub(/['"'"'"]/, "", marke)
+        ende = marke; in_h = 1
+        print ohne_marke
+        next
+      }
+    }
+    print zeile
+  }')"
+[ -z "$CMD" ] && CMD="$CMD_ROH"
 [ -n "$CMD" ] || exit 0
 
 ALLOW_FILE="$(pwd)/.claude/ALLOW-DANGEROUS"
@@ -68,6 +107,112 @@ if echo "$CMD" | grep -qE 'git[[:space:]]+push'; then
       && block "Push auf main/master (PROD-wirksam angenommen — dieses Repo hat keine .claude/prod-branches.conf)"
   fi
 fi
+# ---------------------------------------------------------------------------
+# PROD-SCHUTZ (v2.16, Betreiber-Anordnung 10.09.2026)
+#
+# Die Anordnung lautet: auf DEV und der Freigabestufe arbeitet der Agent frei,
+# ohne Nachfrage; auf PROD liest er frei; auf PROD SCHREIBT er nur nach
+# ausdruecklicher Anweisung. Die Permissions erlauben deshalb breit — und die
+# einzige verbleibende Sperre steht hier. Sie muss entsprechend scharf sein.
+#
+# Gesperrt wird ausschliesslich SCHREIBEN, NEUSTARTEN und LOESCHEN an einem
+# deklarierten PROD-Ziel. Jede lesende Operation laeuft durch: cat, grep, less,
+# find, psql mit SELECT, docker logs, systemctl status, git log — alles frei,
+# auch gegen PROD.
+#
+# Was PROD ist, steht in .claude/prod-schutz.conf (Vorlage:
+# standards/settings/prod-schutz.vorlage.conf). Fehlt die Datei, gelten
+# konservative Standardmuster — fail-closed, wie bei prod-branches.conf.
+PROD_CONF="$(pwd)/.claude/prod-schutz.conf"
+ALLOW_PROD="$(pwd)/.claude/ALLOW-PROD"
+
+# Sammelt die PROD-Ziele als Regex-Alternativen ein.
+prod_muster() {
+  if [ -f "$PROD_CONF" ]; then
+    awk '''{ sub(/#.*/, ""); gsub(/^[ \t]+|[ \t]+$/, "") }
+          $1 == "KEINE" { print "__KEINE__"; next }
+          $1 ~ /^(PFAD|DB|HOST|DIENST)$/ && $2 != "" { print $2 }''' "$PROD_CONF"
+  else
+    printf '%s\n' '[a-zA-Z0-9_./-]*[-_]prod\b' '/var/www/[a-zA-Z0-9_-]*-prod\b'
+  fi
+}
+
+MUSTER="$(prod_muster)"
+if [ -n "$MUSTER" ] && ! printf '%s' "$MUSTER" | grep -qx '__KEINE__'; then
+  # Trifft das Kommando ueberhaupt ein PROD-Ziel?
+  TRIFFT_PROD=0
+  while IFS= read -r ziel; do
+    [ -z "$ziel" ] && continue
+    if printf '%s' "$CMD" | grep -qE -- "$ziel"; then TRIFFT_PROD=1; break; fi
+  done <<EOF
+$MUSTER
+EOF
+
+  if [ "$TRIFFT_PROD" = "1" ]; then
+    # Schreibende Muster. Bewusst eng gefasst: Was hier nicht steht, laeuft durch.
+    SCHREIBEND=""
+    printf '%s' "$CMD" | grep -qiE '\b(insert[[:space:]]+into|update[[:space:]]+[a-z_"]+[[:space:]]+set|delete[[:space:]]+from|alter[[:space:]]+(table|database)|create[[:space:]]+(table|database|index)|grant|revoke)\b' \
+      && SCHREIBEND="schreibendes SQL"
+    printf '%s' "$CMD" | grep -qE '(^|[^a-zA-Z0-9_-])(rm|mv|cp|install|chmod|chown|truncate|dd)[[:space:]]' \
+      && SCHREIBEND="${SCHREIBEND:-Dateiaenderung}"
+    printf '%s' "$CMD" | grep -qE 'sed[[:space:]]+(-[a-zA-Z]*i|--in-place)' \
+      && SCHREIBEND="${SCHREIBEND:-Textersetzung in Datei (sed -i)}"
+    # Umleitung und tee: NUR sperren, wenn das ZIEL ein PROD-Ziel ist. Sonst
+    # blockiert eine Analyse wie `grep /var/www/x-prod/log > /tmp/auswertung`
+    # — Lesen von PROD, Schreiben nach /tmp. Genau die Reibung, die diese
+    # Fassung abschaffen soll (Waechter-Hinweis 10.09.2026).
+    # `|| true`: grep ohne Treffer liefert Exit 1 — unter `set -e` bricht die
+    # Kommandosubstitution sonst das ganze Skript ab, und ein abgebrochener Guard
+    # prueft gar nichts mehr. (Gefunden in der Gegenprobe 10.09.2026: drei Faelle
+    # endeten mit Exit 1 statt 0 oder 2.)
+    ZIELE="$(printf '%s' "$CMD" \
+      | grep -oE '(>>?[[:space:]]*|[[:space:]]tee[[:space:]]+(-a[[:space:]]+)?)[^[:space:];|&)]+' 2>/dev/null \
+      | sed -E 's/^(>>?[[:space:]]*|[[:space:]]tee[[:space:]]+(-a[[:space:]]+)?)//' || true)"
+    if [ -z "$SCHREIBEND" ] && [ -n "$ZIELE" ]; then
+      while IFS= read -r ziel; do
+        [ -z "$ziel" ] && continue
+        while IFS= read -r m; do
+          [ -z "$m" ] && continue
+          printf '%s' "$ziel" | grep -qE -- "$m" && { SCHREIBEND="Umleitung in eine PROD-Datei"; break; }
+        done <<MUSTERENDE
+$MUSTER
+MUSTERENDE
+        [ -n "$SCHREIBEND" ] && break
+      done <<ZIELENDE
+$ZIELE
+ZIELENDE
+    fi
+    printf '%s' "$CMD" | grep -qE 'systemctl[[:space:]]+(restart|stop|start|reload|disable|enable)' \
+      && SCHREIBEND="${SCHREIBEND:-Dienst neu starten oder abschalten}"
+    # Zwei Bedingungen statt eines Musters: `docker compose -f <datei> restart`
+    # haelt das Verb nicht direkt hinter `compose` — das alte Muster lief daran
+    # vorbei (Waechter-Befund 10.09.2026, K3).
+    if printf '%s' "$CMD" | grep -qE '(^|[|;&[:space:]])docker([[:space:]]+compose)?[[:space:]]' \
+       && printf '%s' "$CMD" | grep -qE '[[:space:]](up|down|restart|stop|rm|kill)([[:space:]]|$)'; then
+      SCHREIBEND="${SCHREIBEND:-Container neu starten oder entfernen}"
+    fi
+    printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(checkout|switch|pull|merge|reset|apply|restore)' \
+      && SCHREIBEND="${SCHREIBEND:-Arbeitsbaum aendern}"
+    # Schreibende HTTP-Methoden gegen einen deklarierten PROD-HOST. Ohne diese
+    # Zeile liefe `curl -X POST https://prod/api` durch, solange keine Umleitung
+    # im Kommando steht (Waechter-Hinweis 10.09.2026).
+    printf '%s' "$CMD" | grep -qE '(-X|--request)[[:space:]]+(POST|PUT|PATCH|DELETE)' \
+      && SCHREIBEND="${SCHREIBEND:-schreibender HTTP-Aufruf}"
+
+    if [ -n "$SCHREIBEND" ]; then
+      if [ -f "$ALLOW_PROD" ]; then
+        mkdir -p "$(pwd)/.claude" 2>/dev/null || true
+        printf '%s | %s | %s\n' "$(date -Iseconds)" "$SCHREIBEND" "$CMD" \
+          >> "$(pwd)/.claude/prod-zugriffe.log" 2>/dev/null || true
+        echo "PROD-ZUGRIFF (freigegeben durch .claude/ALLOW-PROD): $SCHREIBEND — protokolliert in .claude/prod-zugriffe.log" >&2
+      else
+        echo "GUARD-BLOCK: $SCHREIBEND an einem PROD-Ziel — laut .claude/prod-schutz.conf ist das Produktion. Lesen ist frei; Schreiben braucht nach Kernvertrag §6 eine ausdrueckliche Anweisung des Betreibers. Freigabeweg: .claude/ALLOW-PROD anlegen (erste Zeile: Auftrag und Datum), gilt fuer die Sitzung, jede Aktion wird protokolliert, nach der Aufgabe loeschen." >&2
+        exit 2
+      fi
+    fi
+  fi
+fi
+
 echo "$CMD" | grep -qiE '\b(drop\s+(database|table|schema)|truncate\s+table)\b' && block "destruktives SQL (DROP/TRUNCATE)"
 echo "$CMD" | grep -qE 'drizzle-kit\s+push.*--force|db\s+push-force|push-force' && block "Schema-Push --force (löscht undeklarierte Tabellen)"
 echo "$CMD" | grep -qE 'rm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\s+(/|/var/www|/opt|/home)($|[^a-zA-Z0-9_-])' && block "rekursives Löschen an Systempfaden"

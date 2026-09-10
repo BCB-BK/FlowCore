@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.15)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.16)
 
-> **Version 2.15 · 08.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.16 · 10.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -181,13 +181,45 @@ Arbeit anzuhalten.
 
 - **Betriebsmodell (Betreiber-Entscheidung 27.08.2026, gilt für ALLE Projekte):** Je Projekt
   **ein Server**, auf dem DEV, PROD (und ggf. eine Freigabestufe) nebeneinander liegen — und
-  auf dem auch der Agent arbeitet. **Auf DEV hat der Agent Vollzugriff:** direkt im
-  DEV-Checkout entwickeln, dort testen und das Ergebnis selbst aufrufen, ohne Rückfrage und
-  ohne Umweg über Fernsteuerung. Wer sein Ergebnis nicht sehen kann, prüft nicht ganzheitlich.
-  **PROD ausnahmslos gegen zwei Bedingungen:** eine vollständige Liste dessen, was geändert
-  wurde, **und** eine ausdrückliche, aktuelle Freigabe des Betreibers. Kein Automatismus, kein
-  „war ja nur klein". Weil DEV und PROD auf derselben Maschine liegen, ist die Trennung eine
-  Pfad- und Rechtegrenze, keine Maschinengrenze.
+  auf dem auch der Agent arbeitet. Weil DEV und PROD auf derselben Maschine liegen, ist die
+  Trennung eine Pfad- und Rechtegrenze, keine Maschinengrenze.
+
+- **Zugriffsstufen — vier, und sie gelten in JEDEM Repo (v2.16, Betreiber-Anordnung
+  10.09.2026: „auf der DEV wird entwickelt … Claude hat absoluten Vollzugriff auf die DEV und
+  WWW2! KEINE NACHFRAGEN zu Analysen, DB-Abfragen etc. … lese-VOLLZUGRIFF auf die
+  PROD-Umgebung … ABER auf explizite Anweisung darf Claude auch in der PROD-Umgebung tätig
+  werden"):**
+
+  | Stufe | Was der Agent darf | Wie es durchgesetzt ist |
+  |---|---|---|
+  | **DEV** | **Alles, ohne Nachfrage.** Entwickeln, testen, Datenbanken lesen und schreiben, Dienste neu starten, Analysen, Deploy auf DEV | `permissions.allow` erlaubt breit; keine Bestätigungsdialoge |
+  | **Freigabestufe** (`www2` o. ä., wo vorhanden) | **Dasselbe wie DEV.** Der Agent gibt selbst frei — das ist der Weg von DEV dorthin | wie DEV |
+  | **PROD lesend** | **Alles lesen, ohne Nachfrage.** Code, Logs, Konfiguration, Datenbankabfragen, Analysen, Zugriffsprotokolle | wie DEV; der PROD-Pfad gehört in `permissions.additionalDirectories` |
+  | **PROD schreibend** | **Nur auf ausdrückliche Anweisung des Betreibers.** Dateien ändern, Dienste neu starten, schreibendes SQL, Container tauschen, schreibende HTTP-Aufrufe — auch das Anlegen von Content | **PreToolUse-Guard** blockt gegen die Ziele aus `.claude/prod-schutz.conf`; Freigabe über `.claude/ALLOW-PROD`, jede Aktion wird protokolliert **und gehört in den Tagesbericht** (§12) |
+
+  **Was PROD ist, wird deklariert, nicht geraten:** `.claude/prod-schutz.conf` je Repo (Pfade,
+  Datenbanknamen, Hosts, Dienste). Fehlt die Datei, gelten konservative Standardmuster —
+  fail-closed, wie bei `prod-branches.conf`. Ein Repo ohne Produktion schreibt `KEINE`.
+
+  **Jeder schreibende PROD-Zugriff wird berichtet.** Die Freigabedatei `.claude/ALLOW-PROD` und
+  das Protokoll `.claude/prod-zugriffe.log` sind gitignored — sie sind Laufzeitartefakte und
+  **kein** Nachweis, den jemand später findet. Der Nachweis ist der Tagesbericht nach §12:
+  `berichte/<quelle>/<datum>-arbeit.md`, mit Auftrag, Anweisung und der Liste dessen, was
+  tatsächlich geändert wurde. Wer auf PROD schreibt, ohne das zu berichten, hat die Aufgabe nicht
+  abgeschlossen.
+
+  **Warum das keine Aufweichung ist:** Vorher fragte praktisch jedes Kommando nach, weil die
+  Vorlage keine `allow`-Liste hatte — und wer hundertmal am Tag bestätigt, bestätigt beim
+  hundertsten Mal ohne zu lesen. Die Schwelle wanderte damit vom Wichtigen aufs Beliebige.
+  Jetzt liegt sie an genau einer Stelle: **PROD schreiben.** Netto ist der Schutz schärfer,
+  nicht schwächer — die Sperren gegen Force-Push, `reset --hard`, destruktives SQL,
+  Systempfad-Löschen und `.env`-Zugriff bestehen unverändert fort.
+
+- **Die Zugriffsstufen ersetzen die Freigabepflicht für PROD nicht, sie präzisieren sie.**
+  Ein **Release** nach PROD — also die Übernahme eines Standes — bleibt an die drei Schritte
+  unten gebunden (Änderungsliste, `GO prod`, Übernahme durch den Agenten). Punkt 3.1 der
+  Anordnung deckt die **einzelne beauftragte Handlung** auf PROD ab, etwa das Anlegen von
+  Content — nicht den stillen Release am Verfahren vorbei.
 - **PROD-Übernahme — einheitlich in ALLEN Repos, drei Schritte (v2.8, Betreiber-Vorgabe):**
   1. **Was wurde gemacht** — vollständige Liste der enthaltenen Änderungen: Features, Fixes,
      Schema-/Datenwirkung, Risiken, was sich für Nutzer:innen ändert.
@@ -335,6 +367,7 @@ Folgearbeiten in `98` geparkt — nichts davon stand als Regel; alles entstand a
 | Unveränderbare Unternehmensregeln | Managed Settings (Betreiber) |
 | Grunddeklaration (Tier, Umgebungen, PROD-Branches) | **Guard D6** — fehlt sie, erscheint das im Verdikt und in den offenen Punkten |
 | Abschluss-Prüfung | **`onecampus-guard.sh`** (einheitlich in allen Repos, Exit-Code; `n/v` steht im Verdikt, nicht in `98` — v2.14) |
+| Zugriffsstufen DEV/Freigabe/PROD (§6 v2.16) | **`permissions.allow` breit + PreToolUse-Guard** — der Guard ist die einzige Sperre und blockt Schreiben, Neustarten und Löschen an den Zielen aus `.claude/prod-schutz.conf`; Freigabe über `.claude/ALLOW-PROD` mit Protokoll |
 | Ort der Sitzung (Cloud oder Maschine) | **SessionStart-Hook** `wo-laeuft-diese-sitzung.sh` — erkennt die Cloud-Sandbox an der Laufzeitangabe und zwei weiteren Merkmalen und sagt es in der ersten Zeile (v2.15) |
 | Erreichbarkeit aller Domänen und Berichtslücken | **Domänenwache der Zentrale** (`werkzeuge/domain-wache.sh` in `ocg-architekt`, GitHub Actions alle 30 Minuten, Issue `alarm`) + tägliche Morgenrunde an den Betreiber (v2.14) |
 | Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |

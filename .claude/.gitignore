@@ -2,3 +2,5 @@ waechter-verdikt.json
 WAECHTER-SKIP
 ALLOW-DANGEROUS
 settings.local.json
+ALLOW-PROD
+prod-zugriffe.log
