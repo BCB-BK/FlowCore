@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { CreateDeletionRequestBody } from "@workspace/api-zod";
+import { ReviewDeletionRequestBody } from "@workspace/api-zod";
 import { validateBody } from "../middlewares/validate-body";
 import { db } from "@workspace/db";
 import {
@@ -263,10 +263,30 @@ router.get("/deletion-requests/:requestId", requireAuth, async (req, res) => {
   res.json(request);
 });
 
+/**
+ * FALSCHES RUMPFSCHEMA, behoben 10.09.2026.
+ *
+ * Geprueft wurde hier gegen das Schema fuers ANLEGEN einer Loeschanfrage. Jenes
+ * verlangt `nodeId` (uuid) und `reason`. Eine Pruefentscheidung schickt aber
+ * `{ decision, comment? }`, wie es die Spezifikation als
+ * `ReviewDeletionRequestBody` beschreibt (`lib/api-spec/openapi.yaml`). Jede
+ * Genehmigung und jede Ablehnung endete deshalb mit 400 "Validierungsfehler" —
+ * gemeldet am 10.09.2026 aus der Review-Inbox.
+ *
+ * Das passende Schema war die ganze Zeit vorhanden und erzeugt
+ * (`lib/api-zod/src/generated/api.ts`); es wurde nur nicht eingesetzt. Der
+ * Handler darunter liest `decision` und `comment` bereits richtig aus — die
+ * Anfrage kam nur nie bei ihm an.
+ *
+ * Der Wortlaut des frueheren Aufrufs steht hier bewusst NICHT: Der Waechter
+ * `routen-rumpfpruefung.test.ts` liest diese Datei als Text und ordnet jedes
+ * Vorkommen der naechstgelegenen Route darueber zu. Ein Zitat im Kommentar
+ * sieht fuer ihn aus wie eine Pruefung an der GET-Route.
+ */
 router.post(
   "/deletion-requests/:requestId/review",
   requireAuth,
-  validateBody(CreateDeletionRequestBody),
+  validateBody(ReviewDeletionRequestBody),
   async (req, res) => {
     const requestId = String(req.params.requestId);
     const { decision, comment } = req.body as {
