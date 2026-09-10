@@ -19,14 +19,44 @@ let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 let _defaultHeaders: Record<string, string> = {};
 let _sessionExpiredHandler: (() => void) | null = null;
+/**
+ * Der Handler leitet auf die Anmeldung um. Zweimal umleiten hilft niemandem und
+ * kann bei mehreren gleichzeitig laufenden Anfragen zu einem Neuladen mitten im
+ * Neuladen fuehren — deshalb genau einmal.
+ */
+let _sessionAbgelaufenGemeldet = false;
 
 /**
- * Register a callback that is invoked when the API responds with a 401
- * carrying a "Session invalidated" message (e.g. Entra group-check failure).
- * The callback is responsible for redirecting the user to the login page.
+ * Pfade, auf denen ein 401 NICHT „Sitzung abgelaufen" bedeutet, sondern
+ * „noch nicht angemeldet".
+ *
+ * `AuthGate` (App.tsx) fragt beim Start `/api/auth/me` und zeigt bei 401 die
+ * Anmeldeseite. Wuerde dieser 401 eine Umleitung ausloesen, entstuende eine
+ * Endlosschleife: Anmeldeseite laedt, fragt erneut, bekommt erneut 401, leitet
+ * erneut um. (`/api/auth/config` laeuft ueber ein eigenes `fetch` und kommt hier
+ * gar nicht vorbei.)
+ */
+const ANMELDEPROBE_PFADE = ["/api/auth/me"];
+
+function istAnmeldeprobe(url: string): boolean {
+  return ANMELDEPROBE_PFADE.some((pfad) => {
+    const ohneAbfrage = url.split("?")[0] ?? url;
+    return ohneAbfrage === pfad || ohneAbfrage.endsWith(pfad);
+  });
+}
+
+/**
+ * Register a callback that is invoked when the API responds with 401 on a
+ * route that requires a session. The callback redirects to the login page.
+ *
+ * Ausgenommen ist die Anmeldeprobe (`ANMELDEPROBE_PFADE`) — dort ist 401 der
+ * Normalzustand vor der Anmeldung und keine abgelaufene Sitzung.
  */
 export function setSessionExpiredHandler(handler: (() => void) | null): void {
   _sessionExpiredHandler = handler;
+  // Ein neuer Handler bedeutet einen neuen Seitenlebenslauf — die Einmal-Sperre
+  // gilt je Lebenslauf, nicht je Modulinstanz.
+  _sessionAbgelaufenGemeldet = false;
 }
 
 /**
@@ -171,23 +201,26 @@ function truncate(text: string, maxLength = 300): string {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 
-function isSessionInvalidated(data: unknown): boolean {
-  if (typeof data === "string") {
-    return data.toLowerCase().includes("session invalidated");
-  }
-  if (data && typeof data === "object") {
-    const rec = data as Record<string, unknown>;
-    for (const key of ["message", "error", "detail", "title"]) {
-      const val = rec[key];
-      if (
-        typeof val === "string" &&
-        val.toLowerCase().includes("session invalidated")
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
+/**
+ * Entscheidet, ob ein 401 zur Anmeldeseite fuehren soll.
+ *
+ * WARUM NICHT MEHR AM TEXT: Bis 10.09.2026 wurde hier auf die Zeichenkette
+ * „session invalidated" geprueft. Die sendet der Server aber an genau zwei
+ * Stellen — wenn ein Konto nicht mehr in der geforderten Entra-Gruppe ist
+ * (`middlewares/require-auth.ts`). Der mit Abstand haeufigste Fall, die nach
+ * `SESSION_MAX_AGE_HOURS` (Vorgabe 8 h) abgelaufene Sitzung, meldet
+ * `Authentication required` und passte nicht auf das Muster. Folge im Betrieb:
+ * Die Oberflaeche zeigte weiter zwischengespeicherte Inhalte, als sei alles in
+ * Ordnung, und quittierte jede Aktion mit einem rohen „HTTP 401 Unauthorized" —
+ * gemeldet am 10.09.2026 aus der Review-Inbox, wo die Liste noch stand,
+ * `GET /api/content/deletion-requests` aber bereits 401 lieferte.
+ *
+ * Eine Pruefung, die von der Formulierung einer fremden Meldung abhaengt, ist
+ * keine (Kernvertrag §3.7). Fuer diesen Client gilt schlicht: 401 heisst
+ * „nicht angemeldet" — mit der einen Ausnahme der Anmeldeprobe.
+ */
+function fuehrtZurAnmeldung(url: string): boolean {
+  return !istAnmeldeprobe(url);
 }
 
 function buildErrorMessage(response: Response, data: unknown): string {
@@ -423,8 +456,10 @@ export async function customFetch<T = unknown>(
     if (
       response.status === 401 &&
       _sessionExpiredHandler &&
-      isSessionInvalidated(errorData)
+      !_sessionAbgelaufenGemeldet &&
+      fuehrtZurAnmeldung(requestInfo.url)
     ) {
+      _sessionAbgelaufenGemeldet = true;
       _sessionExpiredHandler();
     }
     throw new ApiError(response, errorData, requestInfo);

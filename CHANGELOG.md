@@ -6,6 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Abgelaufene Sitzung wird wieder als solche erkannt (gemeldet 10.09.2026 aus der Review-Inbox). Der API-Client wertete einen 401 nur dann als Sitzungsende, wenn die Servermeldung woertlich "session invalidated" enthielt — das sendet der Server aber nur beim Entzug der Entra-Gruppe (`middlewares/require-auth.ts`). Der haeufigste Fall, die nach `SESSION_MAX_AGE_HOURS` (Vorgabe 8 h) abgelaufene Sitzung, meldet `Authentication required` und wurde uebergangen: Die Oberflaeche zeigte weiter zwischengespeicherte Inhalte und quittierte jede Aktion mit einem rohen "HTTP 401 Unauthorized", statt zur Anmeldung zu fuehren. Belegt im PROD-Protokoll — der `GET` auf die Loeschanfragen lieferte bereits 401, waehrend die Liste noch angezeigt wurde.
+- Jetzt fuehrt jeder 401 zur Anmeldeseite, mit **einer** Ausnahme: die Anmeldeprobe `/api/auth/me`. Deren 401 ist vor der Anmeldung der Normalzustand — `AuthGate` zeigt darauf die Anmeldeseite. Ohne diese Ausnahme haette die Anmeldeseite sich endlos neu geladen. Dazu eine Einmal-Sperre, damit mehrere gleichzeitig scheiternde Anfragen nicht mehrfach umleiten. Abgesichert mit 6 Tests in `artifacts/wiki-frontend/src/lib/sitzungsende.test.ts`, darunter die Gegenprobe gegen die Schleife.
+
 ### Added
 - Editor- und Medienverbesserungen aus dem Testbetrieb (Rückmeldung 30.08.2026)
   - Bilder im Abschnitt „Inhalt" sind in der Größe anpassbar: Ziehgriffe an der rechten Kante und der rechten unteren Ecke, dazu eine Auswahlleiste mit 25/50/75/100 % und Umfluss Block/Links/Rechts. Die Extension `extensions/ResizableImage.tsx` lag bisher nur im Glossar-Editor und wird jetzt von `BlockEditor` und `SimpleEditor` gemeinsam genutzt; Breite und Umfluss sitzen am Bildrahmen und werden im Inhalts-JSON mitgespeichert (keine Migration nötig)
