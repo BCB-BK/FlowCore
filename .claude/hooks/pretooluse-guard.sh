@@ -127,23 +127,51 @@ PROD_CONF="$(pwd)/.claude/prod-schutz.conf"
 ALLOW_PROD="$(pwd)/.claude/ALLOW-PROD"
 
 # Sammelt die PROD-Ziele als Regex-Alternativen ein.
+#
+# FAIL-CLOSED, UND ZWAR AN DER RICHTIGEN STELLE (korrigiert 10.09.2026):
+# Eine Datei, die nur Kommentare enthaelt — genau das ist die ausgelieferte leere
+# Vorlage — lieferte bisher eine leere Musterliste, und die schaltete den PROD-Block
+# komplett ab. Der Zustand "Datei da, aber nichts eingetragen" war damit UNSICHERER
+# als "gar keine Datei". Das ist die Umkehrung dessen, was fail-closed heisst, und
+# es war in sechs Repos wirksam, nachdem der v2.16-Rollout die leere Vorlage
+# verteilt hatte (Waechter-Befund K4b).
+# Jetzt gilt: Nur ein ausdrueckliches `KEINE` schaltet den Schutz ab. Fehlt die
+# Datei ODER steht nichts darin, greifen die konservativen Standardmuster.
+STANDARDMUSTER() { printf '%s\n' '[a-zA-Z0-9_./-]*[-_]prod' '/var/www/[a-zA-Z0-9_-]*-prod'; }
+
 prod_muster() {
   if [ -f "$PROD_CONF" ]; then
-    awk '''{ sub(/#.*/, ""); gsub(/^[ \t]+|[ \t]+$/, "") }
+    gefunden="$(awk '''{ sub(/#.*/, ""); gsub(/^[ \t]+|[ \t]+$/, "") }
           $1 == "KEINE" { print "__KEINE__"; next }
-          $1 ~ /^(PFAD|DB|HOST|DIENST)$/ && $2 != "" { print $2 }''' "$PROD_CONF"
+          $1 ~ /^(PFAD|DB|HOST|DIENST)$/ && $2 != "" { print $2 }''' "$PROD_CONF")"
+    if [ -n "$gefunden" ]; then
+      printf '%s\n' "$gefunden"
+    else
+      echo "GUARD-HINWEIS: .claude/prod-schutz.conf enthaelt keine Wertzeile — es gelten die konservativen Standardmuster. Bitte die PROD-Ziele dieses Repos eintragen (Vorlage: standards/prod-schutz/ in ocg-architekt)." >&2
+      STANDARDMUSTER
+    fi
   else
-    printf '%s\n' '[a-zA-Z0-9_./-]*[-_]prod\b' '/var/www/[a-zA-Z0-9_-]*-prod\b'
+    STANDARDMUSTER
   fi
 }
 
 MUSTER="$(prod_muster)"
 if [ -n "$MUSTER" ] && ! printf '%s' "$MUSTER" | grep -qx '__KEINE__'; then
   # Trifft das Kommando ueberhaupt ein PROD-Ziel?
+  #
+  # MIT WORTGRENZEN, und das ist keine Feinheit, sondern die Bedingung dafuer, dass
+  # DEV frei bleibt: Ohne sie traefe `HOST ehip.eu` auch `dev.ehip.eu` und
+  # `www2.ehip.eu`, `DB aos_main_contao` auch `aos_main_contao_dev`. Die Anordnung
+  # "Vollzugriff auf DEV" waere damit ins Gegenteil verkehrt — der Guard wuerde
+  # genau die Umgebung sperren, auf der frei gearbeitet werden soll.
+  # Erlaubt als Grenze ist alles, was nicht Teil eines Namens sein kann; `.`, `-`
+  # und `_` gehoeren ausdruecklich NICHT dazu.
   TRIFFT_PROD=0
   while IFS= read -r ziel; do
     [ -z "$ziel" ] && continue
-    if printf '%s' "$CMD" | grep -qE -- "$ziel"; then TRIFFT_PROD=1; break; fi
+    if printf '%s' "$CMD" | grep -qE -- "(^|[^A-Za-z0-9._-])${ziel}([^A-Za-z0-9._-]|\$)"; then
+      TRIFFT_PROD=1; break
+    fi
   done <<EOF
 $MUSTER
 EOF
@@ -153,7 +181,26 @@ EOF
     SCHREIBEND=""
     printf '%s' "$CMD" | grep -qiE '\b(insert[[:space:]]+into|update[[:space:]]+[a-z_"]+[[:space:]]+set|delete[[:space:]]+from|alter[[:space:]]+(table|database)|create[[:space:]]+(table|database|index)|grant|revoke)\b' \
       && SCHREIBEND="schreibendes SQL"
-    printf '%s' "$CMD" | grep -qE '(^|[^a-zA-Z0-9_-])(rm|mv|cp|install|chmod|chown|truncate|dd)[[:space:]]' \
+    # Kopierwerkzeuge: Bei `cp`, `rsync` und `install` entscheidet das LETZTE
+    # Argument, ob geschrieben wird. `cp <prod>/datei /tmp/` ist eine Analyse und
+    # laeuft durch; `cp /tmp/datei <prod>/` ist ein PROD-Schreibzugriff. Ohne diese
+    # Unterscheidung waere jedes Herauskopieren zur Untersuchung gesperrt — dieselbe
+    # Reibung wie bei der Umleitung nach /tmp (Waechter-Hinweis 10.09.2026).
+    if printf '%s' "$CMD" | grep -qE '(^|[^a-zA-Z0-9_-])(cp|rsync|install)[[:space:]]'; then
+      letztes="$(printf '%s' "$CMD" | awk '{ for (i = NF; i >= 1; i--) if ($i !~ /^-/) { print $i; exit } }' || true)"
+      if [ -n "$letztes" ]; then
+        while IFS= read -r m; do
+          [ -z "$m" ] && continue
+          printf '%s' "$letztes" | grep -qE -- "(^|[^A-Za-z0-9._-])${m}([^A-Za-z0-9._-]|\$)" \
+            && { SCHREIBEND="Kopieren in ein PROD-Ziel"; break; }
+        done <<KOPIERENDE
+$MUSTER
+KOPIERENDE
+      fi
+    fi
+    # Loeschen, Verschieben und Rechteaenderung treffen IMMER das genannte Ziel —
+    # hier gibt es keine harmlose Richtung.
+    printf '%s' "$CMD" | grep -qE '(^|[^a-zA-Z0-9_-])(rm|mv|chmod|chown|truncate|dd)[[:space:]]' \
       && SCHREIBEND="${SCHREIBEND:-Dateiaenderung}"
     printf '%s' "$CMD" | grep -qE 'sed[[:space:]]+(-[a-zA-Z]*i|--in-place)' \
       && SCHREIBEND="${SCHREIBEND:-Textersetzung in Datei (sed -i)}"
@@ -198,6 +245,9 @@ ZIELENDE
     # im Kommando steht (Waechter-Hinweis 10.09.2026).
     printf '%s' "$CMD" | grep -qE '(-X|--request)[[:space:]]+(POST|PUT|PATCH|DELETE)' \
       && SCHREIBEND="${SCHREIBEND:-schreibender HTTP-Aufruf}"
+    # Weitere Schreibwege, die der Waechter am 10.09.2026 als offen benannt hat.
+    printf '%s' "$CMD" | grep -qE '(psql|mysql)[^|;&]*<[[:space:]]*[^[:space:];|&]+' \
+      && SCHREIBEND="${SCHREIBEND:-SQL-Datei einspielen}"
 
     if [ -n "$SCHREIBEND" ]; then
       if [ -f "$ALLOW_PROD" ]; then

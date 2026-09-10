@@ -25,7 +25,9 @@
       "WebFetch(*)",
       "WebSearch(*)"
     ],
-    "additionalDirectories": []
+    "additionalDirectories": [
+      "/var/www/flowcore-prod"
+    ]
   },
   "hooks": {
     "PreToolUse": [
