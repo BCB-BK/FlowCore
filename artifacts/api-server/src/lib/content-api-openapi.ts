@@ -98,12 +98,25 @@ export function buildContentApiSpec(baseUrl: string) {
         get: {
           operationId: "GetPage",
           summary: "Eine Seite mit vollem Inhalt abrufen",
+          description:
+            "Der Inhalt kommt genau einmal: `format=markdown` (Standard) liefert `contentMarkdown` mit allen beschrifteten Textabschnitten, Tabellen und Seitenlinks, dazu `structuredData` für Felder, die kein Fließtext sind. `format=text` liefert stattdessen `contentText`. `format=full` liefert zusätzlich beide Textfassungen und alle strukturierten Felder (ohne Editor-JSON).",
           parameters: [
             {
               name: "id",
               in: "path",
               required: true,
               schema: { type: "string", format: "uuid" },
+            },
+            {
+              name: "format",
+              in: "query",
+              required: false,
+              schema: {
+                type: "string",
+                enum: ["markdown", "text", "full"],
+                default: "markdown",
+              },
+              description: "Antwortformat, siehe Beschreibung",
             },
           ],
           responses: {
@@ -116,6 +129,14 @@ export function buildContentApiSpec(baseUrl: string) {
               },
             },
             "401": { $ref: "#/components/responses/Unauthorized" },
+            "400": {
+              description: "Unbekanntes Format",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Error" },
+                },
+              },
+            },
             "403": {
               description:
                 "Seite liegt außerhalb der Freigabe dieses Schlüssels. Das Feld `reason` nennt die Dimension.",
@@ -340,7 +361,7 @@ export function buildContentApiSpec(baseUrl: string) {
         Page: {
           type: "object",
           description:
-            "Vollständige Seite mit Text, strukturierten Feldern, Verknüpfungen und Governance-Angaben.",
+            "Seite mit Inhalt, Verknüpfungen und Governance-Angaben. Welche Inhaltsfelder enthalten sind, bestimmt `format`.",
           properties: {
             nodeId: { type: "string", format: "uuid" },
             displayCode: { type: "string" },
@@ -348,9 +369,30 @@ export function buildContentApiSpec(baseUrl: string) {
             pageType: { type: "string" },
             version: { type: "string", nullable: true },
             summary: { type: "string" },
-            contentText: { type: "string" },
-            contentMarkdown: { type: "string" },
-            structuredFields: { type: "object" },
+            format: { type: "string", enum: ["markdown", "text", "full"] },
+            contentText: {
+              type: "string",
+              description: "Nur bei format=text und format=full",
+            },
+            contentMarkdown: {
+              type: "string",
+              description: "Nur bei format=markdown und format=full",
+            },
+            structuredFields: {
+              type: "object",
+              description: "Nur bei format=full; ohne Editor-JSON",
+            },
+            structuredData: {
+              type: "object",
+              description:
+                "Bei format=markdown und format=text: Felder, die kein Fließtext sind (Verweislisten, Tabellen-Widgets)",
+            },
+            media: {
+              type: "array",
+              items: { type: "object" },
+              description: "Bilder, Dateien und Videos der Seite",
+            },
+            relations: { type: "array", items: { type: "object" } },
             tags: { type: "array", items: { type: "string" } },
             ownerName: { type: "string", nullable: true },
             confidentiality: { type: "string", nullable: true },

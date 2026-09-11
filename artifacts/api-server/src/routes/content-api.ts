@@ -11,6 +11,11 @@ import {
   type ScopedNode,
 } from "../services/integration-scope.service";
 import { projectPublishedPage } from "../services/copilot-content-projection.service";
+import {
+  formatiereSeite,
+  parseSeitenformat,
+  SEITENFORMATE,
+} from "../lib/content-api-page-format";
 import { projectGlossaryTerm } from "../services/glossary-projection.service";
 import { isGlossarySyncEnabled } from "../services/system-settings.service";
 import type { IntegrationPrincipal } from "../services/integration-key.service";
@@ -251,6 +256,13 @@ contentApiRouter.get(
   async (req, res) => {
     const key = req.integrationKey!;
     const nodeId = String(req.params.id);
+    const format = parseSeitenformat(req.query.format);
+    if (!format) {
+      res.status(400).json({
+        error: `Unbekanntes Format. Erlaubt: ${SEITENFORMATE.join(", ")}.`,
+      });
+      return;
+    }
 
     try {
       const decision = await checkNodeAccess(key.keyId, key, nodeId);
@@ -277,8 +289,9 @@ contentApiRouter.get(
       recordAccess(key, "page_read", {
         nodeId,
         displayCode: projection.displayCode,
+        format,
       });
-      res.json(projection);
+      res.json(formatiereSeite(projection, format));
     } catch (err) {
       logger.error({ err, nodeId }, "Content-API: Seitenabruf fehlgeschlagen");
       res.status(500).json({ error: "Seite konnte nicht geladen werden" });
