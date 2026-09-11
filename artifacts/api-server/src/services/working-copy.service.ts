@@ -539,6 +539,10 @@ async function autoPublishWorkingCopy(
           basedOnRevisionId: wc.baseRevisionId,
           authorId: wc.authorId ?? actorId,
           status: "published",
+          // Wie `publishWorkingCopy`: Ohne diesen Wert zeigt die
+          // Versionshistorie bei jeder ohne Workflow veröffentlichten Seite
+          // ein leeres »Gültig ab« (Audit Markensystem, 11.09.2026).
+          validFrom: new Date(),
         })
         .returning();
 

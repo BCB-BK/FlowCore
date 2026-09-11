@@ -6,22 +6,31 @@
  * eine Ablaufsteuerung.
  *
  * LESEART
- *   `kapitel`      Überschriften des Quelldokuments (ohne Nummer, Teiltreffer).
- *   `plattform`    Zeilen der Kopf-/Plattformtabelle (Spalte 1, exakter Text).
- *   `dokumentdaten`Zeilen der Dokumentdaten-Tabelle ganz oben.
+ *   `plattform`       Zeilen der Plattformtabelle (Spalte 1, exakter Text).
+ *   `kapitel`         Überschriften des Quelldokuments (ohne Nummer, Teiltreffer).
+ *                     Die Kapitelüberschrift bleibt im Abschnitt als
+ *                     Zwischenüberschrift sichtbar.
+ *   `kapitelAlsListe` wie `kapitel`, die zweispaltige Tabelle des Kapitels wird
+ *                     aber als »Feld: Wert«-Absätze übernommen — Abschnittsfelder
+ *                     können keine Tabellen darstellen.
+ *   `dokumentdaten`   Zeilen der Dokumentdaten-Tabelle ganz oben.
  *
- * VERLUSTSCHUTZ: Der Import prüft je Markenprofil, dass JEDES Kapitel und JEDE
- * Plattformzeile mindestens einmal zugeordnet ist. Fehlt etwas, bricht er ab
- * und nennt Datei und Fundstelle. Nicht zugeordnete Kapitel wandern zusätzlich
- * vollständig in den Inhaltsbereich — dort können sie auch Tabellen tragen.
+ * TITEL folgen den Dokumenttiteln der Quelle in der Form »Marke – Dokument«
+ * (Ablageleitfaden 6.10). Die Schreibweise »EHiP academy« gibt die Marke selbst
+ * vor (Plattformzeile »Schreibweise«).
+ *
+ * VERLUSTSCHUTZ: Der Import prüft je Markenprofil, dass JEDE Plattformzeile
+ * zugeordnet ist. Nicht zugeordnete Kapitel wandern vollständig in den
+ * Inhaltsbereich — dort können sie auch Tabellen tragen.
  */
 
 /** Seitentypen, die dieser Import verwendet. */
 export type Seitentyp = "doc_registry" | "brand_profile" | "policy";
 
 export interface Abschnittsquelle {
-  kapitel?: string[];
   plattform?: string[];
+  kapitel?: string[];
+  kapitelAlsListe?: string[];
   dokumentdaten?: string[];
 }
 
@@ -31,7 +40,9 @@ export interface Seitenbauplan {
   typ: Seitentyp;
   /** Pfad relativ zum Wurzelverzeichnis des Pakets; fehlt bei reinen Behältern. */
   datei?: string;
-  /** Für brand_profile Pflicht. */
+  /** Pflicht für Behälter: Abschnitt »Beschreibung« des Dokumentationsregisters. */
+  beschreibung?: string;
+  /** Marke; vererbt sich als Schlagwort auf alle Unterseiten. */
   markenname?: string;
   markenebene?: "dachmarke" | "einzelmarke" | "submarke" | "kampagnenmarke";
   /** Nur für brand_profile: Abschnittsschlüssel → Quellen im Dokument. */
@@ -39,15 +50,14 @@ export interface Seitenbauplan {
   kinder?: Seitenbauplan[];
 }
 
-/** Zuordnung, die alle fünf Markenprofile gemeinsam haben. */
+/**
+ * Zuordnung, die alle fünf Markenprofile gemeinsam haben. Die Zeile
+ * »Strategische Inhaltsfreigabe« entfällt mit der Dokumentdaten-Tabelle
+ * (Entscheidung vom 11.09.2026): Ihr Wortlaut »noch zu erteilen« widerspräche
+ * der veröffentlichten Seite.
+ */
 const GEMEINSAM = {
-  brand_mandate: {
-    dokumentdaten: [
-      "Geltung",
-      "Pflegeverantwortung",
-      "Strategische Inhaltsfreigabe",
-    ],
-  },
+  brand_mandate: { dokumentdaten: ["Geltung", "Pflegeverantwortung"] },
   core_promise: { plattform: ["Kernversprechen"] },
 };
 
@@ -55,6 +65,8 @@ export const BAUPLAN: Seitenbauplan[] = [
   {
     titel: "Gruppenrahmen",
     typ: "doc_registry",
+    beschreibung:
+      "Gruppenweite Grundlagen des Markensystems: Geltung, Markenarchitektur, Kommunikationsgrundsätze, Kanalhandbuch, visuelle Grundsätze sowie Qualität und Freigabe.",
     kinder: [
       {
         titel: "System und Geltung",
@@ -91,14 +103,16 @@ export const BAUPLAN: Seitenbauplan[] = [
   {
     titel: "B2B-Standards",
     typ: "doc_registry",
+    beschreibung:
+      "Gemeinsame Zielgruppenprofile und gemeinsamer Kommunikationsstandard für die Ansprache von Unternehmen und Institutionen über alle Marken.",
     kinder: [
       {
-        titel: "Zielgruppenprofile",
+        titel: "Gemeinsame B2B-Zielgruppenprofile",
         typ: "policy",
         datei: "01-b2b/01_zielgruppenprofile.md",
       },
       {
-        titel: "Kommunikationsstandard",
+        titel: "Gemeinsamer B2B-Kommunikationsstandard",
         typ: "policy",
         datei: "01-b2b/02_kommunikationsstandard.md",
       },
@@ -107,13 +121,18 @@ export const BAUPLAN: Seitenbauplan[] = [
   {
     titel: "Einzelmarkenprofile",
     typ: "doc_registry",
+    beschreibung:
+      "Markenprofile der Gruppenmarken mit ihren Zielgruppenprofilen, Kommunikationskonzepten und Bildsprachen.",
     kinder: [
       {
         titel: "OneCampus Group",
         typ: "doc_registry",
+        markenname: "OneCampus Group",
+        beschreibung:
+          "Markenprofil, Angebotskommunikation und Bildsprache der Dachmarke OneCampus Group.",
         kinder: [
           {
-            titel: "Markenprofil",
+            titel: "OneCampus Group – Markenprofil",
             typ: "brand_profile",
             datei: "onecampus-group/01_markenprofil.md",
             markenname: "OneCampus Group",
@@ -129,21 +148,20 @@ export const BAUPLAN: Seitenbauplan[] = [
                 plattform: ["Primäre Markenlinie", "Fachliche Profilzeile"],
               },
               guiding_idea: { plattform: ["Leitgedanke"] },
-              tonality: {
+              // Die Dachmarke spricht Unternehmen an; ihre Zielgruppen sind die
+              // gemeinsamen B2B-Rollen, auf die das Kapitel verweist.
+              primary_target_groups: {
                 plattform: ["Beziehung zur Zielgruppe"],
-                kapitel: ["Werte und Markenpersönlichkeit"],
+                kapitelAlsListe: ["Gemeinsamer B2B-Verweis"],
               },
+              // Wie die übrigen Profile: Werte → Prinzipien, Wirkung/Bild → Tonalität.
+              brand_principles: { kapitel: ["Werte und Markenpersönlichkeit"] },
+              tonality: { kapitel: ["Markenwirkung und sichtbare Identität"] },
               service_logic: {
                 kapitel: ["Die Leistungsidentität: sechs Kompetenzfelder"],
               },
-              primary_target_groups: {
-                kapitel: ["Markenwirkung und sichtbare Identität"],
-              },
               brand_delimitation: {
                 kapitel: ["Bildungswege und institutionelle Substanz"],
-              },
-              brand_principles: {
-                kapitel: ["Erfolgskriterien der Markenführung"],
               },
               strategic_decision: {
                 kapitel: [
@@ -154,12 +172,12 @@ export const BAUPLAN: Seitenbauplan[] = [
             },
           },
           {
-            titel: "Angebotskommunikation",
+            titel: "OneCampus Group – Angebotskommunikation",
             typ: "policy",
             datei: "onecampus-group/02_angebotskommunikation.md",
           },
           {
-            titel: "Bildsprache",
+            titel: "OneCampus Group – Bildsprache",
             typ: "policy",
             datei: "onecampus-group/03_bildsprache.md",
           },
@@ -168,9 +186,12 @@ export const BAUPLAN: Seitenbauplan[] = [
       {
         titel: "Academy of Sports",
         typ: "doc_registry",
+        markenname: "Academy of Sports",
+        beschreibung:
+          "Markenprofil, Zielgruppenprofile, Kommunikationskonzept und Bildsprache der Academy of Sports.",
         kinder: [
           {
-            titel: "Markenprofil",
+            titel: "Academy of Sports – Markenprofil",
             typ: "brand_profile",
             datei: "academy-of-sports/01_markenprofil.md",
             markenname: "Academy of Sports",
@@ -206,17 +227,17 @@ export const BAUPLAN: Seitenbauplan[] = [
             },
           },
           {
-            titel: "Zielgruppenprofile",
+            titel: "Academy of Sports – Zielgruppenprofile",
             typ: "policy",
             datei: "academy-of-sports/02_zielgruppenprofile.md",
           },
           {
-            titel: "Kommunikationskonzept",
+            titel: "Academy of Sports – Kommunikationskonzept",
             typ: "policy",
             datei: "academy-of-sports/03_kommunikationskonzept.md",
           },
           {
-            titel: "Bildsprache",
+            titel: "Academy of Sports – Bildsprache",
             typ: "policy",
             datei: "academy-of-sports/04_bildsprache.md",
           },
@@ -225,9 +246,12 @@ export const BAUPLAN: Seitenbauplan[] = [
       {
         titel: "DeLSt",
         typ: "doc_registry",
+        markenname: "DeLSt",
+        beschreibung:
+          "Markenprofil, Zielgruppenprofile, Kommunikationskonzept und Bildsprache von DeLSt.",
         kinder: [
           {
-            titel: "Markenprofil",
+            titel: "DeLSt – Markenprofil",
             typ: "brand_profile",
             datei: "delst/01_markenprofil.md",
             markenname: "DeLSt",
@@ -266,17 +290,17 @@ export const BAUPLAN: Seitenbauplan[] = [
             },
           },
           {
-            titel: "Zielgruppenprofile",
+            titel: "DeLSt – Zielgruppenprofile",
             typ: "policy",
             datei: "delst/02_zielgruppenprofile.md",
           },
           {
-            titel: "Kommunikationskonzept",
+            titel: "DeLSt – Kommunikationskonzept",
             typ: "policy",
             datei: "delst/03_kommunikationskonzept.md",
           },
           {
-            titel: "Bildsprache",
+            titel: "DeLSt – Bildsprache",
             typ: "policy",
             datei: "delst/04_bildsprache.md",
           },
@@ -285,9 +309,12 @@ export const BAUPLAN: Seitenbauplan[] = [
       {
         titel: "EHiP Hochschule",
         typ: "doc_registry",
+        markenname: "EHiP Hochschule",
+        beschreibung:
+          "Markenprofil der EHiP Hochschule sowie Zielgruppenprofile, Kommunikationskonzepte und Bildsprachen für Fernstudium und duales Fernstudium.",
         kinder: [
           {
-            titel: "Markenprofil",
+            titel: "EHiP Hochschule – Markenprofil",
             typ: "brand_profile",
             datei: "ehip/01_markenprofil_hochschule.md",
             markenname: "EHiP Hochschule",
@@ -326,42 +353,46 @@ export const BAUPLAN: Seitenbauplan[] = [
             },
           },
           {
-            titel: "Fernstudium",
+            titel: "EHiP Fernstudium",
             typ: "doc_registry",
+            beschreibung:
+              "Zielgruppenprofile, Kommunikationskonzept und Bildsprache für das Fernstudium der EHiP.",
             kinder: [
               {
-                titel: "Zielgruppenprofile",
+                titel: "EHiP Fernstudium – Zielgruppenprofile",
                 typ: "policy",
                 datei: "ehip/fernstudium/01_zielgruppenprofile.md",
               },
               {
-                titel: "Kommunikationskonzept",
+                titel: "EHiP Fernstudium – Kommunikationskonzept",
                 typ: "policy",
                 datei: "ehip/fernstudium/02_kommunikationskonzept.md",
               },
               {
-                titel: "Bildsprache",
+                titel: "EHiP Fernstudium – Bildsprache",
                 typ: "policy",
                 datei: "ehip/fernstudium/03_bildsprache.md",
               },
             ],
           },
           {
-            titel: "Duales Fernstudium",
+            titel: "EHiP duales Fernstudium",
             typ: "doc_registry",
+            beschreibung:
+              "Zielgruppenprofile, Kommunikationskonzept und Bildsprache für das duale Fernstudium der EHiP.",
             kinder: [
               {
-                titel: "Zielgruppenprofile",
+                titel: "EHiP duales Fernstudium – Zielgruppenprofile",
                 typ: "policy",
                 datei: "ehip/duales-fernstudium/01_zielgruppenprofile.md",
               },
               {
-                titel: "Kommunikationskonzept",
+                titel: "EHiP duales Fernstudium – Kommunikationskonzept",
                 typ: "policy",
                 datei: "ehip/duales-fernstudium/02_kommunikationskonzept.md",
               },
               {
-                titel: "Bildsprache",
+                titel: "EHiP duales Fernstudium – Bildsprache",
                 typ: "policy",
                 datei: "ehip/duales-fernstudium/03_bildsprache.md",
               },
@@ -370,11 +401,14 @@ export const BAUPLAN: Seitenbauplan[] = [
         ],
       },
       {
-        titel: "EHiP Academy",
+        titel: "EHiP academy",
         typ: "doc_registry",
+        markenname: "EHiP academy",
+        beschreibung:
+          "Markenprofil, Zielgruppenprofile, Kommunikationskonzept und Bildsprache der EHiP academy.",
         kinder: [
           {
-            titel: "Markenprofil",
+            titel: "EHiP academy – Markenprofil",
             typ: "brand_profile",
             datei: "ehip/02_markenprofil_academy.md",
             markenname: "EHiP academy",
@@ -414,22 +448,45 @@ export const BAUPLAN: Seitenbauplan[] = [
             },
           },
           {
-            titel: "Zielgruppenprofile",
+            titel: "EHiP academy – Zielgruppenprofile",
             typ: "policy",
             datei: "ehip/academy/01_zielgruppenprofile.md",
           },
           {
-            titel: "Kommunikationskonzept",
+            titel: "EHiP academy – Kommunikationskonzept",
             typ: "policy",
             datei: "ehip/academy/02_kommunikationskonzept.md",
           },
           {
-            titel: "Bildsprache",
+            titel: "EHiP academy – Bildsprache",
             typ: "policy",
             datei: "ehip/academy/03_bildsprache.md",
           },
         ],
       },
     ],
+  },
+];
+
+/**
+ * Wortlautänderungen gegenüber der Quellfassung — nur mit ausdrücklicher
+ * Entscheidung. `alt` muss im Dokument genau einmal vorkommen, sonst bricht der
+ * Import ab; eine nicht angewandte Anpassung ebenfalls.
+ */
+export interface Textanpassung {
+  datei: string;
+  alt: string;
+  neu: string;
+  /** Wer hat wann entschieden, und warum. */
+  grund: string;
+}
+
+export const TEXTANPASSUNGEN: Textanpassung[] = [
+  {
+    datei: "00-gruppe/00_system_und_geltung.md",
+    alt: "**Die Dateistruktur ist durch Tobias Wenninger freigegeben. Die hier ausgearbeiteten Inhalte bilden die Sollfassung 1.0 zur inhaltlichen Freigabe.** Sie wurden noch nicht in die Websites, Repositories, Agenten oder Prüfprogramme ausgerollt. Bis zur dokumentierten Umstellung bleiben deren aktive technische Regeln bestehen.",
+    neu: "**Die Dateistruktur ist durch Tobias Wenninger freigegeben. Die hier ausgearbeiteten Inhalte bilden die Sollfassung zur inhaltlichen Freigabe.** Bis zur dokumentierten Umstellung bleiben die aktiven technischen Regeln der Websites, Repositories, Agenten und Prüfprogramme bestehen.",
+    grund:
+      "Tobias Wenninger, 11.09.2026: Mit der Erfassung in FlowCore wird das Paket ausgerollt; der Hinweis »noch nicht ausgerollt« entfällt.",
   },
 ];

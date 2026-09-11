@@ -39,32 +39,62 @@ export function stripTags(html: string): string {
   return html.replace(/<[^>]+>/g, "");
 }
 
+/** Leerraum wie im HTML: Zeilenumbrüche und Folgen von Leerzeichen sind ein Leerzeichen. */
+function fasseLeerraum(text: string): string {
+  return text.replace(/[ \t\r\n]+/g, " ");
+}
+
 export function parseInlineContent(html: string): TiptapNode[] {
   const nodes: TiptapNode[] = [];
+  // Tagnamen mit Grenze `(?=[\s>])`: Ohne sie galt `<br>` als `<b>` — der Text
+  // bis zum nächsten `</strong>` wurde fett, und der Umbruch fiel weg. Die
+  // Rückreferenz `\2` schließt ein Element erst an seinem eigenen Endtag.
   const inlineRegex =
-    /(<(?:strong|b|em|i|u|a|span|br|code)[^>]*>[\s\S]*?<\/(?:strong|b|em|i|u|a|span|code)>|<br\s*\/?>|[^<]+|<[^>]+>)/gi;
+    /(<br\s*\/?>|<(strong|b|em|i|u|a|span|code)(?=[\s>])[^>]*>[\s\S]*?<\/\2\s*>|[^<]+|<[^>]+>)/gi;
   let inlineMatch: RegExpExecArray | null;
   let buffer = "";
 
-  function flushBuffer() {
+  /**
+   * `zwischenraum`: Der Puffer steht VOR einer Inline-Auszeichnung. Besteht er
+   * nur aus Leerraum und folgt er auf Text, trennt er zwei Auszeichnungen
+   * (`<strong>a:</strong> <a>b</a>`) und bleibt als ein Leerzeichen erhalten.
+   * Am Absatzrand und vor `<br>` wird reiner Leerraum weiter verworfen.
+   */
+  function flushBuffer(zwischenraum = false) {
     if (buffer.trim()) {
-      const decoded = decodeEntities(buffer);
-      if (decoded.trim()) {
-        nodes.push({ type: "text", text: decoded });
+      let text = fasseLeerraum(decodeEntities(buffer));
+      const vorher = nodes[nodes.length - 1];
+      if (!vorher || vorher.type === "hardBreak") text = text.trimStart();
+      if (text) {
+        nodes.push({ type: "text", text });
       }
+    } else if (
+      zwischenraum &&
+      buffer.length > 0 &&
+      nodes[nodes.length - 1]?.type === "text"
+    ) {
+      nodes.push({ type: "text", text: " " });
     }
     buffer = "";
+  }
+
+  /** Leerraum vor einem Umbruch und am Ende ist nicht sichtbar gemeint. */
+  function schneideEnde() {
+    const letzter = nodes[nodes.length - 1];
+    if (letzter?.type !== "text" || letzter.text === undefined) return;
+    letzter.text = letzter.text.trimEnd();
+    if (!letzter.text) nodes.pop();
   }
 
   while ((inlineMatch = inlineRegex.exec(html)) !== null) {
     const chunk = inlineMatch[1];
 
     const strongMatch = chunk.match(
-      /^<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/i,
+      /^<(?:strong|b)(?=[\s>])[^>]*>([\s\S]*?)<\/(?:strong|b)>/i,
     );
     if (strongMatch) {
-      flushBuffer();
-      const innerText = stripTags(strongMatch[1]).trim();
+      flushBuffer(true);
+      const innerText = fasseLeerraum(stripTags(strongMatch[1])).trim();
       if (innerText) {
         nodes.push({
           type: "text",
@@ -75,10 +105,12 @@ export function parseInlineContent(html: string): TiptapNode[] {
       continue;
     }
 
-    const emMatch = chunk.match(/^<(?:em|i)[^>]*>([\s\S]*?)<\/(?:em|i)>/i);
+    const emMatch = chunk.match(
+      /^<(?:em|i)(?=[\s>])[^>]*>([\s\S]*?)<\/(?:em|i)>/i,
+    );
     if (emMatch) {
-      flushBuffer();
-      const innerText = stripTags(emMatch[1]).trim();
+      flushBuffer(true);
+      const innerText = fasseLeerraum(stripTags(emMatch[1])).trim();
       if (innerText) {
         nodes.push({
           type: "text",
@@ -89,10 +121,10 @@ export function parseInlineContent(html: string): TiptapNode[] {
       continue;
     }
 
-    const uMatch = chunk.match(/^<u[^>]*>([\s\S]*?)<\/u>/i);
+    const uMatch = chunk.match(/^<u(?=[\s>])[^>]*>([\s\S]*?)<\/u>/i);
     if (uMatch) {
-      flushBuffer();
-      const innerText = stripTags(uMatch[1]).trim();
+      flushBuffer(true);
+      const innerText = fasseLeerraum(stripTags(uMatch[1])).trim();
       if (innerText) {
         nodes.push({
           type: "text",
@@ -107,9 +139,9 @@ export function parseInlineContent(html: string): TiptapNode[] {
       /^<a\s[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/i,
     );
     if (linkMatch) {
-      flushBuffer();
+      flushBuffer(true);
       const href = decodeEntities(linkMatch[1]);
-      const linkText = stripTags(linkMatch[2]).trim();
+      const linkText = fasseLeerraum(stripTags(linkMatch[2])).trim();
       if (linkText) {
         nodes.push({
           type: "text",
@@ -120,10 +152,10 @@ export function parseInlineContent(html: string): TiptapNode[] {
       continue;
     }
 
-    const codeMatch = chunk.match(/^<code[^>]*>([\s\S]*?)<\/code>/i);
+    const codeMatch = chunk.match(/^<code(?=[\s>])[^>]*>([\s\S]*?)<\/code>/i);
     if (codeMatch) {
-      flushBuffer();
-      const codeText = stripTags(codeMatch[1]).trim();
+      flushBuffer(true);
+      const codeText = fasseLeerraum(stripTags(codeMatch[1])).trim();
       if (codeText) {
         nodes.push({
           type: "text",
@@ -136,7 +168,15 @@ export function parseInlineContent(html: string): TiptapNode[] {
 
     if (/^<br\s*\/?>$/i.test(chunk)) {
       flushBuffer();
+      schneideEnde();
       nodes.push({ type: "hardBreak" });
+      continue;
+    }
+
+    // Übriges Element mit Endtag (etwa `<span>`): Text behalten, Auszeichnung
+    // verwerfen. Bisher fiel hier der ganze Inhalt weg.
+    if (/^<([a-z][a-z0-9]*)(?=[\s>])[^>]*>[\s\S]*<\/\1\s*>$/i.test(chunk)) {
+      buffer += stripTags(chunk);
       continue;
     }
 
@@ -148,6 +188,7 @@ export function parseInlineContent(html: string): TiptapNode[] {
   }
 
   flushBuffer();
+  schneideEnde();
   return nodes;
 }
 
