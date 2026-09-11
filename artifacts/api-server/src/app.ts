@@ -17,6 +17,7 @@ import { notFoundHandler, errorHandler } from "./middlewares/error-handler";
 import { appConfig } from "./lib/config";
 import { envInt, envString } from "./lib/env";
 import { pool } from "@workspace/db";
+import { istContentApiSchluesselAnfrage } from "./lib/integration-key-bypass";
 
 declare module "express-session" {
   interface SessionData {
@@ -169,6 +170,15 @@ app.use("/api", (req: Request, res: Response, next: NextFunction) => {
     (p) => req.path.startsWith(p),
   );
   if (isConnectorKeyRoute) {
+    next();
+    return;
+  }
+
+  // Content-API mit Integrationsschlüssel: gleicher Fehler wie oben beim
+  // Connector — ohne diesen Durchlass endete jede Anfrage mit dem
+  // dokumentierten Header X-FlowCore-Api-Key hier, und der Schlüssel wurde nie
+  // geprüft. Die Prüfung selbst macht requireIntegrationKey an jeder Datenroute.
+  if (istContentApiSchluesselAnfrage(req.path, req.headers)) {
     next();
     return;
   }
