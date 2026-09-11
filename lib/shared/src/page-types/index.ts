@@ -47,3 +47,5 @@ export type {
   ValidationWarning,
   ValidationResult,
 } from "./registry";
+
+export { CONTENT_HEADING_MAP, getContentHeading } from "./content-heading";

@@ -15,6 +15,7 @@ import {
   getSearchVisibilityForRole,
 } from "./rbac.service";
 import { checkConfidentialityAccessBatch } from "./confidentiality.service";
+import { buildPageFullText } from "../lib/page-full-text";
 import type { OpenAI } from "@workspace/integrations-openai-ai-server";
 import nodePath from "path";
 import nodeFs from "fs";
@@ -585,8 +586,17 @@ async function searchWikiContent(
     const sf = r.structuredFields;
     if (sf) {
       const editorContent = sf._editorContent;
-      if (typeof editorContent === "object" && editorContent !== null) {
-        snippet = extractTextFromBlocks(editorContent).slice(0, 500);
+      // Auszug aus dem Volltext (beschriftete Abschnitte + Inhaltsbereich),
+      // nicht nur aus dem Inhaltsbereich (Audit FC-MSA-20260911, AP-03).
+      const volltext = buildPageFullText(
+        r.templateType ?? "",
+        sf as Record<string, unknown>,
+        typeof editorContent === "object" && editorContent !== null
+          ? (editorContent as Record<string, unknown>)
+          : null,
+      ).plaintext;
+      if (volltext.trim()) {
+        snippet = volltext.slice(0, 500);
       } else {
         const textFields = Object.entries(sf)
           .filter(([k, v]) => typeof v === "string" && !k.startsWith("_"))
@@ -662,17 +672,6 @@ async function searchConnectorSources(
     externalUrl: r.external_url || undefined,
     sourceSystemName: r.system_name,
   }));
-}
-
-function extractTextFromBlocks(content: unknown): string {
-  if (!content || typeof content !== "object") return "";
-  const doc = content as { type?: string; content?: unknown[]; text?: string };
-  if (doc.text) return doc.text;
-  if (!Array.isArray(doc.content)) return "";
-  return doc.content
-    .map((block) => extractTextFromBlocks(block))
-    .filter(Boolean)
-    .join("\n");
 }
 
 function buildContextFromSources(sources: AiSource[]): string {

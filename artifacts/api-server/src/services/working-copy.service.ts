@@ -21,55 +21,8 @@ import {
   validateAgentMetadataPatch,
 } from "../lib/agent-metadata";
 import { recordEvent } from "./graph-change-feed.service";
-
-function extractWikiLinkTargets(content: unknown): string[] {
-  const nodeIds = new Set<string>();
-  function walk(node: unknown): void {
-    if (!node || typeof node !== "object") return;
-    const n = node as Record<string, unknown>;
-    if (n.type === "wikiLink" && n.attrs && typeof n.attrs === "object") {
-      const attrs = n.attrs as Record<string, unknown>;
-      if (typeof attrs.nodeId === "string" && attrs.nodeId) {
-        nodeIds.add(attrs.nodeId);
-      }
-    }
-    if (Array.isArray(n.content)) {
-      for (const child of n.content) walk(child);
-    }
-  }
-  walk(content);
-  return Array.from(nodeIds);
-}
-
-/**
- * TipTap-Feldinhalte in structuredFields können entweder als rohes JSON-Objekt
- * (z. B. _editorContent) oder als JSON-String (z. B. section_block_editor-Felder
- * wie "relations", "action_items") gespeichert sein. Wir scannen alle Werte,
- * damit Wiki-Links aus jedem Rich-Text-Feld als Backlink erfasst werden.
- */
-function extractAllWikiLinkTargets(
-  structuredFields: Record<string, unknown> | null | undefined,
-): string[] {
-  if (!structuredFields) return [];
-  const nodeIds = new Set<string>();
-
-  for (const value of Object.values(structuredFields)) {
-    let parsed: unknown = value;
-    if (typeof value === "string") {
-      try {
-        parsed = JSON.parse(value);
-      } catch {
-        continue;
-      }
-    }
-    if (!parsed || typeof parsed !== "object") continue;
-    for (const id of extractWikiLinkTargets(parsed)) {
-      nodeIds.add(id);
-    }
-  }
-
-  return Array.from(nodeIds);
-}
+import { extractAllWikiLinkTargets } from "@workspace/shared/rich-text";
+import { berechneNaechstePruefung } from "../lib/review-date";
 
 type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -78,9 +31,22 @@ async function syncInlineWikiLinks(
   sourceNodeId: string,
   structuredFields: Record<string, unknown> | null | undefined,
 ): Promise<void> {
-  const targetNodeIds = extractAllWikiLinkTargets(structuredFields).filter(
-    (id) => id !== sourceNodeId,
+  // Ziele aus nativen Seitenlinks, HTML-Links in Abschnittsfeldern und
+  // Verweislisten (Audit FC-MSA-20260911, F02). Nur vorhandene Seiten: Ein Link
+  // auf eine nicht mehr existierende Seite darf das Speichern nicht mit einem
+  // Fremdschlüsselfehler abbrechen.
+  const kandidaten = extractAllWikiLinkTargets(structuredFields).filter(
+    (id) => id !== sourceNodeId.toLowerCase(),
   );
+  const targetNodeIds =
+    kandidaten.length === 0
+      ? []
+      : (
+          await tx
+            .select({ id: contentNodesTable.id })
+            .from(contentNodesTable)
+            .where(inArray(contentNodesTable.id, kandidaten))
+        ).map((r) => r.id);
 
   const existing = await tx
     .select({
@@ -543,6 +509,8 @@ async function autoPublishWorkingCopy(
           // Versionshistorie bei jeder ohne Workflow veröffentlichten Seite
           // ein leeres »Gültig ab« (Audit Markensystem, 11.09.2026).
           validFrom: new Date(),
+          // Prüfzyklus wirksam machen (Audit FC-MSA-20260911, AP-06).
+          nextReviewDate: berechneNaechstePruefung(wc.content, new Date()),
         })
         .returning();
 
@@ -820,6 +788,8 @@ export async function publishWorkingCopy(
           approverId: actorId,
           status: "published",
           validFrom: new Date(),
+          // Prüfzyklus wirksam machen (Audit FC-MSA-20260911, AP-06).
+          nextReviewDate: berechneNaechstePruefung(wc.content, new Date()),
         })
         .returning();
 

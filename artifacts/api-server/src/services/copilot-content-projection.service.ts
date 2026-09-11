@@ -10,7 +10,7 @@ import {
   glossaryTermsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, isNotNull } from "drizzle-orm";
-import { serializeProseMirrorContent } from "../lib/prosemirror-serializer";
+import { buildPageFullText } from "../lib/page-full-text";
 import { stableContentHash } from "../lib/content-hash";
 import { getPrincipalById } from "./principal.service";
 import { htmlToPlainText } from "@workspace/shared/rich-text";
@@ -508,9 +508,17 @@ export async function projectPublishedPage(
     .orderBy(desc(contentRevisionEventsTable.createdAt))
     .limit(1);
 
-  const { plaintext, markdown, media } = serializeProseMirrorContent(
+  // Volltext für Export, Suche und KI: beschriftete Abschnittsfelder plus
+  // Inhaltsbereich mit Tabellen (Audit FC-MSA-20260911, AP-03). Vorher trug
+  // `contentText` nur den Inhaltsbereich — die Abschnitte eines Markenprofils
+  // fehlten ganz, bei Richtlinien fehlten Zweck und Geltungsbereich.
+  const volltext = buildPageFullText(
+    node.templateType,
+    revision.structuredFields as Record<string, unknown> | null,
     pickEditorDocument(revision.content, revision.structuredFields),
   );
+  const { plaintext, markdown } = volltext;
+  const { media } = volltext.editor;
 
   const structuredFields = {
     ...scopeStructuredFieldsToTemplate(

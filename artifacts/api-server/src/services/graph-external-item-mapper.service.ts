@@ -6,6 +6,8 @@ import {
   REQUIRED_GLOSSARY_PROPERTY_NAMES,
 } from "../lib/graph-external-item-schema";
 import { AppError } from "../lib/app-error";
+import { getPageType } from "@workspace/shared/page-types";
+import { istTextAbschnitt } from "../lib/page-full-text";
 
 export interface GraphExternalItem {
   id: string;
@@ -173,10 +175,18 @@ function formatStructuredFieldValue(value: unknown): string {
  */
 function renderStructuredFieldsBlock(
   structuredFields: Record<string, unknown>,
+  pageType: string,
 ): string {
+  // Textabschnitte des Seitentyps stehen beschriftet bereits unter »Inhalt«
+  // (Volltext der Projektion, Audit FC-MSA-20260911 AP-03). Hier bleiben nur
+  // Widget-Daten wie RACI, SIPOC oder Kennzahlen.
+  const textAbschnitte = new Set(
+    (getPageType(pageType)?.sections ?? []).map((s) => s.key),
+  );
   const entries = Object.entries(structuredFields ?? {}).filter(
     ([key, value]) =>
       !STRUCTURED_FIELD_CONTENT_EXCLUDE.has(key) &&
+      !(textAbschnitte.has(key) && istTextAbschnitt(value)) &&
       value !== null &&
       value !== undefined &&
       value !== "" &&
@@ -282,6 +292,7 @@ function buildQuellenhinweis(fields: {
 function buildPageContent(projection: CopilotPageProjection): string {
   const structuredFieldsBlock = renderStructuredFieldsBlock(
     projection.structuredFields,
+    projection.pageType,
   );
   const childPagesBlock = renderChildPagesBlock({
     childPages: projection.childPages,

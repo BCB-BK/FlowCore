@@ -1,5 +1,6 @@
 import { useRoute, useLocation, useSearch } from "wouter";
 import { useSafeLinkProps } from "@/hooks/use-unsaved-changes";
+import { getContentHeading } from "@workspace/shared/page-types";
 import {
   useNode,
   useNodeChildren,
@@ -122,15 +123,6 @@ function getReferencesValue(
   if (typeof val === "object") return JSON.stringify(val);
   return String(val);
 }
-
-const CONTENT_HEADING_MAP: Record<string, string> = {
-  policy: "Richtlinientext",
-  procedure_instruction: "Ablaufbeschreibung",
-  work_instruction: "Arbeitsschritte",
-  meeting_protocol: "Entscheidungen",
-  training_resource: "Schulungsinhalt",
-  use_case: "Normalablauf",
-};
 
 export function NodeDetail() {
   const [, params] = useRoute("/node/:id");
@@ -1279,7 +1271,7 @@ export function NodeDetail() {
           {isOverviewPage && !isFieldEmpty(editorContent) && (
             <div className="mb-6">
               <h3 className="text-base font-semibold mb-3">
-                {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                {getContentHeading(node.templateType)}
               </h3>
               <BlockEditor
                 content={editorContent}
@@ -1328,7 +1320,7 @@ export function NodeDetail() {
               {!isFieldEmpty(editorContent) && (
                 <div>
                   <h3 className="text-base font-semibold mb-3">
-                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                    {getContentHeading(node.templateType)}
                   </h3>
                   <BlockEditor
                     content={editorContent}
@@ -1366,7 +1358,7 @@ export function NodeDetail() {
               {!isFieldEmpty(editorContent) && (
                 <div className="mt-6">
                   <h3 className="text-base font-semibold mb-3">
-                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                    {getContentHeading(node.templateType)}
                   </h3>
                   <BlockEditor
                     content={editorContent}

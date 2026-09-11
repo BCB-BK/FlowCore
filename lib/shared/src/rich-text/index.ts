@@ -110,3 +110,9 @@ export {
   stripTags,
 } from "./html-to-tiptap";
 export type { TiptapNode, TiptapMark } from "./html-to-tiptap";
+
+export {
+  extractWikiLinkTargets,
+  extractHtmlLinkTargets,
+  extractAllWikiLinkTargets,
+} from "./wiki-link-targets";

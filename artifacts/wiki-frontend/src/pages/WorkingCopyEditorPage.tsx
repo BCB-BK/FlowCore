@@ -1,5 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { getContentHeading } from "@workspace/shared/page-types";
 import { useNode, useNodeRevisions, useUpdateNode } from "@/hooks/use-nodes";
 import { useToast } from "@/hooks/use-toast";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -100,15 +101,6 @@ const CHANGE_TYPE_LABELS: Record<string, string> = {
   major: "Größere Änderung",
   regulatory: "Regulatorisch",
   structural: "Strukturell",
-};
-
-const CONTENT_HEADING_MAP: Record<string, string> = {
-  policy: "Richtlinientext",
-  procedure_instruction: "Ablaufbeschreibung",
-  work_instruction: "Arbeitsschritte",
-  meeting_protocol: "Entscheidungen",
-  training_resource: "Schulungsinhalt",
-  use_case: "Normalablauf",
 };
 
 const REFERENCES_KEY_MAP: Record<string, string> = {
@@ -1419,7 +1411,7 @@ export function WorkingCopyEditorPage() {
           {!isFieldEmpty(previewEditorContent) && (
             <div className="mt-6">
               <h3 className="text-base font-semibold mb-3">
-                {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                {getContentHeading(node.templateType)}
               </h3>
               <BlockEditor
                 content={previewEditorContent}
@@ -1478,7 +1470,7 @@ export function WorkingCopyEditorPage() {
                 />
                 <div>
                   <h3 className="text-base font-semibold mb-3">
-                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                    {getContentHeading(node.templateType)}
                   </h3>
                   <BlockEditor
                     content={editorContent}
@@ -1513,7 +1505,7 @@ export function WorkingCopyEditorPage() {
 
                 <div className="mt-6">
                   <h3 className="text-base font-semibold mb-3">
-                    {CONTENT_HEADING_MAP[node.templateType] ?? "Inhalt"}
+                    {getContentHeading(node.templateType)}
                   </h3>
                   <BlockEditor
                     content={editorContent}
