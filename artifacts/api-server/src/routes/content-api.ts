@@ -82,10 +82,14 @@ function toPageSummary(node: ScopedNode, baseUrl: string) {
 }
 
 /**
- * Öffentlich, ohne Schlüssel: die Beschreibung der Schnittstelle selbst.
- * Sie enthält keine Inhalte, sondern nur die Form der Endpunkte — und muss
- * abrufbar sein, damit sie sich in Salesforce, Postman oder die Power
- * Platform importieren lässt.
+ * Die Beschreibung der Schnittstelle selbst: keine Inhalte, nur die Form der
+ * Endpunkte — zum Import in Salesforce, Postman oder die Power Platform.
+ *
+ * Die Route verlangt keinen Schlüssel; die globale Anmeldesperre in `app.ts`
+ * greift davor trotzdem, sodass auch dieser Abruf den Header
+ * `X-FlowCore-Api-Key` braucht. Das ist bewusst so belassen (eine Ausnahme
+ * wäre eine Abschwächung der Anmeldung) und in `docs/30-CONTENT-API.md` sowie
+ * im Einstellungsdialog entsprechend beschrieben.
  */
 contentApiRouter.get("/v1/openapi.json", (req, res) => {
   res.json(buildContentApiSpec(baseUrlFromRequest(req)));

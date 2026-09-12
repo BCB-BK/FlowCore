@@ -1,10 +1,12 @@
 /**
  * Beschreibung der FlowCore Content-API (v1) als OpenAPI-3.0-Dokument.
  *
- * Wird unter /api/content/v1/openapi.json ohne Schlüssel ausgeliefert, damit
- * sie sich direkt in Salesforce (External Services), Postman, die Power
- * Platform oder einen Codegenerator importieren lässt. Das Dokument
- * beschreibt nur die Form der Schnittstelle — Inhalte liefert es nicht.
+ * Wird unter /api/content/v1/openapi.json ausgeliefert, damit sie sich direkt
+ * in Salesforce (External Services), Postman, die Power Platform oder einen
+ * Codegenerator importieren lässt. Das Dokument beschreibt nur die Form der
+ * Schnittstelle — Inhalte liefert es nicht. Die Route selbst verlangt keinen
+ * Schlüssel, die globale Anmeldesperre greift davor jedoch auch hier: Der
+ * Abruf braucht denselben Header wie die Daten (siehe docs/30-CONTENT-API.md).
  */
 export function buildContentApiSpec(baseUrl: string) {
   return {

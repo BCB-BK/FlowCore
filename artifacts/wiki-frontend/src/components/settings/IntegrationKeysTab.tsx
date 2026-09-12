@@ -1003,8 +1003,8 @@ export function IntegrationKeysTab() {
           <p className="text-xs text-muted-foreground">
             Die Schnittstellenbeschreibung lässt sich direkt in Salesforce
             (External Services), Postman, die Power Platform oder einen
-            Codegenerator importieren. Sie ist ohne Schlüssel abrufbar und
-            enthält keine Inhalte, nur die Form der Endpunkte.
+            Codegenerator importieren. Sie enthält keine Inhalte, nur die Form
+            der Endpunkte — abrufbar mit demselben Header wie die Daten.
           </p>
         </CardContent>
       </Card>

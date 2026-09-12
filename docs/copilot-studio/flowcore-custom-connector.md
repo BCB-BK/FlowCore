@@ -213,9 +213,11 @@ Jede Antwort von `GET /nodes/:id` enthält:
 
 - `hasChildren` — `true`/`false`
 - `childPageCount` — Gesamtzahl der veröffentlichten Unterseiten
-- `childPages` — vollständige Liste (`title`, `displayCode`, `pageType`,
-  `shortDescription`, `sourceUrl`) je Unterseite, sofern nicht zu groß
-  (aktuell bis 12 Einträge)
+- `childPages` — vollständige Liste je Unterseite, sofern nicht zu groß
+  (aktuell bis 12 Einträge): `id`, `title`, `displayCode`, `pageType`,
+  `sortOrder`, `shortDescription`, `sourceUrl`. Die Liste kommt in der
+  gespeicherten Reihenfolge (`sortOrder`, bei Gleichstand Titel, dann `id`);
+  `id` erspart das Auflösen über den Titel (Reaudit FC-RA-20260911, T-03)
 - `topChildPages` / `childPagesSearchHint` — wenn die Liste zu groß ist,
   wird `childPages` zu `null`; stattdessen liefert `topChildPages` eine
   Auswahl von 5 Einträgen und `childPagesSearchHint` einen fertigen
@@ -243,7 +245,7 @@ deutschen Satz, passend zum `pageType` der Übersichtsseite:
 
 `e2e/tests/copilot-search-child-pages.spec.ts` prüft, dass eine
 Übersichtsseite mit Unterseiten `childPages` (oder bei Überschreiten des
-Limits `topChildPages`/`childPagesSearchHint`) mit allen fünf Feldern pro
+Limits `topChildPages`/`childPagesSearchHint`) mit allen Feldern pro
 Eintrag liefert, dass `childPagesGuidance` gesetzt ist und
 "Detailseiten"/"Ausarbeitung" enthält, und dass eine Seite ohne Unterseiten
 `childPageCount: 0` sowie `childPagesGuidance: null` zurückgibt.
