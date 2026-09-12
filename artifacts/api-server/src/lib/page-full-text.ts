@@ -22,14 +22,27 @@ import { getContentHeading, getPageType } from "@workspace/shared/page-types";
 import { htmlToTiptapJson } from "@workspace/shared/rich-text";
 import {
   serializeProseMirrorContent,
+  type LinkOccurrence,
   type ProseMirrorSerializationResult,
 } from "./prosemirror-serializer";
+
+/** Verweisvorkommen mit dem Feld, in dem es steht. */
+export type Verweisvorkommen = LinkOccurrence & {
+  /** Abschnittsschlüssel des Seitentyps oder `_editorContent`. */
+  section: string;
+};
 
 export interface PageFullText {
   plaintext: string;
   markdown: string;
   /** Serialisierung nur des Inhaltsbereichs (Medien, verlinkte Seiten). */
   editor: ProseMirrorSerializationResult;
+  /**
+   * Jeder Seitenverweis des gelesenen Inhalts mit Feld und Tabellenposition —
+   * damit ein Verbraucher Zielidentitäten prüfen kann, ohne Markdown zu
+   * zerlegen (Reaudit FC-RA-20260911, T-01/T-02).
+   */
+  links: Verweisvorkommen[];
 }
 
 /** Ein Abschnittswert, der als Fließtext zählt (HTML oder Klartext, kein JSON). */
@@ -56,6 +69,7 @@ export function buildPageFullText(
 
   const klartext: string[] = [];
   const markdown: string[] = [];
+  const links: Verweisvorkommen[] = [];
   for (const abschnitt of getPageType(templateType)?.sections ?? []) {
     const wert = felder[abschnitt.key];
     if (!istTextAbschnitt(wert)) continue;
@@ -72,17 +86,24 @@ export function buildPageFullText(
     if (!s.plaintext.trim()) continue;
     klartext.push(`${abschnitt.label}\n${s.plaintext}`);
     markdown.push(`# ${abschnitt.label}\n\n${s.markdown}`);
+    for (const v of s.linkOccurrences) {
+      links.push({ ...v, section: abschnitt.key });
+    }
   }
 
   if (hatInhaltsbereich) {
     const ueberschrift = getContentHeading(templateType);
     klartext.push(`${ueberschrift}\n${editor.plaintext}`);
     markdown.push(`# ${ueberschrift}\n\n${editor.markdown}`);
+    for (const v of editor.linkOccurrences) {
+      links.push({ ...v, section: "_editorContent" });
+    }
   }
 
   return {
     plaintext: klartext.join("\n\n"),
     markdown: markdown.join("\n\n"),
     editor,
+    links,
   };
 }

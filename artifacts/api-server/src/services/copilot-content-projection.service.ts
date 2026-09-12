@@ -10,8 +10,19 @@ import {
   glossaryTermsTable,
 } from "@workspace/db/schema";
 import { eq, and, desc, isNotNull } from "drizzle-orm";
-import { buildPageFullText } from "../lib/page-full-text";
+import {
+  buildPageFullText,
+  type Verweisvorkommen,
+} from "../lib/page-full-text";
+import {
+  fachlicheMetadaten,
+  governanceAngaben,
+  sortiereKindseiten,
+  type FachlicheMetadaten,
+  type GovernanceAngaben,
+} from "../lib/content-api-contract";
 import { stableContentHash } from "../lib/content-hash";
+import { FLOWCORE_BASE_URL } from "../lib/flowcore-base-url";
 import { getPrincipalById } from "./principal.service";
 import { htmlToPlainText } from "@workspace/shared/rich-text";
 import { getPageType } from "@workspace/shared/page-types";
@@ -25,9 +36,7 @@ import {
   evaluateIndexability,
 } from "../lib/agent-metadata";
 
-const SOURCE_BASE_URL =
-  process.env["APP_PUBLIC_URL"]?.replace(/\/$/, "") ||
-  "https://flowcore.bildungscampus-backnang.de";
+export const SOURCE_BASE_URL = FLOWCORE_BASE_URL;
 
 export interface CopilotPageProjection {
   itemType: "flowcore_page";
@@ -74,6 +83,16 @@ export interface CopilotPageProjection {
   contentHash: string;
   shortDescription: string;
   parentPath: string | null;
+  /** Eltern-Seite als Identität, nicht nur als Textpfad (Reaudit T-02). */
+  parentNodeId: string | null;
+  /** Gespeicherte Reihenfolge unter der Elternseite (Reaudit T-03). */
+  sortOrder: number;
+  /** Fachliche Metadaten aus dem Metadatenblock der Revision (Reaudit T-02). */
+  pageMetadata: FachlicheMetadaten;
+  /** Status- und Verbindlichkeitsangaben mit ihrer Herkunft (Reaudit T-04). */
+  governance: GovernanceAngaben;
+  /** Jeder Seitenverweis im Inhalt mit Feld und Tabellenposition (Reaudit T-01). */
+  contentLinks: Verweisvorkommen[];
   hasChildren: boolean;
   childPageCount: number;
   childPageTitles: string[];
@@ -278,9 +297,13 @@ export async function getPublishedChildTitles(
 }
 
 export interface ChildPageSummary {
+  /** Seiten-UUID — ohne sie bliebe nur die Titelsuche (Reaudit T-03). */
+  id: string;
   title: string;
   displayCode: string;
   pageType: string;
+  /** Gespeicherte Reihenfolge unter dieser Elternseite. */
+  sortOrder: number;
   shortDescription: string;
   sourceUrl: string;
 }
@@ -311,6 +334,7 @@ export async function getPublishedChildPages(
       title: contentNodesTable.title,
       displayCode: contentNodesTable.displayCode,
       templateType: contentNodesTable.templateType,
+      sortOrder: contentNodesTable.sortOrder,
       structuredFields: contentRevisionsTable.structuredFields,
     })
     .from(contentNodesTable)
@@ -326,7 +350,10 @@ export async function getPublishedChildPages(
         eq(contentRevisionsTable.status, "published"),
       ),
     );
-  return rows.map((r) => {
+  // Reihenfolge kommt aus `sort_order`, nicht aus der Abrufreihenfolge der
+  // Datenbank — vier Register wurden sonst falsch herum ausgeliefert
+  // (Reaudit FC-RA-20260911, T-03).
+  return sortiereKindseiten(rows).map((r) => {
     const sf = r.structuredFields ?? {};
     const shortDescription =
       typeof sf.kurzbeschreibung === "string" &&
@@ -336,9 +363,11 @@ export async function getPublishedChildPages(
           ? sf.summary
           : "";
     return {
+      id: r.id,
       title: r.title,
       displayCode: r.displayCode,
       pageType: r.templateType,
+      sortOrder: r.sortOrder,
       shortDescription,
       sourceUrl: `${SOURCE_BASE_URL}/node/${r.id}`,
     };
@@ -641,6 +670,14 @@ export async function projectPublishedPage(
     contentHash,
     shortDescription,
     parentPath,
+    parentNodeId: node.parentNodeId ?? null,
+    sortOrder: node.sortOrder,
+    pageMetadata: fachlicheMetadaten(revision.content),
+    governance: governanceAngaben(
+      revision.structuredFields as Record<string, unknown> | null,
+      node.templateType,
+    ),
+    contentLinks: volltext.links,
     hasChildren,
     childPageCount,
     childPageTitles,

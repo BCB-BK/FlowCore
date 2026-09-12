@@ -18,13 +18,37 @@ export interface MediaReference {
   url: string | null;
 }
 
+/**
+ * Ein einzelnes Verweisvorkommen im Inhalt — mit seiner Fundstelle, damit ein
+ * Verbraucher die Ziel-UUID einer Tabellenzelle zuordnen kann, ohne das
+ * Markdown zu zerlegen (Reaudit FC-RA-20260911, T-01/T-02).
+ *
+ * `table`, `row` und `column` zählen ab 1; `row` schließt die Kopfzeile ein,
+ * damit die Zählung der Markdown-Ausgabe entspricht.
+ */
+export interface LinkOccurrence {
+  targetNodeId: string;
+  label: string;
+  /** `wikiLink` = nativer Seitenverweis, `href` = Link im gespeicherten HTML. */
+  kind: "wikiLink" | "href";
+  inTable: boolean;
+  table: number | null;
+  row: number | null;
+  column: number | null;
+}
+
 export interface ProseMirrorSerializationResult {
   plaintext: string;
   markdown: string;
   media: MediaReference[];
   /** Titles/labels of internal wiki-link references found in the content. */
   linkedNodeIds: string[];
+  /** Jedes Vorkommen eines Seitenverweises mit seiner Fundstelle. */
+  linkOccurrences: LinkOccurrence[];
 }
+
+/** Wurzelrelative FlowCore-Seitenlinks, wie sie im Editor und im HTML stehen. */
+const NODE_LINK = /^\/node\/([0-9a-fA-F-]{36})$/;
 
 interface PMNode {
   type?: string;
@@ -43,10 +67,40 @@ class Serializer {
   markdownParts: string[] = [];
   media: MediaReference[] = [];
   linkedNodeIds: string[] = [];
+  linkOccurrences: LinkOccurrence[] = [];
+  /** Tabellenzähler und aktuelle Zelle — Fundstelle jedes Verweises. */
+  private tableCount = 0;
+  private cell: { table: number; row: number; column: number } | null = null;
+
+  /**
+   * In einer Tabellenzelle darf kein Zeichen die Spaltenzahl verändern: `|`
+   * wird maskiert, Zeilenumbrüche werden zu `<br>`. Die Ziel-URL bleibt
+   * unberührt — sie enthält keines dieser Zeichen.
+   */
+  private maskiere(text: string): string {
+    return this.cell ? text.replace(/\|/g, "\\|") : text;
+  }
+
+  private merkeVerweis(
+    targetNodeId: string,
+    label: string,
+    kind: "wikiLink" | "href",
+  ): void {
+    this.linkedNodeIds.push(targetNodeId);
+    this.linkOccurrences.push({
+      targetNodeId,
+      label,
+      kind,
+      inTable: this.cell !== null,
+      table: this.cell?.table ?? null,
+      row: this.cell?.row ?? null,
+      column: this.cell?.column ?? null,
+    });
+  }
 
   serializeText(node: PMNode): { plain: string; md: string } {
     const plain = node.text ?? "";
-    let md = plain;
+    let md = this.maskiere(plain);
     for (const mark of node.marks ?? []) {
       switch (mark.type) {
         case "bold":
@@ -63,6 +117,8 @@ class Serializer {
           break;
         case "link": {
           const href = str(mark.attrs?.href, "");
+          const ziel = NODE_LINK.exec(href);
+          if (ziel) this.merkeVerweis(ziel[1], plain, "href");
           md = href ? `[${md}](${href})` : md;
           break;
         }
@@ -108,7 +164,9 @@ class Serializer {
         return this.serializeText(node);
 
       case "hardBreak":
-        return { plain: "\n", md: "  \n" };
+        return this.cell
+          ? { plain: "\n", md: "<br>" }
+          : { plain: "\n", md: "  \n" };
 
       case "paragraph": {
         const { plain, md } = this.serializeInlineChildren(node.content);
@@ -287,11 +345,12 @@ class Serializer {
         const nodeId = str(node.attrs?.nodeId, "");
         const title = str(node.attrs?.title, nodeId);
         const displayCode = str(node.attrs?.displayCode, "");
-        if (nodeId) this.linkedNodeIds.push(nodeId);
         const label = displayCode ? `${displayCode} ${title}` : title;
-        if (inline) return { plain: label, md: `[${label}](/node/${nodeId})` };
+        if (nodeId) this.merkeVerweis(nodeId, label, "wikiLink");
+        const md = `[${this.maskiere(label)}](/node/${nodeId})`;
+        if (inline) return { plain: label, md };
         this.plaintextParts.push(label);
-        this.markdownParts.push(`[${label}](/node/${nodeId})`);
+        this.markdownParts.push(md);
         return { plain: "", md: "" };
       }
 
@@ -350,24 +409,53 @@ class Serializer {
     return { plain, md };
   }
 
+  /**
+   * Tabellen werden mit demselben Inline-Renderer verarbeitet wie Absätze.
+   * Vorher lief nur ein Klartextpfad über die Zellen — `wikiLink` wurde dabei
+   * zur bloßen Beschriftung, die gespeicherte Ziel-UUID ging verloren
+   * (Reaudit FC-RA-20260911, T-01: 171 Vorkommen in 20 Seiten).
+   */
   serializeTable(node: PMNode) {
     const rows = node.content ?? [];
     const plainRows: string[] = [];
     const mdRows: string[] = [];
-    let isFirstRow = true;
+    this.tableCount += 1;
+    const table = this.tableCount;
+    let rowNo = 0;
     for (const row of rows) {
+      rowNo += 1;
       const cells = row.content ?? [];
-      const cellTexts = cells.map((cell) => {
-        const { plain } = this.serializeInlineChildren(
-          (cell.content ?? []).flatMap((c) => c.content ?? [c]),
+      const plainCells: string[] = [];
+      const mdCells: string[] = [];
+      cells.forEach((cell, index) => {
+        this.cell = { table, row: rowNo, column: index + 1 };
+        const bloecke = (cell.content ?? []).map((block) =>
+          this.serializeInlineChildren(
+            block.type === "paragraph"
+              ? block.content
+              : (block.content ?? [block]),
+          ),
         );
-        return plain.replace(/\|/g, "\\|").trim();
+        this.cell = null;
+        plainCells.push(
+          bloecke
+            .map((b) => b.plain)
+            .join(" ")
+            .replace(/\|/g, "\\|")
+            .trim(),
+        );
+        mdCells.push(
+          bloecke
+            .map((b) => b.md)
+            .join("<br>")
+            .replace(/\r?\n/g, "<br>")
+            .trim(),
+        );
       });
-      plainRows.push(cellTexts.join(" | "));
-      mdRows.push(`| ${cellTexts.join(" | ")} |`);
-      if (isFirstRow) {
-        mdRows.push(`| ${cellTexts.map(() => "---").join(" | ")} |`);
-        isFirstRow = false;
+      plainRows.push(plainCells.join(" | "));
+      mdRows.push(`| ${mdCells.join(" | ")} |`);
+      if (rowNo === 1) {
+        mdRows.push(`| ${mdCells.map(() => "---").join(" | ")} |`);
       }
     }
     this.plaintextParts.push(plainRows.join("\n"));
@@ -379,7 +467,13 @@ export function serializeProseMirrorContent(
   doc: Record<string, unknown> | null | undefined,
 ): ProseMirrorSerializationResult {
   if (!doc || typeof doc !== "object") {
-    return { plaintext: "", markdown: "", media: [], linkedNodeIds: [] };
+    return {
+      plaintext: "",
+      markdown: "",
+      media: [],
+      linkedNodeIds: [],
+      linkOccurrences: [],
+    };
   }
   const serializer = new Serializer();
   serializer.serializeNode(doc, 0, false);
@@ -388,5 +482,6 @@ export function serializeProseMirrorContent(
     markdown: serializer.markdownParts.join("\n\n").trim(),
     media: serializer.media,
     linkedNodeIds: [...new Set(serializer.linkedNodeIds)],
+    linkOccurrences: serializer.linkOccurrences,
   };
 }

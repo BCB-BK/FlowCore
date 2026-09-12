@@ -11,7 +11,7 @@ export function buildContentApiSpec(baseUrl: string) {
     openapi: "3.0.1",
     info: {
       title: "FlowCore Content-API",
-      version: "1.0.0",
+      version: "1.1.0",
       description: [
         "Lesender Zugriff auf veröffentlichte FlowCore-Inhalte für externe Systeme.",
         "",
@@ -23,6 +23,21 @@ export function buildContentApiSpec(baseUrl: string) {
         "",
         "Ausgeliefert werden ausschließlich veröffentlichte Stände. Arbeitskopien,",
         "Entwürfe und Seiten in Prüfung verlassen FlowCore nicht.",
+        "",
+        "**Exportvertrag** (`contract` in jeder Seitenantwort): Seitenidentität,",
+        "aktuelle Revision, Veröffentlichungs- und Entscheidungsstand mit Herkunft,",
+        "Herkunftsfassung, Marke und Markenebene, Prüfrhythmus und -termin,",
+        "Eltern-ID und Sortierung, typisierte Beziehungen, Verweisvorkommen im",
+        "Inhalt sowie Inhalt und Prüfsumme.",
+        "",
+        "**Links:** Alle Links in `contentMarkdown`, `media`, `structuredData` und",
+        "`childPages` sind absolute URLs auf Basis von `linkBase`. Ein eigener",
+        "Resolver ist nicht nötig.",
+        "",
+        "**Reihenfolge und Seitenweise:** `/v1/pages` liefert aufsteigend nach",
+        "`updatedAt`. Wird während einer Blätterfolge eine Seite geändert, kann sie",
+        "ihre Position wechseln; der Abgleich über `/v1/changes?since=<checkpoint>`",
+        "am Ende eines Laufs zeigt genau diese Fälle an.",
       ].join("\n"),
     },
     servers: [{ url: `${baseUrl}/api/content` }],
@@ -369,7 +384,91 @@ export function buildContentApiSpec(baseUrl: string) {
             pageType: { type: "string" },
             version: { type: "string", nullable: true },
             summary: { type: "string" },
+            contract: {
+              type: "object",
+              description:
+                "Name und Version des Exportvertrags, den diese Antwort erfüllt.",
+              properties: {
+                name: { type: "string" },
+                version: { type: "string" },
+                stand: { type: "string" },
+              },
+            },
+            linkBase: {
+              type: "string",
+              description:
+                "Basis, gegen die FlowCore-Links in dieser Antwort aufgelöst sind.",
+            },
             format: { type: "string", enum: ["markdown", "text", "full"] },
+            parentNodeId: {
+              type: "string",
+              format: "uuid",
+              nullable: true,
+              description: "Elternseite als Identität, nicht nur als Textpfad.",
+            },
+            sortOrder: {
+              type: "integer",
+              description:
+                "Gespeicherte Reihenfolge unter der Elternseite (aufsteigend).",
+            },
+            pageMetadata: {
+              type: "object",
+              description:
+                "Fachliche Metadaten aus dem Metadatenblock der Revision. Nicht gepflegte Werte sind null.",
+              properties: {
+                brandName: { type: "string", nullable: true },
+                brandLevel: {
+                  type: "string",
+                  nullable: true,
+                  description: "dachmarke | einzelmarke | submarke",
+                },
+                sourceVersion: {
+                  type: "string",
+                  nullable: true,
+                  description:
+                    "Historische Herkunftsfassung des Quellpakets — nicht die FlowCore-Revision.",
+                },
+                reviewCycleMonths: {
+                  type: "integer",
+                  nullable: true,
+                  description:
+                    "Wiederholungsregel der Prüfung; getrennt von reviewDue (nächster Termin).",
+                },
+                sourceOfTruth: { type: "string", nullable: true },
+                ownerDisplay: { type: "string", nullable: true },
+              },
+            },
+            governance: {
+              type: "object",
+              description:
+                "Statuswerte mit Herkunft und Bedeutung. Jeder Eintrag nennt in `herkunft` das Speicherfeld oder sagt ausdrücklich, dass der Wert ein Standardwert bzw. nicht gepflegt ist. Publikationsstand, redaktioneller Entscheidungsstand und normative Verbindlichkeit sind drei verschiedene Dimensionen.",
+              properties: {
+                publicationStatus: {
+                  $ref: "#/components/schemas/Herkunftswert",
+                },
+                decisionStatus: { $ref: "#/components/schemas/Herkunftswert" },
+                authorityLevel: { $ref: "#/components/schemas/Herkunftswert" },
+                sourcePriority: { $ref: "#/components/schemas/Herkunftswert" },
+                contentRole: {
+                  allOf: [{ $ref: "#/components/schemas/Herkunftswert" }],
+                  description:
+                    "navigation = Register/Übersicht, content = Seite mit eigenem fachlichem Inhalt.",
+                },
+              },
+            },
+            contentLinks: {
+              type: "array",
+              description:
+                "Jedes Vorkommen eines Seitenverweises im gelesenen Inhalt — mit Feld, Tabellenposition (table/row/column ab 1, row einschließlich Kopfzeile) und Ziel-UUID. Damit sind Zielidentitäten prüfbar, ohne Markdown zu zerlegen.",
+              items: { $ref: "#/components/schemas/ContentLink" },
+            },
+            childPages: {
+              type: "array",
+              nullable: true,
+              description:
+                "Direkte Unterseiten in gespeicherter Reihenfolge (sortOrder, dann Titel, dann ID). null, wenn es mehr als 12 sind — dann topChildPages und childPagesSearchHint verwenden.",
+              items: { $ref: "#/components/schemas/ChildPage" },
+            },
             contentText: {
               type: "string",
               description: "Nur bei format=text und format=full",
@@ -392,7 +491,12 @@ export function buildContentApiSpec(baseUrl: string) {
               items: { type: "object" },
               description: "Bilder, Dateien und Videos der Seite",
             },
-            relations: { type: "array", items: { type: "object" } },
+            relations: {
+              type: "array",
+              description:
+                "Gerichtete Beziehungen dieser Seite mit ihrem gespeicherten Typ: inline_wiki_link = Seitenverweis aus dem Inhalt, implements_policy = typisierte Umsetzung einer Regelseite. Der Typ wird nicht aus Titeln abgeleitet.",
+              items: { $ref: "#/components/schemas/Relation" },
+            },
             tags: { type: "array", items: { type: "string" } },
             ownerName: { type: "string", nullable: true },
             confidentiality: { type: "string", nullable: true },
@@ -401,7 +505,66 @@ export function buildContentApiSpec(baseUrl: string) {
             sourceUrl: { type: "string" },
             publishedAt: { type: "string", nullable: true },
             lastModifiedAt: { type: "string", nullable: true },
-            contentHash: { type: "string" },
+            contentHash: {
+              type: "string",
+              description:
+                "SHA-256 über das stabil sortierte JSON aus content, structuredFields, title und versionLabel der veröffentlichten Revision (Inhaltshash des Quellsystems). Er ist KEIN Bytehash der ausgelieferten Antwort oder einer erzeugten Datei — ein Dateihash ist zusätzlich vom Verbraucher zu bilden.",
+            },
+          },
+        },
+        Herkunftswert: {
+          type: "object",
+          properties: {
+            wert: {
+              description: "Der Wert selbst; null heißt: nicht gepflegt.",
+              nullable: true,
+            },
+            herkunft: {
+              type: "string",
+              description:
+                "Speicherfeld, aus dem der Wert stammt, oder ausdrücklich »standardwert« bzw. »nicht gepflegt«.",
+            },
+            bedeutung: { type: "string" },
+          },
+        },
+        ContentLink: {
+          type: "object",
+          properties: {
+            targetNodeId: { type: "string", format: "uuid" },
+            label: { type: "string" },
+            url: { type: "string" },
+            kind: { type: "string", enum: ["wikiLink", "href"] },
+            section: {
+              type: "string",
+              description:
+                "Abschnittsschlüssel des Seitentyps oder _editorContent für den Inhaltsbereich.",
+            },
+            inTable: { type: "boolean" },
+            table: { type: "integer", nullable: true },
+            row: { type: "integer", nullable: true },
+            column: { type: "integer", nullable: true },
+          },
+        },
+        ChildPage: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            title: { type: "string" },
+            displayCode: { type: "string" },
+            pageType: { type: "string" },
+            sortOrder: { type: "integer" },
+            shortDescription: { type: "string" },
+            sourceUrl: { type: "string" },
+          },
+        },
+        Relation: {
+          type: "object",
+          properties: {
+            targetNodeId: { type: "string", format: "uuid" },
+            targetDisplayCode: { type: "string", nullable: true },
+            targetTitle: { type: "string", nullable: true },
+            relationType: { type: "string" },
+            description: { type: "string", nullable: true },
           },
         },
       },

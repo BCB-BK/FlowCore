@@ -8,6 +8,7 @@ import {
   formatiereSeite,
   parseSeitenformat,
 } from "../lib/content-api-page-format";
+import { FLOWCORE_BASE_URL } from "../lib/flowcore-base-url";
 import type { CopilotPageProjection } from "../services/copilot-content-projection.service";
 
 const grosserEditor = {
@@ -42,6 +43,9 @@ const seite = {
     },
   ],
   contentHash: "abc",
+  contentLinks: [],
+  childPages: [],
+  topChildPages: null,
   structuredFields: {
     _editorContent: grosserEditor,
     purpose: "<p>Dieses Markensystem verbindet …</p>",
@@ -92,11 +96,12 @@ describe("formatiereSeite", () => {
       media: unknown[];
       relations: unknown[];
     };
+    // T-03 (Reaudit FC-RA-20260911): Links verlassen die API absolut.
     expect(f.structuredData.references).toEqual([
       {
         type: "upload",
         title: "Externes Herkunftsarchiv",
-        url: "/api/media/files/x.zip",
+        url: `${FLOWCORE_BASE_URL}/api/media/files/x.zip`,
       },
     ]);
     expect(f.structuredData.raci).toEqual({
