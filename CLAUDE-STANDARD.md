@@ -1,6 +1,6 @@
-# OneCampus Entwicklungsstandard — Kernvertrag (v2.16)
+# OneCampus Entwicklungsstandard — Kernvertrag (v2.17)
 
-> **Version 2.16 · 10.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
+> **Version 2.17 · 11.09.2026 · Kanonische Quelle: `BCB-BK/ocg-architekt` → `standards/`**
 > Diese Datei ist **Kontext, keine erzwungene Konfiguration** — Befolgung ist nicht garantiert.
 > Deshalb: Harte Verbote sind zusätzlich technisch durchgesetzt (Hooks, Permissions, CI —
 > Durchsetzungsmatrix §10). Diese Datei bleibt bewusst kurz; Verfahren stehen in Skills,
@@ -46,6 +46,13 @@
   Die Antwort steht in der Auftragskarte — auch „nichts gefunden“. **Am Ende der Aufgabe
   werden fünf Zeilen ins Dossier zurückgeschrieben.** Abweichen von dokumentiertem Stand
   ohne ausgewiesene Betreiber-Freigabe ist ein unerfülltes Kriterium (§8).
+- **Marke, Ton, Ansprache, Bild: die Quelle ist FlowCore (v2.17, Betreiber 09.09.2026).**
+  Nicht das Repo, nicht ein PDF, nicht die Erinnerung. Vor jeder Arbeit an Text, Claims,
+  Bildauswahl, Alt-Texten oder Seitentiteln wird dort nachgesehen — auf den Maschinen über
+  das MCP-Werkzeug `flowcore`, in Cloud-Sitzungen über den Spiegel `markensystem/` im Repo,
+  weil die Cloud unsere Domänen nicht erreicht. Welcher Weg wann gilt und was bei einem
+  Widerspruch zu repo-eigenen Sprachregeln zu tun ist, steht in `rules/markensystem.md`.
+  „Nichts gefunden" ist eine gültige Antwort in der Auftragskarte, „nicht nachgesehen" nicht.
 - **Gültigkeit prüfen, nicht nur Existenz (v2.5):** Ein gefundenes Dokument ist noch kein
   gültiges. Vor dem Zitieren: Datum · trägt es einen Ablöse-Hinweis · gibt es im selben
   Bereich ein jüngeres Entscheidungsdokument · widersprechen sich zwei Quellen?
@@ -370,6 +377,7 @@ Folgearbeiten in `98` geparkt — nichts davon stand als Regel; alles entstand a
 | Zugriffsstufen DEV/Freigabe/PROD (§6 v2.16) | **`permissions.allow` breit + PreToolUse-Guard** — der Guard ist die einzige Sperre und blockt Schreiben, Neustarten und Löschen an den Zielen aus `.claude/prod-schutz.conf`; Freigabe über `.claude/ALLOW-PROD` mit Protokoll |
 | Ort der Sitzung (Cloud oder Maschine) | **SessionStart-Hook** `wo-laeuft-diese-sitzung.sh` — erkennt die Cloud-Sandbox an der Laufzeitangabe und zwei weiteren Merkmalen und sagt es in der ersten Zeile (v2.15) |
 | Erreichbarkeit aller Domänen und Berichtslücken | **Domänenwache der Zentrale** (`werkzeuge/domain-wache.sh` in `ocg-architekt`, GitHub Actions alle 30 Minuten, Issue `alarm`) + tägliche Morgenrunde an den Betreiber (v2.14) |
+| Marken-, Ton- und Bildregeln (§2 v2.17) | **FlowCore als führende Quelle** + `markensystem-spiegeln.yml` (stündlich, fail-closed — der Lauf wird rot statt den Spiegel zu leeren) + MCP-Server `flowcore` auf den Maschinen + `rules/markensystem.md` |
 | Deploy-Verifikation | **`post-deploy-smoke.sh`** + `.claude/smoke.conf` je Instanz |
 | Rollout-Abnahme beim Verbraucher (§5) | **`agenten-inventur.sh`** je Maschine — Ausgabe mit Datum ins Server-Register |
 | Einheitlichkeit der Agenten-Maschinen | **`rules/agenten-arbeitsplatz.md`** (Soll A1–A8) + Abweichungsblock der Inventur |

@@ -1,0 +1,16 @@
+{
+  "//": "OneCampus-Vorlage für <repo>/.mcp.json — Stand v2.17 (11.09.2026).",
+  "//flowcore": "Die Content-API von FlowCore als Werkzeuge. NUR auf den Maschinen nutzbar: Cloud-Sitzungen von claude.ai erreichen unsere Domänen nicht (gemessen 11.09.2026, 403 to CONNECT). Dort liegt der Spiegel unter markensystem/ — welcher Weg wann gilt, steht in .claude/rules/markensystem.md.",
+  "//schluessel": "FLOWCORE_API_KEY kommt aus der Umgebung des Agenten, NIE aus einer Datei im Repo. Fehlt er, antwortet der Server mit einer lesbaren Meldung statt mit einem Absturz.",
+  "mcpServers": {
+    "flowcore": {
+      "command": "python3",
+      "args": [
+        ".claude/mcp/flowcore-mcp.py"
+      ],
+      "env": {
+        "FLOWCORE_API_KEY": "${FLOWCORE_API_KEY}"
+      }
+    }
+  }
+}

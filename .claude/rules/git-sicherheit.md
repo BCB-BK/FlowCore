@@ -16,6 +16,15 @@ Wenn fremde Änderungen den Auftrag blockieren: benennen und fragen.
 - Löschen von Branches, die nicht selbst in dieser Session angelegt wurden
 - Push auf `main`/PROD-wirksame Branches (Deploy-Wirkung steht in der Repo-`CLAUDE.md`)
 
+**Eine benannte Ausnahme beim Fortschreiben, seit v2.17:** Ein **Automatenzweig**, den
+ausschließlich ein Workflow schreibt und den kein Mensch auscheckt — `claude/standard-*`
+aus dem Standard-Rollout, `claude/markensystem` aus dem FlowCore-Spiegel — wird mit
+`--force-with-lease` fortgeschrieben, statt bei jedem Lauf einen neuen Zweig anzulegen.
+Der Sinn des Verbots ist, fremde Arbeit zu schützen; auf einem Zweig, an dem niemand
+arbeitet, gibt es keine. Für jeden Branch, an dem ein Mensch arbeitet, gilt es unverändert.
+Die Ausnahme steht hier, weil eine Regel, die in der Praxis umgangen wird, schlechter ist
+als eine, die ihre Grenzen kennt.
+
 ## Commit-Disziplin
 Vor jedem Commit den **vollständigen Diff** prüfen. Ein Commit enthält ausschließlich die
 beauftragte Änderung plus zwingend zugehörige Tests und Doku. Commit-Identity:
