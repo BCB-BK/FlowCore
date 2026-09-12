@@ -9,15 +9,11 @@
  * nichts: Jeder Wert kommt aus einem benannten Speicherfeld, und fehlt er,
  * sagt die Antwort das ausdrücklich (`herkunft: "nicht gepflegt"`).
  */
-import {
-  AUTHORITY_LEVELS,
-  DECISION_STATUSES,
-  AGENT_METADATA_DEFAULTS,
-} from "./agent-metadata";
+import { AUTHORITY_LEVELS, DECISION_STATUSES } from "./agent-metadata";
 
 export const EXPORTVERTRAG = {
   name: "flowcore.content-api.page",
-  version: "2.0",
+  version: "2.1",
   stand: "2026-09-12",
 } as const;
 
@@ -65,12 +61,12 @@ export interface Herkunftswert<T> {
 export interface GovernanceAngaben {
   /** Veröffentlichungsstand aus `content_nodes.status` + veröffentlichter Revision. */
   publicationStatus: Herkunftswert<string>;
-  /** Redaktioneller Entscheidungsstand — eine andere Dimension als die Veröffentlichung. */
-  decisionStatus: Herkunftswert<string>;
-  /** Normative Verbindlichkeit, sofern gepflegt. */
+  /** Redaktioneller Entscheidungsstand; `null`, solange nicht gepflegt. */
+  decisionStatus: Herkunftswert<string | null>;
+  /** Normative Verbindlichkeit; `null`, solange nicht gepflegt. */
   authorityLevel: Herkunftswert<string | null>;
-  /** Quellenrang 1–5, sofern gepflegt. */
-  sourcePriority: Herkunftswert<number>;
+  /** Quellenrang 1–5; `null`, solange nicht gepflegt. */
+  sourcePriority: Herkunftswert<number | null>;
   /** Strukturelle Rolle, abgeleitet aus dem Seitentyp — kein Freigabeurteil. */
   contentRole: Herkunftswert<"navigation" | "content">;
 }
@@ -106,14 +102,17 @@ export function governanceAngaben(
       bedeutung:
         "Die Seite ist in FlowCore veröffentlicht. Das ist kein Urteil über die fachliche Freigabe einzelner Produkt-, Zulassungs- oder Förderaussagen.",
     },
+    // Ein nicht gepflegtes Feld wird als null ausgeliefert, nicht als
+    // Standardwert: Ein leeres Feld wird von einem Zielsystem ignoriert, ein
+    // gefülltes ausgewertet. Der frühere Standardwert "proposed" ließ ein
+    // angebundenes System schließen, im gesamten Bestand sei nichts beschlossen
+    // (Rückfrage vom 12.09.2026, Punkt 3b).
     decisionStatus: {
-      wert: decisionGepflegt
-        ? (sf.decision_status as string)
-        : AGENT_METADATA_DEFAULTS.decisionStatus,
+      wert: decisionGepflegt ? (sf.decision_status as string) : null,
       herkunft: decisionGepflegt
         ? "structuredFields.decision_status"
-        : "standardwert (Feld nicht gepflegt; es gibt keine Eingabe dafür in der Oberfläche)",
-      bedeutung: `Redaktioneller Entscheidungsstand, unabhängig vom Veröffentlichungsstand. Erlaubt: ${DECISION_STATUSES.join(", ")}.`,
+        : "nicht gepflegt (keine Eingabe dafür in der Oberfläche)",
+      bedeutung: `Redaktioneller Entscheidungsstand, unabhängig vom Veröffentlichungsstand. Erlaubt: ${DECISION_STATUSES.join(", ")}. null heißt: kein Wert hinterlegt — kein Standardwert und keine Aussage über die fachliche Freigabe.`,
     },
     authorityLevel: {
       wert: authorityGepflegt ? (sf.authority_level as string) : null,
@@ -123,12 +122,12 @@ export function governanceAngaben(
       bedeutung: `Normative Verbindlichkeit, sofern gepflegt. Erlaubt: ${AUTHORITY_LEVELS.join(", ")}. null heißt: kein Wert hinterlegt — nicht »unverbindlich«.`,
     },
     sourcePriority: {
-      wert: prioritaetGepflegt ? (sf.source_priority as number) : 1,
+      wert: prioritaetGepflegt ? (sf.source_priority as number) : null,
       herkunft: prioritaetGepflegt
         ? "structuredFields.source_priority"
-        : "standardwert (Feld nicht gepflegt)",
+        : "nicht gepflegt (keine Eingabe dafür in der Oberfläche)",
       bedeutung:
-        "Quellenrang 1–5 für die Gewichtung mehrerer Treffer. Der Standardwert 1 sagt nichts über die fachliche Quellenhierarchie des Markensystems aus.",
+        "Quellenrang 1–5 für die Gewichtung mehrerer Treffer. null heißt: kein Wert hinterlegt — daraus folgt keine Rangaussage.",
     },
     contentRole: {
       wert: navigation ? "navigation" : "content",

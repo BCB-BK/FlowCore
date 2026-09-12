@@ -114,9 +114,15 @@ export function formatiereSeite(
   }));
 
   if (format === "full") {
+    const {
+      decisionStatus: _entscheidungVoll,
+      authorityLevel: _verbindlichkeitVoll,
+      sourcePriority: _quellenrangVoll,
+      ...seiteOhneFlacheStatus
+    } = seite;
     return {
       ...kopf,
-      ...seite,
+      ...seiteOhneFlacheStatus,
       contentMarkdown: absoluteLinksImMarkdown(seite.contentMarkdown, basis),
       structuredFields: ohneInterneFelder(felder),
       childPages: mitAbsolutenUrls(seite.childPages, basis),
@@ -133,6 +139,12 @@ export function formatiereSeite(
     scopeContext: _geltung,
     childPageTitles: _kinderTitel,
     contentLinks: _verweise,
+    // Statusangaben stehen ausschließlich in `governance` — mit Herkunft. Die
+    // flachen Felder trugen dieselben Werte ohne Herkunft und luden dazu ein,
+    // einen Standardwert als Aussage zu lesen (Rückfrage vom 12.09.2026, 3b).
+    decisionStatus: _entscheidung,
+    authorityLevel: _verbindlichkeit,
+    sourcePriority: _quellenrang,
     ...rest
   } = seite;
   return {

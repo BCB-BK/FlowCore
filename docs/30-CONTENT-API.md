@@ -114,7 +114,7 @@ sich diese Version.
 | `parentNodeId`, `sortOrder` | Hierarchie als Identität, nicht als Textpfad |
 | `childPages` | direkte Unterseiten mit `id`, Titel, Anzeigecode, Seitentyp, `sortOrder`, Kurzbeschreibung und URL |
 | `pageMetadata` | fachliche Metadaten: Marke, Markenebene, Herkunftsfassung, Prüfzyklus in Monaten, führendes System, verantwortliche Person |
-| `governance` | Publikations-, Entscheidungs- und Verbindlichkeitsangaben mit Herkunft (siehe unten) |
+| `governance` | Publikations-, Entscheidungs- und Verbindlichkeitsangaben mit Herkunft (siehe unten); Statusangaben stehen **nur** hier, nicht zusätzlich als flache Felder |
 | `relations` | gerichtete Beziehungen mit gespeichertem `relationType` (z. B. `inline_wiki_link`, `implements_policy`) |
 | `contentLinks` | jedes Verweisvorkommen im Inhalt mit Feld, Tabelle, Zeile, Spalte, Ziel-UUID und URL |
 | `media`, `structuredData` | Dateien und Bilder der Seite; Felder, die kein Fließtext sind (Verweislisten, Tabellen-Widgets) |
@@ -137,18 +137,51 @@ verschiedene Dimensionen, die nicht miteinander verwechselt werden dürfen:
 | Angabe | Was sie sagt |
 | --- | --- |
 | `publicationStatus` | Die Seite ist in FlowCore veröffentlicht. Das ist **kein** Urteil über die fachliche Freigabe einzelner Produkt-, Zulassungs- oder Förderaussagen. |
-| `decisionStatus` | Redaktioneller Entscheidungsstand (`decided`, `proposed`, `in_review`). |
-| `authorityLevel` | Normative Verbindlichkeit (`binding`, `guidance`, `draft`, `archived`), sofern gepflegt. `null` heißt „kein Wert hinterlegt“ — nicht „unverbindlich“. |
-| `sourcePriority` | Quellenrang 1–5 zur Gewichtung mehrerer Treffer. |
+| `decisionStatus` | Redaktioneller Entscheidungsstand (`decided`, `proposed`, `in_review`), sofern gepflegt. |
+| `authorityLevel` | Normative Verbindlichkeit (`binding`, `guidance`, `draft`, `archived`), sofern gepflegt. |
+| `sourcePriority` | Quellenrang 1–5 zur Gewichtung mehrerer Treffer, sofern gepflegt. |
 | `contentRole` | `navigation` für Register und Übersichten, `content` für Seiten mit eigenem Inhalt. Ein Register ist damit keine Marken- oder Prozessregel. |
 
-**Wichtig für Verbraucher:** `decision_status`, `authority_level` und
-`source_priority` liegen in den strukturierten Feldern und haben derzeit
-**keine Eingabemöglichkeit in der Oberfläche**. Sie sind deshalb im Bestand
-nicht gepflegt; die Antwort weist das in `herkunft` ausdrücklich als
-„standardwert“ bzw. „nicht gepflegt“ aus. Ein Zielsystem darf daraus keine
-Freigabeaussage ableiten. Wer Verbindlichkeit maschinell führen will, braucht
-zuerst eine fachliche Festlegung und eine Pflegeoberfläche.
+**Nicht gepflegt heißt `null`, nicht „Standardwert“.** `decision_status`,
+`authority_level` und `source_priority` liegen in den strukturierten Feldern
+und haben derzeit **keine Eingabemöglichkeit in der Oberfläche**. Sie sind
+deshalb im Bestand nirgends gesetzt. Die Antwort liefert in diesem Fall
+`wert: null` mit `herkunft: "nicht gepflegt …"` — bewusst **kein** Vorgabewert:
+Ein leeres Feld wird von einem Zielsystem ignoriert, ein gefülltes ausgewertet.
+Wer Verbindlichkeit maschinell führen will, braucht zuerst eine fachliche
+Festlegung und eine Pflegeoberfläche.
+
+### Marke, Gesellschaft und Zuschnitt
+
+Für die Freigabedimensionen und für die Auswertung ist wichtig, was heute
+tatsächlich gepflegt ist:
+
+| Angabe | Träger | Stand |
+| --- | --- | --- |
+| Marke einer **Markenprofilseite** | `pageMetadata.brandName`, `pageMetadata.brandLevel` (Metadatenfelder des Seitentyps `brand_profile`) | gepflegt, nur auf diesem Seitentyp vorhanden |
+| Marke einer **beliebigen Seite** (Freigabedimension `brandScopes`, Feld `brandScope`) | Tag mit Präfix `brand:` | derzeit **nicht im Einsatz** — es existiert kein einziges `brand:`-Tag |
+| Bereich (`agentScope`) | Feld `agent_scope` in den strukturierten Feldern | derzeit nicht gepflegt |
+| Gesellschaft / Institution | **kein Feld vorhanden** | `pageMetadata.sourceOfTruth` ist das führende System, nicht die Gesellschaft |
+
+Solange keine `brand:`-Tags vergeben sind, schneidet die Freigabedimension
+„Marken“ nichts zu: Ein Schlüssel mit Markenauswahl bekäme keine Seite. Wer
+nach Marke filtern will, vergibt zuerst die Tags — oder wertet die
+Markenprofilseiten und die Struktur aus.
+
+### Hierarchie ist über `/v1/pages` nicht geschlossen
+
+`parentNodeId` nennt die gespeicherte Elternseite. Diese Seite kann im
+gelieferten Ausschnitt fehlen, auch bei weitester Freigabe — sie kann ein
+Entwurf, gelöscht oder schlicht nicht veröffentlicht sein. Ein Verbraucher darf
+also **nicht** davon ausgehen, dass sich aus einem Abzug ein geschlossener Baum
+rekonstruieren lässt.
+
+Verlässlich für die Hierarchie ist der `displayCode`: Er ist hierarchisch
+aufgebaut (`KP-003.BER-002.VA-001`) und wird beim Verschieben einer Seite für
+sie und alle Unterseiten neu berechnet, wobei die alte Kennung als Alias
+erhalten bleibt. Genau deshalb ist er ein **Strukturträger, aber keine
+Identität**: Identität sind `nodeId` und `immutableId`, die sich beim
+Verschieben nicht ändern.
 
 ### Zwei Prüfsummen, nicht eine
 

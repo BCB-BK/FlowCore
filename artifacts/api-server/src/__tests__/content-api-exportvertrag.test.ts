@@ -50,14 +50,17 @@ describe("fachliche Metadaten (T-02)", () => {
 });
 
 describe("Statussemantik (T-04)", () => {
-  it("weist Standardwerte als Standardwerte aus", () => {
+  it("liefert nicht gepflegte Felder als null — kein Standardwert", () => {
+    // Ein leeres Feld wird ignoriert, ein gefülltes ausgewertet: Der frühere
+    // Standardwert "proposed" ließ ein Zielsystem schließen, im gesamten
+    // Bestand sei nichts beschlossen (Rückfrage 12.09.2026, Punkt 3b).
     const g = governanceAngaben({}, "policy");
-    expect(g.decisionStatus.wert).toBe("proposed");
-    expect(g.decisionStatus.herkunft).toMatch(/standardwert/);
+    expect(g.decisionStatus.wert).toBeNull();
+    expect(g.decisionStatus.herkunft).toMatch(/nicht gepflegt/);
     expect(g.authorityLevel.wert).toBeNull();
     expect(g.authorityLevel.herkunft).toBe("nicht gepflegt");
-    expect(g.sourcePriority.wert).toBe(1);
-    expect(g.sourcePriority.herkunft).toMatch(/standardwert/);
+    expect(g.sourcePriority.wert).toBeNull();
+    expect(g.sourcePriority.herkunft).toMatch(/nicht gepflegt/);
     expect(g.publicationStatus.wert).toBe("published");
   });
 
@@ -197,6 +200,16 @@ describe("Seitenantwort", () => {
     const f = formatiereSeite(seite, "markdown", BASIS);
     expect(f.contract).toEqual(EXPORTVERTRAG);
     expect(f.linkBase).toBe(BASIS);
+  });
+
+  it("führt Statusangaben nur in governance, nicht als flache Felder", () => {
+    for (const format of ["markdown", "full"] as const) {
+      const f = formatiereSeite(seite, format, BASIS);
+      expect(f).not.toHaveProperty("decisionStatus");
+      expect(f).not.toHaveProperty("authorityLevel");
+      expect(f).not.toHaveProperty("sourcePriority");
+      expect(f.governance).toBeDefined();
+    }
   });
 
   it("liefert Struktur, Metadaten, Beziehungstyp und Verweisvorkommen", () => {

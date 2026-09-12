@@ -443,7 +443,7 @@ export function buildContentApiSpec(baseUrl: string) {
             governance: {
               type: "object",
               description:
-                "Statuswerte mit Herkunft und Bedeutung. Jeder Eintrag nennt in `herkunft` das Speicherfeld oder sagt ausdrücklich, dass der Wert ein Standardwert bzw. nicht gepflegt ist. Publikationsstand, redaktioneller Entscheidungsstand und normative Verbindlichkeit sind drei verschiedene Dimensionen.",
+                'Statuswerte mit Herkunft und Bedeutung. Nicht gepflegte Felder haben `wert: null` und `herkunft: "nicht gepflegt …"` — es wird kein Standardwert ausgeliefert, damit ein Zielsystem daraus keine Aussage ableitet. Publikationsstand, redaktioneller Entscheidungsstand und normative Verbindlichkeit sind drei verschiedene Dimensionen. Diese Angaben stehen ausschließlich hier, nicht zusätzlich als flache Felder.',
               properties: {
                 publicationStatus: {
                   $ref: "#/components/schemas/Herkunftswert",
@@ -524,7 +524,7 @@ export function buildContentApiSpec(baseUrl: string) {
             herkunft: {
               type: "string",
               description:
-                "Speicherfeld, aus dem der Wert stammt, oder ausdrücklich »standardwert« bzw. »nicht gepflegt«.",
+                "Speicherfeld, aus dem der Wert stammt, oder ausdrücklich »nicht gepflegt«. Bei »nicht gepflegt« ist `wert` immer null.",
             },
             bedeutung: { type: "string" },
           },
